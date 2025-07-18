@@ -1,4 +1,5 @@
-# Digital twin of a TDCR (Tendum Driven Continuum Robot) with kin. PCC model
+# Digital twin of a TDCR (tendon driven continuum robot)
+# with kinematic PCC (piecewise constant curvature) model.
 
 import math
 
@@ -56,21 +57,23 @@ def homogeneous_matrix(rotation_matrix, translation_vector):
     return transformation_matrix
 
 
-# Transformation matrix of Coupling Elements
-def transformation_matrix_coupling_element(length_coupling_element, homogeneous_matrix):
+# Transformation matrix of coupling elements.
+def transformation_matrix_coupling_element(
+    length_coupling_element, homogeneous_matrix
+):
 
-    # Homogeneous rotation matrix
+    # Homogeneous rotation matrix.
     rotation_matrix = np.eye(3)
 
-    # Translation vector length in z axis
+    # Translation vector length in z axis.
     translation_vector = [0, 0, length_coupling_element]
 
-    # Transformation matrix of a coupling element
+    # Transformation matrix of a coupling element.
     transformation_matrix_coupling_element = homogeneous_matrix(
         rotation_matrix, translation_vector
     )
 
-    # Convert to (1, 4, 4) array
+    # Convert to (1, 4, 4) array.
     transformation_matrix_coupling_element = np.expand_dims(
         transformation_matrix_coupling_element, axis=0
     )
@@ -78,8 +81,8 @@ def transformation_matrix_coupling_element(length_coupling_element, homogeneous_
     return transformation_matrix_coupling_element
 
 
-# Transformationsmartix des i-ten Teil des Backbones für Ploting
-def transformation_matarix_backbone(
+# Transformation matrix of i-th backbone piece for plotting.
+def transformation_matrix_backbone(
     bending_angle_theta,
     turning_angle_phi,
     length_backbone,
@@ -87,7 +90,9 @@ def transformation_matarix_backbone(
 ):
 
     # Discretization of the backbone from 0 to length_backbone
-    length_backbone = np.linspace(0, length_backbone, discretization_points_backbone)
+    length_backbone = np.linspace(
+        0, length_backbone, discretization_points_backbone
+    )
 
     # Discretization of the bending angle from 0 to bending_angle_theta
     bending_angle_theta = np.linspace(
@@ -95,14 +100,16 @@ def transformation_matarix_backbone(
     )
 
     # Initializing transformation matrix
-    transformation_matrix_backbone = np.zeros((discretization_points_backbone, 4, 4))
+    transformation_matrix_backbone = np.zeros(
+        (discretization_points_backbone, 4, 4)
+    )
 
     for index in range(discretization_points_backbone):
 
         index_bending_angle = bending_angle_theta[index]
         index_length = length_backbone[index]
 
-        # Rotation matrix around Z depeinding on turning_angle_phi_i
+        # Rotation matrix around Z depending on turning_angle_phi_i.
         rotation_matrix_z = np.array(
             [
                 [math.cos(turning_angle_phi), -math.sin(turning_angle_phi), 0],
@@ -114,8 +121,16 @@ def transformation_matarix_backbone(
         # Rotation matrix around Z depending on -turning_angle_phi_i
         rotation_matrix_minus_z = np.array(
             [
-                [math.cos(-turning_angle_phi), -math.sin(-turning_angle_phi), 0],
-                [math.sin(-turning_angle_phi), math.cos(-turning_angle_phi), 0],
+                [
+                    math.cos(-turning_angle_phi),
+                    -math.sin(-turning_angle_phi),
+                    0,
+                ],
+                [
+                    math.sin(-turning_angle_phi),
+                    math.cos(-turning_angle_phi),
+                    0,
+                ],
                 [0, 0, 1],
             ]
         )
@@ -129,7 +144,11 @@ def transformation_matarix_backbone(
                     math.sin(index_bending_angle),
                 ],
                 [0, 1, 0],
-                [-math.sin(index_bending_angle), 0, math.cos(index_bending_angle)],
+                [
+                    -math.sin(index_bending_angle),
+                    0,
+                    math.cos(index_bending_angle),
+                ],
             ]
         )
 
@@ -142,10 +161,14 @@ def transformation_matarix_backbone(
         if index_bending_angle == 0:
             translation_vector = np.array([0, 0, index_length])
         else:
-            translation_vector = (index_length / index_bending_angle) * np.array(
+            translation_vector = (
+                index_length / index_bending_angle
+            ) * np.array(
                 [
-                    math.cos(turning_angle_phi) * (1 - math.cos(index_bending_angle)),
-                    math.sin(turning_angle_phi) * (1 - math.cos(index_bending_angle)),
+                    math.cos(turning_angle_phi)
+                    * (1 - math.cos(index_bending_angle)),
+                    math.sin(turning_angle_phi)
+                    * (1 - math.cos(index_bending_angle)),
                     math.sin(index_bending_angle),
                 ]
             )
@@ -158,21 +181,24 @@ def transformation_matarix_backbone(
     return transformation_matrix_backbone
 
 
-# Coupling of the Transformation matrix of the backbone and the coupling element
+# Coupling of the backbone transformation matrix and the coupling element.
 def couple(
-    lower_transformation_matrix, upper_transformation_matrix, discretization_points
+    lower_transformation_matrix,
+    upper_transformation_matrix,
+    discretization_points,
 ):
 
-    # Tip transformation matrix of the backbone with check for more than one 4x4 matrix
+    # Tip transformation matrix of the backbone
+    # with check for more than one 4x4 matrix.
     if lower_transformation_matrix.shape[0] > 1:
         tip_transformation = lower_transformation_matrix[-1, :, :]
     else:
         tip_transformation = lower_transformation_matrix[0, :, :]
 
-    # Initializing coupled transformation matrix
+    # Initializing coupled transformation matrix.
     coupled_transformation = np.zeros((discretization_points, 4, 4))
 
-    # Coupling of the transformation matrix of the backbone and the coupling element
+    # Coupling of the backbone transformation matrix and the coupling element.
     for discretization in range(discretization_points):
         coupled_transformation[discretization] = (
             tip_transformation @ upper_transformation_matrix[discretization]
@@ -181,7 +207,7 @@ def couple(
     return coupled_transformation
 
 
-# Transformationsmatrizen der Seilführungen am Kopplungselement
+# Transformation matrices of the tendon guides at the coupling element.
 # function T_sf = trans_mat_sf(T_ke_sf, tendon_distance, tendon_number)
 #    bending_angle_theta = linspace(0, 4*pi/tendon_number, tendon_number);
 #    x = tendon_distance * cos(bending_angle_theta);
@@ -229,7 +255,7 @@ first_couple = transformation_matrix_coupling_element(
 print("1:", first_couple)
 second_couple = couple(
     first_couple,
-    transformation_matarix_backbone(
+    transformation_matrix_backbone(
         bending_angle_theta[0],
         turning_angle_phi[0],
         length_backbone[0],
@@ -248,7 +274,7 @@ third_couple = couple(
 print("3:", third_couple)
 fourth_couple = couple(
     third_couple,
-    transformation_matarix_backbone(
+    transformation_matrix_backbone(
         bending_angle_theta[1],
         turning_angle_phi[1],
         length_backbone[1],
@@ -267,7 +293,7 @@ fifth_couple = couple(
 print("5:", fifth_couple)
 sixth_couple = couple(
     fifth_couple,
-    transformation_matarix_backbone(
+    transformation_matrix_backbone(
         bending_angle_theta[2],
         turning_angle_phi[2],
         length_backbone[2],
