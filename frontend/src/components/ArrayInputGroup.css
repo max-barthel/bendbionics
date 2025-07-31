@@ -1,0 +1,16 @@
+.array-input-group {
+  margin-bottom: 2rem;
+}
+
+.array-input-group label {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  font-weight: 500;
+}
+
+.input-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
