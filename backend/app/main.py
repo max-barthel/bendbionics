@@ -1,3 +1,5 @@
+# FastAPI entry
+from app.api.routes import router as pcc_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,7 +13,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get("/api/ping")
-def ping():
-    return {"message": "pong"}
+app.include_router(pcc_router)

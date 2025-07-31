@@ -6,25 +6,7 @@ import numpy as np
 class PCC:
     """Piecewise Constant Curvature (PCC) model for the TDCR."""
 
-    def __init__(self, length, bending_stiffness, torsional_stiffness):
-        self.length = length
-        self.bending_stiffness = bending_stiffness
-        self.torsional_stiffness = torsional_stiffness
-
-    def compute_curvature(self, bending_angle, torsional_angle):
-        """Compute the curvature of the PCC model."""
-        # Curvature is defined as the change in angle per unit length
-        curvature = bending_angle / self.length
-        return curvature
-
-    def compute_forces(self, curvature):
-        """Compute the forces acting on the PCC model."""
-        bending_force = self.bending_stiffness * curvature
-        torsional_force = self.torsional_stiffness * curvature
-        return bending_force, torsional_force
-
-        # Functions
-
+    # Functions
     # -----------------------------------------------------------
     # Homogeneous matrix definition
     def homogeneous_matrix(rotation_matrix, translation_vector):
