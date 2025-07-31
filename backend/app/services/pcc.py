@@ -56,7 +56,7 @@ class PCC:
 
         for i in range(self.discretization_steps):
             angle = theta_space[i]
-            l = length_space[i]
+            len_space = length_space[i]
 
             Rz = rotation_matrix_z(phi)
             Ry = rotation_matrix_y(angle)
@@ -64,10 +64,10 @@ class PCC:
             R = Rz @ Ry @ Rz_inv
 
             if angle == 0:
-                t = [0, 0, l]
+                t = [0, 0, len_space]
             else:
                 t = (
-                    l
+                    len_space
                     / angle
                     * np.array(
                         [
