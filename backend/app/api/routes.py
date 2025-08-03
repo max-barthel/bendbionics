@@ -7,6 +7,9 @@ router = APIRouter()
 
 @router.post("/pcc")
 def run_pcc(params: PCCParams):
-    # Already a list of lists (not numpy), so no need to convert again
     result = compute_pcc(params)
-    return {"points": result}
+    # Convert all NumPy arrays in the result to native lists
+    result_serializable = [
+        [point.tolist() for point in segment] for segment in result
+    ]
+    return {"segments": result_serializable}

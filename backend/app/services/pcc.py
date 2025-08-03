@@ -2,7 +2,6 @@ import math
 from typing import List
 
 import numpy as np
-from app.utils.geometry_tools import extract_xyz_coordinates
 from app.utils.math_tools import (
     homogeneous_matrix,
     rotation_matrix_y,
@@ -33,95 +32,86 @@ class PCC:
         self.discretization_steps = discretization_steps
 
     def transformation_matrix_coupling(self, length):
-        """Create a transformation matrix for a coupling element."""
+        """Returns a single transformation matrix for a straight coupling."""
         translation_vector = [0, 0, length]
         rotation = np.eye(3)
-        T = homogeneous_matrix(rotation, translation_vector)
-        # Repeat the same transformation for each discretization step
-        return np.repeat(
-            T[np.newaxis, :, :], self.discretization_steps, axis=0
-        )
+        return homogeneous_matrix(rotation, translation_vector)
 
     def transformation_matrix_backbone(self, theta, phi, length):
-        """Create a discretized transformation matrix for a backbone.
-        :param theta: Bending angle in radians
-        :param phi: Rotation angle in radians
-        :param length: Length of the backbone
-        :return: discretized Transformation matrix for the backbone
         """
-        length_space = np.linspace(0, length, self.discretization_steps)
-        theta_space = np.linspace(0, theta, self.discretization_steps)
+        Return local transformation steps (not accumulated).
+        """
+        delta_theta = theta / self.discretization_steps
+        delta_length = length / self.discretization_steps
+        T_steps = []
 
-        T_all = np.zeros((self.discretization_steps, 4, 4))
-
-        for i in range(self.discretization_steps):
-            angle = theta_space[i]
-            len_space = length_space[i]
-
+        for _ in range(self.discretization_steps):
             Rz = rotation_matrix_z(phi)
-            Ry = rotation_matrix_y(angle)
+            Ry = rotation_matrix_y(delta_theta)
             Rz_inv = rotation_matrix_z(-phi)
             R = Rz @ Ry @ Rz_inv
 
-            if angle == 0:
-                t = [0, 0, len_space]
+            if delta_theta == 0:
+                t = [0, 0, delta_length]
             else:
                 t = (
-                    len_space
-                    / angle
+                    delta_length
+                    / delta_theta
                     * np.array(
                         [
-                            math.cos(phi) * (1 - math.cos(angle)),
-                            math.sin(phi) * (1 - math.cos(angle)),
-                            math.sin(angle),
+                            math.cos(phi) * (1 - math.cos(delta_theta)),
+                            math.sin(phi) * (1 - math.cos(delta_theta)),
+                            math.sin(delta_theta),
                         ]
                     )
                 )
 
-            T_all[i] = homogeneous_matrix(R, t)
+            T_steps.append(homogeneous_matrix(R, t))
 
-        return T_all
+        return T_steps
 
     def build_model(self):
         T_all = []
-        current_T = np.eye(4)  # Global starting frame
 
-        # First coupling element
+        # First coupling starts at identity
+        T = np.eye(4)
+        T_start = T.copy()
+
         T_coupling = self.transformation_matrix_coupling(
             self.coupling_lengths[0]
         )
-        global_coupling = self._apply_global_transform(current_T, T_coupling)
-        T_all.append(global_coupling)
-        current_T = global_coupling[-1]  # Update current tip
+        T = T @ T_coupling
+        T_all.append(
+            np.array([T_start[:3, 3], T[:3, 3]])
+        )  # just start & end points
 
-        for i, (theta, phi, l_bb) in enumerate(
+        for i, (theta, phi, l_bb, l_coup) in enumerate(
             zip(
                 self.bending_angles,
                 self.rotation_angles,
                 self.backbone_lengths,
+                self.coupling_lengths[1:],
             )
         ):
-            # Backbone segment
-            T_bb = self.transformation_matrix_backbone(theta, phi, l_bb)
-            global_bb = self._apply_global_transform(current_T, T_bb)
-            T_all.append(global_bb)
-            current_T = global_bb[-1]
+            # Backbone
+            T_steps = self.transformation_matrix_backbone(theta, phi, l_bb)
+            T_bb_global = []
 
-            # Coupling segment (if any left)
-            if i + 1 < len(self.coupling_lengths):
-                T_coupling = self.transformation_matrix_coupling(
-                    self.coupling_lengths[i + 1]
-                )
-                global_coupling = self._apply_global_transform(
-                    current_T, T_coupling
-                )
-                T_all.append(global_coupling)
-                current_T = global_coupling[-1]
+            for step in T_steps:
+                T = T @ step
+                T_bb_global.append(T.copy())
+
+            T_all.append([T_i[:3, 3] for T_i in T_bb_global])
+
+            # Coupling
+            T_start = T_bb_global[-1].copy()
+            T_coupling = self.transformation_matrix_coupling(l_coup)
+            T = T_start @ T_coupling
+            T_all.append(
+                np.array([T_start[:3, 3], T[:3, 3]])
+            )  # just start & end points
 
         return T_all
-
-    def _apply_global_transform(self, base_T, segment_T):
-        return np.array([base_T @ T for T in segment_T])
 
 
 class PCCParams(BaseModel):
@@ -134,7 +124,7 @@ class PCCParams(BaseModel):
     discretization_steps: int
 
 
-def compute_pcc(params: PCCParams) -> List[np.ndarray]:
+def compute_pcc(params: PCCParams) -> List[List[np.ndarray]]:
     """
     Compute the PCC model transformation matrices based on input parameters.
     """
@@ -146,6 +136,4 @@ def compute_pcc(params: PCCParams) -> List[np.ndarray]:
         discretization_steps=params.discretization_steps,
     )
 
-    T_all = pcc.build_model()
-    # Extract XYZ coordinates from the transformation matrices
-    return extract_xyz_coordinates(T_all)
+    return pcc.build_model()
