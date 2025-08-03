@@ -1,5 +1,3 @@
-import React from "react";
-import "./ArrayInputGroup.css";
 import NumberInput from "./NumberInput";
 
 type ArrayInputGroupProps = {
@@ -8,11 +6,7 @@ type ArrayInputGroupProps = {
   onChange: (values: number[]) => void;
 };
 
-const ArrayInputGroup: React.FC<ArrayInputGroupProps> = ({
-  label,
-  values,
-  onChange,
-}) => {
+function ArrayInputGroup({ label, values, onChange }: ArrayInputGroupProps) {
   const handleValueChange = (index: number, newValue: number) => {
     const updated = [...values];
     updated[index] = newValue;
@@ -20,13 +14,13 @@ const ArrayInputGroup: React.FC<ArrayInputGroupProps> = ({
   };
 
   return (
-    <div className="array-input-group">
-      <label>{label}</label>
-      <div className="input-row">
+    <div className="w-full space-y-2">
+      <div className="text-sm font-medium text-neutral-600">{label}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         {values.map((val, idx) => (
           <NumberInput
             key={idx}
-            label={`#${idx + 1}`}
+            placeholder={`#${idx + 1}`}
             value={val}
             onChange={(value) => handleValueChange(idx, value)}
           />
@@ -34,6 +28,6 @@ const ArrayInputGroup: React.FC<ArrayInputGroupProps> = ({
       </div>
     </div>
   );
-};
+}
 
 export default ArrayInputGroup;

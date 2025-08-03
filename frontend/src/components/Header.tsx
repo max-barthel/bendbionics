@@ -1,5 +1,9 @@
 const Header = () => {
-  return <h1>Soft Robot Kinematics Input</h1>;
+  return (
+    <div className="bg-blue-500 text-white p-4 text-center shadow-md">
+      <h1 className="text-2xl font-bold">Soft Robot Kinematics Visualizer</h1>
+    </div>
+  );
 };
 
 export default Header;

@@ -1,30 +1,32 @@
-import React from "react";
-import "./NumberInput.css";
-
 type NumberInputProps = {
-  label: string;
-  value: number;
+  placeholder: string;
+  value: number | string;
   onChange: (value: number) => void;
-  step?: number;
+  disabled?: boolean;
 };
 
-const NumberInput: React.FC<NumberInputProps> = ({
-  label,
+function NumberInput({
+  placeholder,
   value,
   onChange,
-  step = 0.01,
-}) => {
+  disabled = false,
+}: NumberInputProps) {
   return (
-    <div className="number-input">
-      <label>{label}</label>
-      <input
-        type="number"
-        value={value}
-        step={step}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-      />
-    </div>
+    <input
+      type="text"
+      inputMode="decimal"
+      pattern="[0-9]*"
+      value={value}
+      onChange={(e) => {
+        const parsed = parseFloat(e.target.value);
+        if (!isNaN(parsed)) onChange(parsed);
+        else if (e.target.value === "") onChange(NaN);
+      }}
+      placeholder={placeholder}
+      disabled={disabled}
+      className={`w-full px-4 py-3 text-[15px] rounded-xl border border-neutral-300 bg-neutral-100 text-neutral-900 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-400 transition disabled:opacity-50`}
+    />
   );
-};
+}
 
 export default NumberInput;

@@ -1,12 +1,18 @@
-import React from "react";
+import { useState } from "react";
 import Form from "./components/Form";
+import Header from "./components/Header";
+import Visualizer3D from "./components/Visualizer3D";
 
-const App: React.FC = () => {
+function App() {
+  const [segments, setSegments] = useState<number[][][]>([]);
+
   return (
     <div className="App">
-      <Form />
+      <Header />
+      <Form onResult={setSegments} />
+      <Visualizer3D segments={segments} />
     </div>
   );
-};
+}
 
 export default App;
