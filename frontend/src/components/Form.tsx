@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
 import ArrayInputGroup from "./ArrayInputGroup";
+import Card from "./Card";
 import NumberInput from "./NumberInput";
 import SubmitButton from "./SubmitButton";
 
@@ -26,7 +27,6 @@ function Form({ onResult }: FormProps) {
   ]);
   const [discretizationSteps, setDiscretizationSteps] = useState(1000);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<BackendResponse | null>(null);
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -42,7 +42,6 @@ function Form({ onResult }: FormProps) {
         }
       );
 
-      setResult(data);
       if (data?.segments) {
         onResult(data.segments);
       } else {
@@ -56,51 +55,56 @@ function Form({ onResult }: FormProps) {
   };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit();
-      }}
-      className="w-full max-w-3xl mx-auto p-8 bg-white rounded-2xl border border-neutral-200 space-y-6"
-    >
-      <h2 className="text-2xl font-semibold text-neutral-800">
-        Soft Robot Parameters
-      </h2>
+    <Card>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit();
+        }}
+        className="flex flex-col space-y-6"
+      >
+        <h2 className="text-2xl font-semibold tracking-tight text-neutral-800">
+          Soft Robot Parameters
+        </h2>
 
-      <ArrayInputGroup
-        label="Bending Angles"
-        values={bendingAngles}
-        onChange={setBendingAngles}
-      />
-      <ArrayInputGroup
-        label="Rotation Angles"
-        values={rotationAngles}
-        onChange={setRotationAngles}
-      />
-      <ArrayInputGroup
-        label="Backbone Lengths"
-        values={backboneLengths}
-        onChange={setBackboneLengths}
-      />
-      <ArrayInputGroup
-        label="Coupling Lengths"
-        values={couplingLengths}
-        onChange={setCouplingLengths}
-      />
-
-      <div className="space-y-2">
-        <label className="text-sm text-neutral-600">Discretization Steps</label>
-        <NumberInput
-          value={discretizationSteps}
-          onChange={setDiscretizationSteps}
-          placeholder="Discretization Steps"
+        <ArrayInputGroup
+          label="Bending Angles"
+          values={bendingAngles}
+          onChange={setBendingAngles}
         />
-      </div>
+        <ArrayInputGroup
+          label="Rotation Angles"
+          values={rotationAngles}
+          onChange={setRotationAngles}
+        />
+        <ArrayInputGroup
+          label="Backbone Lengths"
+          values={backboneLengths}
+          onChange={setBackboneLengths}
+        />
+        <ArrayInputGroup
+          label="Coupling Lengths"
+          values={couplingLengths}
+          onChange={setCouplingLengths}
+        />
 
-      <div className="pt-4">
-        <SubmitButton onClick={handleSubmit} loading={loading} />
-      </div>
-    </form>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="discretization" className="text-sm text-neutral-600">
+            Discretization Steps
+          </label>
+          <NumberInput
+            value={discretizationSteps}
+            onChange={setDiscretizationSteps}
+            placeholder="Discretization Steps"
+            id="discretization"
+          />
+        </div>
+
+        <div className="pt-2">
+          <SubmitButton onClick={handleSubmit} loading={loading} />
+        </div>
+      </form>
+    </Card>
   );
 }
 

@@ -16,7 +16,7 @@ function ArrayInputGroup({ label, values, onChange }: ArrayInputGroupProps) {
   return (
     <div className="w-full space-y-2">
       <div className="text-sm font-medium text-neutral-600">{label}</div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-5 gap-3">
         {values.map((val, idx) => (
           <NumberInput
             key={idx}
