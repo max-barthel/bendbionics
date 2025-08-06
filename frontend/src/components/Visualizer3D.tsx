@@ -84,7 +84,7 @@ function Visualizer3D({ segments }: Visualizer3DProps) {
         3D Visualization
       </h2>
 
-      <div className="relative w-full rounded-md overflow-hidden">
+      <div className="relative w-full h-[500px] rounded-md overflow-hidden">
         <Canvas
           camera={{
             position: [

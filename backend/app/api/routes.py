@@ -1,5 +1,5 @@
-from app.models import PCCParams
-from app.services.pcc import compute_pcc
+from app.models.pcc.model import compute_pcc
+from app.models.pcc.types import PCCParams
 from fastapi import APIRouter
 
 router = APIRouter()
