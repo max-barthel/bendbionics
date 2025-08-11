@@ -1,52 +1,37 @@
-import axios from "axios";
 import React, { useState } from "react";
+import { robotAPI, type PCCParams } from "../api/client";
+import { useRobotState, type RobotState } from "../hooks/useRobotState";
 import ArrayInputGroup from "./ArrayInputGroup";
 import Card from "./Card";
 import NumberInput from "./NumberInput";
+import SegmentSlider from "./SegmentSlider";
 import SubmitButton from "./SubmitButton";
 
 type FormProps = {
   onResult: React.Dispatch<React.SetStateAction<number[][][]>>;
 };
 
-type BackendResponse = {
-  segments?: number[][][];
-  [key: string]: any;
-};
-
 function Form({ onResult }: FormProps) {
-  const [bendingAngles, setBendingAngles] = useState([
-    0.628319, 0.628319, 0.628319,
-  ]);
-  const [rotationAngles, setRotationAngles] = useState([
-    1.0472, 1.0472, 1.0472,
-  ]);
-  const [backboneLengths, setBackboneLengths] = useState([70.0, 70.0, 70.0]);
-  const [couplingLengths, setCouplingLengths] = useState([
-    30.0, 30.0, 30.0, 15.0,
-  ]);
-  const [discretizationSteps, setDiscretizationSteps] = useState(1000);
+  const [robotState, setRobotState] = useRobotState();
   const [loading, setLoading] = useState(false);
+
+  const updateRobotState = (updates: Partial<RobotState>) => {
+    setRobotState((prev) => ({ ...prev, ...updates }));
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.post<BackendResponse>(
-        "http://localhost:8000/pcc",
-        {
-          bending_angles: bendingAngles,
-          rotation_angles: rotationAngles,
-          backbone_lengths: backboneLengths,
-          coupling_lengths: couplingLengths,
-          discretization_steps: discretizationSteps,
-        }
-      );
+      const params: PCCParams = {
+        bending_angles: robotState.bendingAngles,
+        rotation_angles: robotState.rotationAngles,
+        backbone_lengths: robotState.backboneLengths,
+        coupling_lengths: robotState.couplingLengths,
+        discretization_steps: robotState.discretizationSteps,
+      };
 
-      if (data?.segments) {
-        onResult(data.segments);
-      } else {
-        console.warn("Backend response did not include 'segments'");
-      }
+      const result = await robotAPI.computePCC(params);
+      onResult(result.segments);
     } catch (err) {
       console.error("Failed to submit:", err);
     } finally {
@@ -67,34 +52,49 @@ function Form({ onResult }: FormProps) {
           Soft Robot Parameters
         </h2>
 
+        <SegmentSlider
+          label="Segments"
+          value={robotState.segments}
+          onChange={(segments) => updateRobotState({ segments })}
+        />
+
         <ArrayInputGroup
           label="Bending Angles"
-          values={bendingAngles}
-          onChange={setBendingAngles}
+          values={robotState.bendingAngles}
+          onChange={(bendingAngles) => updateRobotState({ bendingAngles })}
+          mode="angle"
         />
+
         <ArrayInputGroup
           label="Rotation Angles"
-          values={rotationAngles}
-          onChange={setRotationAngles}
+          values={robotState.rotationAngles}
+          onChange={(rotationAngles) => updateRobotState({ rotationAngles })}
+          mode="angle"
         />
+
         <ArrayInputGroup
           label="Backbone Lengths"
-          values={backboneLengths}
-          onChange={setBackboneLengths}
+          values={robotState.backboneLengths}
+          onChange={(backboneLengths) => updateRobotState({ backboneLengths })}
+          mode="length"
         />
+
         <ArrayInputGroup
           label="Coupling Lengths"
-          values={couplingLengths}
-          onChange={setCouplingLengths}
+          values={robotState.couplingLengths}
+          onChange={(couplingLengths) => updateRobotState({ couplingLengths })}
+          mode="length"
         />
 
         <div className="flex flex-col gap-2">
-          <label htmlFor="discretization" className="text-sm text-neutral-600">
+          <label className="text-sm font-medium text-neutral-700">
             Discretization Steps
           </label>
           <NumberInput
-            value={discretizationSteps}
-            onChange={setDiscretizationSteps}
+            value={robotState.discretizationSteps}
+            onChange={(discretizationSteps) =>
+              updateRobotState({ discretizationSteps })
+            }
             placeholder="Discretization Steps"
             id="discretization"
           />

@@ -1,6 +1,7 @@
 from typing import List
 
 import numpy as np
+from app.utils.cache import cache_result, get_cached_result
 
 from .transformations import (
     transformation_matrix_backbone,
@@ -14,6 +15,12 @@ def compute_pcc(params: PCCParams) -> List[np.ndarray]:
     Compute the full PCC transformation chain given the input parameters.
     Returns a list of 3D points per segment.
     """
+    # Check cache first
+    cached_result = get_cached_result(params)
+    if cached_result is not None:
+        return cached_result
+
+    # If not in cache, compute normally
     bending_angles = params.bending_angles
     rotation_angles = params.rotation_angles
     backbone_lengths = params.backbone_lengths
@@ -57,4 +64,6 @@ def compute_pcc(params: PCCParams) -> List[np.ndarray]:
         T = T @ T_coupling
         T_all.append(np.array([T_start[:3, 3], T[:3, 3]]))
 
+    # Cache the result before returning
+    cache_result(params, T_all)
     return T_all
