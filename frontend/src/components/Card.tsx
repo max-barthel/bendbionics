@@ -2,7 +2,7 @@ import React from "react";
 
 type CardProps = {
   children: React.ReactNode;
-  className?: string; // allows you to override styles
+  className?: string; // allows to override styles
 };
 
 function Card({ children, className = "" }: CardProps) {
