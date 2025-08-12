@@ -1,3 +1,5 @@
+import { Badge, Typography } from "./ui";
+
 type SegmentSliderProps = {
   label: string;
   value: number;
@@ -18,12 +20,12 @@ export default function SegmentSlider({
   return (
     <div className="mb-4">
       <div className="flex items-center justify-between mb-2">
-        <label className="text-sm font-medium text-neutral-700" htmlFor={label}>
+        <Typography variant="label" color="neutral" as="label" htmlFor={label}>
           {label}
-        </label>
-        <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
+        </Typography>
+        <Badge variant="info" size="md">
           {value}
-        </span>
+        </Badge>
       </div>
 
       <div className="relative">

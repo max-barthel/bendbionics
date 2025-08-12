@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Input } from "./ui";
 
 type NumberInputProps = {
   value: number;
@@ -24,29 +25,29 @@ function NumberInput({
     }
   }, [value]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setInternalValue(val);
-
-    const parsed = parseFloat(val);
-    if (!isNaN(parsed)) {
-      onChange(parsed);
-    } else if (val === "") {
-      onChange(NaN); // allow emptiness temporarily
+  const handleChange = (newValue: string | number) => {
+    if (typeof newValue === "string") {
+      setInternalValue(newValue);
+      const parsed = parseFloat(newValue);
+      if (!isNaN(parsed)) {
+        onChange(parsed);
+      } else if (newValue === "") {
+        onChange(NaN); // allow emptiness temporarily
+      }
+    } else {
+      onChange(newValue);
     }
   };
 
   return (
-    <input
+    <Input
       id={id}
       type="text"
-      inputMode="decimal"
-      pattern="[0-9]*"
+      size="md"
       value={internalValue}
       onChange={handleChange}
       placeholder={placeholder}
       disabled={disabled}
-      className="w-full px-4 py-3 text-[15px] rounded-xl border border-neutral-300 bg-neutral-100 text-neutral-900 placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-400 transition disabled:opacity-50 max-w-fit"
     />
   );
 }

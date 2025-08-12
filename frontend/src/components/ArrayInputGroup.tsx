@@ -1,5 +1,6 @@
 import { useState } from "react";
 import NumberInput from "./NumberInput";
+import { LoadingSpinner, Typography } from "./ui";
 
 type UnitMode = "angle" | "length";
 
@@ -16,6 +17,7 @@ function ArrayInputGroup({
   onChange,
   mode = "angle",
 }: ArrayInputGroupProps) {
+  const [isUpdating, setIsUpdating] = useState(false);
   const angleUnits = ["deg", "rad"] as const;
   const lengthUnits = ["mm", "cm", "m"] as const;
 
@@ -59,10 +61,15 @@ function ArrayInputGroup({
       ? angleConversion[unit as "deg" | "rad"].fromSI(v)
       : lengthConversion[unit as "mm" | "cm" | "m"].fromSI(v);
 
-  const handleValueChange = (index: number, newDisplayValue: number) => {
+  const handleValueChange = async (index: number, newDisplayValue: number) => {
+    setIsUpdating(true);
     const updated = [...values];
     updated[index] = convertToSI(newDisplayValue);
     onChange(updated);
+
+    // Simulate processing delay for better UX
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    setIsUpdating(false);
   };
 
   const handleUnitChange = (newUnit: string) => {
@@ -72,12 +79,17 @@ function ArrayInputGroup({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-center">
-        <label
-          htmlFor={`${label}-unit-select`}
-          className="text-sm font-medium text-neutral-700"
-        >
-          {label}
-        </label>
+        <div className="flex items-center gap-2">
+          <Typography
+            variant="label"
+            color="neutral"
+            as="label"
+            htmlFor={`${label}-unit-select`}
+          >
+            {label}
+          </Typography>
+          {isUpdating && <LoadingSpinner size="sm" color="primary" />}
+        </div>
         <select
           id={`${label}-unit-select`}
           value={unit}
@@ -93,7 +105,7 @@ function ArrayInputGroup({
         </select>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-3">
         {values.map((val, idx) => (
           <NumberInput
             key={idx}
