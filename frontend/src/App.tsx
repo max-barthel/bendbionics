@@ -1,11 +1,36 @@
-import { useState } from "react";
-import Card from "./components/Card";
+import { useEffect, useState } from "react";
 import Form from "./components/Form";
-import Header from "./components/Header";
+import { Card, Header, LoadingSpinner, Typography } from "./components/ui";
 import Visualizer3D from "./components/Visualizer3D";
 
 function App() {
   const [segments, setSegments] = useState<number[][][]>([]);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  useEffect(() => {
+    // Simulate app initialization
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <LoadingSpinner size="lg" color="primary" className="mb-4" />
+          <Typography variant="h2" color="primary" className="mb-2">
+            Loading Soft Robot App
+          </Typography>
+          <Typography variant="body" color="gray">
+            Initializing components...
+          </Typography>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
