@@ -108,17 +108,26 @@ async def login(user_data: UserLogin, session: Session = Depends(get_session)):
 
 
 @router.post("/verify-email")
-async def verify_email(token: str, session: Session = Depends(get_session)):
+async def verify_email(
+    token_data: dict, session: Session = Depends(get_session)
+):
     """Verify user email with token"""
-    token_data = verify_token(token)
-    if not token_data:
+    token = token_data.get("token")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Token is required",
+        )
+
+    token_info = verify_token(token)
+    if not token_info:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired token",
         )
 
     user = session.exec(
-        select(User).where(User.email == token_data.email)
+        select(User).where(User.email == token_info.email)
     ).first()
     if not user:
         raise HTTPException(

@@ -1,7 +1,8 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
-import { AuthPage } from "./components/auth/AuthPage";
 import Form from "./components/Form";
+import { AuthPage } from "./components/auth/AuthPage";
+import { EmailVerificationPage } from "./components/auth/EmailVerificationPage";
 import { Button, LoadingSpinner, Typography } from "./components/ui";
 import { AuthProvider, useAuth } from "./providers";
 
@@ -76,6 +77,7 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/auth" element={<AuthPage />} />
+      <Route path="/verify-email" element={<EmailVerificationPage />} />
       <Route
         path="/"
         element={
