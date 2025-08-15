@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { robotAPI, type PCCParams } from "../api/client";
 import { useRobotState, type RobotState } from "../hooks/useRobotState";
 import ArrayInputGroup from "./ArrayInputGroup";
@@ -13,7 +13,11 @@ import {
 } from "./ui";
 
 type FormProps = {
-  onResult: React.Dispatch<React.SetStateAction<number[][][]>>;
+  onResult: (
+    segments: number[][][],
+    configuration: Record<string, any>
+  ) => void;
+  initialConfiguration?: Record<string, any>;
 };
 
 type ErrorType = "network" | "validation" | "server" | "unknown";
@@ -24,7 +28,7 @@ interface ErrorState {
   visible: boolean;
 }
 
-function Form({ onResult }: FormProps) {
+function Form({ onResult, initialConfiguration }: FormProps) {
   const [robotState, setRobotState] = useRobotState();
   const [loading, setLoading] = useState(false);
   const [validating, setValidating] = useState(false);
@@ -38,6 +42,28 @@ function Form({ onResult }: FormProps) {
     visible: false,
     message: "",
   });
+
+  // Load initial configuration if provided
+  useEffect(() => {
+    if (initialConfiguration) {
+      const config = initialConfiguration;
+      setRobotState({
+        segments: config.segments || 5,
+        bendingAngles: config.bendingAngles || [
+          0.628319, 0.628319, 0.628319, 0.628319, 0.628319,
+        ],
+        rotationAngles: config.rotationAngles || [0, 0, 0, 0, 0],
+        backboneLengths: config.backboneLengths || [
+          0.07, 0.07, 0.07, 0.07, 0.07,
+        ],
+        couplingLengths: config.couplingLengths || [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.03,
+        ],
+        discretizationSteps: config.discretizationSteps || 1000,
+      });
+    }
+    // If no initialConfiguration is provided, the useRobotState hook will use its own defaults
+  }, [initialConfiguration]); // Removed setRobotState from dependencies
 
   const updateRobotState = (updates: Partial<RobotState>) => {
     setRobotState((prev) => ({ ...prev, ...updates }));
@@ -166,7 +192,18 @@ function Form({ onResult }: FormProps) {
 
       const result = await robotAPI.computePCC(params);
       setComputationProgress(100);
-      onResult(result.segments);
+
+      // Create configuration object to pass back
+      const configuration = {
+        segments: robotState.segments,
+        bendingAngles: robotState.bendingAngles,
+        rotationAngles: robotState.rotationAngles,
+        backboneLengths: robotState.backboneLengths,
+        couplingLengths: robotState.couplingLengths,
+        discretizationSteps: robotState.discretizationSteps,
+      };
+
+      onResult(result.segments, configuration);
 
       // Show success notification
       setSuccessNotification({
@@ -348,15 +385,34 @@ function Form({ onResult }: FormProps) {
             </div>
           )}
 
-          <SliderInput
-            label="Segments"
-            value={robotState.segments}
-            onChange={(segments) => updateRobotState({ segments })}
-            min={1}
-            max={10}
-            step={1}
-            placeholder="Segments"
-          />
+          <div className="space-y-2">
+            <SliderInput
+              label="Segments"
+              value={robotState.segments}
+              onChange={(segments) => updateRobotState({ segments })}
+              min={1}
+              max={10}
+              step={1}
+              placeholder="Segments"
+            />
+            <div className="text-sm text-neutral-600 bg-neutral-50 p-3 rounded-lg">
+              <p className="font-medium mb-1">Robot Structure:</p>
+              <ul className="text-xs space-y-1">
+                <li>
+                  • <strong>{robotState.segments}</strong> backbone(s) +{" "}
+                  <strong>{robotState.segments + 1}</strong> coupling(s)
+                </li>
+                <li>
+                  • Each segment consists of one backbone and one coupling
+                </li>
+                <li>• The base coupling is always present (first coupling)</li>
+                <li>
+                  • Adjusting segments will automatically update all input
+                  fields below
+                </li>
+              </ul>
+            </div>
+          </div>
 
           <ArrayInputGroup
             label="Bending Angles"

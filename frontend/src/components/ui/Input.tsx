@@ -54,7 +54,7 @@ function Input({
     const val = e.target.value;
     if (type === "number") {
       const parsed = parseFloat(val);
-      onChange(isNaN(parsed) ? "" : parsed);
+      onChange(isNaN(parsed) ? val : parsed);
     } else {
       onChange(val);
     }

@@ -31,10 +31,11 @@ function NumberInput({
       const parsed = parseFloat(newValue);
       if (!isNaN(parsed)) {
         onChange(parsed);
-      } else if (newValue === "") {
-        onChange(NaN); // allow emptiness temporarily
       }
+      // Don't call onChange for invalid numbers, just update internal state
     } else {
+      // If it's already a number, use it directly
+      setInternalValue(newValue.toString());
       onChange(newValue);
     }
   };
