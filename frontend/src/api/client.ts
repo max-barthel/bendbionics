@@ -97,10 +97,31 @@ const apiClient = axios.create({
   timeout: 30000,
 });
 
-// Response interceptor for error handling
+// Request interceptor to add authentication token
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor for error handling and token management
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle 401 Unauthorized - clear token and redirect to login
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      // You might want to trigger a logout event here
+      window.location.href = '/';
+    }
+
     // Log server errors in development
     if (import.meta.env.DEV && error.response?.status === 500) {
       console.error('Server error:', error.response.data);
@@ -123,4 +144,5 @@ export const robotAPI = {
 };
 
 // Export for external use
-export { defaultRetryConfig };
+export { apiClient as client, defaultRetryConfig };
+
