@@ -92,8 +92,14 @@ async function withRetry<T>(
 }
 
 // Configure axios client
+const apiUrl = import.meta.env.VITE_API_URL;
+if (!apiUrl) {
+  console.error('VITE_API_URL environment variable is not set. Please check your .env file.');
+  throw new Error('VITE_API_URL environment variable is required');
+}
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL: apiUrl,
   timeout: 30000,
 });
 
@@ -115,11 +121,11 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized - clear token and redirect to login
+    // Handle 401 Unauthorized - clear token but don't redirect automatically
+    // Let individual components handle the error appropriately
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      // You might want to trigger a logout event here
-      window.location.href = '/';
+      // Don't automatically redirect - let the component handle it
     }
 
     // Log server errors in development
