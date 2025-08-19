@@ -19,14 +19,17 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:5173"]
 
     # Database settings
+    # Default to SQLite for development, override with DATABASE_URL for
+    # production
     database_url: str = "sqlite:///./soft_robot.db"
 
     # Authentication settings
+    # Generate a new secret key each time if not provided
     secret_key: str = secrets.token_urlsafe(32)
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
-    # Email settings
+    # Email settings (empty by default, must be set in production)
     mail_username: str = ""
     mail_password: str = ""
     mail_from: str = ""
@@ -47,6 +50,8 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        # Allow environment variables to override defaults
+        case_sensitive = False
 
 
 # Create settings instance

@@ -231,7 +231,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-3">
                       <Typography variant="h5" color="primary">
                         {preset.name}
                       </Typography>
@@ -242,11 +242,15 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
                       )}
                     </div>
                     {preset.description && (
-                      <Typography variant="body" color="gray" className="mb-2">
+                      <Typography variant="body" color="gray" className="mb-3">
                         {preset.description}
                       </Typography>
                     )}
-                    <Typography variant="body" color="gray" className="text-sm">
+                    <Typography
+                      variant="body"
+                      color="gray"
+                      className="text-sm opacity-75"
+                    >
                       Created:{" "}
                       {new Date(preset.created_at).toLocaleDateString()}
                     </Typography>

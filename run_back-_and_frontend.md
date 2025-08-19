@@ -1,4 +1,6 @@
-1. Run the FastAPI Backend
+# How to Run the program
+
+## 1. Run the FastAPI Backend
 
 Make sure you're in your backend directory, and that your virtual environment is activated:
 cd backend
@@ -11,7 +13,8 @@ If all is set up correctly, you should see:
 Uvicorn running on http://127.0.0.1:8000
 
 ---
-2. Run the React Frontend
+
+## 2. Run the React Frontend
 
 Open a second terminal, then navigate to the frontend directory:
 cd frontend
@@ -21,6 +24,7 @@ This should start the frontend on:
 http://localhost:5173
 
 ---
+
 Test Connection
 
 Open http://localhost:5173 in your browser.

@@ -25,7 +25,23 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
       // Redirect to main app after successful login
       navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Login failed. Please try again.");
+      // Handle different types of authentication errors
+      if (err.response?.status === 401) {
+        setError(
+          "Invalid email or password. Please check your credentials and try again."
+        );
+      } else if (err.response?.status === 400) {
+        setError(
+          err.response?.data?.detail ||
+            "Account is not active. Please check your email for verification."
+        );
+      } else if (err.response?.status === 0 || !err.response) {
+        setError("Network error. Please check your connection and try again.");
+      } else {
+        setError(
+          err.response?.data?.detail || "Login failed. Please try again."
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -44,8 +60,25 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {error}
+          <div className="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-md shadow-sm">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-5 w-5 text-red-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+            </div>
           </div>
         )}
 
