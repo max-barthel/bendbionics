@@ -52,25 +52,25 @@ export interface UpdatePresetRequest {
 export const authAPI = {
   // Register new user
   register: async (data: RegisterRequest): Promise<User> => {
-    const response = await client.post<User>('/auth/register', data);
+    const response = await client().post<User>('/auth/register', data);
     return response.data;
   },
 
   // Login user
   login: async (data: LoginRequest): Promise<AuthResponse> => {
-    const response = await client.post<AuthResponse>('/auth/login', data);
+    const response = await client().post<AuthResponse>('/auth/login', data);
     return response.data;
   },
 
   // Verify email
   verifyEmail: async (token: string): Promise<{ message: string }> => {
-    const response = await client.post<{ message: string }>('/auth/verify-email', { token });
+    const response = await client().post<{ message: string }>('/auth/verify-email', { token });
     return response.data;
   },
 
   // Get current user info
   getCurrentUser: async (): Promise<User> => {
-    const response = await client.get<User>('/auth/me');
+    const response = await client().get<User>('/auth/me');
     return response.data;
   },
 };
@@ -79,37 +79,37 @@ export const authAPI = {
 export const presetAPI = {
   // Get user presets
   getUserPresets: async (): Promise<Preset[]> => {
-    const response = await client.get<Preset[]>('/presets/');
+    const response = await client().get<Preset[]>('/presets/');
     return response.data;
   },
 
   // Get public presets
   getPublicPresets: async (): Promise<Preset[]> => {
-    const response = await client.get<Preset[]>('/presets/public');
+    const response = await client().get<Preset[]>('/presets/public');
     return response.data;
   },
 
   // Get specific preset
   getPreset: async (id: number): Promise<Preset> => {
-    const response = await client.get<Preset>(`/presets/${id}`);
+    const response = await client().get<Preset>(`/presets/${id}`);
     return response.data;
   },
 
   // Create new preset
   createPreset: async (data: CreatePresetRequest): Promise<Preset> => {
-    const response = await client.post<Preset>('/presets/', data);
+    const response = await client().post<Preset>('/presets/', data);
     return response.data;
   },
 
   // Update preset
   updatePreset: async (id: number, data: UpdatePresetRequest): Promise<Preset> => {
-    const response = await client.put<Preset>(`/presets/${id}`, data);
+    const response = await client().put<Preset>(`/presets/${id}`, data);
     return response.data;
   },
 
   // Delete preset
   deletePreset: async (id: number): Promise<{ message: string }> => {
-    const response = await client.delete<{ message: string }>(`/presets/${id}`);
+    const response = await client().delete<{ message: string }>(`/presets/${id}`);
     return response.data;
   },
 };
