@@ -39,3 +39,6 @@ python-decouple==3.8
 
 # Scientific computing
 numpy==1.24.3
+
+# Railway deployment
+gunicorn==21.2.0
