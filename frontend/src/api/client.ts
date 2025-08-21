@@ -91,57 +91,85 @@ async function withRetry<T>(
   throw lastError!;
 }
 
-// Configure axios client
-const apiUrl = import.meta.env.VITE_API_URL;
-if (!apiUrl) {
-  console.error('VITE_API_URL environment variable is not set. Please check your .env file.');
-  throw new Error('VITE_API_URL environment variable is required');
+// Get API URL dynamically with fallback
+function getApiUrl(): string {
+  console.log('getApiUrl called');
+  console.log('window.APP_CONFIG:', (window as any).APP_CONFIG);
+
+  // Try to get from runtime config first
+  if (typeof window !== 'undefined' && (window as any).APP_CONFIG?.API_URL) {
+    const url = (window as any).APP_CONFIG.API_URL;
+    console.log('Using APP_CONFIG API_URL:', url);
+    return url;
+  }
+
+  // Fallback to environment variable
+  if (import.meta.env.VITE_API_URL) {
+    console.log('Using VITE_API_URL:', import.meta.env.VITE_API_URL);
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // Default fallback
+  console.log('Using default API_URL: http://localhost:8000');
+  return 'http://localhost:8000';
 }
 
-const apiClient = axios.create({
-  baseURL: apiUrl,
-  timeout: 30000,
-});
+// Create axios client with retry mechanism for API URL
+function createApiClient() {
+  const apiUrl = getApiUrl();
+  console.log('Creating API client with URL:', apiUrl);
 
-// Request interceptor to add authentication token
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+  const client = axios.create({
+    baseURL: apiUrl,
+    timeout: 30000,
+  });
+
+  // Add request interceptor for authentication
+  client.interceptors.request.use(addAuthToken, (error) => Promise.reject(error));
+
+  // Add response interceptor for error handling
+  client.interceptors.response.use((response) => response, handleResponseError);
+
+  return client;
+}
+
+// Create client dynamically for each request to ensure config is loaded
+function getApiClient() {
+  return createApiClient();
+}
+
+// Helper function to add authentication token to requests
+function addAuthToken(config: any) {
+  const token = localStorage.getItem('token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+}
 
-// Response interceptor for error handling and token management
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Handle 401 Unauthorized - clear token but don't redirect automatically
-    // Let individual components handle the error appropriately
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      // Don't automatically redirect - let the component handle it
-    }
-
-    // Log server errors in development
-    if (import.meta.env.DEV && error.response?.status === 500) {
-      console.error('Server error:', error.response.data);
-    }
-    return Promise.reject(error);
+// Helper function to handle response errors
+function handleResponseError(error: any) {
+  // Handle 401 Unauthorized - clear token but don't redirect automatically
+  // Let individual components handle the error appropriately
+  if (error.response?.status === 401) {
+    localStorage.removeItem('token');
+    // Don't automatically redirect - let the component handle it
   }
-);
+
+  // Log server errors in development
+  if (import.meta.env.DEV && error.response?.status === 500) {
+    console.error('Server error:', error.response.data);
+  }
+  return Promise.reject(error);
+}
 
 // API methods with retry support
 export const robotAPI = {
   computePCC: async (params: PCCParams, retryConfig?: Partial<RetryConfig>): Promise<PCCResponse> => {
     return withRetry(
       async () => {
-        const response = await apiClient.post('/pcc', params);
+        const client = getApiClient();
+        const response = await client.post('/pcc', params);
         return response.data as PCCResponse;
       },
       retryConfig
@@ -150,5 +178,5 @@ export const robotAPI = {
 };
 
 // Export for external use
-export { apiClient as client, defaultRetryConfig };
+export { getApiClient as client, defaultRetryConfig };
 
