@@ -2,7 +2,7 @@
 
 # Generate runtime configuration with cache bust
 # Get API URL from environment variable or use default
-API_URL=${RAILWAY_STATIC_URL:-http://localhost:8000}
+API_URL=${VITE_API_URL:-http://localhost:8000}
 
 cat > /usr/share/nginx/html/config.js << EOF
 // Cache bust: $(date +%s)
