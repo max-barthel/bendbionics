@@ -1,5 +1,6 @@
 from app.config import settings
 from sqlmodel import Session, SQLModel, create_engine
+import psycopg2  # noqa: F401
 
 # Create database engine
 engine = create_engine(
@@ -10,6 +11,8 @@ engine = create_engine(
         if "sqlite" in settings.database_url
         else {}
     ),
+    # Force PostgreSQL dialect
+    pool_pre_ping=True,
 )
 
 

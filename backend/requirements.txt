@@ -34,6 +34,8 @@ fastapi-mail==1.4.1
 # Database
 alembic==1.13.1
 psycopg2-binary==2.9.9
+psycopg2==2.9.9
+asyncpg==0.29.0
 # Environment variables
 python-decouple==3.8
 
