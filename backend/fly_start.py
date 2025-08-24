@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Render startup script for the Soft Robot API
-Handles port configuration and environment setup for Render deployment
+Fly.io startup script for the Soft Robot API
+Handles port configuration and environment setup for Fly.io deployment
 """
 
 import os
@@ -9,10 +9,10 @@ import os
 import uvicorn
 
 if __name__ == "__main__":
-    # Render provides PORT environment variable
+    # Fly.io provides PORT environment variable
     port = int(os.environ.get("PORT", 8000))
 
-    # Get host from environment or default to 0.0.0.0 for Render
+    # Get host from environment or default to 0.0.0.0 for Fly.io
     host = os.environ.get("HOST", "0.0.0.0")
 
     print(f"Starting Soft Robot API on {host}:{port}")
