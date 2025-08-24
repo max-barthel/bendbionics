@@ -3,7 +3,6 @@ services:
   - type: web
     name: soft-robot-backend
     env: python
-    plan: free
     buildCommand: pip install -r backend/requirements.txt
     startCommand: cd backend && python render_start.py
     envVars:
@@ -22,7 +21,6 @@ services:
   - type: web
     name: soft-robot-frontend
     env: static
-    plan: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     envVars:
