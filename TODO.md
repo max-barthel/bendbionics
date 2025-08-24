@@ -17,7 +17,7 @@
 - [x] Create docker-compose.yml for local production testing
 - [x] Set up reverse proxy (nginx) - configured in frontend Dockerfile
 - [x] Configure production database with proper credentials - using PostgreSQL with host.docker.internal
-- [x] Set up production server (Render) - configuration files created with Blueprint
+- [x] Set up production server (Fly.io) - configuration files created with CLI deployment
 - [ ] Configure domain and SSL certificates
 
 ### Security & Production Hardening
