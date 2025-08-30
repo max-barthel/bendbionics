@@ -1,0 +1,9 @@
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/release/deps/core_graphics_types-febfafbd9b15b1c1.d: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/core-graphics-types-0.1.3/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/core-graphics-types-0.1.3/src/base.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/core-graphics-types-0.1.3/src/geometry.rs
+
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/release/deps/libcore_graphics_types-febfafbd9b15b1c1.rlib: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/core-graphics-types-0.1.3/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/core-graphics-types-0.1.3/src/base.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/core-graphics-types-0.1.3/src/geometry.rs
+
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/release/deps/libcore_graphics_types-febfafbd9b15b1c1.rmeta: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/core-graphics-types-0.1.3/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/core-graphics-types-0.1.3/src/base.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/core-graphics-types-0.1.3/src/geometry.rs
+
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/core-graphics-types-0.1.3/src/lib.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/core-graphics-types-0.1.3/src/base.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/core-graphics-types-0.1.3/src/geometry.rs:

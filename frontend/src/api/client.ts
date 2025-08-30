@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { tauriClient } from './tauri-client';
 
 // Define the PCCParams type to match backend
 export interface PCCParams {
@@ -93,14 +94,23 @@ async function withRetry<T>(
 
 // Get API URL dynamically with fallback
 function getApiUrl(): string {
-  console.log('getApiUrl called');
-  console.log('window.APP_CONFIG:', (window as any).APP_CONFIG);
+  // For desktop app, API is served from the same origin
+  if (typeof window !== 'undefined') {
+    // Check if we're running in the desktop app (same origin)
+    const currentOrigin = window.location.origin;
 
-  // Try to get from runtime config first
-  if (typeof window !== 'undefined' && (window as any).APP_CONFIG?.API_URL) {
-    const url = (window as any).APP_CONFIG.API_URL;
-    console.log('Using APP_CONFIG API_URL:', url);
-    return url;
+    // If we're running locally or in the desktop app, use relative URLs
+    if (currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1')) {
+      console.log('Using relative API URL for desktop app');
+      return ''; // Empty string means same origin
+    }
+
+    // For web deployment, use the configured API URL
+    if ((window as any).APP_CONFIG?.API_URL) {
+      const url = (window as any).APP_CONFIG.API_URL;
+      console.log('Using APP_CONFIG API_URL:', url);
+      return url;
+    }
   }
 
   // Fallback to environment variable
@@ -109,9 +119,9 @@ function getApiUrl(): string {
     return import.meta.env.VITE_API_URL;
   }
 
-  // Default fallback
-  console.log('Using default API_URL: http://localhost:8000');
-  return 'http://localhost:8000';
+  // Default fallback for desktop app
+  console.log('Using relative API URL for desktop app');
+  return '';
 }
 
 // Create axios client with retry mechanism for API URL
@@ -168,9 +178,19 @@ export const robotAPI = {
   computePCC: async (params: PCCParams, retryConfig?: Partial<RetryConfig>): Promise<PCCResponse> => {
     return withRetry(
       async () => {
-        const client = getApiClient();
-        const response = await client.post('/pcc', params);
-        return response.data as PCCResponse;
+        // Use Tauri client for desktop app, fallback to axios for web
+        if (typeof window !== 'undefined' && (window as any).__TAURI__) {
+          const response = await tauriClient.post<PCCResponse>('/pcc', params);
+          if (!response.success) {
+            throw new Error(response.error || 'API call failed');
+          }
+          return response.data as PCCResponse;
+        } else {
+          // Fallback to axios for web development
+          const client = getApiClient();
+          const response = await client.post('/pcc', params);
+          return response.data as PCCResponse;
+        }
       },
       retryConfig
     );

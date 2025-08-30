@@ -1,0 +1,19 @@
+[package]
+name = "soft-robot-app"
+version = "0.1.0"
+description = "Soft Robot Simulator Desktop Application"
+authors = ["Your Name"]
+edition = "2021"
+rust-version = "1.70"
+
+[build-dependencies]
+tauri-build = { version = "1.5", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.5", features = [ "http-all"] }
+reqwest = { version = "0.11", features = ["json"] }
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]

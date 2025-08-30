@@ -1,0 +1,10 @@
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/release/deps/idna-71179de9925de16b.d: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/deprecated.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/punycode.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/uts46.rs
+
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/release/deps/libidna-71179de9925de16b.rlib: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/deprecated.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/punycode.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/uts46.rs
+
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/release/deps/libidna-71179de9925de16b.rmeta: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/deprecated.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/punycode.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/uts46.rs
+
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/lib.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/deprecated.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/punycode.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/idna-1.1.0/src/uts46.rs:
