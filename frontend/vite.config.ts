@@ -5,6 +5,21 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    watch: {
+      ignored: [
+        '**/src-tauri/target/**',
+        '**/src-tauri/Cargo.lock',
+        '**/node_modules/**',
+        '**/.git/**',
+        '**/*.log',
+        '**/*.tmp',
+        '**/*.temp',
+        '**/.DS_Store',
+        '**/Thumbs.db'
+      ]
+    }
+  },
   build: {
     rollupOptions: {
       output: {

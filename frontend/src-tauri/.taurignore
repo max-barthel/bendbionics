@@ -1,0 +1,28 @@
+# Build artifacts
+target/
+Cargo.lock
+*.log
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Rust specific
+**/target/
+**/Cargo.lock
+**/*.rlib
+**/*.rmeta
+**/*.d
+
+# Temporary files
+**/*.tmp
+**/*.temp
+**/*.bak

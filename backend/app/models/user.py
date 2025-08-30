@@ -9,9 +9,10 @@ if TYPE_CHECKING:
 
 
 class UserBase(SQLModel):
-    email: EmailStr = Field(unique=True, index=True)
-    is_active: bool = Field(default=False)
-    is_verified: bool = Field(default=False)
+    username: str = Field(unique=True, index=True)
+    email: Optional[EmailStr] = Field(default=None, unique=True, index=True)
+    # Local users don't need email verification
+    is_local: bool = Field(default=True)
 
 
 class User(UserBase, table=True):
@@ -25,20 +26,21 @@ class User(UserBase, table=True):
 
 
 class UserCreate(SQLModel):
-    email: EmailStr
+    username: str
     password: str
+    email: Optional[EmailStr] = None
 
 
 class UserLogin(SQLModel):
-    email: EmailStr
+    username: str
     password: str
 
 
 class UserResponse(SQLModel):
     id: int
-    email: EmailStr
-    is_active: bool
-    is_verified: bool
+    username: str
+    email: Optional[EmailStr] = None
+    is_local: bool
     created_at: datetime
 
 
@@ -48,4 +50,4 @@ class Token(SQLModel):
 
 
 class TokenData(SQLModel):
-    email: Optional[str] = None
+    username: Optional[str] = None

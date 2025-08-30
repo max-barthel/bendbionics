@@ -11,24 +11,31 @@ struct ApiResponse {
 }
 
 #[tauri::command]
-async fn call_backend_api(endpoint: String, data: Option<serde_json::Value>) -> Result<ApiResponse, String> {
+async fn call_backend_api(endpoint: String, data: Option<serde_json::Value>, auth_token: Option<String>) -> Result<ApiResponse, String> {
     let client = reqwest::Client::new();
     let url = format!("http://localhost:8000{}", endpoint);
 
-    let response = if let Some(request_data) = data {
+    let mut request_builder = if data.is_some() {
         client.post(&url)
-            .json(&request_data)
-            .send()
-            .await
     } else {
         client.get(&url)
-            .send()
-            .await
+    };
+
+    // Add authentication header if provided
+    if let Some(token) = auth_token {
+        request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
+    }
+
+    let response = if let Some(request_data) = data {
+        request_builder.json(&request_data).send().await
+    } else {
+        request_builder.send().await
     };
 
     match response {
         Ok(resp) => {
-            if resp.status().is_success() {
+            let status = resp.status();
+            if status.is_success() {
                 let data = resp.json::<serde_json::Value>().await.map_err(|e| e.to_string())?;
                 Ok(ApiResponse {
                     success: true,
@@ -36,18 +43,21 @@ async fn call_backend_api(endpoint: String, data: Option<serde_json::Value>) -> 
                     error: None,
                 })
             } else {
+                let error_text = resp.text().await.unwrap_or_default();
                 Ok(ApiResponse {
                     success: false,
                     data: None,
-                    error: Some(format!("HTTP {}: {}", resp.status(), resp.text().await.unwrap_or_default())),
+                    error: Some(format!("HTTP {}: {}", status, error_text)),
                 })
             }
         }
-        Err(e) => Ok(ApiResponse {
-            success: false,
-            data: None,
-            error: Some(e.to_string()),
-        }),
+        Err(e) => {
+            Ok(ApiResponse {
+                success: false,
+                data: None,
+                error: Some(e.to_string()),
+            })
+        },
     }
 }
 

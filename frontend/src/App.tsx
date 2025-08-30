@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import Form from "./components/Form";
 import { AuthPage } from "./components/auth/AuthPage";
-import { EmailVerificationPage } from "./components/auth/EmailVerificationPage";
+
 import { Button, LoadingSpinner, Typography } from "./components/ui";
 import { AuthProvider, useAuth } from "./providers";
 
@@ -77,7 +77,7 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/auth" element={<AuthPage />} />
-      <Route path="/verify-email" element={<EmailVerificationPage />} />
+
       <Route
         path="/"
         element={
@@ -94,11 +94,6 @@ function AppContent() {
                         <Typography variant="body" color="white">
                           Welcome, {user.email}
                         </Typography>
-                        {!user.is_verified && (
-                          <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
-                            Email not verified
-                          </span>
-                        )}
                       </>
                     ) : (
                       <div className="flex items-center gap-2">
@@ -112,6 +107,7 @@ function AppContent() {
                     )}
                   </div>
                 </div>
+
                 <div className="flex items-center gap-2">
                   {user && (
                     <Button

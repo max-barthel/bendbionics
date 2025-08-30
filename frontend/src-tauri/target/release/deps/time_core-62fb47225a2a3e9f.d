@@ -1,0 +1,10 @@
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/release/deps/time_core-62fb47225a2a3e9f.d: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/convert.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/hint.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/util.rs
+
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/release/deps/libtime_core-62fb47225a2a3e9f.rlib: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/convert.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/hint.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/util.rs
+
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/release/deps/libtime_core-62fb47225a2a3e9f.rmeta: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/convert.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/hint.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/util.rs
+
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/lib.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/convert.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/hint.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/time-core-0.1.4/src/util.rs:
