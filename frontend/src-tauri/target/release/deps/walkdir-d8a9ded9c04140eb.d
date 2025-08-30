@@ -1,0 +1,10 @@
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/release/deps/walkdir-d8a9ded9c04140eb.d: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/dent.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/error.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/util.rs
+
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/release/deps/libwalkdir-d8a9ded9c04140eb.rlib: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/dent.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/error.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/util.rs
+
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/release/deps/libwalkdir-d8a9ded9c04140eb.rmeta: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/dent.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/error.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/util.rs
+
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/lib.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/dent.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/error.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/walkdir-2.5.0/src/util.rs:

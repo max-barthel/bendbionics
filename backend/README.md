@@ -2,55 +2,47 @@
 
 A FastAPI-based backend for soft robot simulation and control.
 
-## Test Coverage
+## Features
 
-This project has comprehensive test coverage with **100% code coverage** across all modules.
+- **PCC Model**: Piecewise Constant Curvature robot simulation
+- **Caching**: Intelligent caching for performance optimization
+- **Authentication**: JWT-based user authentication
+- **Email Verification**: Optional email verification system
+- **Preset Management**: Save and load robot configurations
+- **Comprehensive Testing**: Full test suite with 82 test cases
 
-### Running Tests with Coverage
+## API Endpoints
 
-#### Using pytest directly:
+- `POST /pcc` - Compute robot kinematics
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User authentication
+- `POST /presets` - Save robot presets
+- `GET /presets` - Load user presets
+
+## Development
+
+### Setup
 
 ```bash
-# Run all tests with coverage
-python -m pytest --cov=app --cov-report=term-missing --cov-report=html:htmlcov
+# Install dependencies
+pip install -r requirements.txt
 
-# Run specific test files
-python -m pytest tests/test_config.py --cov=app --cov-report=term-missing
+# Run development server
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-#### Using the coverage script:
+### Testing
 
 ```bash
-# Generate all coverage reports (terminal, HTML, XML)
-python run_coverage.py --all
+# Run all tests
+python -m pytest
 
-# Generate only terminal report
-python run_coverage.py --term
+# Run specific test file
+python -m pytest tests/test_pcc.py
 
-# Generate only HTML report
-python run_coverage.py --html
-
-# Generate only XML report
-python run_coverage.py --xml
-
-# Set custom coverage threshold (default: 80%)
-python run_coverage.py --fail-under=90
+# Run with coverage
+python -m pytest --cov=app --cov-report=term-missing
 ```
-
-### Coverage Reports
-
-- **Terminal Report**: Shows coverage summary in the terminal
-- **HTML Report**: Detailed HTML report in `htmlcov/index.html`
-- **XML Report**: Coverage data in `coverage.xml` for CI/CD integration
-
-### Coverage Configuration
-
-Coverage settings are configured in `pyproject.toml`:
-
-- Source: `app` directory
-- Excluded: test files, cache directories, virtual environments
-- Minimum coverage: 80%
-- Report formats: terminal, HTML, XML
 
 ### Test Structure
 
@@ -64,31 +56,6 @@ tests/
 └── test_pcc.py           # PCC model tests
 ```
 
-### Coverage Statistics
+## API Documentation
 
-- **Total Coverage**: 100%
-- **Total Statements**: 181
-- **Test Files**: 6
-- **Test Cases**: 82
-
-All modules have 100% coverage:
-
-- `app/api/routes.py`: 100%
-- `app/config.py`: 100%
-- `app/main.py`: 100%
-- `app/models/pcc/`: 100%
-- `app/utils/`: 100%
-
-### Integration Tests
-
-The integration tests (`test_integration.py`) provide comprehensive end-to-end testing of the complete API workflow:
-
-- **Complete Workflow**: Tests the full request-response cycle
-- **Caching Behavior**: Verifies cache functionality and performance
-- **Error Handling**: Tests various error scenarios and edge cases
-- **Performance**: Validates response times for different payload sizes
-- **Concurrency**: Tests handling of concurrent requests
-- **CORS**: Verifies CORS headers and preflight requests
-- **API Documentation**: Ensures documentation endpoints are accessible
-- **Edge Cases**: Tests with extreme parameter values
-- **Large Payloads**: Validates handling of complex requests
+Visit `http://localhost:8000/docs` for interactive API documentation.

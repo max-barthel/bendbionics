@@ -1,0 +1,8 @@
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/debug/deps/serde_with_macros-03b1c91dbf7dcb05.d: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_with_macros-3.14.0/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_with_macros-3.14.0/src/apply.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_with_macros-3.14.0/src/lazy_bool.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_with_macros-3.14.0/src/utils.rs
+
+/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/debug/deps/libserde_with_macros-03b1c91dbf7dcb05.dylib: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_with_macros-3.14.0/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_with_macros-3.14.0/src/apply.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_with_macros-3.14.0/src/lazy_bool.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_with_macros-3.14.0/src/utils.rs
+
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_with_macros-3.14.0/src/lib.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_with_macros-3.14.0/src/apply.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_with_macros-3.14.0/src/lazy_bool.rs:
+/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_with_macros-3.14.0/src/utils.rs:
