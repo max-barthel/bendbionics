@@ -48,10 +48,10 @@ def verify_token(token: str) -> Optional[TokenData]:
         payload = jwt.decode(
             token, settings.secret_key, algorithms=[settings.algorithm]
         )
-        email: str = payload.get("sub")
-        if email is None:
+        username: str = payload.get("sub")
+        if username is None:
             return None
-        return TokenData(email=email)
+        return TokenData(username=username)
     except JWTError:
         return None
 
@@ -70,7 +70,7 @@ def get_current_user(
         )
 
     user = session.exec(
-        select(User).where(User.email == token_data.email)
+        select(User).where(User.username == token_data.username)
     ).first()
     if user is None:
         raise HTTPException(
@@ -79,19 +79,14 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
-        )
-
     return user
 
 
 def authenticate_user(
-    session: Session, email: str, password: str
+    session: Session, username: str, password: str
 ) -> Optional[User]:
-    """Authenticate user with email and password"""
-    user = session.exec(select(User).where(User.email == email)).first()
+    """Authenticate user with username and password"""
+    user = session.exec(select(User).where(User.username == username)).first()
     if not user:
         return None
     if not verify_password(password, user.hashed_password):

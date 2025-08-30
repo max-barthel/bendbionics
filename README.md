@@ -23,13 +23,13 @@ A modern desktop application for simulating soft robot kinematics using the Piec
 
 1. **Backend**: `cd backend && pip install -r requirements.txt`
 2. **Frontend**: `cd frontend && npm install`
-3. **Run**: `./dev-tauri.sh` (starts backend and Tauri development)
+3. **Run**: `./dev.sh` (starts backend and Tauri development)
 
 ### Production Build
 
 ```bash
 # Build desktop app
-./build-tauri.sh
+./build.sh
 ```
 
 ## API Documentation

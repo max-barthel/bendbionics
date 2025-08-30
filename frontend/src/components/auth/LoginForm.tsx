@@ -10,7 +10,7 @@ interface LoginFormProps {
 export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -21,14 +21,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     setIsLoading(true);
 
     try {
-      await login({ email, password });
+      await login({ username, password });
       // Redirect to main app after successful login
       navigate("/");
     } catch (err: any) {
+      // Show error in desktop app
+      const errorMessage = err.message || "Login failed";
+
       // Handle different types of authentication errors
       if (err.response?.status === 401) {
         setError(
-          "Invalid email or password. Please check your credentials and try again."
+          "Invalid username or password. Please check your credentials and try again."
         );
       } else if (err.response?.status === 400) {
         setError(
@@ -84,17 +87,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
 
         <div>
           <label
-            htmlFor="email"
+            htmlFor="username"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Email
+            Username
           </label>
           <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(value) => setEmail(String(value))}
-            placeholder="Enter your email"
+            id="username"
+            type="text"
+            value={username}
+            onChange={(value) => setUsername(String(value))}
+            placeholder="Enter your username"
             className="w-full"
           />
         </div>

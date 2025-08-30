@@ -12,6 +12,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 }) => {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -39,11 +40,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     setIsLoading(true);
 
     try {
-      await register({ email, password });
-      setSuccess(
-        "Registration successful! Please check your email to verify your account."
-      );
+      await register({ username, password, email: email || undefined });
+      setSuccess("Registration successful! You can now save your settings.");
     } catch (err: any) {
+      // Show error in desktop app
+      const errorMessage = err.message || "Registration failed";
+      alert(`Registration Error: ${errorMessage}`);
+
       // Handle different types of registration errors
       if (err.response?.status === 400) {
         setError(
@@ -52,7 +55,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         );
       } else if (err.response?.status === 409) {
         setError(
-          "An account with this email already exists. Please try logging in instead."
+          "An account with this username already exists. Please try logging in instead."
         );
       } else if (err.response?.status === 0 || !err.response) {
         setError("Network error. Please check your connection and try again.");
@@ -118,19 +121,39 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
         <div>
           <label
+            htmlFor="username"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Username *
+          </label>
+          <Input
+            id="username"
+            type="text"
+            value={username}
+            onChange={(value) => setUsername(String(value))}
+            placeholder="Choose a username"
+            className="w-full"
+          />
+        </div>
+
+        <div>
+          <label
             htmlFor="email"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Email
+            Email (Optional)
           </label>
           <Input
             id="email"
             type="email"
             value={email}
             onChange={(value) => setEmail(String(value))}
-            placeholder="Enter your email"
+            placeholder="Enter your email (optional)"
             className="w-full"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Optional - for cloud sync across devices
+          </p>
         </div>
 
         <div>

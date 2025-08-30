@@ -1,5 +1,7 @@
 import { invoke } from '@tauri-apps/api/tauri';
 
+
+
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
@@ -8,32 +10,43 @@ export interface ApiResponse<T = any> {
 
 export class TauriApiClient {
 
+  private getAuthToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
   async get<T>(endpoint: string): Promise<ApiResponse<T>> {
     try {
       const response = await invoke<ApiResponse<T>>('call_backend_api', {
         endpoint,
-        data: null
+        data: null,
+        auth_token: this.getAuthToken()
       });
+
       return response;
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: errorMsg
       };
     }
   }
+
+
 
   async post<T>(endpoint: string, data: any): Promise<ApiResponse<T>> {
     try {
       const response = await invoke<ApiResponse<T>>('call_backend_api', {
         endpoint,
-        data
+        data,
+        auth_token: this.getAuthToken()
       });
       return response;
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: errorMsg
       };
     }
   }

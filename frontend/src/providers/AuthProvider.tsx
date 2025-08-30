@@ -9,7 +9,6 @@ interface AuthContextType {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
-  verifyEmail: (token: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,13 +52,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (data: LoginRequest) => {
     try {
       const response = await authAPI.login(data);
-      const { access_token } = response;
+      const { access_token, user: userData } = response;
 
       localStorage.setItem("token", access_token);
       setToken(access_token);
-
-      // Get user data
-      const userData = await authAPI.getCurrentUser();
       setUser(userData);
     } catch (error) {
       throw error;
@@ -70,7 +66,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const userData = await authAPI.register(data);
       setUser(userData);
-      // Note: User needs to verify email before they can login
+      // Auto-login after registration for local users
+      if (userData.is_local) {
+        const loginData = { username: data.username, password: data.password };
+        await login(loginData);
+      }
     } catch (error) {
       throw error;
     }
@@ -82,15 +82,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(null);
   };
 
-  const verifyEmail = async (token: string) => {
-    try {
-      await authAPI.verifyEmail(token);
-      // Optionally auto-login the user after verification
-    } catch (error) {
-      throw error;
-    }
-  };
-
   const value: AuthContextType = {
     user,
     token,
@@ -98,7 +89,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     login,
     register,
     logout,
-    verifyEmail,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

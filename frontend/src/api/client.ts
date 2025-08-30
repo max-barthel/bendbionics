@@ -101,33 +101,28 @@ function getApiUrl(): string {
 
     // If we're running locally or in the desktop app, use relative URLs
     if (currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1')) {
-      console.log('Using relative API URL for desktop app');
       return ''; // Empty string means same origin
     }
 
     // For web deployment, use the configured API URL
     if ((window as any).APP_CONFIG?.API_URL) {
       const url = (window as any).APP_CONFIG.API_URL;
-      console.log('Using APP_CONFIG API_URL:', url);
       return url;
     }
   }
 
   // Fallback to environment variable
   if (import.meta.env.VITE_API_URL) {
-    console.log('Using VITE_API_URL:', import.meta.env.VITE_API_URL);
     return import.meta.env.VITE_API_URL;
   }
 
   // Default fallback for desktop app
-  console.log('Using relative API URL for desktop app');
   return '';
 }
 
 // Create axios client with retry mechanism for API URL
 function createApiClient() {
   const apiUrl = getApiUrl();
-  console.log('Creating API client with URL:', apiUrl);
 
   const client = axios.create({
     baseURL: apiUrl,
