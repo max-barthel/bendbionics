@@ -31,10 +31,10 @@ export function useRobotState() {
     const couplingCount = segments + 1; // Couplings are one more than backbones (includes base coupling)
 
     // Default values for new elements
-    const defaultBendingAngle = 0; // in radians
+    const defaultBendingAngle = 0.628319; // in radians
     const defaultRotationAngle = 0; // in radians
-    const defaultBackboneLength = 0; // in meters
-    const defaultCouplingLength = 0; // in meters
+    const defaultBackboneLength = 0.07; // in meters
+    const defaultCouplingLength = 0.03; // in meters
 
     const updates: Partial<RobotState> = {};
 
@@ -97,13 +97,26 @@ export function useRobotState() {
     setState((prevState) => {
       const updatedState = typeof newState === 'function' ? newState(prevState) : newState;
 
+      // Ensure all arrays exist before adjusting
+      const completeState = {
+        ...prevState,
+        ...updatedState,
+        bendingAngles: updatedState.bendingAngles || prevState.bendingAngles,
+        rotationAngles: updatedState.rotationAngles || prevState.rotationAngles,
+        backboneLengths: updatedState.backboneLengths || prevState.backboneLengths,
+        couplingLengths: updatedState.couplingLengths || prevState.couplingLengths,
+      };
+
+      // Validate segments range
+      const validatedSegments = Math.max(1, Math.min(10, completeState.segments));
+
       // If segments changed, adjust the arrays accordingly
-      if (updatedState.segments !== prevState.segments) {
-        const arrayUpdates = adjustArraysForSegments(updatedState.segments, updatedState);
-        return { ...updatedState, ...arrayUpdates };
+      if (validatedSegments !== prevState.segments) {
+        const arrayUpdates = adjustArraysForSegments(validatedSegments, completeState);
+        return { ...completeState, segments: validatedSegments, ...arrayUpdates };
       }
 
-      return updatedState;
+      return completeState;
     });
   };
 

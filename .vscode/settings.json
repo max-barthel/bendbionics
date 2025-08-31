@@ -1,53 +1,20 @@
 {
-  // Python settings
-  "python.defaultInterpreterPath": "backend/.venv/bin/python",
-  "python.venvPath": "./backend/.venv",
-  "python.languageServer": "None",
-  "python.linting.enabled": true,
-  "python.linting.flake8Enabled": true,
-  "python.linting.pylintEnabled": true,
-  "python.formatting.provider": "black",
-  "python.formatting.blackArgs": ["--line-length=79"],
-  "python.sortImports.args": ["--profile=black"],
-  "python.analysis.typeCheckingMode": "basic",
-  "python.analysis.autoImportCompletions": true,
-  "python.analysis.autoSearchPaths": true,
-  "python.analysis.diagnosticMode": "workspace",
-  "python.analysis.stubPath": "./typings",
-  "python.analysis.extraPaths": ["./backend"],
-
-  "[python]": {
-    "editor.tabSize": 4,
-    "editor.insertSpaces": true,
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
-    }
-  },
-
-  // HTML, CSS, TypeScript, JavaScript, JSX/TSX: 2 spaces
-  "[html]": {
-    "editor.tabSize": 2,
-    "editor.insertSpaces": true
-  },
-  "[css]": {
-    "editor.tabSize": 2,
-    "editor.insertSpaces": true
-  },
-  "[typescript]": {
-    "editor.tabSize": 2,
-    "editor.insertSpaces": true
-  },
-  "[typescriptreact]": {
-    "editor.tabSize": 2,
-    "editor.insertSpaces": true
-  },
-  "[javascript]": {
-    "editor.tabSize": 2,
-    "editor.insertSpaces": true
-  },
-  "[javascriptreact]": {
-    "editor.tabSize": 2,
-    "editor.insertSpaces": true
-  }
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
+  "python.testing.pytestArgs": ["tests"],
+  "python.defaultInterpreterPath": "./backend/.venv/bin/python",
+  "python.testing.cwd": "${workspaceFolder}/backend",
+  "python.testing.autoTestDiscoverOnSaveEnabled": true,
+  "vitest.enable": true,
+  "vitest.commandLine": "npm run test",
+  "vitest.include": [
+    "frontend/src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"
+  ],
+  "vitest.workspaceRoot": "frontend",
+  "testing.automaticallyOpenPeekView": "never",
+  "testing.followRunningTest": true,
+  "testing.gutterEnabled": true,
+  "testing.openTesting": "openExplorer",
+  "testing.automaticallyOpenTestResults": "openExplorer"
 }

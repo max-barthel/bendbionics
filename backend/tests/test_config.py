@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pytest
 from app.config import LogLevel, Settings
+from pydantic import ValidationError
 
 
 class TestLogLevel:
@@ -123,8 +124,9 @@ class TestSettings:
     def test_cors_origins_validation_whitespace_only(self):
         """Test that whitespace-only CORS origins raises an error."""
         with patch.dict(os.environ, {"CORS_ORIGINS": '["   "]'}):
-            # Should not raise error as it's a valid JSON array with 1 element
-            Settings()
+            # Should raise error as whitespace-only strings are invalid
+            with pytest.raises(ValidationError):
+                Settings()
 
     def test_cors_origins_validation_single_origin(self):
         """Test that single CORS origin is handled correctly."""
