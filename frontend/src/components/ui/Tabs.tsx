@@ -19,17 +19,29 @@ export function Tabs({
   onTabChange,
   className = "",
 }: TabsProps) {
+  const activeIndex = tabs.findIndex((tab) => tab.id === activeTab);
+  const tabWidth = 100 / tabs.length;
+
   return (
-    <div className={`border-b border-gray-200/60 ${className}`}>
-      <div className="flex w-full overflow-hidden">
+    <div className={`border-b border-gray-200/60 h-10 ${className}`}>
+      <div className="flex w-full overflow-hidden h-full relative">
+        {/* Sliding highlight background using CSS custom properties */}
+        <div
+          className="absolute top-0 h-full bg-gradient-to-r from-blue-50/80 to-indigo-50/60 border-b-2 border-blue-500 transition-all duration-300 ease-in-out"
+          style={{
+            left: `${activeIndex * tabWidth}%`,
+            width: `${tabWidth}%`,
+          }}
+        />
+
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`flex items-center justify-center gap-0 px-1 py-2 text-xs font-medium border-b-2 transition-all duration-200 flex-1 ${
+            className={`flex items-center justify-center gap-0 px-1 py-2 text-xs font-medium border-b-2 border-transparent transition-colors duration-200 flex-1 h-full relative z-10 ${
               activeTab === tab.id
-                ? "border-blue-500 text-blue-600 bg-gradient-to-r from-blue-50/80 to-indigo-50/60 shadow-sm"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50/50"
+                ? "text-blue-600"
+                : "text-gray-500 hover:text-gray-700"
             }`}
           >
             {tab.icon && <span className="w-3 h-3">{tab.icon}</span>}

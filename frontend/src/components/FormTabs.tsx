@@ -243,20 +243,17 @@ function FormTabs({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b border-gray-200/60 bg-gradient-to-r from-blue-50/50 to-indigo-50/50">
-        <Typography variant="h2" color="primary" className="font-semibold">
-          Parameters
-        </Typography>
-        {validating && (
+      {validating && (
+        <div className="flex items-center justify-end p-4 border-b border-gray-200/60 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 flex-shrink-0">
           <div className="flex items-center gap-2 text-sm text-blue-600">
             <LoadingSpinner size="sm" color="primary" />
             <span>Validating...</span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {error.visible && (
-        <div className="mx-6 mt-4 p-4 border-l-4 bg-red-50 border-red-400 text-red-800">
+        <div className="mx-6 mt-4 p-4 border-l-4 bg-red-50 border-red-400 text-red-800 flex-shrink-0">
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <svg
@@ -296,10 +293,10 @@ function FormTabs({
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        className="px-4"
+        className="px-4 flex-shrink-0"
       />
 
-      <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-white/50 to-gray-50/30">
+      <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-white/50 to-gray-50/30 min-h-0">
         <TabPanel id="basic" activeTab={activeTab}>
           <div className="space-y-4">
             <div>
@@ -423,12 +420,34 @@ function FormTabs({
               step={100}
               placeholder="Steps"
             />
-            <div className="text-sm text-neutral-600 bg-gradient-to-r from-blue-50/60 to-indigo-50/60 p-3 border border-blue-100/40">
-              <p className="font-medium mb-1">Discretization:</p>
-              <p className="text-xs">
-                Higher values provide smoother curves but require more
-                computation time.
-              </p>
+            <div className="mt-4 p-4 bg-gradient-to-br from-blue-50/80 via-indigo-50/60 to-purple-50/40 border border-blue-200/40 rounded-lg shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-3 h-3 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                </div>
+                <p className="font-semibold text-blue-900">Discretization</p>
+              </div>
+              <ul className="text-sm space-y-2 text-blue-800/80">
+                <li className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                  <span>
+                    Higher values provide smoother curves but require more
+                    computation time
+                  </span>
+                </li>
+              </ul>
             </div>
           </div>
         </TabPanel>
@@ -481,6 +500,7 @@ function FormTabs({
                 </Typography>
                 <Button
                   variant="primary"
+                  size="lg"
                   onClick={() => navigate?.("/auth")}
                   className="w-full max-w-xs"
                 >
@@ -492,7 +512,7 @@ function FormTabs({
         </TabPanel>
       </div>
 
-      <div className="p-4 bg-gradient-to-r from-gray-50/80 to-white/80 border-t border-gray-200/60 backdrop-blur-sm">
+      <div className="p-4 mt-auto flex-shrink-0">
         {loading && (
           <div className="mb-4">
             <ProgressIndicator

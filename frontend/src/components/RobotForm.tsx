@@ -439,7 +439,7 @@ function Form({ onResult, initialConfiguration }: FormProps) {
           />
 
           {loading && (
-            <div className="pt-4">
+            <div className="mb-4">
               <ProgressIndicator
                 progress={computationProgress}
                 message="Computing robot configuration..."
@@ -447,7 +447,7 @@ function Form({ onResult, initialConfiguration }: FormProps) {
             </div>
           )}
 
-          <div className="pt-2">
+          <div>
             <SubmitButton onClick={handleSubmit} loading={loading} />
           </div>
         </form>

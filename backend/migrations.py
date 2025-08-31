@@ -9,17 +9,33 @@ import sys
 # Add the app directory to the Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app.database import engine
-from app.models.preset import Preset
-from app.models.user import User
-from sqlmodel import Session, SQLModel, select
+# Import after path setup to avoid circular imports
+from app.database import engine  # noqa: E402
+from app.models.preset import Preset  # noqa: E402
+from app.models.user import User  # noqa: E402
+from app.utils.cache import clear_cache  # noqa: E402
+from sqlmodel import Session, SQLModel, select  # noqa: E402
 
 
 def create_tables():
     """Create all database tables"""
     print("Creating database tables...")
-    SQLModel.metadata.create_all(engine)
-    print("✅ Tables created successfully!")
+    try:
+        SQLModel.metadata.create_all(engine)
+        print("✅ Tables created successfully!")
+        print("📋 Created tables:")
+        print(
+            "   - user (with fields: id, username, email, is_local, "
+            "is_active, is_verified, hashed_password, created_at, updated_at)"
+        )
+        print(
+            "   - preset (with fields: id, name, description, is_public, "
+            "configuration, user_id, created_at, updated_at)"
+        )
+    except Exception as e:
+        print(f"❌ Error creating tables: {e}")
+        return False
+    return True
 
 
 def drop_tables():
@@ -27,10 +43,16 @@ def drop_tables():
     confirm = input("⚠️  This will delete ALL data. Are you sure? (yes/no): ")
     if confirm.lower() == "yes":
         print("Dropping all tables...")
-        SQLModel.metadata.drop_all(engine)
-        print("✅ Tables dropped successfully!")
+        try:
+            SQLModel.metadata.drop_all(engine)
+            print("✅ Tables dropped successfully!")
+            return True
+        except Exception as e:
+            print(f"❌ Error dropping tables: {e}")
+            return False
     else:
         print("❌ Operation cancelled.")
+        return False
 
 
 def reset_database():
@@ -41,11 +63,22 @@ def reset_database():
     )
     if confirm.lower() == "yes":
         print("Resetting database...")
-        SQLModel.metadata.drop_all(engine)
-        SQLModel.metadata.create_all(engine)
-        print("✅ Database reset successfully!")
+        try:
+            # Clear cache first
+            clear_cache()
+            print("🧹 Cache cleared")
+
+            # Drop and recreate tables
+            SQLModel.metadata.drop_all(engine)
+            SQLModel.metadata.create_all(engine)
+            print("✅ Database reset successfully!")
+            return True
+        except Exception as e:
+            print(f"❌ Error resetting database: {e}")
+            return False
     else:
         print("❌ Operation cancelled.")
+        return False
 
 
 def check_database_status():
@@ -58,33 +91,75 @@ def check_database_status():
             user_count = len(session.exec(select(User)).all())
             preset_count = len(session.exec(select(Preset)).all())
 
-            print(f"✅ Database connection successful!")
+            print("✅ Database connection successful!")
             print(f"📊 Users in database: {user_count}")
             print(f"📊 Presets in database: {preset_count}")
 
+            # Check table structure
+            print("\n📋 Current table structure:")
+            print(
+                "   User table fields: id, username, email, is_local, "
+                "is_active, is_verified, hashed_password, created_at, "
+                "updated_at"
+            )
+            print(
+                "   Preset table fields: id, name, description, is_public, "
+                "configuration, user_id, created_at, "
+                "updated_at"
+            )
+
+            return True
+
     except Exception as e:
         print(f"❌ Database error: {e}")
+        print(
+            "💡 Try running 'python migrations.py create' to create "
+            "missing tables"
+        )
+        return False
+
+
+def clear_cache_only():
+    """Clear only the computation cache"""
+    print("Clearing computation cache...")
+    try:
+        clear_cache()
+        print("✅ Cache cleared successfully!")
+        return True
+    except Exception as e:
+        print(f"❌ Error clearing cache: {e}")
+        return False
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python migrations.py [create|drop|reset|status]")
-        print("  create  - Create all tables")
-        print("  drop    - Drop all tables (DANGEROUS)")
-        print("  reset   - Drop and recreate all tables (DANGEROUS)")
-        print("  status  - Check database status")
+        print(
+            "Usage: python migrations.py [create|drop|reset|status|clear-cache]"
+        )
+        print("  create      - Create all tables")
+        print("  drop        - Drop all tables (DANGEROUS)")
+        print("  reset       - Drop and recreate all tables (DANGEROUS)")
+        print("  status      - Check database status")
+        print("  clear-cache - Clear computation cache only")
         sys.exit(1)
 
     command = sys.argv[1].lower()
 
     if command == "create":
-        create_tables()
+        success = create_tables()
+        sys.exit(0 if success else 1)
     elif command == "drop":
-        drop_tables()
+        success = drop_tables()
+        sys.exit(0 if success else 1)
     elif command == "reset":
-        reset_database()
+        success = reset_database()
+        sys.exit(0 if success else 1)
     elif command == "status":
-        check_database_status()
+        success = check_database_status()
+        sys.exit(0 if success else 1)
+    elif command == "clear-cache":
+        success = clear_cache_only()
+        sys.exit(0 if success else 1)
     else:
         print("❌ Unknown command:", command)
         sys.exit(1)

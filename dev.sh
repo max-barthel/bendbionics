@@ -13,7 +13,7 @@ sleep 3
 echo "Starting Tauri development..."
 cd ../frontend
 source "$HOME/.cargo/env"
-npm run tauri dev
+npx tauri dev
 
 # Cleanup on exit
 trap "kill $BACKEND_PID 2>/dev/null" EXIT
