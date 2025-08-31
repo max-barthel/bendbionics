@@ -1,8 +1,0 @@
-/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/debug/deps/icu_normalizer-f52e29bd5bc3481a.d: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.0.0/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.0.0/src/properties.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.0.0/src/provider.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.0.0/src/uts46.rs
-
-/Users/maxbarthel/Library/CloudStorage/GoogleDrive-max.barthel.8@gmail.com/My Drive/Code/soft-robot-app/frontend/src-tauri/target/debug/deps/libicu_normalizer-f52e29bd5bc3481a.rmeta: /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.0.0/src/lib.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.0.0/src/properties.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.0.0/src/provider.rs /Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.0.0/src/uts46.rs
-
-/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.0.0/src/lib.rs:
-/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.0.0/src/properties.rs:
-/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.0.0/src/provider.rs:
-/Users/maxbarthel/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.0.0/src/uts46.rs:
