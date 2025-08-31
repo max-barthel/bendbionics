@@ -36,7 +36,7 @@ class TestSettings:
 
     def test_default_values(self):
         """Test that Settings has correct default values."""
-        settings = Settings()
+        settings = Settings(_env_file=None)
 
         assert settings.app_name == "Soft Robot API"
         assert settings.debug is False
@@ -363,9 +363,10 @@ class TestSettings:
 
     def test_settings_with_missing_environment_variables(self):
         """Test that missing environment variables use defaults."""
-        # Remove any existing environment variables
+        # Remove any existing environment variables and patch the env_file
         with patch.dict(os.environ, {}, clear=True):
-            settings = Settings()
+            # Create settings without loading from .env file
+            settings = Settings(_env_file=None)
 
             # Should use defaults when environment variables are missing
             assert settings.app_name == "Soft Robot API"

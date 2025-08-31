@@ -105,8 +105,8 @@ function AppContent() {
       <Route
         path="/"
         element={
-          <div>
-            <div className="bg-white/90 backdrop-blur-sm border-b border-gray-200/60 px-4 py-3 shadow-sm">
+          <div className="h-screen flex flex-col">
+            <div className="bg-white/90 backdrop-blur-sm border-b border-gray-200/60 px-4 py-3 shadow-sm flex-shrink-0">
               <div className="flex items-center justify-end">
                 {user ? (
                   <div className="flex items-center gap-3">
@@ -152,9 +152,15 @@ function AppContent() {
               </div>
             </div>
 
-            <div className="flex h-[calc(100vh-80px)] bg-gradient-to-br from-gray-50 to-gray-100 relative">
-              {!sidebarCollapsed && (
-                <div className="w-96 flex-shrink-0 bg-white/80 backdrop-blur-sm border-r border-gray-200/60 shadow-sm">
+            <div className="flex flex-1 bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
+              <div
+                className={`bg-white/80 backdrop-blur-sm border-r border-gray-200/60 shadow-sm transition-all duration-500 ease-in-out overflow-hidden ${
+                  sidebarCollapsed
+                    ? "w-0 -translate-x-full opacity-0"
+                    : "w-96 translate-x-0 opacity-100"
+                }`}
+              >
+                <div className="w-96 h-full">
                   <FormTabs
                     onResult={handleFormResult}
                     initialConfiguration={currentConfiguration}
@@ -164,57 +170,40 @@ function AppContent() {
                     navigate={navigate}
                   />
                 </div>
-              )}
+              </div>
 
               {/* Hide button - positioned outside sidebar */}
-              {!sidebarCollapsed && (
-                <button
-                  onClick={toggleSidebar}
-                  className="absolute left-[calc(384px-16px)] top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm border border-gray-300/60 rounded-full p-1.5 shadow-lg hover:bg-white hover:shadow-xl transition-all duration-200 z-50"
-                  aria-label="Hide parameters"
+              <button
+                onClick={toggleSidebar}
+                className={`absolute top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm border border-gray-300/60 rounded-full p-1.5 shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 ease-in-out z-50 ${
+                  sidebarCollapsed
+                    ? "left-4 translate-x-0"
+                    : "left-[calc(384px-16px)] translate-x-0"
+                }`}
+                aria-label={
+                  sidebarCollapsed ? "Show parameters" : "Hide parameters"
+                }
+              >
+                <svg
+                  className="w-4 h-4 text-gray-600 transition-transform duration-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg
-                    className="w-4 h-4 text-gray-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-              )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={sidebarCollapsed ? "M9 5l7 7-7 7" : "M15 19l-7-7 7-7"}
+                  />
+                </svg>
+              </button>
 
               <div
-                className={`${
-                  sidebarCollapsed ? "w-full" : "flex-1"
-                } bg-white/90 backdrop-blur-sm relative`}
+                className={`bg-white/90 backdrop-blur-sm relative transition-all duration-500 ease-in-out ${
+                  sidebarCollapsed ? "w-full" : "w-[calc(100%-384px)]"
+                }`}
               >
-                {sidebarCollapsed && (
-                  <button
-                    onClick={toggleSidebar}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm border border-gray-300/60 rounded-full p-1.5 shadow-lg hover:bg-white hover:shadow-xl transition-all duration-200 z-50"
-                    aria-label="Show parameters"
-                  >
-                    <svg
-                      className="w-4 h-4 text-gray-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
-                )}
                 <Suspense
                   fallback={
                     <div className="w-full h-full flex items-center justify-center bg-gray-50">

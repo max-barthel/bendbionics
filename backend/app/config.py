@@ -96,6 +96,7 @@ class Settings(BaseSettings):
         env_file = ".env"
         # Allow environment variables to override defaults
         case_sensitive = False
+        extra = "ignore"  # Ignore extra fields from environment variables
 
 
 # Create settings instance

@@ -17,6 +17,9 @@
         "all": true,
         "request": true,
         "scope": ["http://localhost:8000/*"]
+      },
+      "dialog": {
+        "all": true
       }
     },
     "bundle": {

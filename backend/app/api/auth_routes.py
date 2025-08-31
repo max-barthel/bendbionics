@@ -61,6 +61,8 @@ async def register(
         username=user.username,
         email=user.email,
         is_local=user.is_local,
+        is_active=user.is_active,
+        is_verified=user.is_verified,
         created_at=user.created_at,
     )
 
@@ -108,5 +110,7 @@ async def get_current_user_info(
         username=current_user.username,
         email=current_user.email,
         is_local=current_user.is_local,
+        is_active=current_user.is_active,
+        is_verified=current_user.is_verified,
         created_at=current_user.created_at,
     )

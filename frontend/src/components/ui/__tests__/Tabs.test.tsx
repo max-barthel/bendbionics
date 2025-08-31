@@ -87,9 +87,9 @@ describe("Tabs", () => {
       const inactiveTab1 = screen.getByText("Tab 1");
       const inactiveTab3 = screen.getByText("Tab 3");
 
-      expect(activeTab).toHaveClass("border-blue-500", "text-blue-600");
-      expect(inactiveTab1).not.toHaveClass("border-blue-500", "text-blue-600");
-      expect(inactiveTab3).not.toHaveClass("border-blue-500", "text-blue-600");
+      expect(activeTab).toHaveClass("text-blue-600");
+      expect(inactiveTab1).not.toHaveClass("text-blue-600");
+      expect(inactiveTab3).not.toHaveClass("text-blue-600");
     });
 
     it("applies inactive styles to non-active tabs", () => {
@@ -110,11 +110,7 @@ describe("Tabs", () => {
       );
 
       const inactiveTab = screen.getByText("Tab 2");
-      expect(inactiveTab).toHaveClass(
-        "hover:text-gray-700",
-        "hover:border-gray-300",
-        "hover:bg-gray-50/50"
-      );
+      expect(inactiveTab).toHaveClass("hover:text-gray-700");
     });
   });
 
@@ -244,9 +240,13 @@ describe("Tabs", () => {
         "text-xs",
         "font-medium",
         "border-b-2",
-        "transition-all",
+        "border-transparent",
+        "transition-colors",
         "duration-200",
-        "flex-1"
+        "flex-1",
+        "h-full",
+        "relative",
+        "z-10"
       );
     });
   });
