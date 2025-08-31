@@ -54,9 +54,77 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await authAPI.login(data);
       const { access_token, user: userData } = response;
 
-      localStorage.setItem("token", access_token);
+      console.log(
+        "Login successful, storing token:",
+        access_token ? `"${access_token.substring(0, 20)}..."` : "null"
+      );
+      // Clean the token before storing - remove any quotes
+      const cleanToken = access_token.replace(/^"|"$/g, "");
+
+      // Store token in multiple places for Tauri compatibility
+      localStorage.setItem("token", cleanToken);
+      sessionStorage.setItem("token", cleanToken);
+
+      // Also store in global window object for Tauri
+      if (typeof window !== "undefined") {
+        (window as any).authToken = cleanToken;
+      }
+
+      // Debug: Verify token storage
+      console.log("=== Login Token Storage Debug ===");
+      console.log(
+        "localStorage token stored:",
+        localStorage.getItem("token") ? "YES" : "NO"
+      );
+      console.log(
+        "sessionStorage token stored:",
+        sessionStorage.getItem("token") ? "YES" : "NO"
+      );
+      console.log(
+        "window.authToken stored:",
+        (window as any).authToken ? "YES" : "NO"
+      );
+      console.log("================================");
+
       setToken(access_token);
       setUser(userData);
+
+      // Verify token was stored
+      const storedToken = localStorage.getItem("token");
+      console.log(
+        "Token stored in localStorage:",
+        storedToken ? `"${storedToken.substring(0, 20)}..."` : "null"
+      );
+
+      // Force a small delay to ensure localStorage is updated
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify again after delay
+      const storedTokenAfterDelay = localStorage.getItem("token");
+      console.log(
+        "Token in localStorage after delay:",
+        storedTokenAfterDelay
+          ? `"${storedTokenAfterDelay.substring(0, 20)}..."`
+          : "null"
+      );
+
+      // Force a longer delay to ensure localStorage is fully updated
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Final verification
+      const finalToken = localStorage.getItem("token");
+      console.log(
+        "Final token in localStorage:",
+        finalToken ? `"${finalToken.substring(0, 20)}..."` : "null"
+      );
+
+      // Test auth immediately after login
+      try {
+        const testUser = await authAPI.getCurrentUser();
+        console.log("Auth test after login successful:", testUser.username);
+      } catch (authError) {
+        console.error("Auth test after login failed:", authError);
+      }
     } catch (error) {
       throw error;
     }

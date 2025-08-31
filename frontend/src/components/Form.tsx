@@ -6,7 +6,6 @@ import SubmitButton from "./SubmitButton";
 import {
   Card,
   LoadingSpinner,
-  Notification,
   ProgressIndicator,
   SliderInput,
   Typography,
@@ -37,10 +36,6 @@ function Form({ onResult, initialConfiguration }: FormProps) {
     type: "unknown",
     message: "",
     visible: false,
-  });
-  const [successNotification, setSuccessNotification] = useState({
-    visible: false,
-    message: "",
   });
 
   // Load initial configuration if provided
@@ -204,12 +199,6 @@ function Form({ onResult, initialConfiguration }: FormProps) {
       };
 
       onResult(result.segments, configuration);
-
-      // Show success notification
-      setSuccessNotification({
-        visible: true,
-        message: `Successfully computed robot configuration with ${result.segments.length} components`,
-      });
     } catch (err: any) {
       console.error("Failed to submit:", err);
 
@@ -251,15 +240,6 @@ function Form({ onResult, initialConfiguration }: FormProps) {
 
   return (
     <>
-      <Notification
-        type="success"
-        title="Computation Complete!"
-        message={successNotification.message}
-        isVisible={successNotification.visible}
-        onClose={() => setSuccessNotification({ visible: false, message: "" })}
-        autoHide={true}
-        duration={4000}
-      />
       <Card>
         <form
           onSubmit={(e) => {
@@ -389,7 +369,7 @@ function Form({ onResult, initialConfiguration }: FormProps) {
             <SliderInput
               label="Segments"
               value={robotState.segments}
-              onChange={(segments) => updateRobotState({ segments })}
+              onChange={(segments: number) => updateRobotState({ segments })}
               min={1}
               max={10}
               step={1}
@@ -449,7 +429,7 @@ function Form({ onResult, initialConfiguration }: FormProps) {
           <SliderInput
             label="Discretization Steps"
             value={robotState.discretizationSteps}
-            onChange={(discretizationSteps) =>
+            onChange={(discretizationSteps: number) =>
               updateRobotState({ discretizationSteps })
             }
             min={100}

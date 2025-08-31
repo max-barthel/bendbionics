@@ -5,6 +5,7 @@ type NumberInputProps = {
   value: number;
   onChange: (value: number) => void;
   placeholder?: string;
+  label?: string;
   id?: string;
   disabled?: boolean;
 };
@@ -13,6 +14,7 @@ function NumberInput({
   value,
   onChange,
   placeholder,
+  label,
   id,
   disabled = false,
 }: NumberInputProps) {
@@ -44,10 +46,11 @@ function NumberInput({
     <Input
       id={id}
       type="text"
-      size="md"
+      size="sm"
       value={internalValue}
       onChange={handleChange}
       placeholder={placeholder}
+      label={label}
       disabled={disabled}
     />
   );

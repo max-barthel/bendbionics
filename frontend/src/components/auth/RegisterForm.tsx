@@ -130,7 +130,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             id="username"
             type="text"
             value={username}
-            onChange={(value) => setUsername(String(value))}
+            onChange={(value: string | number) => setUsername(String(value))}
             placeholder="Choose a username"
             className="w-full"
           />
@@ -147,7 +147,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             id="email"
             type="email"
             value={email}
-            onChange={(value) => setEmail(String(value))}
+            onChange={(value: string | number) => setEmail(String(value))}
             placeholder="Enter your email (optional)"
             className="w-full"
           />
@@ -167,7 +167,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             id="password"
             type="password"
             value={password}
-            onChange={(value) => setPassword(String(value))}
+            onChange={(value: string | number) => setPassword(String(value))}
             placeholder="Enter your password"
             className="w-full"
           />
@@ -187,7 +187,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             id="confirmPassword"
             type="password"
             value={confirmPassword}
-            onChange={(value) => setConfirmPassword(String(value))}
+            onChange={(value: string | number) =>
+              setConfirmPassword(String(value))
+            }
             placeholder="Confirm your password"
             className="w-full"
           />

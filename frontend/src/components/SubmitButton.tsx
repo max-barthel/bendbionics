@@ -14,10 +14,11 @@ function SubmitButton({
   return (
     <Button
       variant="primary"
-      size="md"
+      size="lg"
       onClick={onClick}
       disabled={disabled}
       loading={loading}
+      className="w-full max-w-xs"
     >
       {loading ? "Computing..." : "Compute"}
     </Button>

@@ -11,7 +11,16 @@ struct ApiResponse {
 }
 
 #[tauri::command]
-async fn call_backend_api(endpoint: String, data: Option<serde_json::Value>, auth_token: Option<String>) -> Result<ApiResponse, String> {
+async fn call_backend_api(endpoint: String, data: Option<serde_json::Value>, auth_token: Option<String>, token: Option<String>) -> Result<ApiResponse, String> {
+    println!("=== Rust API Call Debug ===");
+    println!("Endpoint: {}", endpoint);
+    println!("Data provided: {}", data.is_some());
+    println!("Auth token provided: {}", auth_token.is_some());
+    println!("Auth token value: {:?}", auth_token);
+    println!("Token provided: {}", token.is_some());
+    println!("Token value: {:?}", token);
+    println!("==========================");
+
     let client = reqwest::Client::new();
     let url = format!("http://localhost:8000{}", endpoint);
 
@@ -22,13 +31,21 @@ async fn call_backend_api(endpoint: String, data: Option<serde_json::Value>, aut
     };
 
     // Add authentication header if provided
-    if let Some(token) = auth_token {
-        request_builder = request_builder.header("Authorization", format!("Bearer {}", token));
+    let token_to_use = auth_token.as_ref().or(token.as_ref());
+    if let Some(token) = token_to_use {
+        // Clean the token - remove any quotes that might be present
+        let clean_token = token.trim_matches('"');
+        println!("Adding auth header: Bearer {}", clean_token);
+        request_builder = request_builder.header("Authorization", format!("Bearer {}", clean_token));
+    } else {
+        println!("No auth token provided");
     }
 
     let response = if let Some(request_data) = data {
+        println!("Sending POST request to: {}", url);
         request_builder.json(&request_data).send().await
     } else {
+        println!("Sending GET request to: {}", url);
         request_builder.send().await
     };
 
