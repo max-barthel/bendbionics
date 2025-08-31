@@ -103,8 +103,10 @@ function SliderInput({
                      disabled:opacity-50 disabled:cursor-not-allowed"
           />
           <div
-            className="absolute top-0 h-1.5 bg-blue-500 rounded-full pointer-events-none transition-all duration-200"
-            style={{ width: `${((value - min) / (max - min)) * 100}%` }}
+            className={`absolute top-0 h-1.5 bg-blue-500 rounded-full pointer-events-none transition-all duration-200 w-[${Math.max(
+              0,
+              Math.min(100, ((value - min) / (max - min)) * 100)
+            )}%]`}
           />
         </div>
 

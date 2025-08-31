@@ -13,6 +13,8 @@ class UserBase(SQLModel):
     email: Optional[EmailStr] = Field(default=None, unique=True, index=True)
     # Local users don't need email verification
     is_local: bool = Field(default=True)
+    is_active: bool = Field(default=True)
+    is_verified: bool = Field(default=False)
 
 
 class User(UserBase, table=True):
@@ -41,6 +43,8 @@ class UserResponse(SQLModel):
     username: str
     email: Optional[EmailStr] = None
     is_local: bool
+    is_active: bool
+    is_verified: bool
     created_at: datetime
 
 

@@ -15,6 +15,29 @@ htmlcov/
 coverage.xml
 *.cover
 .pytest_cache/
+coverage.json
+coverage-final.json
+
+# Frontend test results and coverage
+frontend/coverage/
+frontend/test-results.xml
+frontend/.vitest/
+frontend/vitest.config.ts.timestamp-*
+
+# Backend test results and coverage
+backend/htmlcov/
+backend/coverage.json
+backend/coverage.xml
+backend/.coverage
+backend/.pytest_cache/
+
+# Test artifacts
+*.test-results.xml
+test-results/
+coverage-reports/
+.coverage.*
+coverage-*.json
+coverage-*.xml
 
 # Node.js
 node_modules/

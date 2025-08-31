@@ -8,6 +8,7 @@ type CardProps = {
 function Card({ children, className = "" }: CardProps) {
   return (
     <div
+      data-testid="card"
       className={`p-8 bg-white rounded-xl shadow-lg border border-neutral-200 ${className}`}
     >
       {children}

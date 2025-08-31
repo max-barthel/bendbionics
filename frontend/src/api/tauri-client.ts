@@ -43,7 +43,9 @@ export class TauriApiClient {
         token = parsed;
       } catch (e) {
         // If not JSON, just remove quotes
-        token = token.replace(/^"|"$/g, ''); // Remove leading and trailing quotes
+        if (token) {
+          token = token.replace(/^"|"$/g, ''); // Remove leading and trailing quotes
+        }
       }
     }
 

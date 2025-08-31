@@ -1,0 +1,21 @@
+{
+  "folders": [
+    {
+      "name": "frontend",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "vitest.enable": true,
+    "vitest.commandLine": "npm run test",
+    "vitest.include": ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+    "vitest.workspaceRoot": ".",
+    "testing.automaticallyOpenPeekView": "never",
+    "testing.followRunningTest": true,
+    "testing.gutterEnabled": true,
+    "testing.openTesting": "openExplorer"
+  },
+  "extensions": {
+    "recommendations": ["vitest.vitest"]
+  }
+}

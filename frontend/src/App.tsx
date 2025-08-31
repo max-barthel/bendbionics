@@ -8,18 +8,13 @@ import { AuthProvider, useAuth } from "./providers";
 
 // Lazy load heavy components
 const Visualizer3D = lazy(() => import("./components/Visualizer3D"));
-const PresetManager = lazy(() =>
-  import("./components/presets/PresetManager").then((module) => ({
-    default: module.PresetManager,
-  }))
-);
 
 function AppContent() {
   const { user, isLoading, logout } = useAuth();
   const navigate = useNavigate();
   const [segments, setSegments] = useState<number[][][]>([]);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [showPresetManager, setShowPresetManager] = useState(false);
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentConfiguration, setCurrentConfiguration] = useState<
     Record<string, any>

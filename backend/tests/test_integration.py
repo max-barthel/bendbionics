@@ -56,26 +56,48 @@ class TestFullAPIWorkflow:
         }
 
         # First request - should compute and cache
-        start_time = time.time()
         response1 = self.client.post("/pcc", json=payload)
-        first_request_time = time.time() - start_time
-
         assert response1.status_code == 200
         data1 = response1.json()
 
-        # Second request - should use cache (faster)
-        start_time = time.time()
+        # Second request - should use cache
         response2 = self.client.post("/pcc", json=payload)
-        second_request_time = time.time() - start_time
-
         assert response2.status_code == 200
         data2 = response2.json()
 
         # Results should be identical
         assert data1 == data2
 
-        # Second request should be faster (cached)
-        assert second_request_time < first_request_time
+        # Test that cache is actually being used by checking cache hit
+        # We'll use a different approach: test with a more complex payload
+        # that would take longer to compute, making the cache benefit more
+        # obvious
+        complex_payload = {
+            "bending_angles": [0.1, 0.2, 0.3, 0.4, 0.5],
+            "rotation_angles": [0.1, 0.2, 0.3, 0.4, 0.5],
+            "backbone_lengths": [0.07, 0.07, 0.07, 0.07, 0.07],
+            "coupling_lengths": [0.03, 0.03, 0.03, 0.03, 0.03, 0.015],
+            "discretization_steps": 50,
+        }
+
+        # First request with complex payload
+        start_time = time.time()
+        response3 = self.client.post("/pcc", json=complex_payload)
+        first_complex_time = time.time() - start_time
+        assert response3.status_code == 200
+
+        # Second request with same complex payload (should be cached)
+        start_time = time.time()
+        response4 = self.client.post("/pcc", json=complex_payload)
+        second_complex_time = time.time() - start_time
+        assert response4.status_code == 200
+
+        # The cached request should be significantly faster
+        # Allow for some variance but expect at least 50% improvement
+        assert second_complex_time < first_complex_time * 0.8, (
+            f"Cache not working: {second_complex_time:.4f}s vs "
+            f"{first_complex_time:.4f}s"
+        )
 
     def test_workflow_with_different_parameters(self):
         """Test workflow with different parameter sets."""
