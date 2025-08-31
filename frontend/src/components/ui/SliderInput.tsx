@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Input from "./Input";
 
 type SliderInputProps = {
   value: number;
@@ -69,18 +68,18 @@ function SliderInput({
   }`;
 
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-4 ${className}`}>
       {label && (
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-neutral-700">{label}</span>
-          <span className="text-sm text-neutral-500">
+          <span className="text-xs text-neutral-400 bg-neutral-100 px-2 py-1 rounded-full">
             {min} - {max}
           </span>
         </div>
       )}
 
-      <div className="flex items-center gap-3">
-        <div className="flex-1">
+      <div className="flex items-center gap-4">
+        <div className="flex-1 relative">
           <input
             id={sliderId}
             type="range"
@@ -91,32 +90,43 @@ function SliderInput({
             onChange={handleSliderChange}
             disabled={disabled}
             aria-label={label || "Slider input"}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer
+            className="w-full h-1.5 bg-neutral-200 rounded-full appearance-none cursor-pointer
                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
-                     [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5
-                     [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:cursor-pointer
-                     [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md
-                     [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full
-                     [&::-moz-range-thumb]:bg-blue-500 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2
-                     [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md
+                     [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4
+                     [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:cursor-pointer
+                     [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:shadow-lg
+                     [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200
+                     [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:hover:shadow-xl
+                     [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full
+                     [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2
+                     [&::-moz-range-thumb]:border-blue-500 [&::-moz-range-thumb]:shadow-lg
                      disabled:opacity-50 disabled:cursor-not-allowed"
+          />
+          <div
+            className="absolute top-0 h-1.5 bg-blue-500 rounded-full pointer-events-none transition-all duration-200"
+            style={{ width: `${((value - min) / (max - min)) * 100}%` }}
           />
         </div>
 
-        <div className="w-24">
-          <Input
-            id={inputId}
-            type="number"
-            size="sm"
-            value={inputValue}
-            onChange={handleInputChange}
-            onBlur={handleInputBlur}
-            placeholder={placeholder}
-            disabled={disabled}
-            min={min}
-            max={max}
-            step={step}
-          />
+        <div className="w-20">
+          <div className="relative">
+            <input
+              id={inputId}
+              type="number"
+              value={inputValue}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onBlur={handleInputBlur}
+              placeholder={placeholder}
+              disabled={disabled}
+              min={min}
+              max={max}
+              step={step}
+              className="w-full px-2 py-1.5 text-sm bg-neutral-50 border-0 rounded-md
+                       focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white
+                       transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+                       text-center font-semibold text-neutral-700 shadow-sm"
+            />
+          </div>
         </div>
       </div>
     </div>

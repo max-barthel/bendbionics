@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { CreatePresetRequest, Preset } from "../../api/auth";
-import { presetAPI } from "../../api/auth";
+import { authAPI, presetAPI } from "../../api/auth";
 import { useAuth } from "../../providers";
 import { Badge, Button, Card, Input, Typography } from "../ui";
 
@@ -35,10 +35,39 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
     setIsLoading(true);
     try {
+      // Debug: Check if user and token exist
+      const token = localStorage.getItem("token");
+      console.log("Loading presets for user:", user.username);
+      console.log("Token exists:", !!token);
+      console.log("Token length:", token?.length);
+
+      // Test authentication first
+      try {
+        const currentUser = await authAPI.getCurrentUser();
+        console.log(
+          "Auth test successful, current user:",
+          currentUser.username
+        );
+      } catch (authError: any) {
+        console.error("Auth test failed:", authError);
+        setError("Authentication failed. Please sign in again.");
+        return;
+      }
+
       const userPresets = await presetAPI.getUserPresets();
       setPresets(userPresets);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to load presets:", error);
+      console.error("Error response:", error.response);
+      console.error("Error status:", error.response?.status);
+      // Handle 403 Forbidden - user might not be properly authenticated
+      if (error.response?.status === 403) {
+        setError("Authentication required. Please sign in again.");
+        // Optionally redirect to login
+        // navigate("/auth");
+      } else {
+        setError("Failed to load presets. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -59,6 +88,12 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
     setError("");
 
     try {
+      // Debug: Check if user and token exist
+      const token = localStorage.getItem("token");
+      console.log("Saving preset for user:", user.username);
+      console.log("Token exists:", !!token);
+      console.log("Token length:", token?.length);
+
       const newPreset: CreatePresetRequest = {
         name: presetName.trim(),
         description: presetDescription.trim() || undefined,
@@ -73,7 +108,15 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       setShowSaveForm(false);
       await loadPresets(); // Reload presets
     } catch (error: any) {
-      setError(error.response?.data?.detail || "Failed to save preset");
+      console.error("Failed to save preset:", error);
+      // Handle 403 Forbidden - user might not be properly authenticated
+      if (error.response?.status === 403) {
+        setError("Authentication required. Please sign in again.");
+        // Optionally redirect to login
+        // navigate("/auth");
+      } else {
+        setError(error.response?.data?.detail || "Failed to save preset");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -100,8 +143,14 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
     try {
       await presetAPI.deletePreset(presetId);
       await loadPresets(); // Reload presets
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to delete preset:", error);
+      // Handle 403 Forbidden - user might not be properly authenticated
+      if (error.response?.status === 403) {
+        setError("Authentication required. Please sign in again.");
+      } else {
+        setError("Failed to delete preset. Please try again.");
+      }
     }
   };
 
@@ -134,11 +183,8 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
   }
 
   return (
-    <Card className="p-6">
+    <div>
       <div className="flex justify-between items-center mb-4">
-        <Typography variant="h3" color="primary">
-          Preset Manager
-        </Typography>
         <Button
           variant="secondary"
           onClick={() => setShowSaveForm(!showSaveForm)}
@@ -160,7 +206,9 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
               <Input
                 type="text"
                 value={presetName}
-                onChange={(value) => setPresetName(String(value))}
+                onChange={(value: string | number) =>
+                  setPresetName(String(value))
+                }
                 placeholder="Enter preset name"
                 className="w-full"
               />
@@ -172,7 +220,9 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
               <Input
                 type="text"
                 value={presetDescription}
-                onChange={(value) => setPresetDescription(String(value))}
+                onChange={(value: string | number) =>
+                  setPresetDescription(String(value))
+                }
                 placeholder="Enter description"
                 className="w-full"
               />
@@ -210,6 +260,13 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
         <Typography variant="h4" color="primary">
           Your Presets
         </Typography>
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <Typography variant="body" color="error" className="text-sm">
+              {error}
+            </Typography>
+          </div>
+        )}
         {isLoading ? (
           <div className="text-center py-8">
             <Typography variant="body" color="gray">
@@ -242,10 +299,12 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
                       )}
                     </div>
                     {preset.description && (
-                      <Typography variant="body" color="gray" className="mb-3">
+                      <Typography variant="body" color="gray" className="mb-2">
                         {preset.description}
                       </Typography>
                     )}
+                  </div>
+                  <div className="flex flex-col items-end gap-2 ml-4">
                     <Typography
                       variant="body"
                       color="gray"
@@ -254,22 +313,22 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
                       Created:{" "}
                       {new Date(preset.created_at).toLocaleDateString()}
                     </Typography>
-                  </div>
-                  <div className="flex gap-2 ml-4">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => handleLoadPreset(preset)}
-                    >
-                      Load
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeletePreset(preset.id)}
-                    >
-                      Delete
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleLoadPreset(preset)}
+                      >
+                        Load
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeletePreset(preset.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -277,6 +336,6 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 };

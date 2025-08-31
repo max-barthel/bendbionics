@@ -26,16 +26,17 @@ function Button({
   className = "",
 }: ButtonProps) {
   const baseClasses =
-    "font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+    "font-medium transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variantClasses = {
-    primary: "bg-black text-white hover:bg-neutral-800 focus:ring-neutral-500",
+    primary:
+      "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 focus:ring-blue-500/50 shadow-lg hover:shadow-xl",
     secondary:
-      "bg-neutral-100 text-neutral-900 hover:bg-neutral-200 focus:ring-neutral-500",
+      "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-900 hover:from-gray-200 hover:to-gray-300 focus:ring-gray-500/50 shadow-sm hover:shadow-md",
     outline:
-      "border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 focus:ring-neutral-500",
+      "border border-gray-300/60 bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white hover:shadow-md focus:ring-gray-500/50 shadow-sm",
     ghost:
-      "bg-transparent text-neutral-700 hover:bg-neutral-100 focus:ring-neutral-500",
+      "bg-transparent text-gray-700 hover:bg-gray-100/50 focus:ring-gray-500/50",
   };
 
   const sizeClasses = {

@@ -26,7 +26,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
       navigate("/");
     } catch (err: any) {
       // Show error in desktop app
-      const errorMessage = err.message || "Login failed";
 
       // Handle different types of authentication errors
       if (err.response?.status === 401) {
@@ -96,7 +95,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
             id="username"
             type="text"
             value={username}
-            onChange={(value) => setUsername(String(value))}
+            onChange={(value: string | number) => setUsername(String(value))}
             placeholder="Enter your username"
             className="w-full"
           />
@@ -113,7 +112,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
             id="password"
             type="password"
             value={password}
-            onChange={(value) => setPassword(String(value))}
+            onChange={(value: string | number) => setPassword(String(value))}
             placeholder="Enter your password"
             className="w-full"
           />
