@@ -1,4 +1,4 @@
-import { Line, OrbitControls } from "@react-three/drei";
+import { Line, OrbitControls, Sphere } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
@@ -6,9 +6,35 @@ import { LoadingSpinner, Typography } from "./ui";
 
 type Visualizer3DProps = {
   segments: number[][][];
+  tendonConfig?: {
+    count: number;
+    radius: number;
+    coupling_offset: number;
+  };
+  tendonAnalysis?: {
+    actuation_commands: Record<
+      string,
+      {
+        length_change_m: number;
+        pull_direction: string;
+        magnitude: number;
+      }
+    >;
+    coupling_data?: {
+      positions: number[][][];
+      orientations: number[][][];
+    };
+    tendon_analysis?: {
+      routing_points: number[][][];
+    };
+  };
 };
 
-function Visualizer3D({ segments }: Visualizer3DProps) {
+function Visualizer3D({
+  segments,
+  tendonConfig,
+  tendonAnalysis,
+}: Visualizer3DProps) {
   const controlsRef = useRef<OrbitControlsImpl>(null);
 
   const lines = useMemo(() => {
@@ -31,6 +57,162 @@ function Visualizer3D({ segments }: Visualizer3DProps) {
       })
       .filter(Boolean);
   }, [segments]);
+
+  // Generate tendon eyelets and connections with proper transformations
+  const tendonElements = useMemo(() => {
+    if (!tendonConfig || !tendonAnalysis?.coupling_data) {
+      console.log("Tendon visualization debug:", {
+        hasTendonConfig: !!tendonConfig,
+        hasTendonAnalysis: !!tendonAnalysis,
+        hasCouplingData: !!tendonAnalysis?.coupling_data,
+        couplingData: tendonAnalysis?.coupling_data,
+      });
+      return [];
+    }
+
+    console.log("Coupling data received:", tendonAnalysis.coupling_data);
+    const elements: React.ReactElement[] = [];
+    const tendonCount = tendonConfig.count;
+    const radius = tendonConfig.radius;
+    const offset = tendonConfig.coupling_offset;
+    const couplingPositions = tendonAnalysis.coupling_data.positions;
+    const couplingOrientations = tendonAnalysis.coupling_data.orientations;
+
+    // For each coupling point, create tendon eyelets with proper orientation
+    couplingPositions.forEach((couplingPos, couplingIndex) => {
+      if (couplingPos.length < 3) return;
+
+      // Extract x, y, z coordinates as numbers
+      const x = Number(couplingPos[0]) || 0;
+      const y = Number(couplingPos[1]) || 0;
+      const z = Number(couplingPos[2]) || 0;
+      const orientation = couplingOrientations[couplingIndex];
+
+      if (!orientation || orientation.length < 3) return;
+
+      // Extract rotation matrix components as numbers
+      const r11 = Number(orientation[0]?.[0]) || 1;
+      const r12 = Number(orientation[0]?.[1]) || 0;
+      const r13 = Number(orientation[0]?.[2]) || 0;
+      const r21 = Number(orientation[1]?.[0]) || 0;
+      const r22 = Number(orientation[1]?.[1]) || 1;
+      const r23 = Number(orientation[1]?.[2]) || 0;
+      const r31 = Number(orientation[2]?.[0]) || 0;
+      const r32 = Number(orientation[2]?.[1]) || 0;
+      const r33 = Number(orientation[2]?.[2]) || 1;
+
+      // Create tendon eyelets around the coupling point with proper orientation
+      for (let i = 0; i < tendonCount; i++) {
+        const angle = (2 * Math.PI * i) / tendonCount;
+
+        // Base eyelet position in local coordinate system
+        const localX = radius * Math.cos(angle);
+        const localY = radius * Math.sin(angle);
+        const localZ = offset;
+
+        // Transform local coordinates to global coordinates using rotation matrix
+        const globalX = x + r11 * localX + r12 * localY + r13 * localZ;
+        const globalY = y + r21 * localX + r22 * localY + r23 * localZ;
+        const globalZ = z + r31 * localX + r32 * localY + r33 * localZ;
+
+        // Get tendon analysis data for this tendon
+        const tendonId = i.toString();
+        const tendonData = tendonAnalysis.actuation_commands[tendonId];
+        const isActive =
+          tendonData && Math.abs(tendonData.length_change_m) > 0.001;
+
+        // Create eyelet sphere
+        elements.push(
+          <Sphere
+            key={`tendon-${couplingIndex}-${i}`}
+            args={[0.005, 8, 6]}
+            position={[globalX, globalY, globalZ]}
+          >
+            <meshStandardMaterial
+              color={isActive ? "#ef4444" : "#6b7280"}
+              metalness={0.8}
+              roughness={0.2}
+            />
+          </Sphere>
+        );
+
+        // Add tendon connection line to the coupling center
+        elements.push(
+          <Line
+            key={`tendon-line-${couplingIndex}-${i}`}
+            points={[
+              [globalX, globalY, globalZ],
+              [x, y, z + offset],
+            ]}
+            color={isActive ? "#dc2626" : "#9ca3af"}
+            lineWidth={1}
+            dashed={!isActive}
+          />
+        );
+      }
+    });
+
+    // Debug: Log the tendon analysis data structure
+    console.log("Tendon analysis debug:", {
+      hasTendonAnalysis: !!tendonAnalysis,
+      tendonAnalysisKeys: tendonAnalysis ? Object.keys(tendonAnalysis) : [],
+      routingPoints: tendonAnalysis?.tendon_analysis?.routing_points,
+      couplingPositionsLength: couplingPositions.length,
+    });
+
+    // Add tendon routing lines between consecutive coupling elements
+    if (couplingPositions.length > 1) {
+      for (
+        let couplingIndex = 0;
+        couplingIndex < couplingPositions.length - 1;
+        couplingIndex++
+      ) {
+        for (let tendonIndex = 0; tendonIndex < tendonCount; tendonIndex++) {
+          const currentCouplingPos = couplingPositions[couplingIndex];
+          const nextCouplingPos = couplingPositions[couplingIndex + 1];
+
+          if (currentCouplingPos.length < 3 || nextCouplingPos.length < 3)
+            continue;
+
+          // Get current eyelet position
+          const currentEyelet =
+            tendonAnalysis.tendon_analysis?.routing_points?.[couplingIndex]?.[
+              tendonIndex
+            ];
+          if (!currentEyelet || currentEyelet.length < 3) continue;
+
+          // Get next eyelet position
+          const nextEyelet =
+            tendonAnalysis.tendon_analysis?.routing_points?.[
+              couplingIndex + 1
+            ]?.[tendonIndex];
+          if (!nextEyelet || nextEyelet.length < 3) continue;
+
+          // Check if this tendon is active (has significant length change)
+          const tendonId = (tendonIndex + 1).toString();
+          const tendonData = tendonAnalysis.actuation_commands[tendonId];
+          const isActive =
+            tendonData && Math.abs(tendonData.length_change_m) > 0.001;
+
+          // Add tendon routing line between eyelets
+          elements.push(
+            <Line
+              key={`tendon-routing-${couplingIndex}-${tendonIndex}`}
+              points={[
+                [currentEyelet[0], currentEyelet[1], currentEyelet[2]],
+                [nextEyelet[0], nextEyelet[1], nextEyelet[2]],
+              ]}
+              color={isActive ? "#dc2626" : "#9ca3af"}
+              lineWidth={2}
+              dashed={!isActive}
+            />
+          );
+        }
+      }
+    }
+
+    return elements;
+  }, [tendonConfig, tendonAnalysis]);
 
   const { center, size } = useMemo(() => {
     const allPoints = segments
@@ -125,6 +307,7 @@ function Visualizer3D({ segments }: Visualizer3DProps) {
                 enablePan={true}
               />
               {lines}
+              {tendonElements}
             </Canvas>
 
             {/* Reset Button */}

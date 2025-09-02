@@ -3,7 +3,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 from app.auth import (
-    authenticate_user,
     create_access_token,
     create_verification_token,
     get_current_user,
@@ -45,7 +44,8 @@ class TestAuthComprehensive:
         assert result is True
 
     def test_get_password_hash_creates_different_hashes(self):
-        """Test that password hashing creates different hashes for same password."""
+        """Test that password hashing creates different hashes for same
+        password."""
         password = "testpassword"
         hash1 = get_password_hash(password)
         hash2 = get_password_hash(password)
@@ -213,7 +213,8 @@ class TestAuthComprehensive:
 
     @patch("app.auth.settings")
     def test_create_access_token_uses_settings(self, mock_settings):
-        """Test that create_access_token uses settings for default expiration."""
+        """Test that create_access_token uses settings for default
+        expiration."""
         mock_settings.access_token_expire_minutes = 30
         mock_settings.secret_key = "test_secret"
         mock_settings.algorithm = "HS256"

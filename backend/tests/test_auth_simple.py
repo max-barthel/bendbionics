@@ -30,7 +30,8 @@ class TestAuthSimple:
         assert result is False
 
     def test_get_password_hash_creates_different_hashes(self):
-        """Test that password hashing creates different hashes for same password."""
+        """Test that password hashing creates different hashes for same
+        password."""
         password = "testpassword"
         hash1 = get_password_hash(password)
         hash2 = get_password_hash(password)

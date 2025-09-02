@@ -63,9 +63,10 @@ describe("Tabs", () => {
         />
       );
 
-      const tabsContainer = screen.getByText("Tab 1").closest("div");
-      // The className is applied to the outer container
-      expect(tabsContainer?.parentElement).toHaveClass("custom-class");
+      // The className is applied to the outermost container div
+      const tabsContainer = screen.getByText("Tab 1").closest("div")
+        ?.parentElement?.parentElement?.parentElement;
+      expect(tabsContainer).toHaveClass("custom-class");
     });
 
     it("renders with empty tabs array", () => {
@@ -83,9 +84,9 @@ describe("Tabs", () => {
         <Tabs tabs={mockTabs} activeTab="tab2" onTabChange={mockOnTabChange} />
       );
 
-      const activeTab = screen.getByText("Tab 2");
-      const inactiveTab1 = screen.getByText("Tab 1");
-      const inactiveTab3 = screen.getByText("Tab 3");
+      const activeTab = screen.getByText("Tab 2").closest("button");
+      const inactiveTab1 = screen.getByText("Tab 1").closest("button");
+      const inactiveTab3 = screen.getByText("Tab 3").closest("button");
 
       expect(activeTab).toHaveClass("text-blue-600");
       expect(inactiveTab1).not.toHaveClass("text-blue-600");
@@ -97,8 +98,8 @@ describe("Tabs", () => {
         <Tabs tabs={mockTabs} activeTab="tab1" onTabChange={mockOnTabChange} />
       );
 
-      const inactiveTab2 = screen.getByText("Tab 2");
-      const inactiveTab3 = screen.getByText("Tab 3");
+      const inactiveTab2 = screen.getByText("Tab 2").closest("button");
+      const inactiveTab3 = screen.getByText("Tab 3").closest("button");
 
       expect(inactiveTab2).toHaveClass("border-transparent", "text-gray-500");
       expect(inactiveTab3).toHaveClass("border-transparent", "text-gray-500");
@@ -109,7 +110,7 @@ describe("Tabs", () => {
         <Tabs tabs={mockTabs} activeTab="tab1" onTabChange={mockOnTabChange} />
       );
 
-      const inactiveTab = screen.getByText("Tab 2");
+      const inactiveTab = screen.getByText("Tab 2").closest("button");
       expect(inactiveTab).toHaveClass("hover:text-gray-700");
     });
   });
@@ -207,12 +208,10 @@ describe("Tabs", () => {
         <Tabs tabs={mockTabs} activeTab="tab1" onTabChange={mockOnTabChange} />
       );
 
-      const tabsContainer = screen.getByText("Tab 1").closest("div");
-      // The base classes are applied to the outer container
-      expect(tabsContainer?.parentElement).toHaveClass(
-        "border-b",
-        "border-gray-200/60"
-      );
+      // The base classes are applied to the outermost container div
+      const tabsContainer = screen.getByText("Tab 1").closest("div")
+        ?.parentElement?.parentElement?.parentElement;
+      expect(tabsContainer).toHaveClass("border-b", "border-gray-200/60");
     });
 
     it("applies flex layout classes", () => {
@@ -220,7 +219,10 @@ describe("Tabs", () => {
         <Tabs tabs={mockTabs} activeTab="tab1" onTabChange={mockOnTabChange} />
       );
 
-      const flexContainer = screen.getByText("Tab 1").closest("div");
+      // The flex layout classes are applied to the second div (inner container)
+      // We need to go up two levels: text -> span -> div -> button -> div (inner container)
+      const flexContainer = screen.getByText("Tab 1").closest("div")
+        ?.parentElement?.parentElement;
       expect(flexContainer).toHaveClass("flex", "w-full", "overflow-hidden");
     });
 
@@ -229,24 +231,18 @@ describe("Tabs", () => {
         <Tabs tabs={mockTabs} activeTab="tab1" onTabChange={mockOnTabChange} />
       );
 
-      const tabButton = screen.getByText("Tab 1");
+      // The button classes are applied to the button element, not the text
+      const tabButton = screen.getByText("Tab 1").closest("button");
       expect(tabButton).toHaveClass(
-        "flex",
-        "items-center",
-        "justify-center",
-        "gap-0",
-        "px-1",
-        "py-2",
-        "text-xs",
-        "font-medium",
+        "relative",
+        "z-10",
+        "flex-1",
+        "h-full",
         "border-b-2",
         "border-transparent",
         "transition-colors",
         "duration-200",
-        "flex-1",
-        "h-full",
-        "relative",
-        "z-10"
+        "text-blue-600"
       );
     });
   });

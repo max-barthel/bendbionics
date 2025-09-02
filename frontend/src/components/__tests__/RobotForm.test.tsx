@@ -364,9 +364,7 @@ describe("RobotForm", () => {
 
     // Wait for the progress indicator to appear
     await waitFor(() => {
-      expect(
-        screen.getByText(/Computing robot configuration/)
-      ).toBeInTheDocument();
+      expect(screen.getByText("Computing...")).toBeInTheDocument();
     });
   });
 

@@ -18,7 +18,9 @@ function SubmitButton({
       onClick={onClick}
       disabled={disabled}
       loading={loading}
-      className="w-full max-w-xs"
+      className={`w-full max-w-xs transition-all duration-200 ${
+        loading ? "shadow-lg scale-[0.98]" : "hover:scale-[1.02]"
+      }`}
     >
       {loading ? "Computing..." : "Compute"}
     </Button>

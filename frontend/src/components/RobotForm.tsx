@@ -3,13 +3,7 @@ import { robotAPI, type PCCParams } from "../api/client";
 import { useRobotState, type RobotState } from "../hooks/useRobotState";
 import ArrayInputGroup from "./ArrayInputGroup";
 import SubmitButton from "./SubmitButton";
-import {
-  Card,
-  LoadingSpinner,
-  ProgressIndicator,
-  SliderInput,
-  Typography,
-} from "./ui";
+import { Card, LoadingSpinner, SliderInput, Typography } from "./ui";
 
 type FormProps = {
   onResult: (
@@ -437,15 +431,6 @@ function Form({ onResult, initialConfiguration }: FormProps) {
             step={100}
             placeholder="Steps"
           />
-
-          {loading && (
-            <div className="mb-4">
-              <ProgressIndicator
-                progress={computationProgress}
-                message="Computing robot configuration..."
-              />
-            </div>
-          )}
 
           <div>
             <SubmitButton onClick={handleSubmit} loading={loading} />
