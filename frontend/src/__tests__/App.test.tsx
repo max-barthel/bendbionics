@@ -44,8 +44,130 @@ vi.mock("../components/ui", () => ({
       Loading Spinner ({size}, {color})
     </div>
   ),
-  Typography: ({ variant, color, children, className }: any) => (
+  Typography: ({ variant, children, className }: any) => (
     <div data-testid={`typography-${variant}`} className={className}>
+      {children}
+    </div>
+  ),
+  Button: ({
+    children,
+    onClick,
+    disabled,
+    loading,
+    className,
+    ...props
+  }: any) => (
+    <button
+      data-testid="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={className}
+      {...props}
+    >
+      {children}
+    </button>
+  ),
+  Alert: ({ children, variant, className }: any) => (
+    <div data-testid={`alert-${variant}`} className={className}>
+      {children}
+    </div>
+  ),
+  Badge: ({ children, variant, className }: any) => (
+    <span data-testid={`badge-${variant}`} className={className}>
+      {children}
+    </span>
+  ),
+  Card: ({ children, className }: any) => (
+    <div data-testid="card" className={className}>
+      {children}
+    </div>
+  ),
+  Input: ({ placeholder, value, onChange, className }: any) => (
+    <input
+      data-testid="input"
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      className={className}
+    />
+  ),
+  LoadingOverlay: ({ children, isLoading, className }: any) => (
+    <div data-testid="loading-overlay" className={className}>
+      {isLoading ? "Loading..." : children}
+    </div>
+  ),
+  Notification: ({ children, variant, className }: any) => (
+    <div data-testid={`notification-${variant}`} className={className}>
+      {children}
+    </div>
+  ),
+  NumberInput: ({ value, onChange, className }: any) => (
+    <input
+      data-testid="number-input"
+      type="number"
+      value={value}
+      onChange={onChange}
+      className={className}
+      aria-label="Number input"
+    />
+  ),
+  ProgressIndicator: ({ value, max, className }: any) => (
+    <div data-testid="progress-indicator" className={className}>
+      Progress: {value}/{max}
+    </div>
+  ),
+  SkeletonLoader: ({ className }: any) => (
+    <div data-testid="skeleton-loader" className={className}>
+      Loading...
+    </div>
+  ),
+  SliderInput: ({ value, onChange, className }: any) => (
+    <input
+      data-testid="slider-input"
+      type="range"
+      value={value}
+      onChange={onChange}
+      className={className}
+      aria-label="Slider input"
+    />
+  ),
+  Table: ({ children, className }: any) => (
+    <table data-testid="table" className={className}>
+      {children}
+    </table>
+  ),
+  TableBody: ({ children, className }: any) => (
+    <tbody data-testid="table-body" className={className}>
+      {children}
+    </tbody>
+  ),
+  TableCell: ({ children, className }: any) => (
+    <td data-testid="table-cell" className={className}>
+      {children}
+    </td>
+  ),
+  TableHead: ({ children, className }: any) => (
+    <thead data-testid="table-head" className={className}>
+      {children}
+    </thead>
+  ),
+  TableHeader: ({ children, className }: any) => (
+    <th data-testid="table-header" className={className}>
+      {children}
+    </th>
+  ),
+  TableRow: ({ children, className }: any) => (
+    <tr data-testid="table-row" className={className}>
+      {children}
+    </tr>
+  ),
+  TabPanel: ({ children, className }: any) => (
+    <div data-testid="tab-panel" className={className}>
+      {children}
+    </div>
+  ),
+  Tabs: ({ children, className }: any) => (
+    <div data-testid="tabs" className={className}>
       {children}
     </div>
   ),

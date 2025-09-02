@@ -64,6 +64,15 @@ describe("SubmitButton", () => {
       expect(button).toBeDisabled();
       expect(button).toHaveAttribute("aria-label", "computing");
     });
+
+    it("renders with loading state and custom props", () => {
+      render(<SubmitButton onClick={mockOnClick} loading={true} />);
+
+      const button = screen.getByTestId("submit-button");
+      expect(button).toBeInTheDocument();
+      expect(button).toHaveTextContent("Computing...");
+      expect(button).toHaveAttribute("aria-label", "computing");
+    });
   });
 
   describe("Click Handling", () => {

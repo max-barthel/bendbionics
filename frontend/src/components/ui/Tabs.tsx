@@ -20,17 +20,19 @@ export function Tabs({
   className = "",
 }: TabsProps) {
   const activeIndex = tabs.findIndex((tab) => tab.id === activeTab);
-  const tabWidth = 100 / tabs.length;
+  const tabWidth = 100 / tabs.length; // Calculate width dynamically
+  const highlightLeft = activeIndex * tabWidth;
+  const highlightWidth = tabWidth;
 
   return (
     <div className={`border-b border-gray-200/60 h-10 ${className}`}>
       <div className="flex w-full overflow-hidden h-full relative">
-        {/* Sliding highlight background using CSS custom properties */}
+        {/* Sliding highlight background */}
         <div
           className="absolute top-0 h-full bg-gradient-to-r from-blue-50/80 to-indigo-50/60 border-b-2 border-blue-500 transition-all duration-300 ease-in-out"
           style={{
-            left: `${activeIndex * tabWidth}%`,
-            width: `${tabWidth}%`,
+            left: `${highlightLeft}%`,
+            width: `${highlightWidth}%`,
           }}
         />
 
@@ -38,14 +40,21 @@ export function Tabs({
           <button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`flex items-center justify-center gap-0 px-1 py-2 text-xs font-medium border-b-2 border-transparent transition-colors duration-200 flex-1 h-full relative z-10 ${
+            className={`relative z-10 flex-1 h-full border-b-2 border-transparent transition-colors duration-200 ${
               activeTab === tab.id
                 ? "text-blue-600"
                 : "text-gray-500 hover:text-gray-700"
             }`}
+            style={{ minWidth: 0 }}
           >
-            {tab.icon && <span className="w-3 h-3">{tab.icon}</span>}
-            {tab.label}
+            <div className="flex items-center justify-center h-full w-full px-1">
+              {tab.icon && (
+                <span className="w-3 h-3 mr-1 flex-shrink-0">{tab.icon}</span>
+              )}
+              <span className="text-xs font-medium text-center leading-tight">
+                {tab.label}
+              </span>
+            </div>
           </button>
         ))}
       </div>

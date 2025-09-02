@@ -2,8 +2,9 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from app.config import settings
+from app.database import get_session
 from app.models import TokenData, User
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -57,7 +58,8 @@ def verify_token(token: str) -> Optional[TokenData]:
 
 
 def get_current_user(
-    session: Session, credentials: HTTPAuthorizationCredentials
+    credentials: HTTPAuthorizationCredentials,
+    session: Session = Depends(get_session),
 ) -> User:
     """Get current user from JWT token"""
     token = credentials.credentials

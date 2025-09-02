@@ -1,6 +1,8 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import FormTabs from "./components/FormTabs";
+import SubmitButton from "./components/SubmitButton";
+
 import { AuthPage } from "./components/auth/AuthPage";
 
 import { LoadingSpinner, Typography } from "./components/ui";
@@ -14,6 +16,8 @@ function AppContent() {
   const navigate = useNavigate();
   const [segments, setSegments] = useState<number[][][]>([]);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [triggerComputation, setTriggerComputation] = useState(false);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentConfiguration, setCurrentConfiguration] = useState<
@@ -107,48 +111,50 @@ function AppContent() {
         element={
           <div className="h-screen flex flex-col">
             <div className="bg-white/90 backdrop-blur-sm border-b border-gray-200/60 px-4 py-3 shadow-sm flex-shrink-0">
-              <div className="flex items-center justify-end">
-                {user ? (
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                        <svg
-                          className="w-3 h-3 text-blue-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {user ? (
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                          <svg
+                            className="w-3 h-3 text-blue-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
+                          </svg>
+                        </div>
+                        <span className="font-medium">{user.username}</span>
                       </div>
-                      <span className="font-medium">{user.username}</span>
+                      <button
+                        onClick={handleLogout}
+                        className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                      >
+                        Logout
+                      </button>
                     </div>
+                  ) : (
                     <button
-                      onClick={handleLogout}
-                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log("Button clicked");
+                        handleSignIn();
+                      }}
+                      className="px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors cursor-pointer z-10 relative bg-white/80 backdrop-blur-sm border border-blue-200/40 rounded-md hover:bg-white hover:shadow-sm"
                     >
-                      Logout
+                      Sign In
                     </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log("Button clicked");
-                      handleSignIn();
-                    }}
-                    className="px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors cursor-pointer z-10 relative bg-white/80 backdrop-blur-sm border border-blue-200/40 rounded-md hover:bg-white hover:shadow-sm"
-                  >
-                    Sign In
-                  </button>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 
@@ -168,6 +174,9 @@ function AppContent() {
                     currentConfiguration={currentConfiguration}
                     onLoadPreset={handleLoadPreset}
                     navigate={navigate}
+                    onLoadingChange={setLoading}
+                    triggerComputation={triggerComputation}
+                    onComputationTriggered={() => setTriggerComputation(false)}
                   />
                 </div>
               </div>
@@ -223,9 +232,24 @@ function AppContent() {
                     </div>
                   }
                 >
-                  <Visualizer3D segments={segments} />
+                  <Visualizer3D
+                    segments={segments}
+                    tendonConfig={currentConfiguration.tendonConfig}
+                    tendonAnalysis={currentConfiguration.tendonAnalysis}
+                  />
                 </Suspense>
               </div>
+            </div>
+
+            {/* Floating Compute Button */}
+            <div className="fixed bottom-6 right-6 z-50">
+              <SubmitButton
+                onClick={() => {
+                  // Trigger computation from FormTabs
+                  setTriggerComputation(true);
+                }}
+                loading={loading}
+              />
             </div>
           </div>
         }

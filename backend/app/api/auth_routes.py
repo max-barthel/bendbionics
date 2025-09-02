@@ -104,7 +104,7 @@ async def get_current_user_info(
     session: Session = Depends(get_session),
 ):
     """Get current user information"""
-    current_user = get_current_user(session, credentials)
+    current_user = get_current_user(credentials, session)
     return UserResponse(
         id=current_user.id,
         username=current_user.username,
