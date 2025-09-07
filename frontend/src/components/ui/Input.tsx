@@ -43,17 +43,17 @@ function Input({
   const shouldFloat = isFocused || hasValue;
 
   const baseClasses =
-    "border rounded-lg bg-white/90 backdrop-blur-sm text-neutral-900 placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 transition-all duration-200 disabled:opacity-50 shadow-sm hover:shadow-md";
+    "border border-white/30 rounded-full bg-white/20 backdrop-blur-xl text-gray-800 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/30 focus:bg-white/30 transition-all duration-300 disabled:opacity-50 shadow-2xl hover:shadow-2xl";
 
   const sizeClasses = {
-    sm: "px-2 py-2 text-sm",
+    sm: "pl-4 pr-2 py-2 text-sm",
     md: "px-3 py-2.5 text-sm",
     lg: "px-4 py-3 text-base",
   };
 
   const errorClasses = error
-    ? "border-red-300 focus:ring-red-400/50"
-    : "border-neutral-300/60";
+    ? "border-red-400/50 focus:ring-red-400/50"
+    : "border-white/30";
   const classes = `${baseClasses} ${sizeClasses[size]} ${errorClasses} ${className}`;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,8 +97,8 @@ function Input({
           htmlFor={id}
           className={`absolute left-3 pointer-events-none transition-all duration-200 ${
             shouldFloat
-              ? "top-0 transform -translate-y-1/2 text-xs text-neutral-500 bg-white/90 backdrop-blur-sm px-1.5"
-              : "top-1/2 transform -translate-y-1/2 text-sm text-neutral-500"
+              ? "top-0 transform -translate-y-1/2 text-xs text-gray-600 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full px-1.5"
+              : "top-1/2 transform -translate-y-1/2 text-sm text-gray-600"
           }`}
         >
           {label}

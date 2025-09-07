@@ -101,7 +101,7 @@ function Notification({
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 p-4 rounded-lg border-l-4 shadow-lg max-w-sm ${typeClasses[type]}`}
+      className={`fixed top-4 right-4 z-50 p-4 rounded-full border-l-4 shadow-lg max-w-sm ${typeClasses[type]}`}
       role="alert"
     >
       <div className="flex items-start">
@@ -116,7 +116,7 @@ function Notification({
           <button
             type="button"
             onClick={onClose}
-            className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${closeButtonClasses[type]}`}
+            className={`inline-flex rounded-full p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${closeButtonClasses[type]}`}
             aria-label="Close notification"
           >
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

@@ -22,7 +22,7 @@ function Badge({
   children,
   className = "",
 }: BadgeProps) {
-  const baseClasses = "inline-flex items-center font-medium rounded-md";
+  const baseClasses = "inline-flex items-center font-medium rounded-full";
 
   const variantClasses = {
     primary: "bg-blue-100 text-blue-800",

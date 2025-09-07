@@ -1,8 +1,9 @@
 import { Line, OrbitControls, Sphere } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { LoadingSpinner, Typography } from "./ui";
+import { TendonResultsPanel } from "./TendonResultsPanel";
+import { Typography } from "./ui";
 
 type Visualizer3DProps = {
   segments: number[][][];
@@ -28,14 +29,17 @@ type Visualizer3DProps = {
       routing_points: number[][][];
     };
   };
+  sidebarCollapsed: boolean;
 };
 
 function Visualizer3D({
   segments,
   tendonConfig,
   tendonAnalysis,
+  sidebarCollapsed,
 }: Visualizer3DProps) {
   const controlsRef = useRef<OrbitControlsImpl>(null);
+  const [showResultsPanel, setShowResultsPanel] = useState(false);
 
   const lines = useMemo(() => {
     return segments
@@ -267,14 +271,62 @@ function Visualizer3D({
     <div className="h-full flex flex-col">
       <div className="flex-1 relative">
         {!hasData ? (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-50/80 to-blue-50/40">
-            <LoadingSpinner size="lg" color="primary" className="mb-4" />
-            <Typography variant="h3" color="gray" className="mb-2">
-              Waiting for computation...
-            </Typography>
-            <Typography variant="body" color="gray">
-              Enter parameters and click Compute to visualize
-            </Typography>
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100/80 to-gray-200/60">
+            <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-xl shadow-2xl p-8 max-w-md mx-4">
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-6">
+                  {/* Floating geometric shapes animation */}
+                  <div className="w-20 h-20 relative">
+                    {/* Main rotating ring */}
+                    <div className="absolute inset-0 border-2 border-blue-400/30 rounded-full animate-spin">
+                      <div className="absolute top-0 left-1/2 w-2 h-2 bg-blue-500 rounded-full transform -translate-x-1/2 -translate-y-1"></div>
+                    </div>
+
+                    {/* Inner pulsing circle */}
+                    <div className="absolute inset-2 border border-indigo-400/40 rounded-full animate-pulse"></div>
+
+                    {/* Center dot with glow */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full shadow-lg animate-pulse"></div>
+                    </div>
+
+                    {/* Floating particles */}
+                    <div
+                      className="absolute -top-2 -right-2 w-2 h-2 bg-blue-400/60 rounded-full animate-bounce"
+                      style={{ animationDelay: "0s", animationDuration: "2s" }}
+                    ></div>
+                    <div
+                      className="absolute -bottom-2 -left-2 w-1.5 h-1.5 bg-indigo-400/60 rounded-full animate-bounce"
+                      style={{
+                        animationDelay: "1s",
+                        animationDuration: "2.5s",
+                      }}
+                    ></div>
+                    <div
+                      className="absolute top-1/2 -left-3 w-1 h-1 bg-blue-300/60 rounded-full animate-bounce"
+                      style={{
+                        animationDelay: "0.5s",
+                        animationDuration: "3s",
+                      }}
+                    ></div>
+                  </div>
+                </div>
+                <Typography
+                  variant="h3"
+                  className="text-gray-800 mb-3 font-semibold"
+                >
+                  Ready to Compute
+                </Typography>
+                <Typography
+                  variant="body"
+                  className="text-gray-600 leading-relaxed"
+                >
+                  Configure your robot parameters and click{" "}
+                  <span className="font-medium text-gray-800">Compute</span> to
+                  see the 3D visualization
+                </Typography>
+              </div>
+            </div>
           </div>
         ) : (
           <>
@@ -287,7 +339,7 @@ function Visualizer3D({
                 ],
                 fov: 45,
                 up: [0, 0, 1],
-                near: 0.1, // Optional, default is 0.1
+                near: 0.01,
                 far: size * 15,
               }}
             >
@@ -313,7 +365,9 @@ function Visualizer3D({
             {/* Reset Button */}
             <button
               onClick={resetView}
-              className="absolute top-4 right-4 px-4 py-2 bg-white/90 backdrop-blur-sm text-gray-700 text-sm font-medium border border-gray-200/60 shadow-lg hover:bg-white hover:shadow-xl transition-all duration-200 rounded-lg hover:scale-105"
+              className={`absolute top-4 px-4 py-2 bg-white/20 backdrop-blur-xl text-gray-800 text-sm font-medium border border-white/30 shadow-2xl hover:bg-white/30 hover:shadow-2xl transition-all duration-300 rounded-full hover:scale-105 ${
+                sidebarCollapsed ? "left-4" : "left-[calc(384px+16px)]"
+              }`}
             >
               <div className="flex items-center gap-2">
                 <svg
@@ -332,6 +386,13 @@ function Visualizer3D({
                 Reset View
               </div>
             </button>
+
+            {/* Tendon Results Panel */}
+            <TendonResultsPanel
+              tendonAnalysis={tendonAnalysis}
+              isVisible={showResultsPanel}
+              onToggle={() => setShowResultsPanel(!showResultsPanel)}
+            />
           </>
         )}
       </div>

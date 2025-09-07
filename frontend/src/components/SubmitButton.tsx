@@ -18,11 +18,11 @@ function SubmitButton({
       onClick={onClick}
       disabled={disabled}
       loading={loading}
-      className={`w-full max-w-xs transition-all duration-200 ${
-        loading ? "shadow-lg scale-[0.98]" : "hover:scale-[1.02]"
+      className={`px-4 py-2 bg-white/20 backdrop-blur-xl border border-white/30 shadow-2xl hover:bg-white/30 hover:shadow-2xl transition-all duration-300 rounded-full ${
+        loading ? "scale-[0.98]" : "hover:scale-105"
       }`}
     >
-      {loading ? "Computing..." : "Compute"}
+      {loading ? "Processing..." : "Compute"}
     </Button>
   );
 }

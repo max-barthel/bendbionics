@@ -11,7 +11,7 @@ const Alert: React.FC<AlertProps> = ({
   variant = "info",
   className = "",
 }) => {
-  const baseClasses = "p-4 rounded-lg border-l-4";
+  const baseClasses = "p-4 rounded-full border-l-4";
 
   const variantClasses = {
     success: "bg-green-50 border-green-400 text-green-800",

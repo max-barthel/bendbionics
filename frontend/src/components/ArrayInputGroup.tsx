@@ -1,6 +1,5 @@
 import { useState } from "react";
-import NumberInput from "./NumberInput";
-import { LoadingSpinner, Typography } from "./ui";
+import { LoadingSpinner, NumberInput, Typography, UnitSelector } from "./ui";
 
 type UnitMode = "angle" | "length";
 
@@ -77,7 +76,7 @@ function ArrayInputGroup({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Typography
@@ -90,42 +89,22 @@ function ArrayInputGroup({
           </Typography>
           {isUpdating && <LoadingSpinner size="sm" color="primary" />}
         </div>
-        <div className="flex bg-gray-100 rounded-lg p-1">
-          {unitOptions.map((u) => (
-            <button
-              key={u}
-              onClick={() => handleUnitChange(u)}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 ${
-                unit === u
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-              }`}
-              aria-label={`${label} unit ${u}`}
-            >
-              {u}
-            </button>
-          ))}
-        </div>
+        <UnitSelector
+          units={unitOptions}
+          selectedUnit={unit}
+          onUnitChange={handleUnitChange}
+          ariaLabel={label}
+        />
       </div>
 
-      <div
-        className={`grid gap-3 ${
-          values.length <= 3
-            ? "grid-cols-3"
-            : values.length <= 5
-            ? "grid-cols-3"
-            : values.length <= 8
-            ? "grid-cols-4"
-            : "grid-cols-5"
-        }`}
-      >
+      <div className="grid gap-3 ml-2 grid-cols-3">
         {values.map((val, idx) => (
           <NumberInput
             key={idx}
             value={Number(convertFromSI(val).toFixed(4))} // Rounded for UI
             onChange={(value) => handleValueChange(idx, value)}
             placeholder={`#${idx + 1}`}
-            label={`${idx + 1}`}
+            size="sm"
           />
         ))}
       </div>

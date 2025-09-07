@@ -5,6 +5,7 @@ import SubmitButton from "./components/SubmitButton";
 
 import { AuthPage } from "./components/auth/AuthPage";
 
+import { PresetManager } from "./components/presets/PresetManager";
 import { LoadingSpinner, Typography } from "./components/ui";
 import { AuthProvider, useAuth } from "./providers";
 
@@ -23,6 +24,7 @@ function AppContent() {
   const [currentConfiguration, setCurrentConfiguration] = useState<
     Record<string, any>
   >({});
+  const [showPresetManager, setShowPresetManager] = useState(false);
 
   // Test localStorage functionality
   useEffect(() => {
@@ -110,63 +112,46 @@ function AppContent() {
         path="/"
         element={
           <div className="h-screen flex flex-col">
-            <div className="bg-white/90 backdrop-blur-sm border-b border-gray-200/60 px-4 py-3 shadow-sm flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {user ? (
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                          <svg
-                            className="w-3 h-3 text-blue-600"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                            />
-                          </svg>
-                        </div>
-                        <span className="font-medium">{user.username}</span>
+            <div className="flex-1 bg-gradient-to-br from-gray-200 to-gray-300 relative overflow-hidden">
+              {/* Full-width visualizer */}
+              <div className="w-full h-full bg-white/10 backdrop-blur-sm relative">
+                <Suspense
+                  fallback={
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                      <div className="text-center">
+                        <LoadingSpinner
+                          size="lg"
+                          color="primary"
+                          className="mb-4"
+                        />
+                        <Typography variant="h3" color="gray" className="mb-2">
+                          Loading 3D Visualizer...
+                        </Typography>
+                        <Typography variant="body" color="gray">
+                          Initializing Three.js components
+                        </Typography>
                       </div>
-                      <button
-                        onClick={handleLogout}
-                        className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                      >
-                        Logout
-                      </button>
                     </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log("Button clicked");
-                        handleSignIn();
-                      }}
-                      className="px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors cursor-pointer z-10 relative bg-white/80 backdrop-blur-sm border border-blue-200/40 rounded-md hover:bg-white hover:shadow-sm"
-                    >
-                      Sign In
-                    </button>
-                  )}
-                </div>
+                  }
+                >
+                  <Visualizer3D
+                    segments={segments}
+                    tendonConfig={currentConfiguration.tendonConfig}
+                    tendonAnalysis={currentConfiguration.tendonAnalysis}
+                    sidebarCollapsed={sidebarCollapsed}
+                  />
+                </Suspense>
               </div>
-            </div>
 
-            <div className="flex flex-1 bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
+              {/* Sidebar Overlay */}
               <div
-                className={`bg-white/80 backdrop-blur-sm border-r border-gray-200/60 shadow-sm transition-all duration-500 ease-in-out overflow-hidden ${
+                className={`fixed top-0 left-0 h-full bg-white/15 backdrop-blur-3xl border-r border-white/30 shadow-2xl transition-all duration-500 ease-in-out overflow-hidden z-40 ${
                   sidebarCollapsed
                     ? "w-0 -translate-x-full opacity-0"
-                    : "w-96 translate-x-0 opacity-100"
+                    : "w-96 translate-x-0 opacity-100 rounded-r-2xl"
                 }`}
               >
-                <div className="w-96 h-full">
+                <div className="w-96 h-full pr-2">
                   <FormTabs
                     onResult={handleFormResult}
                     initialConfiguration={currentConfiguration}
@@ -177,6 +162,7 @@ function AppContent() {
                     onLoadingChange={setLoading}
                     triggerComputation={triggerComputation}
                     onComputationTriggered={() => setTriggerComputation(false)}
+                    onShowPresetManager={() => setShowPresetManager(true)}
                   />
                 </div>
               </div>
@@ -184,7 +170,7 @@ function AppContent() {
               {/* Hide button - positioned outside sidebar */}
               <button
                 onClick={toggleSidebar}
-                className={`absolute top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm border border-gray-300/60 rounded-full p-1.5 shadow-lg hover:bg-white hover:shadow-xl transition-all duration-300 ease-in-out z-50 ${
+                className={`fixed top-1/2 transform -translate-y-1/2 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105 ${
                   sidebarCollapsed
                     ? "left-4 translate-x-0"
                     : "left-[calc(384px-16px)] translate-x-0"
@@ -208,41 +194,113 @@ function AppContent() {
                 </svg>
               </button>
 
-              <div
-                className={`bg-white/90 backdrop-blur-sm relative transition-all duration-500 ease-in-out ${
-                  sidebarCollapsed ? "w-full" : "w-[calc(100%-384px)]"
-                }`}
-              >
-                <Suspense
-                  fallback={
-                    <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                      <div className="text-center">
-                        <LoadingSpinner
-                          size="lg"
-                          color="primary"
-                          className="mb-4"
+              {/* Floating User Menu */}
+              <div className="fixed top-4 right-4 z-50">
+                {user ? (
+                  <div className="group relative">
+                    <button className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full shadow-2xl hover:bg-white/30 hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                      <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                        <svg
+                          className="w-3 h-3 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-medium text-gray-800">
+                        {user.username}
+                      </span>
+                      <svg
+                        className="w-4 h-4 text-gray-600 transition-transform group-hover:rotate-180"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
                         />
-                        <Typography variant="h3" color="gray" className="mb-2">
-                          Loading 3D Visualizer...
-                        </Typography>
-                        <Typography variant="body" color="gray">
-                          Initializing Three.js components
-                        </Typography>
+                      </svg>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-white/20 backdrop-blur-xl border border-white/30 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                      <div className="p-3 border-b border-white/20">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                            <svg
+                              className="w-4 h-4 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                              />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">
+                              {user.username}
+                            </p>
+                            <p className="text-xs text-gray-600">Signed in</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-1">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white/30 rounded-lg transition-colors"
+                        >
+                          Sign Out
+                        </button>
                       </div>
                     </div>
-                  }
-                >
-                  <Visualizer3D
-                    segments={segments}
-                    tendonConfig={currentConfiguration.tendonConfig}
-                    tendonAnalysis={currentConfiguration.tendonAnalysis}
-                  />
-                </Suspense>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleSignIn}
+                    className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full shadow-2xl hover:bg-white/30 hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                  >
+                    <svg
+                      className="w-4 h-4 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-800">
+                      Sign In
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
 
             {/* Floating Compute Button */}
-            <div className="fixed bottom-6 right-6 z-50">
+            <div
+              className={`fixed bottom-6 z-50 transition-all duration-500 ease-in-out ${
+                sidebarCollapsed ? "left-6" : "left-[calc(384px+16px)]"
+              }`}
+            >
               <SubmitButton
                 onClick={() => {
                   // Trigger computation from FormTabs
@@ -251,6 +309,47 @@ function AppContent() {
                 loading={loading}
               />
             </div>
+
+            {/* Preset Manager Modal */}
+            {showPresetManager && (
+              <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="bg-white/20 backdrop-blur-2xl border border-white/30 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+                  <div className="flex items-center justify-between p-6 border-b border-white/30">
+                    <Typography variant="h3" className="text-gray-800">
+                      Preset Manager
+                    </Typography>
+                    <button
+                      onClick={() => setShowPresetManager(false)}
+                      className="text-gray-500 hover:text-gray-700 transition-colors"
+                      aria-label="Close preset manager"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="p-6 overflow-y-auto max-h-[60vh]">
+                    <PresetManager
+                      currentConfiguration={currentConfiguration || {}}
+                      onLoadPreset={(config) => {
+                        handleLoadPreset(config);
+                        setShowPresetManager(false);
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         }
       />
