@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { TahoeNumberInput } from "./TahoeNumberInput";
 
 type SliderInputProps = {
   value: number;
@@ -23,47 +24,14 @@ function SliderInput({
   disabled = false,
   className = "",
 }: SliderInputProps) {
-  const [inputValue, setInputValue] = useState<string>(value.toString());
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = Number(e.target.value);
     onChange(newValue);
-    setInputValue(newValue.toString());
   };
-
-  const handleInputChange = (newValue: string | number) => {
-    if (typeof newValue === "string") {
-      setInputValue(newValue);
-      const parsed = parseFloat(newValue);
-      if (!isNaN(parsed) && parsed >= min && parsed <= max) {
-        onChange(parsed);
-      }
-    } else {
-      onChange(newValue);
-      setInputValue(newValue.toString());
-    }
-  };
-
-  const handleInputBlur = () => {
-    const parsed = parseFloat(inputValue);
-    if (isNaN(parsed) || parsed < min) {
-      setInputValue(min.toString());
-      onChange(min);
-    } else if (parsed > max) {
-      setInputValue(max.toString());
-      onChange(max);
-    }
-  };
-
-  // Sync input value when external value changes
-  React.useEffect(() => {
-    setInputValue(value.toString());
-  }, [value]);
 
   const sliderId = `slider-${
-    label?.toLowerCase().replace(/\s+/g, "-") || "input"
-  }`;
-  const inputId = `input-${
     label?.toLowerCase().replace(/\s+/g, "-") || "input"
   }`;
 
@@ -71,10 +39,18 @@ function SliderInput({
     <div className={`space-y-4 ${className}`}>
       {label && (
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-neutral-700">{label}</span>
-          <span className="text-xs text-neutral-400 bg-neutral-100 px-2 py-1 rounded-full">
+          <span className="text-sm font-medium text-gray-800">{label}</span>
+          <div
+            className="text-xs text-gray-600 bg-white/10 backdrop-blur-xl border border-white/20 px-3 py-1.5 rounded-full shadow-2xl shadow-black/5"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+              boxShadow:
+                "0 8px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
+            }}
+          >
             {min} - {max}
-          </span>
+          </div>
         </div>
       )}
 
@@ -88,47 +64,45 @@ function SliderInput({
             step={step}
             value={value}
             onChange={handleSliderChange}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             disabled={disabled}
             aria-label={label || "Slider input"}
-            className="w-full h-1.5 bg-neutral-200 rounded-full appearance-none cursor-pointer
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
+            className="w-full h-2 bg-gray-200/60 backdrop-blur-xl border border-gray-300/50 rounded-full appearance-none cursor-pointer
+                     focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-opacity-50
                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4
-                     [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:cursor-pointer
-                     [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-500 [&::-webkit-slider-thumb]:shadow-lg
-                     [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200
-                     [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:hover:shadow-xl
+                     [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white/60 [&::-webkit-slider-thumb]:cursor-pointer
+                     [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-gray-400/60 [&::-webkit-slider-thumb]:shadow-2xl
+                     [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-300
+                     [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:hover:shadow-2xl
                      [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full
-                     [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2
-                     [&::-moz-range-thumb]:border-blue-500 [&::-moz-range-thumb]:shadow-lg
+                     [&::-moz-range-thumb]:bg-white/60 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2
+                     [&::-moz-range-thumb]:border-gray-400/60 [&::-moz-range-thumb]:shadow-2xl
                      disabled:opacity-50 disabled:cursor-not-allowed"
           />
           <div
-            className={`absolute top-0 h-1.5 bg-blue-500 rounded-full pointer-events-none transition-all duration-200 w-[${Math.max(
-              0,
-              Math.min(100, ((value - min) / (max - min)) * 100)
-            )}%]`}
+            className={`absolute top-0 h-2 bg-blue-500 rounded-full pointer-events-none transition-all duration-200`}
+            style={{
+              width: `${Math.max(
+                0,
+                Math.min(100, ((value - min) / (max - min)) * 100)
+              )}%`,
+            }}
           />
         </div>
 
         <div className="w-20">
-          <div className="relative">
-            <input
-              id={inputId}
-              type="number"
-              value={inputValue}
-              onChange={(e) => handleInputChange(e.target.value)}
-              onBlur={handleInputBlur}
-              placeholder={placeholder}
-              disabled={disabled}
-              min={min}
-              max={max}
-              step={step}
-              className="w-full px-2 py-1.5 text-sm bg-neutral-50 border-0 rounded-md
-                       focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white
-                       transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
-                       text-center font-semibold text-neutral-700 shadow-sm"
-            />
-          </div>
+          <TahoeNumberInput
+            value={value}
+            onChange={onChange}
+            min={min}
+            max={max}
+            step={step}
+            placeholder={placeholder}
+            disabled={disabled}
+            size="sm"
+            className="text-center"
+          />
         </div>
       </div>
     </div>

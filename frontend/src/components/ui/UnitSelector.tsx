@@ -1,27 +1,21 @@
-import React from "react";
-
-interface Tab {
-  id: string;
-  label: string;
-  icon?: React.ReactNode;
-}
-
-interface TabsProps {
-  tabs: Tab[];
-  activeTab: string;
-  onTabChange: (tabId: string) => void;
+interface UnitSelectorProps<T extends string> {
+  units: readonly T[];
+  selectedUnit: T;
+  onUnitChange: (unit: T) => void;
   className?: string;
+  ariaLabel?: string;
 }
 
-export function Tabs({
-  tabs,
-  activeTab,
-  onTabChange,
+export function UnitSelector<T extends string>({
+  units,
+  selectedUnit,
+  onUnitChange,
   className = "",
-}: TabsProps) {
+  ariaLabel,
+}: UnitSelectorProps<T>) {
   return (
     <div
-      className={`flex bg-white/10 backdrop-blur-xl border border-white/20 rounded-full p-1 shadow-2xl shadow-black/5 gap-1 ${className}`}
+      className={`flex bg-white/10 backdrop-blur-xl border border-white/20 rounded-full p-1 shadow-2xl shadow-black/5 ${className}`}
       // Advanced frosted glass effects require inline styles for complex gradients and shadows
       style={{
         background:
@@ -30,24 +24,23 @@ export function Tabs({
           "0 8px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
       }}
     >
-      {tabs.map((tab) => (
+      {units.map((unit) => (
         <button
-          key={tab.id}
-          onClick={() => onTabChange(tab.id)}
-          className={`relative px-4 py-2 text-xs font-medium rounded-full transition-all duration-300 ease-out ${
-            activeTab === tab.id
+          key={unit}
+          onClick={() => onUnitChange(unit)}
+          className={`relative px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ease-out ${
+            selectedUnit === unit
               ? "bg-gradient-to-r from-blue-500/30 to-indigo-500/30 text-gray-900 shadow-lg border border-blue-400/30"
               : "text-gray-600 hover:text-gray-800 hover:bg-white/20"
           }`}
           // Advanced selected state styling with complex gradients and shadows
           style={{
-            width: "6rem", // Fixed width to prevent layout shift
-            height: "2rem", // Fixed height to prevent layout shift
+            width: "2.5rem", // Fixed width to prevent layout shift
+            height: "1.75rem", // Fixed height to prevent layout shift
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            flex: "1", // Equal distribution of space
-            ...(activeTab === tab.id && {
+            ...(selectedUnit === unit && {
               background:
                 "linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(99,102,241,0.25) 100%)",
               boxShadow:
@@ -55,15 +48,12 @@ export function Tabs({
               border: "1px solid rgba(59,130,246,0.3)",
             }),
           }}
-          aria-label={`${tab.label} tab`}
+          aria-label={
+            ariaLabel ? `${ariaLabel} unit ${unit}` : `Select ${unit} unit`
+          }
         >
-          <div className="flex items-center justify-center gap-1.5">
-            {tab.icon && (
-              <span className="w-3 h-3 flex-shrink-0">{tab.icon}</span>
-            )}
-            <span className="text-xs font-medium">{tab.label}</span>
-          </div>
-          {activeTab === tab.id && (
+          {unit}
+          {selectedUnit === unit && (
             <div
               className="absolute inset-0 rounded-full pointer-events-none"
               // Frosted glass highlight overlay for selected state
@@ -78,22 +68,4 @@ export function Tabs({
       ))}
     </div>
   );
-}
-
-interface TabPanelProps {
-  id: string;
-  activeTab: string;
-  children: React.ReactNode;
-  className?: string;
-}
-
-export function TabPanel({
-  id,
-  activeTab,
-  children,
-  className = "",
-}: TabPanelProps) {
-  if (id !== activeTab) return null;
-
-  return <div className={`${className}`}>{children}</div>;
 }

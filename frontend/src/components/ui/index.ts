@@ -10,7 +10,10 @@ export { default as NumberInput } from "./NumberInput";
 export { default as ProgressIndicator } from "./ProgressIndicator";
 export { default as SkeletonLoader } from "./SkeletonLoader";
 export { default as SliderInput } from "./SliderInput";
+export { SubsectionTitle } from "./SubsectionTitle";
 export { default as Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./Table";
 export { TabPanel, Tabs } from "./Tabs";
+export { TahoeNumberInput } from "./TahoeNumberInput";
 export { default as Typography } from "./Typography";
+export { UnitSelector } from "./UnitSelector";
 

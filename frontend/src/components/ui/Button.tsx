@@ -26,23 +26,23 @@ function Button({
   className = "",
 }: ButtonProps) {
   const baseClasses =
-    "font-medium transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
+    "font-medium transition-all duration-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variantClasses = {
     primary:
-      "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 focus:ring-blue-500/50 shadow-lg hover:shadow-xl",
+      "bg-white/20 backdrop-blur-xl border border-white/30 text-gray-800 hover:bg-white/30 hover:shadow-2xl focus:ring-white/50 shadow-2xl",
     secondary:
-      "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-900 hover:from-gray-200 hover:to-gray-300 focus:ring-gray-500/50 shadow-sm hover:shadow-md",
+      "bg-white/20 backdrop-blur-xl border border-white/30 text-gray-800 hover:bg-white/30 hover:shadow-2xl focus:ring-white/50 shadow-2xl",
     outline:
-      "border border-gray-300/60 bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-white hover:shadow-md focus:ring-gray-500/50 shadow-sm",
+      "bg-white/20 backdrop-blur-xl border border-white/30 text-gray-800 hover:bg-white/30 hover:shadow-2xl focus:ring-white/50 shadow-2xl",
     ghost:
-      "bg-transparent text-gray-700 hover:bg-gray-100/50 focus:ring-gray-500/50",
+      "bg-white/20 backdrop-blur-xl border border-white/30 text-gray-800 hover:bg-white/30 hover:shadow-2xl focus:ring-white/50 shadow-2xl",
   };
 
   const sizeClasses = {
-    sm: "px-3 py-1.5 text-sm rounded-md",
-    md: "px-4 py-2 text-sm rounded-md",
-    lg: "px-6 py-3 text-base rounded-lg",
+    sm: "px-3 py-1.5 text-sm rounded-full",
+    md: "px-4 py-2 text-sm rounded-full",
+    lg: "px-6 py-3 text-base rounded-full",
   };
 
   const isDisabled = disabled || loading;
