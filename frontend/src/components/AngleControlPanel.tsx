@@ -62,10 +62,10 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
           {values.map((value, index) => (
             <div
               key={index}
-              className={`p-3 rounded-xl border cursor-pointer ${
+              className={`p-3 rounded-xl cursor-pointer ${
                 selectedSegment === index
-                  ? "bg-gradient-to-r from-blue-500/30 to-indigo-500/30 text-gray-900 shadow-lg border-blue-400/30"
-                  : "text-gray-600 hover:text-gray-800 hover:bg-white/20 border-white/20"
+                  ? "bg-gradient-to-r from-blue-500/30 to-indigo-500/30 text-gray-900 shadow-lg border border-blue-400/30"
+                  : "text-gray-600 hover:text-gray-800 hover:bg-white/20"
               }`}
               onClick={() => setSelectedSegment(index)}
               style={{
@@ -79,7 +79,7 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
                   background:
                     "linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(99,102,241,0.25) 100%)",
                   boxShadow:
-                    "0 4px 16px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.3)",
+                    "0 2px 8px rgba(59,130,246,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
                   border: "1px solid rgba(59,130,246,0.3)",
                 }),
               }}
@@ -129,27 +129,12 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
                 updateSegmentValueRadians(selectedSegment, value);
               }
             }}
-            min={
-              useDegrees
-                ? mode === "bending"
-                  ? 0
-                  : -180
-                : mode === "bending"
-                ? 0
-                : -Math.PI
-            }
-            max={
-              useDegrees
-                ? mode === "bending"
-                  ? 180
-                  : 180
-                : mode === "bending"
-                ? Math.PI
-                : Math.PI
-            }
-            step={useDegrees ? 0.1 : 0.01}
+            min={useDegrees ? -180 : -Math.PI}
+            max={useDegrees ? 180 : Math.PI}
+            step={useDegrees ? 1 : Math.PI / 180}
             placeholder={`#${selectedSegment + 1}`}
             label=""
+            isAngle={true}
           />
         </div>
       </div>

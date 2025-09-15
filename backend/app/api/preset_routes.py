@@ -18,7 +18,7 @@ async def create_preset(
     session: Session = Depends(get_session),
 ):
     """Create a new preset for the current user"""
-    current_user = get_current_user(session, credentials)
+    current_user = get_current_user(credentials, session)
 
     preset = Preset(
         name=preset_data.name,
@@ -50,7 +50,7 @@ async def get_user_presets(
     session: Session = Depends(get_session),
 ):
     """Get all presets for the current user"""
-    current_user = get_current_user(session, credentials)
+    current_user = get_current_user(credentials, session)
 
     presets = session.exec(
         select(Preset).where(Preset.user_id == current_user.id)
@@ -100,7 +100,7 @@ async def get_preset(
     session: Session = Depends(get_session),
 ):
     """Get a specific preset by ID"""
-    current_user = get_current_user(session, credentials)
+    current_user = get_current_user(credentials, session)
 
     preset = session.exec(
         select(Preset).where(
@@ -137,7 +137,7 @@ async def update_preset(
     session: Session = Depends(get_session),
 ):
     """Update a preset"""
-    current_user = get_current_user(session, credentials)
+    current_user = get_current_user(credentials, session)
 
     preset = session.exec(
         select(Preset).where(
@@ -183,7 +183,7 @@ async def delete_preset(
     session: Session = Depends(get_session),
 ):
     """Delete a preset"""
-    current_user = get_current_user(session, credentials)
+    current_user = get_current_user(credentials, session)
 
     preset = session.exec(
         select(Preset).where(

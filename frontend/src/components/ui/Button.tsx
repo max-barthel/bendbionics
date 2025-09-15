@@ -13,6 +13,7 @@ interface ButtonProps {
   loading?: boolean;
   type?: "button" | "submit" | "reset";
   className?: string;
+  style?: React.CSSProperties;
 }
 
 function Button({
@@ -24,6 +25,7 @@ function Button({
   loading = false,
   type = "button",
   className = "",
+  style = {},
 }: ButtonProps) {
   const baseClasses =
     "font-medium transition-all duration-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
@@ -54,6 +56,7 @@ function Button({
       onClick={onClick}
       disabled={isDisabled}
       className={classes}
+      style={style}
     >
       <div className="flex items-center justify-center gap-2">
         {loading && <LoadingSpinner size="sm" color="white" />}

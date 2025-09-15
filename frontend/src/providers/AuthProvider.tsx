@@ -1,14 +1,21 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { LoginRequest, RegisterRequest, User } from "../api/auth";
 import { authAPI } from "../api/auth";
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isLoading: boolean;
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,10 +36,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.getItem("token")
   );
   const [isLoading, setIsLoading] = useState(true);
+  const hasCheckedAuth = useRef(false);
 
   // Check if user is authenticated on mount
   useEffect(() => {
+    if (hasCheckedAuth.current) return;
+
     const checkAuth = async () => {
+      hasCheckedAuth.current = true;
       if (token) {
         try {
           const userData = await authAPI.getCurrentUser();
@@ -86,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       );
       console.log("================================");
 
-      setToken(access_token);
+      setToken(cleanToken);
       setUser(userData);
 
       // Verify token was stored
@@ -146,18 +157,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = () => {
     localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    if (typeof window !== "undefined") {
+      (window as any).authToken = null;
+    }
     setToken(null);
     setUser(null);
   };
 
-  const value: AuthContextType = {
-    user,
-    token,
-    isLoading,
-    login,
-    register,
-    logout,
+  const deleteAccount = async () => {
+    try {
+      await authAPI.deleteAccount();
+      // Clear all authentication data after successful deletion
+      logout();
+    } catch (error) {
+      throw error;
+    }
   };
+
+  const value: AuthContextType = useMemo(
+    () => ({
+      user,
+      isLoading,
+      login,
+      register,
+      logout,
+      deleteAccount,
+    }),
+    [user, isLoading]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

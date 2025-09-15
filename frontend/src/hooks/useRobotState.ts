@@ -19,13 +19,13 @@ export function useRobotState() {
         const saved = localStorage.getItem('robotState');
         return saved ? JSON.parse(saved) : {
             segments: 5,
-            bendingAngles: [0.628319, 0.628319, 0.628319, 0.628319, 0.628319],
+            bendingAngles: [0, 0, 0, 0, 0],
             rotationAngles: [0, 0, 0, 0, 0],
             backboneLengths: [0.07, 0.07, 0.07, 0.07, 0.07],
             couplingLengths: [0.03, 0.03, 0.03, 0.03, 0.03, 0.03],
             discretizationSteps: 1000,
             tendonConfig: {
-                count: 4,
+                count: 3,
                 radius: 0.01,
                 coupling_offset: 0.0
             }
@@ -41,7 +41,7 @@ export function useRobotState() {
         const couplingCount = segments + 1; // Couplings are one more than backbones (includes base coupling)
 
         // Default values for new elements
-        const defaultBendingAngle = 0.628319; // in radians
+        const defaultBendingAngle = 0; // in radians
         const defaultRotationAngle = 0; // in radians
         const defaultBackboneLength = 0.07; // in meters
         const defaultCouplingLength = 0.03; // in meters
@@ -106,6 +106,7 @@ export function useRobotState() {
     const setStateWithValidation = (newState: RobotState | ((prev: RobotState) => RobotState)) => {
         setState((prevState) => {
             const updatedState = typeof newState === 'function' ? newState(prevState) : newState;
+            console.log("useRobotState: Updating state from:", prevState.segments, "to:", updatedState.segments);
 
             // Ensure all arrays exist before adjusting
             const completeState = {
@@ -122,10 +123,14 @@ export function useRobotState() {
 
             // If segments changed, adjust the arrays accordingly
             if (validatedSegments !== prevState.segments) {
+                console.log("useRobotState: Segments changed, adjusting arrays");
                 const arrayUpdates = adjustArraysForSegments(validatedSegments, completeState);
-                return { ...completeState, segments: validatedSegments, ...arrayUpdates };
+                const finalState = { ...completeState, segments: validatedSegments, ...arrayUpdates };
+                console.log("useRobotState: Final state:", finalState);
+                return finalState;
             }
 
+            console.log("useRobotState: No segment change, returning complete state");
             return completeState;
         });
     };

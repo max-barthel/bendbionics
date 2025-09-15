@@ -42,16 +42,32 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
           Robot Setup
         </Typography>
         <Typography variant="body" color="gray" className="text-sm mb-12">
-          Configure your robot's structure once
+          Configure your robot's structure once.
+          <br />
+          Then save as a preset.
         </Typography>
         <button
           onClick={() => onShowPresetManager?.()}
-          className="w-full mt-6 px-4 py-2 bg-white/20 backdrop-blur-xl text-gray-800 text-sm font-medium border border-white/30 shadow-2xl hover:bg-white/30 hover:shadow-2xl transition-all duration-300 rounded-full hover:scale-105"
+          className="w-full mt-6 px-4 py-2 backdrop-blur-xl text-gray-900 text-sm font-medium border border-blue-400/30 shadow-lg transition-all duration-300 rounded-full hover:scale-105 relative"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(99,102,241,0.25) 100%)",
+            boxShadow:
+              "0 4px 16px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.3)",
+          }}
         >
           <div className="flex items-center justify-center gap-2">
             <UploadIcon className="w-4 h-4" />
             Preset Manager
           </div>
+          <div
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)",
+            }}
+          />
         </button>
       </div>
 
@@ -138,7 +154,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
         <TendonConfigPanel
           tendonConfig={
             robotState.tendonConfig || {
-              count: 4,
+              count: 3,
               radius: 0.01,
               coupling_offset: 0.0,
             }

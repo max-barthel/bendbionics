@@ -269,8 +269,8 @@ describe("App", () => {
       renderApp();
 
       await waitFor(() => {
-        expect(screen.getByText("testuser")).toBeInTheDocument();
-        expect(screen.getByText("Logout")).toBeInTheDocument();
+        expect(screen.getAllByText("testuser")[0]).toBeInTheDocument();
+        expect(screen.getByText("Sign Out")).toBeInTheDocument();
         expect(screen.queryByText("Sign In")).not.toBeInTheDocument();
       });
     });
@@ -286,10 +286,10 @@ describe("App", () => {
       renderApp();
 
       await waitFor(() => {
-        expect(screen.getByText("Logout")).toBeInTheDocument();
+        expect(screen.getByText("Sign Out")).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText("Logout"));
+      fireEvent.click(screen.getByText("Sign Out"));
 
       expect(mockLogout).toHaveBeenCalled();
       expect(mockNavigate).toHaveBeenCalledWith("/");

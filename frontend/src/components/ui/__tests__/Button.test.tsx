@@ -50,9 +50,10 @@ describe("Button", () => {
 
       const button = screen.getByRole("button");
       expect(button).toHaveClass(
-        "bg-gradient-to-r",
-        "from-blue-600",
-        "to-indigo-600"
+        "bg-white/20",
+        "backdrop-blur-xl",
+        "border",
+        "border-white/30"
       );
     });
 
@@ -61,9 +62,10 @@ describe("Button", () => {
 
       const button = screen.getByRole("button");
       expect(button).toHaveClass(
-        "bg-gradient-to-r",
-        "from-gray-100",
-        "to-gray-200"
+        "bg-white/20",
+        "backdrop-blur-xl",
+        "border",
+        "border-white/30"
       );
     });
 
@@ -71,14 +73,24 @@ describe("Button", () => {
       render(<Button variant="outline">Outline Button</Button>);
 
       const button = screen.getByRole("button");
-      expect(button).toHaveClass("border", "border-gray-300/60", "bg-white/90");
+      expect(button).toHaveClass(
+        "bg-white/20",
+        "backdrop-blur-xl",
+        "border",
+        "border-white/30"
+      );
     });
 
     it("renders ghost variant", () => {
       render(<Button variant="ghost">Ghost Button</Button>);
 
       const button = screen.getByRole("button");
-      expect(button).toHaveClass("bg-transparent", "text-gray-700");
+      expect(button).toHaveClass(
+        "bg-white/20",
+        "backdrop-blur-xl",
+        "border",
+        "border-white/30"
+      );
     });
   });
 
@@ -87,21 +99,21 @@ describe("Button", () => {
       render(<Button>Medium Button</Button>);
 
       const button = screen.getByRole("button");
-      expect(button).toHaveClass("px-4", "py-2", "text-sm", "rounded-md");
+      expect(button).toHaveClass("px-4", "py-2", "text-sm", "rounded-full");
     });
 
     it("renders small size", () => {
       render(<Button size="sm">Small Button</Button>);
 
       const button = screen.getByRole("button");
-      expect(button).toHaveClass("px-3", "py-1.5", "text-sm", "rounded-md");
+      expect(button).toHaveClass("px-3", "py-1.5", "text-sm", "rounded-full");
     });
 
     it("renders large size", () => {
       render(<Button size="lg">Large Button</Button>);
 
       const button = screen.getByRole("button");
-      expect(button).toHaveClass("px-6", "py-3", "text-base", "rounded-lg");
+      expect(button).toHaveClass("px-6", "py-3", "text-base", "rounded-full");
     });
   });
 
@@ -236,7 +248,7 @@ describe("Button", () => {
       expect(button).toHaveClass(
         "font-medium",
         "transition-all",
-        "duration-200"
+        "duration-300"
       );
     });
 
@@ -251,28 +263,28 @@ describe("Button", () => {
       render(<Button variant="primary">Button</Button>);
 
       const button = screen.getByRole("button");
-      expect(button).toHaveClass("hover:from-blue-700", "hover:to-indigo-700");
+      expect(button).toHaveClass("hover:bg-white/30", "hover:shadow-2xl");
     });
 
     it("applies hover classes for secondary variant", () => {
       render(<Button variant="secondary">Button</Button>);
 
       const button = screen.getByRole("button");
-      expect(button).toHaveClass("hover:from-gray-200", "hover:to-gray-300");
+      expect(button).toHaveClass("hover:bg-white/30", "hover:shadow-2xl");
     });
 
     it("applies hover classes for outline variant", () => {
       render(<Button variant="outline">Button</Button>);
 
       const button = screen.getByRole("button");
-      expect(button).toHaveClass("hover:bg-white", "hover:shadow-md");
+      expect(button).toHaveClass("hover:bg-white/30", "hover:shadow-2xl");
     });
 
     it("applies hover classes for ghost variant", () => {
       render(<Button variant="ghost">Button</Button>);
 
       const button = screen.getByRole("button");
-      expect(button).toHaveClass("hover:bg-gray-100/50");
+      expect(button).toHaveClass("hover:bg-white/30", "hover:shadow-2xl");
     });
   });
 

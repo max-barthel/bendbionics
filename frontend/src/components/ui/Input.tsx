@@ -43,7 +43,7 @@ function Input({
   const shouldFloat = isFocused || hasValue;
 
   const baseClasses =
-    "border border-white/30 rounded-full bg-white/20 backdrop-blur-xl text-gray-800 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/30 focus:bg-white/30 transition-all duration-300 disabled:opacity-50 shadow-2xl hover:shadow-2xl";
+    "border border-gray-300 rounded-full bg-gray-50 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400/30 focus:bg-white transition-all duration-300 disabled:opacity-50 shadow-sm hover:shadow-md";
 
   const sizeClasses = {
     sm: "pl-4 pr-2 py-2 text-sm",
@@ -53,7 +53,7 @@ function Input({
 
   const errorClasses = error
     ? "border-red-400/50 focus:ring-red-400/50"
-    : "border-white/30";
+    : "border-gray-300";
   const classes = `${baseClasses} ${sizeClasses[size]} ${errorClasses} ${className}`;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,7 +91,28 @@ function Input({
         max={max}
         step={step}
         className={`w-full ${classes} ${label ? "pt-3" : ""}`}
+        style={
+          isFocused
+            ? {
+                background:
+                  "linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(99,102,241,0.15) 100%)",
+                boxShadow:
+                  "0 4px 16px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.3)",
+                border: "1px solid rgba(59,130,246,0.4)",
+              }
+            : undefined
+        }
       />
+      {isFocused && (
+        <div
+          className="absolute inset-0 rounded-full pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)",
+          }}
+        />
+      )}
       {label && (
         <label
           htmlFor={id}

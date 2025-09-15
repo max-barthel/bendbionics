@@ -105,6 +105,19 @@ export const authAPI = {
         }
     },
 
+    // Delete user account
+    deleteAccount: async (): Promise<void> => {
+        const isTauri = typeof window !== 'undefined' && (window as any).__TAURI__;
+        if (isTauri) {
+            const response = await tauriClient.delete('/auth/account');
+            if (!response.success) {
+                throw new Error(response.error || 'Failed to delete account');
+            }
+        } else {
+            await client().delete('/auth/account');
+        }
+    },
+
 };
 
 // Preset API

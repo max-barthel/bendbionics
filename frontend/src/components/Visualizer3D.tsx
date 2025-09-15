@@ -1,7 +1,8 @@
 import { Line, OrbitControls, Sphere } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
+import { getTendonColor } from "../utils/tendonColors";
 import { TendonResultsPanel } from "./TendonResultsPanel";
 import { Typography } from "./ui";
 
@@ -30,6 +31,8 @@ type Visualizer3DProps = {
     };
   };
   sidebarCollapsed: boolean;
+  showTendonResults: boolean;
+  setShowTendonResults: (show: boolean) => void;
 };
 
 function Visualizer3D({
@@ -37,9 +40,10 @@ function Visualizer3D({
   tendonConfig,
   tendonAnalysis,
   sidebarCollapsed,
+  showTendonResults,
+  setShowTendonResults,
 }: Visualizer3DProps) {
   const controlsRef = useRef<OrbitControlsImpl>(null);
-  const [showResultsPanel, setShowResultsPanel] = useState(false);
 
   const lines = useMemo(() => {
     return segments
@@ -65,16 +69,8 @@ function Visualizer3D({
   // Generate tendon eyelets and connections with proper transformations
   const tendonElements = useMemo(() => {
     if (!tendonConfig || !tendonAnalysis?.coupling_data) {
-      console.log("Tendon visualization debug:", {
-        hasTendonConfig: !!tendonConfig,
-        hasTendonAnalysis: !!tendonAnalysis,
-        hasCouplingData: !!tendonAnalysis?.coupling_data,
-        couplingData: tendonAnalysis?.coupling_data,
-      });
       return [];
     }
-
-    console.log("Coupling data received:", tendonAnalysis.coupling_data);
     const elements: React.ReactElement[] = [];
     const tendonCount = tendonConfig.count;
     const radius = tendonConfig.radius;
@@ -193,10 +189,14 @@ function Visualizer3D({
           if (!nextEyelet || nextEyelet.length < 3) continue;
 
           // Check if this tendon is active (has significant length change)
+          // Backend uses 1-based indexing, so tendon 0 in frontend = tendon "1" in backend
           const tendonId = (tendonIndex + 1).toString();
           const tendonData = tendonAnalysis.actuation_commands[tendonId];
           const isActive =
             tendonData && Math.abs(tendonData.length_change_m) > 0.001;
+
+          // Get tendon-specific color - always use the tendon color
+          const tendonColor = getTendonColor(tendonId);
 
           // Add tendon routing line between eyelets
           elements.push(
@@ -206,8 +206,8 @@ function Visualizer3D({
                 [currentEyelet[0], currentEyelet[1], currentEyelet[2]],
                 [nextEyelet[0], nextEyelet[1], nextEyelet[2]],
               ]}
-              color={isActive ? "#dc2626" : "#9ca3af"}
-              lineWidth={2}
+              color={tendonColor}
+              lineWidth={isActive ? 3 : 2}
               dashed={!isActive}
             />
           );
@@ -249,9 +249,13 @@ function Visualizer3D({
     return { center, size };
   }, [segments]);
 
-  const cameraDistance = size * 1.5 || 200;
-  const minDistance = size * 0.5 || 50;
-  const maxDistance = size * 4 || 1000;
+  const { cameraDistance, minDistance, maxDistance } = useMemo(() => {
+    return {
+      cameraDistance: size * 1.5 || 200,
+      minDistance: size * 0.5 || 50,
+      maxDistance: size * 4 || 1000,
+    };
+  }, [size]);
 
   const resetView = () => {
     if (!controlsRef.current) return;
@@ -264,14 +268,20 @@ function Visualizer3D({
     controlsRef.current.update();
   };
 
-  const hasData =
-    segments.length > 0 && segments.some((segment) => segment.length > 0);
+  const hasData = useMemo(() => {
+    return (
+      segments.length > 0 && segments.some((segment) => segment.length > 0)
+    );
+  }, [segments]);
 
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 relative">
         {!hasData ? (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-100/80 to-gray-200/60">
+          <div
+            className="w-full h-full flex flex-col items-center justify-center"
+            style={{ background: "#fafafa" }}
+          >
             <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-xl shadow-2xl p-8 max-w-md mx-4">
               <div className="flex flex-col items-center text-center">
                 <div className="relative mb-6">
@@ -342,14 +352,14 @@ function Visualizer3D({
                 near: 0.01,
                 far: size * 15,
               }}
+              style={{ background: "#fafafa" }}
             >
               <ambientLight intensity={0.6} />
               <pointLight position={[100, 100, 200]} intensity={0.8} />
               <axesHelper args={[size || 100]} />
               <OrbitControls
                 ref={controlsRef}
-                enableDamping
-                dampingFactor={0.15}
+                enableDamping={false}
                 rotateSpeed={0.5}
                 minDistance={minDistance}
                 maxDistance={maxDistance}
@@ -365,9 +375,15 @@ function Visualizer3D({
             {/* Reset Button */}
             <button
               onClick={resetView}
-              className={`absolute top-4 px-4 py-2 bg-white/20 backdrop-blur-xl text-gray-800 text-sm font-medium border border-white/30 shadow-2xl hover:bg-white/30 hover:shadow-2xl transition-all duration-300 rounded-full hover:scale-105 ${
+              className={`absolute top-4 px-4 py-2 backdrop-blur-xl text-gray-900 text-sm font-medium border border-blue-400/30 shadow-lg transition-all duration-300 rounded-full hover:scale-105 z-50 ${
                 sidebarCollapsed ? "left-4" : "left-[calc(384px+16px)]"
               }`}
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(99,102,241,0.25) 100%)",
+                boxShadow:
+                  "0 4px 16px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.3)",
+              }}
             >
               <div className="flex items-center gap-2">
                 <svg
@@ -385,13 +401,21 @@ function Visualizer3D({
                 </svg>
                 Reset View
               </div>
+              <div
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)",
+                }}
+              />
             </button>
 
             {/* Tendon Results Panel */}
             <TendonResultsPanel
               tendonAnalysis={tendonAnalysis}
-              isVisible={showResultsPanel}
-              onToggle={() => setShowResultsPanel(!showResultsPanel)}
+              isVisible={showTendonResults}
+              onToggle={() => setShowTendonResults(!showTendonResults)}
             />
           </>
         )}

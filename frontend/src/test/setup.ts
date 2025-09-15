@@ -1,6 +1,10 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
+// Disable console.log during tests to prevent hanging
+const originalConsoleLog = console.log;
+console.log = vi.fn();
+
 // Mock Tauri API
 global.__TAURI__ = {
   invoke: vi.fn(),

@@ -65,7 +65,7 @@ describe("Tabs", () => {
 
       // The className is applied to the outermost container div
       const tabsContainer = screen.getByText("Tab 1").closest("div")
-        ?.parentElement?.parentElement?.parentElement;
+        ?.parentElement?.parentElement;
       expect(tabsContainer).toHaveClass("custom-class");
     });
 
@@ -88,9 +88,9 @@ describe("Tabs", () => {
       const inactiveTab1 = screen.getByText("Tab 1").closest("button");
       const inactiveTab3 = screen.getByText("Tab 3").closest("button");
 
-      expect(activeTab).toHaveClass("text-blue-600");
-      expect(inactiveTab1).not.toHaveClass("text-blue-600");
-      expect(inactiveTab3).not.toHaveClass("text-blue-600");
+      expect(activeTab).toHaveClass("text-gray-900");
+      expect(inactiveTab1).not.toHaveClass("text-gray-900");
+      expect(inactiveTab3).not.toHaveClass("text-gray-900");
     });
 
     it("applies inactive styles to non-active tabs", () => {
@@ -101,8 +101,8 @@ describe("Tabs", () => {
       const inactiveTab2 = screen.getByText("Tab 2").closest("button");
       const inactiveTab3 = screen.getByText("Tab 3").closest("button");
 
-      expect(inactiveTab2).toHaveClass("border-transparent", "text-gray-500");
-      expect(inactiveTab3).toHaveClass("border-transparent", "text-gray-500");
+      expect(inactiveTab2).toHaveClass("text-gray-600");
+      expect(inactiveTab3).toHaveClass("text-gray-600");
     });
 
     it("applies hover styles to inactive tabs", () => {
@@ -111,7 +111,7 @@ describe("Tabs", () => {
       );
 
       const inactiveTab = screen.getByText("Tab 2").closest("button");
-      expect(inactiveTab).toHaveClass("hover:text-gray-700");
+      expect(inactiveTab).toHaveClass("hover:text-gray-800");
     });
   });
 
@@ -210,8 +210,13 @@ describe("Tabs", () => {
 
       // The base classes are applied to the outermost container div
       const tabsContainer = screen.getByText("Tab 1").closest("div")
-        ?.parentElement?.parentElement?.parentElement;
-      expect(tabsContainer).toHaveClass("border-b", "border-gray-200/60");
+        ?.parentElement?.parentElement;
+      expect(tabsContainer).toHaveClass(
+        "bg-white/10",
+        "backdrop-blur-xl",
+        "border",
+        "border-white/20"
+      );
     });
 
     it("applies flex layout classes", () => {
@@ -219,11 +224,10 @@ describe("Tabs", () => {
         <Tabs tabs={mockTabs} activeTab="tab1" onTabChange={mockOnTabChange} />
       );
 
-      // The flex layout classes are applied to the second div (inner container)
-      // We need to go up two levels: text -> span -> div -> button -> div (inner container)
+      // The flex layout classes are applied to the container div
       const flexContainer = screen.getByText("Tab 1").closest("div")
         ?.parentElement?.parentElement;
-      expect(flexContainer).toHaveClass("flex", "w-full", "overflow-hidden");
+      expect(flexContainer).toHaveClass("flex", "bg-white/10", "backdrop-blur-xl");
     });
 
     it("applies base button classes", () => {
@@ -235,14 +239,13 @@ describe("Tabs", () => {
       const tabButton = screen.getByText("Tab 1").closest("button");
       expect(tabButton).toHaveClass(
         "relative",
-        "z-10",
-        "flex-1",
-        "h-full",
-        "border-b-2",
-        "border-transparent",
-        "transition-colors",
-        "duration-200",
-        "text-blue-600"
+        "px-4",
+        "py-2",
+        "text-xs",
+        "font-medium",
+        "rounded-full",
+        "transition-all",
+        "duration-300"
       );
     });
   });

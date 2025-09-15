@@ -1,12 +1,14 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import FormTabs from "./components/FormTabs";
 import SubmitButton from "./components/SubmitButton";
 
 import { AuthPage } from "./components/auth/AuthPage";
+import { UserSettings } from "./components/auth/UserSettings";
 
 import { PresetManager } from "./components/presets/PresetManager";
 import { LoadingSpinner, Typography } from "./components/ui";
+import { useRobotState } from "./hooks/useRobotState";
 import { AuthProvider, useAuth } from "./providers";
 
 // Lazy load heavy components
@@ -25,6 +27,13 @@ function AppContent() {
     Record<string, any>
   >({});
   const [showPresetManager, setShowPresetManager] = useState(false);
+  const [showTendonResults, setShowTendonResults] = useState(false);
+  const [isLoadingPreset, setIsLoadingPreset] = useState(false);
+  const [presetLoadKey, setPresetLoadKey] = useState(0);
+  const [showUserSettings, setShowUserSettings] = useState(false);
+
+  // Get direct access to robot state for preset loading
+  const [, setRobotState] = useRobotState();
 
   // Test localStorage functionality
   useEffect(() => {
@@ -63,13 +72,72 @@ function AppContent() {
     configuration: Record<string, any>
   ) => {
     setSegments(result);
-    setCurrentConfiguration(configuration);
+
+    // Only update currentConfiguration if we're not loading a preset
+    if (!isLoadingPreset) {
+      setCurrentConfiguration(configuration);
+    }
+
+    // Auto-unfold tendon results panel if tendon analysis data is available
+    if (configuration.tendonAnalysis?.actuation_commands) {
+      setShowTendonResults(true);
+    }
   };
 
   const handleLoadPreset = (configuration: Record<string, any>) => {
-    setCurrentConfiguration(configuration);
-    // You might want to update the form with the loaded configuration
-    // This would require passing the configuration back to the Form component
+    console.log("Loading preset configuration:", configuration);
+
+    // Set loading preset flag to prevent circular updates
+    setIsLoadingPreset(true);
+
+    // Clear the visualization immediately
+    setSegments([]);
+
+    // Reset the current configuration to ensure clean state
+    setCurrentConfiguration({});
+
+    // Directly update robot state with preset configuration
+    const newRobotState = {
+      segments: configuration.segments || 5,
+      bendingAngles:
+        configuration.bendingAngles ||
+        Array(configuration.segments || 5).fill(0),
+      rotationAngles:
+        configuration.rotationAngles ||
+        Array(configuration.segments || 5).fill(0),
+      backboneLengths:
+        configuration.backboneLengths ||
+        Array(configuration.segments || 5).fill(0.07),
+      couplingLengths:
+        configuration.couplingLengths ||
+        Array((configuration.segments || 5) + 1).fill(0.03),
+      discretizationSteps: configuration.discretizationSteps || 1000,
+      tendonConfig: configuration.tendonConfig || {
+        count: 3,
+        radius: 0.01,
+        coupling_offset: 0.0,
+      },
+    };
+
+    console.log("Directly setting robot state:", newRobotState);
+    setRobotState(newRobotState);
+
+    // Use setTimeout to ensure the reset happens before setting the new configuration
+    setTimeout(() => {
+      setCurrentConfiguration(configuration);
+      setPresetLoadKey((prev) => prev + 1); // Force FormTabs re-render
+      console.log("Preset configuration loaded:", configuration);
+
+      // Reset the loading preset flag after a short delay
+      setTimeout(() => {
+        setIsLoadingPreset(false);
+      }, 100);
+    }, 10);
+
+    // Auto-unfold tendon results panel if preset contains tendon analysis data
+    if (configuration.tendonAnalysis?.actuation_commands) {
+      setShowTendonResults(true);
+    }
   };
 
   const handleLogout = () => {
@@ -78,9 +146,16 @@ function AppContent() {
   };
 
   const handleSignIn = () => {
-    console.log("Sign in button clicked");
     navigate("/auth");
   };
+
+  const handleComputationTriggered = useCallback(() => {
+    setTriggerComputation(false);
+  }, []);
+
+  const handleShowPresetManager = useCallback(() => {
+    setShowPresetManager(true);
+  }, []);
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -139,6 +214,8 @@ function AppContent() {
                     tendonConfig={currentConfiguration.tendonConfig}
                     tendonAnalysis={currentConfiguration.tendonAnalysis}
                     sidebarCollapsed={sidebarCollapsed}
+                    showTendonResults={showTendonResults}
+                    setShowTendonResults={setShowTendonResults}
                   />
                 </Suspense>
               </div>
@@ -153,6 +230,7 @@ function AppContent() {
               >
                 <div className="w-96 h-full pr-2">
                   <FormTabs
+                    key={presetLoadKey}
                     onResult={handleFormResult}
                     initialConfiguration={currentConfiguration}
                     user={user}
@@ -161,8 +239,8 @@ function AppContent() {
                     navigate={navigate}
                     onLoadingChange={setLoading}
                     triggerComputation={triggerComputation}
-                    onComputationTriggered={() => setTriggerComputation(false)}
-                    onShowPresetManager={() => setShowPresetManager(true)}
+                    onComputationTriggered={handleComputationTriggered}
+                    onShowPresetManager={handleShowPresetManager}
                   />
                 </div>
               </div>
@@ -261,6 +339,12 @@ function AppContent() {
                       </div>
                       <div className="p-1">
                         <button
+                          onClick={() => setShowUserSettings(true)}
+                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white/30 rounded-lg transition-colors"
+                        >
+                          Settings
+                        </button>
+                        <button
                           onClick={handleLogout}
                           className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white/30 rounded-lg transition-colors"
                         >
@@ -272,10 +356,16 @@ function AppContent() {
                 ) : (
                   <button
                     onClick={handleSignIn}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full shadow-2xl hover:bg-white/30 hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                    className="flex items-center gap-2 px-4 py-2 backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full relative z-[60]"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(99,102,241,0.25) 100%)",
+                      boxShadow:
+                        "0 4px 16px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.3)",
+                    }}
                   >
                     <svg
-                      className="w-4 h-4 text-gray-600"
+                      className="w-4 h-4 text-gray-900"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -287,9 +377,17 @@ function AppContent() {
                         d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                       />
                     </svg>
-                    <span className="text-sm font-medium text-gray-800">
+                    <span className="text-sm font-medium text-gray-900">
                       Sign In
                     </span>
+                    <div
+                      className="absolute inset-0 rounded-full pointer-events-none z-0"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)",
+                      }}
+                    />
                   </button>
                 )}
               </div>
@@ -312,33 +410,28 @@ function AppContent() {
 
             {/* Preset Manager Modal */}
             {showPresetManager && (
-              <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                <div className="bg-white/20 backdrop-blur-2xl border border-white/30 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-                  <div className="flex items-center justify-between p-6 border-b border-white/30">
-                    <Typography variant="h3" className="text-gray-800">
-                      Preset Manager
-                    </Typography>
-                    <button
-                      onClick={() => setShowPresetManager(false)}
-                      className="text-gray-500 hover:text-gray-700 transition-colors"
-                      aria-label="Close preset manager"
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden relative">
+                  <button
+                    onClick={() => setShowPresetManager(false)}
+                    className="absolute top-4 right-4 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out hover:scale-105 z-10"
+                    aria-label="Close preset manager"
+                  >
+                    <svg
+                      className="w-4 h-4 text-gray-600 transition-transform duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="p-6 overflow-y-auto max-h-[60vh]">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                  <div className="p-6 overflow-y-auto max-h-[80vh]">
                     <PresetManager
                       currentConfiguration={currentConfiguration || {}}
                       onLoadPreset={(config) => {
@@ -349,6 +442,11 @@ function AppContent() {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* User Settings Modal */}
+            {showUserSettings && (
+              <UserSettings onClose={() => setShowUserSettings(false)} />
             )}
           </div>
         }
