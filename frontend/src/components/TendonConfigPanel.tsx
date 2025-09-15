@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { TendonConfig } from "../api/client";
-import {
-  SliderInput,
-  SubsectionTitle,
-  TahoeNumberInput,
-  UnitSelector,
-} from "./ui";
+import NumberInput from "./NumberInput";
+import { SliderInput, SubsectionTitle, UnitSelector } from "./ui";
 
 interface TendonConfigPanelProps {
   tendonConfig: TendonConfig;
@@ -99,16 +95,10 @@ export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
 
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <TahoeNumberInput
-              value={Number(
-                convertFromSI(localConfig.radius, radiusUnit).toFixed(4)
-              )}
+            <NumberInput
+              value={convertFromSI(localConfig.radius, radiusUnit)}
               onChange={handleRadiusChange}
-              min={convertToSI(0.005, radiusUnit)}
-              max={convertToSI(0.025, radiusUnit)}
-              step={convertToSI(0.001, radiusUnit)}
               placeholder="Radius"
-              className="flex-1"
             />
             <UnitSelector
               units={lengthUnits}
@@ -129,18 +119,10 @@ export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
 
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <TahoeNumberInput
-              value={Number(
-                convertFromSI(localConfig.coupling_offset, offsetUnit).toFixed(
-                  4
-                )
-              )}
+            <NumberInput
+              value={convertFromSI(localConfig.coupling_offset, offsetUnit)}
               onChange={handleOffsetChange}
-              min={convertToSI(-0.01, offsetUnit)}
-              max={convertToSI(0.01, offsetUnit)}
-              step={convertToSI(0.001, offsetUnit)}
               placeholder="Offset"
-              className="flex-1"
             />
             <UnitSelector
               units={lengthUnits}

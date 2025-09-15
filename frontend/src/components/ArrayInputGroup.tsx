@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LoadingSpinner, NumberInput, Typography, UnitSelector } from "./ui";
 
 type UnitMode = "angle" | "length";
@@ -17,6 +17,7 @@ function ArrayInputGroup({
   mode = "angle",
 }: ArrayInputGroupProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const angleUnits = ["deg", "rad"] as const;
   const lengthUnits = ["mm", "cm", "m"] as const;
 
@@ -60,16 +61,31 @@ function ArrayInputGroup({
       ? angleConversion[unit as "deg" | "rad"].fromSI(v)
       : lengthConversion[unit as "mm" | "cm" | "m"].fromSI(v);
 
-  const handleValueChange = async (index: number, newDisplayValue: number) => {
+  const handleValueChange = (index: number, newDisplayValue: number) => {
     setIsUpdating(true);
     const updated = [...values];
     updated[index] = convertToSI(newDisplayValue);
     onChange(updated);
 
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     // Simulate processing delay for better UX
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    setIsUpdating(false);
+    timeoutRef.current = setTimeout(() => {
+      setIsUpdating(false);
+    }, 100);
   };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleUnitChange = (newUnit: string) => {
     setUnit(newUnit as (typeof unitOptions)[number]);
@@ -97,7 +113,7 @@ function ArrayInputGroup({
         />
       </div>
 
-      <div className="grid gap-3 ml-2 grid-cols-3">
+      <div className="grid gap-3 gap-y-4 ml-2 grid-cols-3">
         {values.map((val, idx) => (
           <NumberInput
             key={idx}
@@ -105,6 +121,7 @@ function ArrayInputGroup({
             onChange={(value) => handleValueChange(idx, value)}
             placeholder={`#${idx + 1}`}
             size="sm"
+            data-testid={`number-input-${idx + 1}`}
           />
         ))}
       </div>

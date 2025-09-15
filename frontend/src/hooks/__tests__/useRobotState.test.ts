@@ -13,13 +13,13 @@ describe('useRobotState', () => {
 
         expect(result.current[0]).toEqual({
             segments: 5,
-            bendingAngles: [0.628319, 0.628319, 0.628319, 0.628319, 0.628319],
+            bendingAngles: [0, 0, 0, 0, 0],
             rotationAngles: [0, 0, 0, 0, 0],
             backboneLengths: [0.07, 0.07, 0.07, 0.07, 0.07],
             couplingLengths: [0.03, 0.03, 0.03, 0.03, 0.03, 0.03],
             discretizationSteps: 1000,
             tendonConfig: {
-                count: 4,
+                count: 3,
                 radius: 0.01,
                 coupling_offset: 0.0,
             },
@@ -76,7 +76,7 @@ describe('useRobotState', () => {
         expect(state.couplingLengths).toHaveLength(8)
 
         // Check that new values have defaults
-        expect(state.bendingAngles[6]).toBe(0.628319)
+        expect(state.bendingAngles[6]).toBe(0)
         expect(state.rotationAngles[6]).toBe(0)
         expect(state.backboneLengths[6]).toBe(0.07)
         expect(state.couplingLengths[7]).toBe(0.03)

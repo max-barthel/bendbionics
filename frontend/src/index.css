@@ -1,1 +1,22 @@
 @import "tailwindcss";
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+  overflow: -moz-scrollbars-none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+  width: 0; /* Remove scrollbar space */
+  height: 0; /* Remove scrollbar space */
+  background: transparent; /* Make scrollbar track transparent */
+}
+.scrollbar-hide::-webkit-scrollbar-track {
+  display: none; /* Hide scrollbar track */
+  background: transparent; /* Make track transparent */
+}
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  display: none; /* Hide scrollbar thumb */
+  background: transparent; /* Make thumb transparent */
+}

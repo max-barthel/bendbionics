@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../providers";
-import { Button, Card, Input, Typography } from "../ui";
+import { Button, Input, Typography } from "../ui";
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
@@ -70,12 +70,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto p-6">
+    <div className="w-full max-w-md mx-auto p-6 bg-white border border-gray-200 rounded-2xl shadow-sm">
       <div className="text-center mb-6">
-        <Typography variant="h2" color="primary" className="mb-2">
+        <Typography variant="h2" color="primary" className="mb-2 text-gray-800">
           Create Account
         </Typography>
-        <Typography variant="body" color="gray">
+        <Typography variant="body" color="gray" className="text-gray-600">
           Join the Soft Robot community
         </Typography>
       </div>
@@ -199,24 +199,30 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           type="submit"
           variant="primary"
           size="lg"
-          className="w-full"
+          className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full"
           disabled={isLoading}
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(99,102,241,0.25) 100%)",
+            boxShadow:
+              "0 4px 16px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.3)",
+          }}
         >
           {isLoading ? "Creating account..." : "Create Account"}
         </Button>
       </form>
 
       <div className="mt-6 text-center">
-        <Typography variant="body" color="gray">
+        <Typography variant="body" color="gray" className="text-gray-600">
           Already have an account?{" "}
           <button
             onClick={onSwitchToLogin}
-            className="text-blue-600 hover:text-blue-500 font-medium"
+            className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"
           >
             Sign in
           </button>
         </Typography>
       </div>
-    </Card>
+    </div>
   );
 };

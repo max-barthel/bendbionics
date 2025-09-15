@@ -153,7 +153,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
           className="flex-shrink-0 mt-4"
         />
 
-        <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-white/10 to-white/5 min-h-0">
+        <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-white/10 to-white/5 min-h-0 scrollbar-hide">
           <TabPanel id="setup" activeTab={activeTab}>
             <RobotSetupTab
               onShowPresetManager={onShowPresetManager}

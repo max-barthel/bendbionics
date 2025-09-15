@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { robotAPI } from "../../api/client";
 import RobotForm from "../RobotForm";
@@ -208,7 +214,10 @@ describe("RobotForm", () => {
     render(<RobotForm onResult={mockOnResult} />);
 
     const submitButton = screen.getByRole("button", { name: /compute/i });
-    fireEvent.click(submitButton);
+
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
 
     await waitFor(() => {
       expect(robotAPI.computePCC).toHaveBeenCalledWith({
@@ -240,7 +249,10 @@ describe("RobotForm", () => {
     render(<RobotForm onResult={mockOnResult} />);
 
     const submitButton = screen.getByRole("button", { name: /compute/i });
-    fireEvent.click(submitButton);
+
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
 
     await waitFor(() => {
       expect(
@@ -259,7 +271,10 @@ describe("RobotForm", () => {
     render(<RobotForm onResult={mockOnResult} />);
 
     const submitButton = screen.getByRole("button", { name: /compute/i });
-    fireEvent.click(submitButton);
+
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
 
     await waitFor(() => {
       expect(
@@ -278,7 +293,10 @@ describe("RobotForm", () => {
     render(<RobotForm onResult={mockOnResult} />);
 
     const submitButton = screen.getByRole("button", { name: /compute/i });
-    fireEvent.click(submitButton);
+
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
 
     await waitFor(() => {
       expect(
@@ -345,11 +363,9 @@ describe("RobotForm", () => {
 
     // Wait for the loading state to appear
     await waitFor(() => {
-      expect(screen.getByText(/Computing\.\.\./)).toBeInTheDocument();
+      expect(screen.getByText(/Processing\.\.\./)).toBeInTheDocument();
     });
-    expect(
-      screen.getByRole("button", { name: /computing\.\.\./i })
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: /computing/i })).toBeDisabled();
   });
 
   it("shows progress indicator during computation", async () => {
@@ -364,7 +380,7 @@ describe("RobotForm", () => {
 
     // Wait for the progress indicator to appear
     await waitFor(() => {
-      expect(screen.getByText("Computing...")).toBeInTheDocument();
+      expect(screen.getByText("Processing...")).toBeInTheDocument();
     });
   });
 

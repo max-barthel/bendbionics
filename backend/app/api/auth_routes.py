@@ -114,3 +114,28 @@ async def get_current_user_info(
         is_verified=current_user.is_verified,
         created_at=current_user.created_at,
     )
+
+
+@router.delete("/account")
+async def delete_account(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    session: Session = Depends(get_session),
+):
+    """Delete the current user's account and all associated data"""
+    current_user = get_current_user(credentials, session)
+
+    # Delete all presets associated with the user
+    from app.models import Preset
+
+    user_presets = session.exec(
+        select(Preset).where(Preset.user_id == current_user.id)
+    ).all()
+
+    for preset in user_presets:
+        session.delete(preset)
+
+    # Delete the user account
+    session.delete(current_user)
+    session.commit()
+
+    return {"message": "Account deleted successfully"}

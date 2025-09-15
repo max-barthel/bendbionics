@@ -12,6 +12,7 @@ interface NumberInputProps {
   className?: string;
   disabled?: boolean;
   size?: "sm" | "md" | "lg";
+  "data-testid"?: string;
 }
 
 const NumberInput: React.FC<NumberInputProps> = ({
@@ -25,6 +26,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
   className = "",
   disabled = false,
   size = "md",
+  "data-testid": dataTestId,
 }) => {
   return (
     <TahoeNumberInput
@@ -38,6 +40,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
       className={className}
       disabled={disabled}
       size={size}
+      data-testid={dataTestId}
     />
   );
 };

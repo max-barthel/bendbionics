@@ -131,7 +131,7 @@ describe("Input", () => {
       render(<Input size="sm" value="" onChange={mockOnChange} />);
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveClass("px-2", "py-2", "text-sm");
+      expect(input).toHaveClass("pl-4", "pr-2", "py-2", "text-sm");
     });
 
     it("renders large size", () => {
@@ -169,7 +169,7 @@ describe("Input", () => {
       render(<Input value="" onChange={mockOnChange} error="Error message" />);
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveClass("border-red-300");
+      expect(input).toHaveClass("border-red-400/50");
       expect(screen.getByText("Error message")).toBeInTheDocument();
     });
   });
@@ -324,9 +324,8 @@ describe("Input", () => {
       const input = screen.getByRole("textbox");
       expect(input).toHaveClass(
         "border",
-        "rounded-lg",
-        "bg-white/90",
-        "backdrop-blur-sm"
+        "rounded-full",
+        "bg-gray-50"
       );
     });
 
@@ -345,14 +344,14 @@ describe("Input", () => {
       render(<Input value="" onChange={mockOnChange} error="Error" />);
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveClass("border-red-300", "focus:ring-red-400/50");
+      expect(input).toHaveClass("border-red-400/50", "focus:ring-red-400/50");
     });
 
     it("applies normal border classes when no error", () => {
       render(<Input value="" onChange={mockOnChange} />);
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveClass("border-neutral-300/60");
+      expect(input).toHaveClass("border-gray-300");
     });
 
     it("applies custom className", () => {

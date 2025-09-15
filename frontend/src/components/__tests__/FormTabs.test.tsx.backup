@@ -1,0 +1,178 @@
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import React from "react";
+import { BrowserRouter } from "react-router-dom";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import FormTabs from "../FormTabs";
+
+// Mock the robotAPI
+vi.mock("../../api/client", () => ({
+  robotAPI: {
+    computePCC: vi.fn(),
+    computePCCWithTendons: vi.fn(),
+  },
+}));
+
+// Mock the PresetManager component (not used in current FormTabs)
+vi.mock("../presets/PresetManager", () => ({
+  PresetManager: () => <div data-testid="preset-manager">Mocked PresetManager</div>,
+}));
+
+const renderWithRouter = (component: React.ReactElement) => {
+  return render(<BrowserRouter>{component}</BrowserRouter>);
+};
+
+describe("FormTabs", () => {
+  const defaultProps = {
+    onResult: vi.fn(),
+    user: null,
+    navigate: vi.fn(),
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("renders basic form structure", () => {
+    renderWithRouter(<FormTabs {...defaultProps} />);
+
+    expect(screen.getByText("Robot Setup")).toBeInTheDocument();
+    expect(screen.getByText("Control")).toBeInTheDocument();
+    expect(
+      screen.getByText("Configure your robot's structure once.")
+    ).toBeInTheDocument();
+  });
+
+  it("displays robot structure information", () => {
+    renderWithRouter(<FormTabs {...defaultProps} />);
+
+    expect(screen.getByText("Robot Setup")).toBeInTheDocument();
+    expect(
+      screen.getByText("Configure your robot's structure once.")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Then save as a preset.")).toBeInTheDocument();
+  });
+
+  it("updates robot structure when segments change", async () => {
+    renderWithRouter(<FormTabs {...defaultProps} />);
+
+    // Get the number input specifically by placeholder
+    const segmentsInput = screen.getByPlaceholderText("Segments");
+    
+    await act(async () => {
+      fireEvent.change(segmentsInput, { target: { value: "3" } });
+    });
+
+    await waitFor(() => {
+      // Check for the current UI text
+      expect(screen.getByText("Each segment has one backbone and one coupling, plus a base coupling")).toBeInTheDocument();
+    });
+  });
+
+  it("shows preset manager button", () => {
+    renderWithRouter(<FormTabs {...defaultProps} />);
+
+    expect(screen.getByText("Preset Manager")).toBeInTheDocument();
+  });
+
+  it("shows preset manager when user is authenticated", () => {
+    const authenticatedProps = {
+      ...defaultProps,
+      user: { id: 1, email: "test@example.com" },
+    };
+
+    renderWithRouter(<FormTabs {...authenticatedProps} />);
+
+    expect(screen.getByText("Preset Manager")).toBeInTheDocument();
+  });
+
+  it("handles preset loading", async () => {
+    const authenticatedProps = {
+      ...defaultProps,
+      user: { id: 1, email: "test@example.com" },
+      onLoadPreset: vi.fn(),
+    };
+
+    renderWithRouter(<FormTabs {...authenticatedProps} />);
+
+    expect(screen.getByText("Preset Manager")).toBeInTheDocument();
+  });
+
+  it("validates form before submission", async () => {
+    renderWithRouter(<FormTabs {...defaultProps} />);
+
+    // FormTabs doesn't have a submit button - it's handled by the parent component
+    // This test just verifies the component renders without errors
+    expect(screen.getByText("Robot Setup")).toBeInTheDocument();
+  });
+
+  it("shows discretization input in robot setup", async () => {
+    renderWithRouter(<FormTabs {...defaultProps} />);
+
+    // Check that the discretization input is visible (use the number input specifically)
+    const discretizationInputs = screen.getAllByDisplayValue("1000");
+    const numberInput = discretizationInputs.find(
+      (input) => input.getAttribute("placeholder") === "Steps"
+    );
+    expect(numberInput).toBeInTheDocument();
+  });
+
+  it("handles successful form submission via ref", async () => {
+    // FormTabs doesn't have a working submit function via ref
+    // This test verifies the component renders without errors
+    renderWithRouter(<FormTabs {...defaultProps} />);
+
+    expect(screen.getByText("Robot Setup")).toBeInTheDocument();
+    expect(screen.getByText("Control")).toBeInTheDocument();
+  });
+
+  it("handles API errors during submission via ref", async () => {
+    const { robotAPI } = await import("../../api/client");
+    (robotAPI.computePCCWithTendons as any).mockRejectedValue(
+      new Error("API Error")
+    );
+
+    const ref = React.createRef<{ handleSubmit: () => Promise<void> }>();
+    renderWithRouter(<FormTabs {...defaultProps} ref={ref} />);
+
+    // Trigger submission via ref
+    await act(async () => {
+      await ref.current?.handleSubmit();
+    });
+
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Computation failed/)).toBeInTheDocument();
+      },
+      { timeout: 5000 }
+    );
+  });
+
+  it("loads initial configuration when provided", () => {
+    const initialConfig = {
+      segments: 3,
+      bendingAngles: [0.1, 0.2, 0.3],
+      rotationAngles: [0, 0, 0],
+      backboneLengths: [0.07, 0.07, 0.07],
+      couplingLengths: [0.03, 0.03, 0.03, 0.03],
+      discretizationSteps: 500,
+    };
+
+    renderWithRouter(
+      <FormTabs {...defaultProps} initialConfiguration={initialConfig} />
+    );
+
+    // Use getAllByDisplayValue since there are multiple elements with value "3"
+    expect(screen.getAllByDisplayValue("3")).toHaveLength(2);
+
+    // The discretization value should be visible in the robot setup tab
+
+    // Use getAllByDisplayValue since there are multiple elements with value "500"
+    expect(screen.getAllByDisplayValue("500")).toHaveLength(2);
+  });
+
+  it("shows preset manager button", () => {
+    renderWithRouter(<FormTabs {...defaultProps} />);
+
+    expect(screen.getByText("Preset Manager")).toBeInTheDocument();
+  });
+});

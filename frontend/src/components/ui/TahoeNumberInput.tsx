@@ -11,6 +11,7 @@ interface TahoeNumberInputProps {
   className?: string;
   disabled?: boolean;
   size?: "sm" | "md" | "lg";
+  "data-testid"?: string;
 }
 
 export function TahoeNumberInput({
@@ -24,13 +25,17 @@ export function TahoeNumberInput({
   className = "",
   disabled = false,
   size = "md",
+  "data-testid": dataTestId,
 }: TahoeNumberInputProps) {
   const [inputValue, setInputValue] = useState(value.toString());
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
-    setInputValue(value.toString());
-  }, [value]);
+    // Only update input value if not currently focused (to avoid overriding user input)
+    if (!isFocused) {
+      setInputValue(value.toString());
+    }
+  }, [value, isFocused]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -59,14 +64,19 @@ export function TahoeNumberInput({
       const multiplier = Math.pow(10, precision);
       constrainedValue = Math.round(constrainedValue * multiplier) / multiplier;
 
-      onChange(constrainedValue);
+      // Only call onChange if the value actually changed
+      if (Math.abs(constrainedValue - value) > 1e-10) {
+        onChange(constrainedValue);
+      }
     }
   };
 
   const handleBlur = () => {
     setIsFocused(false);
-    // Ensure the input value matches the actual value
-    setInputValue(value.toString());
+    // Only reset if the input value is empty or invalid
+    if (inputValue === "" || inputValue === "-") {
+      setInputValue(value.toString());
+    }
   };
 
   const handleFocus = () => {
@@ -88,19 +98,19 @@ export function TahoeNumberInput({
   return (
     <div className={`relative group ${className}`}>
       <div
-        className={`relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl shadow-black/5 transition-all duration-500 ease-out transform ${
+        className={`relative bg-white/10 backdrop-blur-xl border rounded-full shadow-lg transition-all duration-500 ease-out transform ${
           isFocused
-            ? "border-blue-400/60 shadow-blue-500/25 scale-[1.02]"
-            : "hover:border-white/40 hover:shadow-3xl hover:scale-[1.01]"
+            ? "border-blue-400/30 shadow-blue-500/25 scale-[1.02]"
+            : "border-white/20 hover:border-white/40 hover:shadow-xl hover:scale-[1.01]"
         } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
         // Advanced frosted glass effects
         style={{
           background: isFocused
-            ? "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.08) 100%)"
+            ? "linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(99,102,241,0.25) 100%)"
             : "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 100%)",
           boxShadow: isFocused
-            ? "0 12px 40px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.3), 0 0 0 1px rgba(59,130,246,0.4), 0 0 20px rgba(59,130,246,0.1)"
-            : "0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.25)",
+            ? "0 4px 16px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.3)"
+            : "0 4px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.25)",
         }}
       >
         <input
@@ -112,6 +122,7 @@ export function TahoeNumberInput({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
+          data-testid={dataTestId}
           className={`w-full bg-transparent border-0 outline-none text-gray-900 placeholder-gray-500/70 font-medium pr-4 transition-all duration-300 ${
             sizeClasses[size]
           } [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${

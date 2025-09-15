@@ -1,4 +1,3 @@
-import secrets
 from enum import Enum
 from typing import List
 
@@ -33,8 +32,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./soft_robot.db"
 
     # Authentication settings
-    # Generate a new secret key each time if not provided
-    secret_key: str = secrets.token_urlsafe(32)
+    # Use a fixed secret key for development, generate new one for production
+    secret_key: str = "dev-secret-key-for-soft-robot-app-2024"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 

@@ -40,7 +40,7 @@ describe("SubmitButton", () => {
 
       const button = screen.getByTestId("submit-button");
       expect(button).toBeInTheDocument();
-      expect(button).toHaveTextContent("Computing...");
+      expect(button).toHaveTextContent("Processing...");
       expect(button).toHaveAttribute("aria-label", "computing");
     });
 
@@ -60,7 +60,7 @@ describe("SubmitButton", () => {
 
       const button = screen.getByTestId("submit-button");
       expect(button).toBeInTheDocument();
-      expect(button).toHaveTextContent("Computing...");
+      expect(button).toHaveTextContent("Processing...");
       expect(button).toBeDisabled();
       expect(button).toHaveAttribute("aria-label", "computing");
     });
@@ -70,7 +70,7 @@ describe("SubmitButton", () => {
 
       const button = screen.getByTestId("submit-button");
       expect(button).toBeInTheDocument();
-      expect(button).toHaveTextContent("Computing...");
+      expect(button).toHaveTextContent("Processing...");
       expect(button).toHaveAttribute("aria-label", "computing");
     });
   });
@@ -127,7 +127,7 @@ describe("SubmitButton", () => {
       rerender(<SubmitButton onClick={mockOnClick} loading={true} />);
 
       button = screen.getByTestId("submit-button");
-      expect(button).toHaveTextContent("Computing...");
+      expect(button).toHaveTextContent("Processing...");
       expect(button).toHaveAttribute("aria-label", "computing");
     });
 
@@ -137,7 +137,7 @@ describe("SubmitButton", () => {
       );
 
       let button = screen.getByTestId("submit-button");
-      expect(button).toHaveTextContent("Computing...");
+      expect(button).toHaveTextContent("Processing...");
 
       rerender(<SubmitButton onClick={mockOnClick} loading={false} />);
 

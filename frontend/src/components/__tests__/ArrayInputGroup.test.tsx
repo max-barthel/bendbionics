@@ -301,14 +301,14 @@ describe("ArrayInputGroup", () => {
       const degButton = screen.getByText("deg");
       const radButton = screen.getByText("rad");
 
-      expect(degButton).toHaveClass("bg-white");
-      expect(radButton).not.toHaveClass("bg-white");
+      expect(degButton).toHaveClass("bg-gradient-to-r");
+      expect(radButton).not.toHaveClass("bg-gradient-to-r");
 
       // Click rad button
       fireEvent.click(radButton);
 
-      expect(degButton).not.toHaveClass("bg-white");
-      expect(radButton).toHaveClass("bg-white");
+      expect(degButton).not.toHaveClass("bg-gradient-to-r");
+      expect(radButton).toHaveClass("bg-gradient-to-r");
     });
 
     it("handles length unit button clicks correctly", () => {
@@ -327,16 +327,16 @@ describe("ArrayInputGroup", () => {
       const mButton = screen.getByText("m");
 
       // Initially mm should be selected
-      expect(mmButton).toHaveClass("bg-white");
-      expect(cmButton).not.toHaveClass("bg-white");
-      expect(mButton).not.toHaveClass("bg-white");
+      expect(mmButton).toHaveClass("bg-gradient-to-r");
+      expect(cmButton).not.toHaveClass("bg-gradient-to-r");
+      expect(mButton).not.toHaveClass("bg-gradient-to-r");
 
       // Click cm button
       fireEvent.click(cmButton);
 
-      expect(mmButton).not.toHaveClass("bg-white");
-      expect(cmButton).toHaveClass("bg-white");
-      expect(mButton).not.toHaveClass("bg-white");
+      expect(mmButton).not.toHaveClass("bg-gradient-to-r");
+      expect(cmButton).toHaveClass("bg-gradient-to-r");
+      expect(mButton).not.toHaveClass("bg-gradient-to-r");
     });
   });
 
@@ -359,7 +359,7 @@ describe("ArrayInputGroup", () => {
       ).toBeInTheDocument();
     });
 
-    it("has proper labels for number inputs", () => {
+    it("has proper test IDs for number inputs", () => {
       const values = [0.628319, 0.628319, 0.628319];
       render(
         <ArrayInputGroup
@@ -369,9 +369,9 @@ describe("ArrayInputGroup", () => {
         />
       );
 
-      expect(screen.getByLabelText("1")).toBeInTheDocument();
-      expect(screen.getByLabelText("2")).toBeInTheDocument();
-      expect(screen.getByLabelText("3")).toBeInTheDocument();
+      expect(screen.getByTestId("number-input-1")).toBeInTheDocument();
+      expect(screen.getByTestId("number-input-2")).toBeInTheDocument();
+      expect(screen.getByTestId("number-input-3")).toBeInTheDocument();
     });
   });
 
