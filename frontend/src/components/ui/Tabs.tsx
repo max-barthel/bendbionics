@@ -21,40 +21,17 @@ export function Tabs({
 }: TabsProps) {
   return (
     <div
-      className={`flex bg-white/10 backdrop-blur-xl border border-white/20 rounded-full p-1 shadow-2xl shadow-black/5 gap-1 ${className}`}
-      // Advanced frosted glass effects require inline styles for complex gradients and shadows
-      style={{
-        background:
-          "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
-        boxShadow:
-          "0 8px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
-      }}
+      className={`flex bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border border-white/20 rounded-full p-1 shadow-2xl shadow-black/5 gap-1 ${className}`}
     >
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`relative px-4 py-2 text-xs font-medium rounded-full transition-all duration-300 ease-out ${
+          className={`relative w-24 h-8 flex items-center justify-center flex-1 text-xs font-medium rounded-full transition-all duration-300 ease-out ${
             activeTab === tab.id
-              ? "bg-gradient-to-r from-blue-500/30 to-indigo-500/30 text-gray-900 shadow-lg border border-blue-400/30"
+              ? "bg-gradient-to-br from-blue-500/25 to-indigo-500/25 text-gray-900 shadow-lg border border-blue-400/30 shadow-blue-500/20"
               : "text-gray-600 hover:text-gray-800 hover:bg-white/20"
           }`}
-          // Advanced selected state styling with complex gradients and shadows
-          style={{
-            width: "6rem", // Fixed width to prevent layout shift
-            height: "2rem", // Fixed height to prevent layout shift
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flex: "1", // Equal distribution of space
-            ...(activeTab === tab.id && {
-              background:
-                "linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(99,102,241,0.25) 100%)",
-              boxShadow:
-                "0 4px 16px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.3)",
-              border: "1px solid rgba(59,130,246,0.3)",
-            }),
-          }}
           aria-label={`${tab.label} tab`}
         >
           <div className="flex items-center justify-center gap-1.5">
@@ -64,15 +41,7 @@ export function Tabs({
             <span className="text-xs font-medium">{tab.label}</span>
           </div>
           {activeTab === tab.id && (
-            <div
-              className="absolute inset-0 rounded-full pointer-events-none"
-              // Frosted glass highlight overlay for selected state
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)",
-              }}
-            />
+            <div className="absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
           )}
         </button>
       ))}
@@ -93,7 +62,17 @@ export function TabPanel({
   children,
   className = "",
 }: TabPanelProps) {
-  if (id !== activeTab) return null;
+  const isActive = id === activeTab;
 
-  return <div className={`${className}`}>{children}</div>;
+  return (
+    <div
+      className={`${className} transition-opacity duration-300 ${
+        isActive
+          ? "opacity-100"
+          : "opacity-0 pointer-events-none absolute inset-0"
+      }`}
+    >
+      {children}
+    </div>
+  );
 }

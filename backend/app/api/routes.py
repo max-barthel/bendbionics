@@ -1,9 +1,10 @@
 import numpy as np
+from app.api.responses import ComputationError, success_response
 from app.models.pcc.model import compute_pcc
 from app.models.pcc.pcc_model import compute_pcc_with_tendons
 from app.models.pcc.types import PCCParams
 from app.utils.logging import logger
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi.responses import Response
 
 router = APIRouter()
@@ -11,27 +12,42 @@ router = APIRouter()
 
 @router.post("/pcc")
 async def run_pcc(params: PCCParams):
+    """Compute PCC (Piecewise Constant Curvature) robot configuration."""
     try:
         result = compute_pcc(params)
         result_serializable = [
             [point.tolist() for point in segment] for segment in result
         ]
-        return {"segments": result_serializable}
+
+        return success_response(
+            data={"segments": result_serializable},
+            message="PCC computation completed successfully",
+        )
     except Exception as e:
         logger.error(f"PCC computation failed: {e}")
-        raise HTTPException(status_code=500, detail="Computation failed")
+        raise ComputationError(
+            message="PCC computation failed", details={"error": str(e)}
+        )
 
 
 @router.post("/pcc-with-tendons")
 async def run_pcc_with_tendons(params: PCCParams):
+    """Compute PCC robot configuration with tendon analysis."""
     try:
         result = compute_pcc_with_tendons(params)
         # Convert numpy arrays to lists for JSON serialization
         result_serializable = _convert_result_to_serializable(result)
-        return {"result": result_serializable}
+
+        return success_response(
+            data={"result": result_serializable},
+            message="PCC with tendons computation completed successfully",
+        )
     except Exception as e:
         logger.error(f"PCC with tendons computation failed: {e}")
-        raise HTTPException(status_code=500, detail="Computation failed")
+        raise ComputationError(
+            message="PCC with tendons computation failed",
+            details={"error": str(e)},
+        )
 
 
 @router.options("/pcc")

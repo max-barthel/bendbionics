@@ -7,13 +7,14 @@ This module provides endpoints for:
 - Analyzing robot kinematics with tendon routing
 """
 
-from typing import Any, Dict
+# Removed unused imports
 
+from app.api.responses import ComputationError, success_response
 from app.auth import get_current_user
 from app.models.pcc.pcc_model import compute_pcc_with_tendons
 from app.models.pcc.types import PCCParams
 from app.models.user import User
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 router = APIRouter(prefix="/tendons", tags=["tendons"])
 
@@ -21,7 +22,7 @@ router = APIRouter(prefix="/tendons", tags=["tendons"])
 @router.post("/calculate")
 async def calculate_tendon_lengths(
     params: PCCParams, current_user: User = Depends(get_current_user)
-) -> Dict[str, Any]:
+):
     """
     Calculate tendon lengths and actuation requirements for a robot
     configuration.
@@ -33,22 +34,20 @@ async def calculate_tendon_lengths(
     """
     try:
         result = compute_pcc_with_tendons(params)
-        return {
-            "success": True,
-            "data": result,
-            "message": "Tendon calculation completed successfully",
-        }
+        return success_response(
+            data=result, message="Tendon calculation completed successfully"
+        )
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error calculating tendon lengths: {str(e)}",
+        raise ComputationError(
+            message="Error calculating tendon lengths",
+            details={"error": str(e)},
         )
 
 
 @router.post("/analyze")
 async def analyze_tendon_configuration(
     params: PCCParams, current_user: User = Depends(get_current_user)
-) -> Dict[str, Any]:
+):
     """
     Analyze tendon configuration and return detailed results.
 
@@ -68,13 +67,11 @@ async def analyze_tendon_configuration(
             "tendon_config": result.get("tendon_config", {}),
         }
 
-        return {
-            "success": True,
-            "data": analysis,
-            "message": "Tendon analysis completed successfully",
-        }
+        return success_response(
+            data=analysis, message="Tendon analysis completed successfully"
+        )
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error analyzing tendon configuration: {str(e)}",
+        raise ComputationError(
+            message="Error analyzing tendon configuration",
+            details={"error": str(e)},
         )

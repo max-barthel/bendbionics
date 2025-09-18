@@ -90,5 +90,5 @@ class TendonAnalysisEngine:
             "tendon_analysis": tendon_analysis,
             "actuation_commands": actuation_commands,
             "model_type": getattr(robot_model, "model_type", "unknown"),
-            "tendon_config": self.config.dict(),
+            "tendon_config": self.config.model_dump(mode="json"),
         }

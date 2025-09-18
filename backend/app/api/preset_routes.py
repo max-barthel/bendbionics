@@ -1,17 +1,17 @@
 import json
-from typing import List
 
+from app.api.responses import NotFoundError, created_response, success_response
 from app.auth import get_current_user, security
 from app.database import get_session
 from app.models import Preset, PresetCreate, PresetResponse, PresetUpdate
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlmodel import Session, select
 
 router = APIRouter(prefix="/presets", tags=["presets"])
 
 
-@router.post("/", response_model=PresetResponse)
+@router.post("/")
 async def create_preset(
     preset_data: PresetCreate,
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -32,7 +32,7 @@ async def create_preset(
     session.commit()
     session.refresh(preset)
 
-    return PresetResponse(
+    preset_response = PresetResponse(
         id=preset.id,
         name=preset.name,
         description=preset.description,
@@ -43,8 +43,13 @@ async def create_preset(
         user_id=preset.user_id,
     )
 
+    return created_response(
+        data=preset_response.model_dump(mode="json"),
+        message="Preset created successfully",
+    )
 
-@router.get("/", response_model=List[PresetResponse])
+
+@router.get("/")
 async def get_user_presets(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     session: Session = Depends(get_session),
@@ -56,7 +61,7 @@ async def get_user_presets(
         select(Preset).where(Preset.user_id == current_user.id)
     ).all()
 
-    return [
+    preset_responses = [
         PresetResponse(
             id=preset.id,
             name=preset.name,
@@ -70,15 +75,19 @@ async def get_user_presets(
         for preset in presets
     ]
 
+    return success_response(
+        data=preset_responses, message="User presets retrieved successfully"
+    )
 
-@router.get("/public", response_model=List[PresetResponse])
+
+@router.get("/public")
 async def get_public_presets(session: Session = Depends(get_session)):
     """Get all public presets"""
     presets = session.exec(
         select(Preset).where(Preset.is_public.is_(True))
     ).all()
 
-    return [
+    preset_responses = [
         PresetResponse(
             id=preset.id,
             name=preset.name,
@@ -92,8 +101,12 @@ async def get_public_presets(session: Session = Depends(get_session)):
         for preset in presets
     ]
 
+    return success_response(
+        data=preset_responses, message="Public presets retrieved successfully"
+    )
 
-@router.get("/{preset_id}", response_model=PresetResponse)
+
+@router.get("/{preset_id}")
 async def get_preset(
     preset_id: int,
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -113,11 +126,9 @@ async def get_preset(
     ).first()
 
     if not preset:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Preset not found"
-        )
+        raise NotFoundError("Preset not found")
 
-    return PresetResponse(
+    preset_response = PresetResponse(
         id=preset.id,
         name=preset.name,
         description=preset.description,
@@ -128,8 +139,13 @@ async def get_preset(
         user_id=preset.user_id,
     )
 
+    return success_response(
+        data=preset_response.model_dump(mode="json"),
+        message="Preset retrieved successfully",
+    )
 
-@router.put("/{preset_id}", response_model=PresetResponse)
+
+@router.put("/{preset_id}")
 async def update_preset(
     preset_id: int,
     preset_data: PresetUpdate,
@@ -146,9 +162,7 @@ async def update_preset(
     ).first()
 
     if not preset:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Preset not found"
-        )
+        raise NotFoundError("Preset not found")
 
     # Update fields if provided
     if preset_data.name is not None:
@@ -164,7 +178,7 @@ async def update_preset(
     session.commit()
     session.refresh(preset)
 
-    return PresetResponse(
+    preset_response = PresetResponse(
         id=preset.id,
         name=preset.name,
         description=preset.description,
@@ -173,6 +187,11 @@ async def update_preset(
         created_at=preset.created_at,
         updated_at=preset.updated_at,
         user_id=preset.user_id,
+    )
+
+    return success_response(
+        data=preset_response.model_dump(mode="json"),
+        message="Preset updated successfully",
     )
 
 
@@ -192,11 +211,11 @@ async def delete_preset(
     ).first()
 
     if not preset:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Preset not found"
-        )
+        raise NotFoundError("Preset not found")
 
     session.delete(preset)
     session.commit()
 
-    return {"message": "Preset deleted successfully"}
+    return success_response(
+        data={"deleted_id": preset_id}, message="Preset deleted successfully"
+    )

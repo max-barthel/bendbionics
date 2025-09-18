@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -20,6 +21,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -38,142 +40,115 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const hasCheckedAuth = useRef(false);
 
+  // Ensure we always provide a valid context, even if there are errors
+
   // Check if user is authenticated on mount
   useEffect(() => {
     if (hasCheckedAuth.current) return;
 
     const checkAuth = async () => {
-      hasCheckedAuth.current = true;
-      if (token) {
-        try {
-          const userData = await authAPI.getCurrentUser();
-          setUser(userData);
-        } catch (error) {
-          // Token is invalid, clear it
-          localStorage.removeItem("token");
-          setToken(null);
+      try {
+        hasCheckedAuth.current = true;
+        if (token) {
+          try {
+            const userData = await authAPI.getCurrentUser();
+            setUser(userData);
+          } catch (error) {
+            console.log("Token validation failed, clearing token:", error);
+            // Token is invalid, clear it
+            localStorage.removeItem("token");
+            setToken(null);
+          }
         }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        // If anything goes wrong, just clear everything and continue
+        localStorage.removeItem("token");
+        setToken(null);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
-    checkAuth();
-  }, [token]);
+    // Add a timeout to ensure we always set loading to false
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        console.log("Auth check timeout, setting loading to false");
+        setIsLoading(false);
+      }
+    }, 5000);
 
-  const login = async (data: LoginRequest) => {
+    checkAuth();
+
+    return () => clearTimeout(timeoutId);
+  }, [token, isLoading]);
+
+  const login = useCallback(async (data: LoginRequest) => {
     try {
       const response = await authAPI.login(data);
       const { access_token, user: userData } = response;
 
-      console.log(
-        "Login successful, storing token:",
-        access_token ? `"${access_token.substring(0, 20)}..."` : "null"
-      );
       // Clean the token before storing - remove any quotes
       const cleanToken = access_token.replace(/^"|"$/g, "");
 
-      // Store token in multiple places for Tauri compatibility
+      // Store token in localStorage
       localStorage.setItem("token", cleanToken);
-      sessionStorage.setItem("token", cleanToken);
 
-      // Also store in global window object for Tauri
+      // Also store in global window object for Tauri compatibility
       if (typeof window !== "undefined") {
-        (window as any).authToken = cleanToken;
+        (window as Window & { authToken?: string }).authToken = cleanToken;
       }
-
-      // Debug: Verify token storage
-      console.log("=== Login Token Storage Debug ===");
-      console.log(
-        "localStorage token stored:",
-        localStorage.getItem("token") ? "YES" : "NO"
-      );
-      console.log(
-        "sessionStorage token stored:",
-        sessionStorage.getItem("token") ? "YES" : "NO"
-      );
-      console.log(
-        "window.authToken stored:",
-        (window as any).authToken ? "YES" : "NO"
-      );
-      console.log("================================");
 
       setToken(cleanToken);
       setUser(userData);
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error; // Re-throw so the calling component can handle it
+    }
+  }, []);
 
-      // Verify token was stored
-      const storedToken = localStorage.getItem("token");
-      console.log(
-        "Token stored in localStorage:",
-        storedToken ? `"${storedToken.substring(0, 20)}..."` : "null"
-      );
-
-      // Force a small delay to ensure localStorage is updated
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Verify again after delay
-      const storedTokenAfterDelay = localStorage.getItem("token");
-      console.log(
-        "Token in localStorage after delay:",
-        storedTokenAfterDelay
-          ? `"${storedTokenAfterDelay.substring(0, 20)}..."`
-          : "null"
-      );
-
-      // Force a longer delay to ensure localStorage is fully updated
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Final verification
-      const finalToken = localStorage.getItem("token");
-      console.log(
-        "Final token in localStorage:",
-        finalToken ? `"${finalToken.substring(0, 20)}..."` : "null"
-      );
-
-      // Test auth immediately after login
+  const register = useCallback(
+    async (data: RegisterRequest) => {
       try {
-        const testUser = await authAPI.getCurrentUser();
-        console.log("Auth test after login successful:", testUser.username);
-      } catch (authError) {
-        console.error("Auth test after login failed:", authError);
+        const userData = await authAPI.register(data);
+        setUser(userData);
+        // Auto-login after registration for local users
+        if (userData.is_local) {
+          const loginData = {
+            username: data.username,
+            password: data.password,
+          };
+          await login(loginData);
+        }
+      } catch (error) {
+        console.error("Registration failed:", error);
+        throw error; // Re-throw so the calling component can handle it
       }
-    } catch (error) {
-      throw error;
-    }
-  };
+    },
+    [login]
+  );
 
-  const register = async (data: RegisterRequest) => {
-    try {
-      const userData = await authAPI.register(data);
-      setUser(userData);
-      // Auto-login after registration for local users
-      if (userData.is_local) {
-        const loginData = { username: data.username, password: data.password };
-        await login(loginData);
-      }
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem("token");
     sessionStorage.removeItem("token");
     if (typeof window !== "undefined") {
-      (window as any).authToken = null;
+      (window as Window & { authToken?: string }).authToken = undefined;
     }
     setToken(null);
     setUser(null);
-  };
+  }, []);
 
-  const deleteAccount = async () => {
+  const deleteAccount = useCallback(async () => {
     try {
       await authAPI.deleteAccount();
       // Clear all authentication data after successful deletion
       logout();
     } catch (error) {
-      throw error;
+      console.error("Delete account failed:", error);
+      throw error; // Re-throw so the calling component can handle it
     }
-  };
+  }, [logout]);
 
   const value: AuthContextType = useMemo(
     () => ({
@@ -184,8 +159,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       logout,
       deleteAccount,
     }),
-    [user, isLoading]
+    [user, isLoading, login, register, logout, deleteAccount]
   );
 
+  // Always provide the context, even if there are errors
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

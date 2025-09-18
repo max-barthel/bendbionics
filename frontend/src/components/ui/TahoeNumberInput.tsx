@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { combineStyles, getTahoeGlassStyles } from "../../styles/tahoe-utils";
 
 interface TahoeNumberInputProps {
   value: number;
@@ -95,23 +96,24 @@ export function TahoeNumberInput({
     lg: "px-6 py-3 text-base",
   };
 
+  // Get Tahoe glass styling
+  const tahoeGlassClasses = getTahoeGlassStyles(
+    "subtle", // glass variant (subtle for number inputs)
+    "subtle", // shadow variant
+    "full", // border radius
+    "standard", // transition
+    "blue", // focus state
+    "subtle" // hover state (subtle for inputs)
+  );
+
   return (
-    <div className={`relative group ${className}`}>
+    <div className={combineStyles("relative group", className)}>
       <div
-        className={`relative bg-white/10 backdrop-blur-xl border rounded-full shadow-lg transition-all duration-500 ease-out transform ${
-          isFocused
-            ? "border-blue-400/30 shadow-blue-500/25 scale-[1.02]"
-            : "border-white/20 hover:border-white/40 hover:shadow-xl hover:scale-[1.01]"
-        } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
-        // Advanced frosted glass effects
-        style={{
-          background: isFocused
-            ? "linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(99,102,241,0.25) 100%)"
-            : "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 100%)",
-          boxShadow: isFocused
-            ? "0 4px 16px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.3)"
-            : "0 4px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.25)",
-        }}
+        className={combineStyles(
+          "relative transition-all duration-300 ease-out",
+          tahoeGlassClasses,
+          disabled ? "opacity-50 cursor-not-allowed" : ""
+        )}
       >
         <input
           type="text"
@@ -132,27 +134,16 @@ export function TahoeNumberInput({
 
         {/* Enhanced frosted glass highlight overlay */}
         <div
-          className="absolute inset-0 rounded-full pointer-events-none transition-all duration-500"
-          style={{
-            background: isFocused
-              ? "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 100%)"
-              : "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%)",
-            boxShadow: isFocused
-              ? "inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.1)"
-              : "inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(255,255,255,0.05)",
-          }}
+          className={`absolute inset-0 rounded-full pointer-events-none transition-all duration-500 ${
+            isFocused
+              ? "bg-gradient-to-br from-white/15 via-white/8 to-white/3 shadow-inner"
+              : "bg-gradient-to-br from-white/12 via-white/6 to-white/2 shadow-inner"
+          }`}
         />
 
         {/* Subtle inner glow for focus state */}
         {isFocused && (
-          <div
-            className="absolute inset-0 rounded-full pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(circle at center, rgba(59,130,246,0.08) 0%, transparent 70%)",
-              animation: "pulse 2s ease-in-out infinite",
-            }}
-          />
+          <div className="absolute inset-0 rounded-full pointer-events-none bg-gradient-to-r from-blue-500/8 via-blue-500/4 to-transparent animate-pulse" />
         )}
 
         {/* Micro-interaction feedback */}
@@ -166,13 +157,18 @@ export function TahoeNumberInput({
       {/* Floating label effect for focus */}
       {isFocused && placeholder && (
         <div
-          className="absolute -top-3 left-3 px-2 bg-white/20 backdrop-blur-lg border border-white/30 rounded-lg text-xs font-medium text-gray-700 transition-all duration-300"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.15) 100%)",
-            boxShadow:
-              "0 4px 12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.3)",
-          }}
+          className={combineStyles(
+            "absolute -top-3 left-3 px-2 text-xs font-medium text-gray-700 transition-all duration-300",
+            getTahoeGlassStyles(
+              "base",
+              "subtle",
+              "medium",
+              "standard",
+              "white",
+              "glass",
+              false
+            )
+          )}
         >
           {placeholder}
         </div>

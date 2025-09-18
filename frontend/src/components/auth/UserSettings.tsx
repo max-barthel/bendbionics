@@ -49,23 +49,46 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-md bg-gradient-to-br from-white/25 to-white/10 backdrop-blur-xl border border-white/30 rounded-3xl shadow-2xl shadow-black/10">
-        <div className="p-6">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-hidden relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out hover:scale-105 z-10"
+          aria-label="Close user settings"
+        >
+          <svg
+            className="w-4 h-4 text-gray-600 transition-transform duration-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+        <div className="p-6 overflow-y-auto max-h-[80vh]">
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
-              <UserIcon className="w-8 h-8 text-gray-700" />
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200">
+              <UserIcon className="w-8 h-8 text-gray-600" />
             </div>
-            <Typography variant="h3" color="primary" className="mb-2">
+            <Typography
+              variant="h3"
+              color="primary"
+              className="mb-2 text-gray-800"
+            >
               Account Settings
             </Typography>
-            <Typography variant="body" color="gray" className="text-sm">
+            <Typography variant="body" color="gray" className="text-gray-600">
               Manage your account preferences
             </Typography>
           </div>
 
           {/* User Info */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 mb-6 border border-white/20">
+          <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-200">
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Typography variant="body" color="gray" className="text-sm">
@@ -114,7 +137,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
               <Button
                 variant="outline"
                 onClick={handleLogout}
-                className="w-full border border-gray-300/50 bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 rounded-2xl py-3"
+                className="w-full border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
               >
                 Sign Out
               </Button>
@@ -122,26 +145,18 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
               <Button
                 variant="outline"
                 onClick={confirmDelete}
-                className="w-full border border-red-300/50 bg-red-500/10 backdrop-blur-sm hover:bg-red-500/20 text-red-600 hover:text-red-700 transition-all duration-300 rounded-2xl py-3"
+                className="w-full border border-red-300 bg-red-50 hover:scale-105 text-red-600 hover:text-red-700 transition-all duration-300 rounded-full py-3"
               >
                 <div className="flex items-center justify-center gap-2">
                   <TrashIcon className="w-4 h-4" />
                   Delete Account
                 </div>
               </Button>
-
-              <Button
-                variant="outline"
-                onClick={onClose}
-                className="w-full border border-gray-300/50 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 rounded-2xl py-3"
-              >
-                Cancel
-              </Button>
             </div>
           ) : (
             /* Delete Confirmation View */
             <div className="space-y-4">
-              <div className="bg-red-500/10 backdrop-blur-sm rounded-2xl p-4 border border-red-300/30">
+              <div className="bg-red-50 rounded-xl p-4 border border-red-200">
                 <div className="flex items-center gap-3 mb-3">
                   <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
                   <Typography
@@ -155,7 +170,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
                 <Typography
                   variant="body"
                   color="gray"
-                  className="text-sm leading-relaxed"
+                  className="text-sm leading-relaxed text-gray-600"
                 >
                   This action cannot be undone. This will permanently delete
                   your account and remove all your presets and data from our
@@ -164,7 +179,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
               </div>
 
               {deleteError && (
-                <div className="bg-red-500/10 backdrop-blur-sm rounded-2xl p-3 border border-red-300/30">
+                <div className="bg-red-50 rounded-xl p-3 border border-red-200">
                   <Typography
                     variant="body"
                     color="primary"
@@ -180,7 +195,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
                   variant="outline"
                   onClick={handleDeleteAccount}
                   disabled={isDeleting}
-                  className="flex-1 border border-red-300/50 bg-red-500/20 backdrop-blur-sm hover:bg-red-500/30 text-red-600 hover:text-red-700 transition-all duration-300 rounded-2xl py-3 disabled:opacity-50"
+                  className="flex-1 border border-red-300 bg-red-100 hover:scale-105 text-red-600 hover:text-red-700 transition-all duration-300 rounded-full py-3 disabled:opacity-50"
                 >
                   {isDeleting ? "Deleting..." : "Yes, Delete"}
                 </Button>
@@ -189,7 +204,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
                   variant="outline"
                   onClick={cancelDelete}
                   disabled={isDeleting}
-                  className="flex-1 border border-gray-300/50 bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 rounded-2xl py-3"
+                  className="flex-1 border border-gray-300 bg-gray-50 hover:scale-105 transition-all duration-300 rounded-full py-3"
                 >
                   Cancel
                 </Button>
