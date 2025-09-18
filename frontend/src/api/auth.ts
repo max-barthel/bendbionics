@@ -63,13 +63,14 @@ export const authAPI = {
         const isTauri = typeof window !== 'undefined' && (window as any).__TAURI__;
 
         if (isTauri) {
-            const response = await tauriClient.post<User>('/auth/register', data);
+            const response = await tauriClient.post<{ data: User }>('/auth/register', data);
             if (!response.success) {
                 throw new Error(response.error || 'Registration failed');
             }
-            return response.data as User;
+            return (response.data as any).data as User;
         } else {
-            return (await client().post<User>('/auth/register', data)).data;
+            const response = await client().post<{ data: User }>('/auth/register', data);
+            return response.data.data;
         }
     },
 
@@ -77,15 +78,16 @@ export const authAPI = {
     login: async (data: LoginRequest): Promise<AuthResponse> => {
         const isTauri = typeof window !== 'undefined' && (window as any).__TAURI__;
         if (isTauri) {
-            const response = await tauriClient.post<AuthResponse>('/auth/login', data);
+            const response = await tauriClient.post<{ data: AuthResponse }>('/auth/login', data);
 
             if (!response.success) {
                 throw new Error(response.error || 'Login failed');
             }
 
-            return response.data as AuthResponse;
+            return (response.data as any).data as AuthResponse;
         } else {
-            return (await client().post<AuthResponse>('/auth/login', data)).data;
+            const response = await client().post<{ data: AuthResponse }>('/auth/login', data);
+            return response.data.data;
         }
     },
 
@@ -125,84 +127,84 @@ export const presetAPI = {
     // Get user presets
     getUserPresets: async (): Promise<Preset[]> => {
         if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-            const response = await tauriClient.get<Preset[]>('/presets/');
+            const response = await tauriClient.get<{ data: Preset[] }>('/presets/');
             if (!response.success) {
                 throw new Error(response.error || 'Failed to get presets');
             }
-            return response.data as Preset[];
+            return (response.data as any).data as Preset[];
         } else {
-            const response = await client().get<Preset[]>('/presets/');
-            return response.data;
+            const response = await client().get<{ data: Preset[] }>('/presets/');
+            return response.data.data;
         }
     },
 
     // Get public presets
     getPublicPresets: async (): Promise<Preset[]> => {
         if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-            const response = await tauriClient.get<Preset[]>('/presets/public');
+            const response = await tauriClient.get<{ data: Preset[] }>('/presets/public');
             if (!response.success) {
                 throw new Error(response.error || 'Failed to get public presets');
             }
-            return response.data as Preset[];
+            return (response.data as any).data as Preset[];
         } else {
-            const response = await client().get<Preset[]>('/presets/public');
-            return response.data;
+            const response = await client().get<{ data: Preset[] }>('/presets/public');
+            return response.data.data;
         }
     },
 
     // Get specific preset
     getPreset: async (id: number): Promise<Preset> => {
         if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-            const response = await tauriClient.get<Preset>(`/presets/${id}`);
+            const response = await tauriClient.get<{ data: Preset }>(`/presets/${id}`);
             if (!response.success) {
                 throw new Error(response.error || 'Failed to get preset');
             }
-            return response.data as Preset;
+            return (response.data as any).data as Preset;
         } else {
-            const response = await client().get<Preset>(`/presets/${id}`);
-            return response.data;
+            const response = await client().get<{ data: Preset }>(`/presets/${id}`);
+            return response.data.data;
         }
     },
 
     // Create new preset
     createPreset: async (data: CreatePresetRequest): Promise<Preset> => {
         if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-            const response = await tauriClient.post<Preset>('/presets/', data);
+            const response = await tauriClient.post<{ data: Preset }>('/presets/', data);
             if (!response.success) {
                 throw new Error(response.error || 'Failed to create preset');
             }
-            return response.data as Preset;
+            return (response.data as any).data as Preset;
         } else {
-            const response = await client().post<Preset>('/presets/', data);
-            return response.data;
+            const response = await client().post<{ data: Preset }>('/presets/', data);
+            return response.data.data;
         }
     },
 
     // Update preset
     updatePreset: async (id: number, data: UpdatePresetRequest): Promise<Preset> => {
         if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-            const response = await tauriClient.put<Preset>(`/presets/${id}`, data);
+            const response = await tauriClient.put<{ data: Preset }>(`/presets/${id}`, data);
             if (!response.success) {
                 throw new Error(response.error || 'Failed to update preset');
             }
-            return response.data as Preset;
+            return (response.data as any).data as Preset;
         } else {
-            const response = await client().put<Preset>(`/presets/${id}`, data);
-            return response.data;
+            const response = await client().put<{ data: Preset }>(`/presets/${id}`, data);
+            return response.data.data;
         }
     },
 
     // Delete preset
     deletePreset: async (id: number): Promise<{ message: string }> => {
         if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-            const response = await tauriClient.delete<{ message: string }>(`/presets/${id}`);
+            const response = await tauriClient.delete<{ data: { message: string } }>(`/presets/${id}`);
             if (!response.success) {
                 throw new Error(response.error || 'Failed to delete preset');
             }
-            return response.data as { message: string };
+            return (response.data as any).data as { message: string };
         } else {
-            const response = await client().delete<{ message: string }>(`/presets/${id}`);
-            return response.data;
+            const response = await client().delete<{ data: { message: string } }>(`/presets/${id}`);
+            return response.data.data;
         }
     },
 };

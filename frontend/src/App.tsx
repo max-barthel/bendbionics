@@ -1,18 +1,24 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
-import FormTabs from "./components/FormTabs";
-import SubmitButton from "./components/SubmitButton";
+
+// Feature imports - using direct imports to avoid export conflicts
+import { PresetManager } from "./features/presets/components/presets/PresetManager";
+import FormTabs from "./features/robot-config/components/FormTabs";
+import SubmitButton from "./features/robot-config/components/SubmitButton";
+import { useRobotState } from "./features/robot-config/hooks/useRobotState";
+import { ErrorBoundary } from "./features/shared/components/ErrorBoundary";
+import Visualizer3D from "./features/visualization/components/Visualizer3D";
 
 import { AuthPage } from "./components/auth/AuthPage";
 import { UserSettings } from "./components/auth/UserSettings";
 
-import { PresetManager } from "./components/presets/PresetManager";
 import { LoadingSpinner, Typography } from "./components/ui";
-import { useRobotState } from "./hooks/useRobotState";
+import TahoeGlass from "./components/ui/TahoeGlass";
 import { AuthProvider, useAuth } from "./providers";
+import { type RobotConfiguration } from "./types/robot";
 
 // Lazy load heavy components
-const Visualizer3D = lazy(() => import("./components/Visualizer3D"));
+const LazyVisualizer3D = lazy(() => Promise.resolve({ default: Visualizer3D }));
 
 function AppContent() {
   const { user, isLoading, logout } = useAuth();
@@ -23,9 +29,8 @@ function AppContent() {
   const [triggerComputation, setTriggerComputation] = useState(false);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [currentConfiguration, setCurrentConfiguration] = useState<
-    Record<string, any>
-  >({});
+  const [currentConfiguration, setCurrentConfiguration] =
+    useState<RobotConfiguration>({});
   const [showPresetManager, setShowPresetManager] = useState(false);
   const [showTendonResults, setShowTendonResults] = useState(false);
   const [isLoadingPreset, setIsLoadingPreset] = useState(false);
@@ -69,7 +74,7 @@ function AppContent() {
 
   const handleFormResult = (
     result: number[][][],
-    configuration: Record<string, any>
+    configuration: RobotConfiguration
   ) => {
     setSegments(result);
 
@@ -84,7 +89,7 @@ function AppContent() {
     }
   };
 
-  const handleLoadPreset = (configuration: Record<string, any>) => {
+  const handleLoadPreset = (configuration: RobotConfiguration) => {
     console.log("Loading preset configuration:", configuration);
 
     // Set loading preset flag to prevent circular updates
@@ -209,7 +214,7 @@ function AppContent() {
                     </div>
                   }
                 >
-                  <Visualizer3D
+                  <LazyVisualizer3D
                     segments={segments}
                     tendonConfig={currentConfiguration.tendonConfig}
                     tendonAnalysis={currentConfiguration.tendonAnalysis}
@@ -276,7 +281,10 @@ function AppContent() {
               <div className="fixed top-4 right-4 z-50">
                 {user ? (
                   <div className="group relative">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-xl border border-white/30 rounded-full shadow-2xl hover:bg-white/30 hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                    <TahoeGlass
+                      as="button"
+                      className="flex items-center gap-2 hover:scale-105"
+                    >
                       <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
                         <svg
                           className="w-3 h-3 text-white"
@@ -308,10 +316,10 @@ function AppContent() {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                    </TahoeGlass>
 
                     {/* Dropdown Menu */}
-                    <div className="absolute top-full right-0 mt-2 w-48 bg-white/20 backdrop-blur-xl border border-white/30 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+                    <TahoeGlass className="absolute top-full right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible">
                       <div className="p-3 border-b border-white/20">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
@@ -351,18 +359,12 @@ function AppContent() {
                           Sign Out
                         </button>
                       </div>
-                    </div>
+                    </TahoeGlass>
                   </div>
                 ) : (
                   <button
                     onClick={handleSignIn}
-                    className="flex items-center gap-2 px-4 py-2 backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full relative z-[60]"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(99,102,241,0.25) 100%)",
-                      boxShadow:
-                        "0 4px 16px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.3)",
-                    }}
+                    className="flex items-center gap-2 px-4 py-2 backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full relative z-[60] bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
                   >
                     <svg
                       className="w-4 h-4 text-gray-900"
@@ -380,14 +382,7 @@ function AppContent() {
                     <span className="text-sm font-medium text-gray-900">
                       Sign In
                     </span>
-                    <div
-                      className="absolute inset-0 rounded-full pointer-events-none z-0"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)",
-                      }}
-                    />
+                    <div className="absolute inset-0 rounded-full pointer-events-none z-0 bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
                   </button>
                 )}
               </div>
@@ -457,9 +452,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

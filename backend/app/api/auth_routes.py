@@ -1,5 +1,11 @@
 from datetime import timedelta
 
+from app.api.responses import (
+    AuthenticationError,
+    ValidationError,
+    created_response,
+    success_response,
+)
 from app.auth import (
     authenticate_user,
     create_access_token,
@@ -10,14 +16,14 @@ from app.auth import (
 from app.config import settings
 from app.database import get_session
 from app.models import User, UserCreate, UserLogin, UserResponse
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlmodel import Session, select
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register")
 async def register(
     user_data: UserCreate, session: Session = Depends(get_session)
 ):
@@ -27,9 +33,9 @@ async def register(
         select(User).where(User.username == user_data.username)
     ).first()
     if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already taken",
+        raise ValidationError(
+            message="Username already taken",
+            details={"field": "username", "value": user_data.username},
         )
 
     # Check if email is provided and already exists
@@ -38,9 +44,9 @@ async def register(
             select(User).where(User.email == user_data.email)
         ).first()
         if existing_email:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered",
+            raise ValidationError(
+                message="Email already registered",
+                details={"field": "email", "value": user_data.email},
             )
 
     # Create new user
@@ -56,7 +62,7 @@ async def register(
     session.commit()
     session.refresh(user)
 
-    return UserResponse(
+    user_response = UserResponse(
         id=user.id,
         username=user.username,
         email=user.email,
@@ -66,17 +72,18 @@ async def register(
         created_at=user.created_at,
     )
 
+    return created_response(
+        data=user_response.model_dump(mode="json"),
+        message="User registered successfully",
+    )
 
-@router.post("/login", response_model=dict)
+
+@router.post("/login")
 async def login(user_data: UserLogin, session: Session = Depends(get_session)):
     """Login user and return access token with user data"""
     user = authenticate_user(session, user_data.username, user_data.password)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise AuthenticationError("Incorrect username or password")
 
     access_token_expires = timedelta(
         minutes=settings.access_token_expire_minutes
@@ -85,7 +92,7 @@ async def login(user_data: UserLogin, session: Session = Depends(get_session)):
         data={"sub": user.username}, expires_delta=access_token_expires
     )
 
-    return {
+    login_data = {
         "access_token": access_token,
         "token_type": "bearer",
         "user": {
@@ -96,6 +103,8 @@ async def login(user_data: UserLogin, session: Session = Depends(get_session)):
             "created_at": user.created_at.isoformat(),
         },
     }
+
+    return success_response(data=login_data, message="Login successful")
 
 
 @router.get("/me", response_model=UserResponse)

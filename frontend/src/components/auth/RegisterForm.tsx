@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUnifiedErrorHandler } from "../../features/shared/hooks/useUnifiedErrorHandler";
 import { useAuth } from "../../providers";
 import { Button, Input, Typography } from "../ui";
 
@@ -17,23 +18,26 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Use unified error handler
+  const { error, showError, hideError, handleAuthError } =
+    useUnifiedErrorHandler();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    hideError();
     setSuccess("");
 
     // Validate passwords match
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      showError("validation", "Passwords do not match");
       return;
     }
 
     // Validate password strength
     if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
+      showError("validation", "Password must be at least 8 characters long");
       return;
     }
 
@@ -43,27 +47,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       await register({ username, password, email: email || undefined });
       setSuccess("Registration successful! You can now save your settings.");
     } catch (err: any) {
-      // Show error in desktop app
-      const errorMessage = err.message || "Registration failed";
-      alert(`Registration Error: ${errorMessage}`);
-
-      // Handle different types of registration errors
-      if (err.response?.status === 400) {
-        setError(
-          err.response?.data?.detail ||
-            "Registration failed. Please check your information and try again."
-        );
-      } else if (err.response?.status === 409) {
-        setError(
-          "An account with this username already exists. Please try logging in instead."
-        );
-      } else if (err.response?.status === 0 || !err.response) {
-        setError("Network error. Please check your connection and try again.");
-      } else {
-        setError(
-          err.response?.data?.detail || "Registration failed. Please try again."
-        );
-      }
+      // Use unified error handler for consistent error handling
+      handleAuthError(err);
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +66,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
+        {error.visible && (
           <div className="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-md shadow-sm">
             <div className="flex">
               <div className="flex-shrink-0">
@@ -98,7 +83,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium">{error}</p>
+                <p className="text-sm font-medium">{error.message}</p>
               </div>
             </div>
           </div>
@@ -199,14 +184,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           type="submit"
           variant="primary"
           size="lg"
-          className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full"
+          className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
           disabled={isLoading}
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(59,130,246,0.25) 0%, rgba(99,102,241,0.25) 100%)",
-            boxShadow:
-              "0 4px 16px rgba(59,130,246,0.2), inset 0 1px 0 rgba(255,255,255,0.3)",
-          }}
         >
           {isLoading ? "Creating account..." : "Create Account"}
         </Button>

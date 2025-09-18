@@ -1,47 +1,31 @@
-# TODO - Soft Robot App
+# Soft Robot App - Project TODO
 
-## 🚀 High Priority
+## 🚀 **High Priority Tasks**
 
-### Development Tasks
+### 🎨 **UI/UX Improvements**
 
-- [ ] Change Icons
-- [ ] Make 3D bodys instead of lines
+- [ ] **Change Icons** - Update icon set for better visual consistency
+- [ ] **3D Body Visualization** - Replace line-based visualization with 3D robot bodies
+- [ ] **Enhanced Visual Feedback** - Improve user interaction feedback and animations
 
-### Code Quality
+### 📚 **Documentation & Learning**
 
-- [ ] **Refactor codebase**
-  - Review and improve code structure
-  - Optimize performance bottlenecks
-  - Standardize coding patterns
+- [ ] **Code Documentation** - Document complex algorithms and create code walkthroughs
+- [ ] **Architecture Documentation** - Create comprehensive technical documentation
+- [ ] **User Guides** - Develop user-friendly guides and tutorials
 
-## 📚 Learning & Understanding
+## 💼 **Professional Development**
 
-### Code Comprehension
+### **Portfolio & Career**
 
-- [ ] **Understand every piece of code**
-  - Document complex algorithms
-  - Create code walkthroughs
-  - Map dependencies and data flow
+- [ ] **Fraunhofer Proposal** - Submit offer with customized pitch
+- [ ] **Freelance Opportunities** - Research platforms and network
+- [ ] **Portfolio Showcase** - Create comprehensive project documentation
+- [ ] **Technical Blog** - Document refactoring process and learnings
 
-## 💼 Professional Development
+### **Skill Development**
 
-### Portfolio & Documentation
-
-- [ ] **Create comprehensive documentation for portfolio**
-  - Technical documentation
-  - User guides
-  - Architecture diagrams
-  - Project showcase materials
-
-### Career Opportunities
-
-- [ ] **Submit offer to Fraunhofer**
-
-  - Prepare proposal materials
-  - Research requirements
-  - Customize pitch for their needs
-
-- [ ] **Find new project via freelancing**
-  - Update portfolio
-  - Research freelance platforms
-  - Network and outreach
+- [ ] **Advanced React Patterns** - Explore advanced React concepts
+- [ ] **Performance Optimization** - Implement advanced optimization techniques
+- [ ] **Testing Strategy** - Develop comprehensive testing approach
+- [ ] **DevOps Integration** - Set up CI/CD and deployment pipelines

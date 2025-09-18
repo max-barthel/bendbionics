@@ -1,4 +1,4 @@
-import { type RobotState } from "../hooks/useRobotState";
+import { type RobotState } from "../features/robot-config/hooks/useRobotState";
 
 export const validateRobotConfiguration = async (
     robotState: RobotState,

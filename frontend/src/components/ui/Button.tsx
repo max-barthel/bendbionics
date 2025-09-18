@@ -1,4 +1,5 @@
 import React from "react";
+import { combineStyles, getTahoeGlassStyles } from "../../styles/tahoe-utils";
 import LoadingSpinner from "./LoadingSpinner";
 
 type ButtonVariant = "primary" | "secondary" | "outline" | "ghost";
@@ -13,7 +14,6 @@ interface ButtonProps {
   loading?: boolean;
   type?: "button" | "submit" | "reset";
   className?: string;
-  style?: React.CSSProperties;
 }
 
 function Button({
@@ -25,30 +25,33 @@ function Button({
   loading = false,
   type = "button",
   className = "",
-  style = {},
 }: ButtonProps) {
-  const baseClasses =
-    "font-medium transition-all duration-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
+  // Base classes for all buttons
+  const baseClasses = "font-medium text-gray-800";
 
-  const variantClasses = {
-    primary:
-      "bg-white/20 backdrop-blur-xl border border-white/30 text-gray-800 hover:bg-white/30 hover:shadow-2xl focus:ring-white/50 shadow-2xl",
-    secondary:
-      "bg-white/20 backdrop-blur-xl border border-white/30 text-gray-800 hover:bg-white/30 hover:shadow-2xl focus:ring-white/50 shadow-2xl",
-    outline:
-      "bg-white/20 backdrop-blur-xl border border-white/30 text-gray-800 hover:bg-white/30 hover:shadow-2xl focus:ring-white/50 shadow-2xl",
-    ghost:
-      "bg-white/20 backdrop-blur-xl border border-white/30 text-gray-800 hover:bg-white/30 hover:shadow-2xl focus:ring-white/50 shadow-2xl",
-  };
+  // All variants use the same Tahoe glass styling (as per original design)
+  const tahoeGlassClasses = getTahoeGlassStyles(
+    "base", // glass variant
+    "glass", // shadow variant
+    "full", // border radius
+    "standard", // transition
+    "white", // focus state
+    "glass" // hover state
+  );
 
   const sizeClasses = {
-    sm: "px-3 py-1.5 text-sm rounded-full",
-    md: "px-4 py-2 text-sm rounded-full",
-    lg: "px-6 py-3 text-base rounded-full",
+    sm: "px-3 py-1.5 text-sm",
+    md: "px-4 py-2 text-sm",
+    lg: "px-6 py-3 text-base",
   };
 
   const isDisabled = disabled || loading;
-  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+  const classes = combineStyles(
+    baseClasses,
+    tahoeGlassClasses,
+    sizeClasses[size],
+    className
+  );
 
   return (
     <button
@@ -56,7 +59,6 @@ function Button({
       onClick={onClick}
       disabled={isDisabled}
       className={classes}
-      style={style}
     >
       <div className="flex items-center justify-center gap-2">
         {loading && <LoadingSpinner size="sm" color="white" />}
