@@ -1,0 +1,21 @@
+name: Test Issue Automation
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  test-automation:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Test issue automation
+        run: |
+          echo "Issue #${{ github.event.issue.number }} was created"
+          echo "Title: ${{ github.event.issue.title }}"
+          echo "Body: ${{ github.event.issue.body }}"
+          
+          # Simple label assignment test
+          gh issue edit ${{ github.event.issue.number }} --add-label "status: needs-triage"
+          echo "✅ Added needs-triage label"
