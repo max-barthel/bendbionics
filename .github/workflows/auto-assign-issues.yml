@@ -15,7 +15,7 @@ jobs:
         run: |
           # Your project ID from https://github.com/users/max-barthel/projects/2
           PROJECT_ID="PVT_kwDOOYVt384A0XT2"
-          
+
           # Add issue to project using GitHub API
           curl -X POST \
             -H "Authorization: token ${{ github.token }}" \
@@ -29,14 +29,14 @@ jobs:
               }
             }' \
             https://api.github.com/graphql
-          
+
           echo "✅ Issue #${{ github.event.issue.number }} added to project"
 
       - name: Auto-assign labels
         run: |
           ISSUE_TITLE="${{ github.event.issue.title }}"
           ISSUE_NUMBER="${{ github.event.issue.number }}"
-          
+
           # Determine labels based on title patterns
           if [[ "$ISSUE_TITLE" =~ ^\[BUG\] ]]; then
             LABELS='["bug", "status: needs-triage"]'
@@ -54,7 +54,7 @@ jobs:
             LABELS='["status: needs-triage"]'
             echo "✅ Auto-assigning needs-triage label"
           fi
-          
+
           # Add labels using GitHub API
           curl -X POST \
             -H "Authorization: token ${{ github.token }}" \
@@ -62,5 +62,5 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"labels": '$LABELS'}' \
             https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUMBER/labels
-          
+
           echo "✅ Labels added to issue #$ISSUE_NUMBER"
