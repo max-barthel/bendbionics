@@ -1,0 +1,214 @@
+version: 2
+updates:
+  # Frontend dependencies
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: ""
+    open-pull-requests-limit: 10
+    reviewers:
+      - "soft-robot-team"
+    assignees:
+      - "soft-robot-team"
+    commit-message:
+      prefix: "chore(frontend)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "frontend"
+      - "javascript"
+    ignore:
+      # Ignore major version updates for now
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # Group React-related updates
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Group testing-related updates
+      testing:
+        patterns:
+          - "@testing-library/*"
+          - "vitest"
+          - "playwright"
+          - "@playwright/*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Group build tool updates
+      build-tools:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+          - "typescript"
+          - "eslint*"
+          - "prettier"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Root dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "soft-robot-team"
+    assignees:
+      - "soft-robot-team"
+    commit-message:
+      prefix: "chore(root)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "root"
+      - "javascript"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # Group commit and changelog tools
+      git-tools:
+        patterns:
+          - "commitizen*"
+          - "commitlint*"
+          - "conventional-changelog*"
+          - "husky"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Backend dependencies
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "soft-robot-team"
+    assignees:
+      - "soft-robot-team"
+    commit-message:
+      prefix: "chore(backend)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "backend"
+      - "python"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # Group FastAPI-related updates
+      fastapi:
+        patterns:
+          - "fastapi*"
+          - "uvicorn*"
+          - "pydantic*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Group testing-related updates
+      testing:
+        patterns:
+          - "pytest*"
+          - "pytest-*"
+          - "coverage"
+        update-types:
+          - "minor"
+          - "patch"
+      # Group code quality tools
+      code-quality:
+        patterns:
+          - "black"
+          - "flake8*"
+          - "mypy"
+          - "pylint"
+        update-types:
+          - "minor"
+          - "patch"
+      # Group database-related updates
+      database:
+        patterns:
+          - "sqlalchemy*"
+          - "alembic"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Rust dependencies (Tauri)
+  - package-ecosystem: "cargo"
+    directory: "/frontend/src-tauri"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "soft-robot-team"
+    assignees:
+      - "soft-robot-team"
+    commit-message:
+      prefix: "chore(tauri)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "tauri"
+      - "rust"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      # Group Tauri-related updates
+      tauri:
+        patterns:
+          - "tauri*"
+          - "@tauri-apps/*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "soft-robot-team"
+    assignees:
+      - "soft-robot-team"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "ci"
+      - "github-actions"
+    groups:
+      # Group common action updates
+      actions:
+        patterns:
+          - "actions/*"
+        update-types:
+          - "minor"
+          - "patch"

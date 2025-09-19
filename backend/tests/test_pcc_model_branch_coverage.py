@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+
 from app.models.pcc.pcc_model import PCCRobotModel
 from app.models.pcc.types import PCCParams
 from app.models.tendon.types import TendonConfig
@@ -121,9 +122,7 @@ class TestPCCModelBranchCoverage:
 
     def test_compute_robot_position_with_tendon_config(self):
         """Test compute_robot_position with tendon configuration."""
-        tendon_config = TendonConfig(
-            count=4, radius=0.015, coupling_offset=0.02
-        )
+        tendon_config = TendonConfig(count=4, radius=0.015, coupling_offset=0.02)
 
         params = PCCParams(
             bending_angles=[0.1, 0.2],

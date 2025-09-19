@@ -1,31 +1,31 @@
 interface SkeletonLoaderProps {
-  type?: "text" | "input" | "button" | "card";
+  type?: 'text' | 'input' | 'button' | 'card';
   lines?: number;
   className?: string;
 }
 
 function SkeletonLoader({
-  type = "text",
+  type = 'text',
   lines = 1,
-  className = "",
+  className = '',
 }: SkeletonLoaderProps) {
   const renderSkeleton = () => {
     switch (type) {
-      case "text":
+      case 'text':
         return (
           <div className={`space-y-2 ${className}`}>
             {Array.from({ length: lines }).map((_, index) => (
               <div
                 key={index}
                 className={`h-4 bg-gray-200 rounded animate-pulse ${
-                  index === 0 ? "w-4/5" : index === 1 ? "w-3/4" : "w-2/3"
+                  index === 0 ? 'w-4/5' : index === 1 ? 'w-3/4' : 'w-2/3'
                 }`}
               />
             ))}
           </div>
         );
 
-      case "input":
+      case 'input':
         return (
           <div className={`space-y-2 ${className}`}>
             <div className="h-4 bg-gray-200 rounded w-1/3 animate-pulse" />
@@ -33,14 +33,12 @@ function SkeletonLoader({
           </div>
         );
 
-      case "button":
+      case 'button':
         return (
-          <div
-            className={`h-10 bg-gray-200 rounded animate-pulse ${className}`}
-          />
+          <div className={`h-10 bg-gray-200 rounded animate-pulse ${className}`} />
         );
 
-      case "card":
+      case 'card':
         return (
           <div
             className={`p-6 bg-white rounded-lg border border-gray-200 ${className}`}

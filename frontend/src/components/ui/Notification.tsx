@@ -1,6 +1,6 @@
-import React from "react";
+import React from 'react';
 
-type NotificationType = "success" | "error" | "warning" | "info";
+type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
 interface NotificationProps {
   type: NotificationType;
@@ -34,29 +34,29 @@ function Notification({
   if (!isVisible) return null;
 
   const typeClasses = {
-    success: "bg-green-50 border-green-400 text-green-800",
-    error: "bg-red-50 border-red-400 text-red-800",
-    warning: "bg-yellow-50 border-yellow-400 text-yellow-800",
-    info: "bg-blue-50 border-blue-400 text-blue-800",
+    success: 'bg-green-50 border-green-400 text-green-800',
+    error: 'bg-red-50 border-red-400 text-red-800',
+    warning: 'bg-yellow-50 border-yellow-400 text-yellow-800',
+    info: 'bg-blue-50 border-blue-400 text-blue-800',
   };
 
   const iconClasses = {
-    success: "text-green-400",
-    error: "text-red-400",
-    warning: "text-yellow-400",
-    info: "text-blue-400",
+    success: 'text-green-400',
+    error: 'text-red-400',
+    warning: 'text-yellow-400',
+    info: 'text-blue-400',
   };
 
   const closeButtonClasses = {
-    success: "text-green-500 hover:bg-green-100 focus:ring-green-500",
-    error: "text-red-500 hover:bg-red-100 focus:ring-red-500",
-    warning: "text-yellow-500 hover:bg-yellow-100 focus:ring-yellow-500",
-    info: "text-blue-500 hover:bg-blue-100 focus:ring-blue-500",
+    success: 'text-green-500 hover:bg-green-100 focus:ring-green-500',
+    error: 'text-red-500 hover:bg-red-100 focus:ring-red-500',
+    warning: 'text-yellow-500 hover:bg-yellow-100 focus:ring-yellow-500',
+    info: 'text-blue-500 hover:bg-blue-100 focus:ring-blue-500',
   };
 
   const getIcon = () => {
     switch (type) {
-      case "success":
+      case 'success':
         return (
           <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path
@@ -66,7 +66,7 @@ function Notification({
             />
           </svg>
         );
-      case "error":
+      case 'error':
         return (
           <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path
@@ -76,7 +76,7 @@ function Notification({
             />
           </svg>
         );
-      case "warning":
+      case 'warning':
         return (
           <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path
@@ -86,7 +86,7 @@ function Notification({
             />
           </svg>
         );
-      case "info":
+      case 'info':
         return (
           <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path

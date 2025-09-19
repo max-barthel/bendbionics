@@ -26,6 +26,8 @@ export { useFormSubmission } from './hooks/useFormSubmission';
 export { useRobotState } from './hooks/useRobotState';
 
 // Re-export types from hooks
-export type { FormSubmissionResult, UseFormSubmissionOptions } from './hooks/useFormSubmission';
+export type {
+  FormSubmissionResult,
+  UseFormSubmissionOptions,
+} from './hooks/useFormSubmission';
 export type { RobotState } from './hooks/useRobotState';
-

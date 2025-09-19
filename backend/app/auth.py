@@ -1,14 +1,15 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-from app.config import settings
-from app.database import get_session
-from app.models import TokenData, User
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlmodel import Session, select
+
+from app.config import settings
+from app.database import get_session
+from app.models import TokenData, User
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -84,9 +85,7 @@ def get_current_user(
     return user
 
 
-def authenticate_user(
-    session: Session, username: str, password: str
-) -> Optional[User]:
+def authenticate_user(session: Session, username: str, password: str) -> Optional[User]:
     """Authenticate user with username and password"""
     user = session.exec(select(User).where(User.username == username)).first()
     if not user:
@@ -94,11 +93,3 @@ def authenticate_user(
     if not verify_password(password, user.hashed_password):
         return None
     return user
-
-
-def create_verification_token(email: str) -> str:
-    """Create email verification token"""
-    return create_access_token(
-        data={"sub": email, "type": "verification"},
-        expires_delta=timedelta(hours=24),
-    )

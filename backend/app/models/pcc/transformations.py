@@ -1,11 +1,9 @@
 import math
 
 import numpy as np
-from app.utils.math_tools import (
-    homogeneous_matrix,
-    rotation_matrix_y,
-    rotation_matrix_z,
-)
+
+from app.utils.math_tools import (homogeneous_matrix, rotation_matrix_y,
+                                  rotation_matrix_z)
 
 
 def transformation_matrix_coupling(length: float) -> np.ndarray:

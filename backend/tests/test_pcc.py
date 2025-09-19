@@ -1,11 +1,10 @@
 from unittest.mock import patch
 
 import numpy as np
+
 from app.models.pcc.model import compute_pcc
-from app.models.pcc.transformations import (
-    transformation_matrix_backbone,
-    transformation_matrix_coupling,
-)
+from app.models.pcc.transformations import (transformation_matrix_backbone,
+                                            transformation_matrix_coupling)
 from app.models.pcc.types import PCCParams
 
 
@@ -222,9 +221,7 @@ class TestPCCModel:
                     differences_found = True
                     break
                 for elem1, elem2 in zip(seg1, seg2):
-                    if isinstance(elem1, np.ndarray) and isinstance(
-                        elem2, np.ndarray
-                    ):
+                    if isinstance(elem1, np.ndarray) and isinstance(elem2, np.ndarray):
                         if not np.array_equal(elem1, elem2):
                             differences_found = True
                             break

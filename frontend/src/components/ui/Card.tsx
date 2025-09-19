@@ -1,11 +1,11 @@
-import React from "react";
+import React from 'react';
 
 type CardProps = {
   children: React.ReactNode;
   className?: string; // allows to override styles
 };
 
-function Card({ children, className = "" }: CardProps) {
+function Card({ children, className = '' }: CardProps) {
   return (
     <div
       data-testid="card"

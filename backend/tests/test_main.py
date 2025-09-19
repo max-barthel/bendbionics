@@ -1,7 +1,8 @@
 from unittest.mock import patch
 
-from app.main import app, startup_event
 from fastapi.testclient import TestClient
+
+from app.main import app, startup_event
 
 
 class TestMainApp:

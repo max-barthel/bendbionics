@@ -3,6 +3,7 @@ from json import dumps
 from typing import Dict, List
 
 import numpy as np
+
 from app.models.pcc.types import PCCParams
 
 

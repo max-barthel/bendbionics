@@ -2,18 +2,174 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "FastAPI: Backend (uvicorn)",
-      "type": "debugpy",
+      "name": "Debug Frontend (Vite)",
+      "type": "node",
       "request": "launch",
-      "module": "uvicorn",
-      "args": ["app.main:app", "--reload"],
-      "jinja": true,
-      "justMyCode": false,
+      "program": "${workspaceFolder}/frontend/node_modules/.bin/vite",
+      "args": ["--mode", "development"],
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Frontend Tests (Vitest)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/frontend/node_modules/.bin/vitest",
+      "args": ["--run", "--reporter=verbose"],
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "test"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Frontend Tests (Watch Mode)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/frontend/node_modules/.bin/vitest",
+      "args": ["--reporter=verbose"],
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "test"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Backend (FastAPI)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/main.py",
+      "cwd": "${workspaceFolder}/backend",
+      "console": "integratedTerminal",
       "env": {
         "PYTHONPATH": "${workspaceFolder}/backend"
       },
+      "args": [],
+      "justMyCode": false
+    },
+    {
+      "name": "Debug Backend Tests (pytest)",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["-v", "--tb=short", "${workspaceFolder}/backend/tests"],
       "cwd": "${workspaceFolder}/backend",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/backend"
+      },
+      "justMyCode": false
+    },
+    {
+      "name": "Debug Backend Tests (Single File)",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["-v", "--tb=short", "${file}"],
+      "cwd": "${workspaceFolder}/backend",
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/backend"
+      },
+      "justMyCode": false
+    },
+    {
+      "name": "Debug Tauri App",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/frontend/node_modules/.bin/tauri",
+      "args": ["dev"],
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Playwright Tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/frontend/node_modules/.bin/playwright",
+      "args": ["test", "--debug"],
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "test"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Storybook",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/frontend/node_modules/.bin/storybook",
+      "args": ["dev", "-p", "6006"],
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Lint Check Script",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/lint_check.sh",
+      "args": ["all", "lint"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": false
+    },
+    {
+      "name": "Debug Current TypeScript File",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/ts-node",
+      "args": ["${file}"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Full Stack",
+      "configurations": ["Debug Backend (FastAPI)", "Debug Frontend (Vite)"],
+      "stopAll": true
+    },
+    {
+      "name": "Debug Tests",
+      "configurations": [
+        "Debug Frontend Tests (Vitest)",
+        "Debug Backend Tests (pytest)"
+      ],
+      "stopAll": true
     }
   ]
 }

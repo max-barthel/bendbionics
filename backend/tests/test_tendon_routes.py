@@ -1,10 +1,11 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from app.api.tendon_routes import router
-from app.models.pcc.types import PCCParams
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
+from app.api.tendon_routes import router
+from app.models.pcc.types import PCCParams
 
 
 class TestTendonRoutes:
@@ -16,9 +17,7 @@ class TestTendonRoutes:
         app.include_router(router)
         self.client = TestClient(app)
 
-    @pytest.mark.skip(
-        reason="Complex authentication mocking - needs proper test setup"
-    )
+    @pytest.mark.skip(reason="Complex authentication mocking - needs proper test setup")
     @patch("app.api.tendon_routes.get_current_user")
     @patch("app.api.tendon_routes.compute_pcc_with_tendons")
     def test_calculate_tendon_lengths_success(
@@ -68,14 +67,10 @@ class TestTendonRoutes:
         assert "robot_positions" in data["data"]
         assert "tendon_lengths" in data["data"]
 
-    @pytest.mark.skip(
-        reason="Complex authentication mocking - needs proper test setup"
-    )
+    @pytest.mark.skip(reason="Complex authentication mocking - needs proper test setup")
     @patch("app.api.tendon_routes.get_current_user")
     @patch("app.api.tendon_routes.compute_pcc_with_tendons")
-    def test_calculate_tendon_lengths_error(
-        self, mock_compute, mock_get_current_user
-    ):
+    def test_calculate_tendon_lengths_error(self, mock_compute, mock_get_current_user):
         """Test tendon length calculation with error."""
         # Mock user
         mock_user = Mock()
@@ -109,9 +104,7 @@ class TestTendonRoutes:
         data = response.json()
         assert "Error calculating tendon lengths" in data["detail"]
 
-    @pytest.mark.skip(
-        reason="Complex authentication mocking - needs proper test setup"
-    )
+    @pytest.mark.skip(reason="Complex authentication mocking - needs proper test setup")
     @patch("app.api.tendon_routes.get_current_user")
     @patch("app.api.tendon_routes.compute_pcc_with_tendons")
     def test_analyze_tendon_configuration_success(
@@ -161,9 +154,7 @@ class TestTendonRoutes:
         assert "actuation_commands" in data["data"]
         assert "tendon_config" in data["data"]
 
-    @pytest.mark.skip(
-        reason="Complex authentication mocking - needs proper test setup"
-    )
+    @pytest.mark.skip(reason="Complex authentication mocking - needs proper test setup")
     @patch("app.api.tendon_routes.get_current_user")
     @patch("app.api.tendon_routes.compute_pcc_with_tendons")
     def test_analyze_tendon_configuration_error(
@@ -202,9 +193,7 @@ class TestTendonRoutes:
         data = response.json()
         assert "Error analyzing tendon configuration" in data["detail"]
 
-    @pytest.mark.skip(
-        reason="Complex authentication mocking - needs proper test setup"
-    )
+    @pytest.mark.skip(reason="Complex authentication mocking - needs proper test setup")
     @patch("app.api.tendon_routes.get_current_user")
     @patch("app.api.tendon_routes.compute_pcc_with_tendons")
     def test_analyze_tendon_configuration_missing_data(

@@ -10,25 +10,23 @@ export function UnitSelector<T extends string>({
   units,
   selectedUnit,
   onUnitChange,
-  className = "",
+  className = '',
   ariaLabel,
 }: UnitSelectorProps<T>) {
   return (
     <div
       className={`flex bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border border-white/20 rounded-full p-1 shadow-2xl shadow-black/5 gap-1 ${className}`}
     >
-      {units.map((unit) => (
+      {units.map(unit => (
         <button
           key={unit}
           onClick={() => onUnitChange(unit)}
           className={`relative flex-1 h-7 px-3 flex items-center justify-center text-xs font-medium rounded-full transition-colors duration-200 border-2 ${
             selectedUnit === unit
-              ? "bg-blue-500/20 text-gray-900 border-blue-400/50"
-              : "text-gray-600 hover:text-gray-800 hover:bg-white/20 border-transparent"
+              ? 'bg-blue-500/20 text-gray-900 border-blue-400/50'
+              : 'text-gray-600 hover:text-gray-800 hover:bg-white/20 border-transparent'
           }`}
-          aria-label={
-            ariaLabel ? `${ariaLabel} unit ${unit}` : `Select ${unit} unit`
-          }
+          aria-label={ariaLabel ? `${ariaLabel} unit ${unit}` : `Select ${unit} unit`}
         >
           {unit}
           {selectedUnit === unit && (

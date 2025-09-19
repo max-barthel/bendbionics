@@ -1,15 +1,12 @@
-import React from "react";
-import { CloseIcon, ErrorIcon } from "../../../components/icons";
+import React from 'react';
+import { CloseIcon, ErrorIcon } from '../../../components/icons';
 
 interface ErrorDisplayProps {
   message: string;
   onClose: () => void;
 }
 
-export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
-  message,
-  onClose,
-}) => {
+export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ message, onClose }) => {
   return (
     <div className="mx-6 mt-4 p-4 border-l-4 bg-red-50 border-red-400 text-red-800 flex-shrink-0">
       <div className="flex items-start">

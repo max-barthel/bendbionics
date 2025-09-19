@@ -9,12 +9,13 @@ This module provides endpoints for:
 
 # Removed unused imports
 
+from fastapi import APIRouter, Depends
+
 from app.api.responses import ComputationError, success_response
 from app.auth import get_current_user
 from app.models.pcc.pcc_model import compute_pcc_with_tendons
 from app.models.pcc.types import PCCParams
 from app.models.user import User
-from fastapi import APIRouter, Depends
 
 router = APIRouter(prefix="/tendons", tags=["tendons"])
 

@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../providers/AuthProvider";
-import { ExclamationTriangleIcon, TrashIcon, UserIcon } from "../icons";
-import { Button, Typography } from "../ui";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../providers/AuthProvider';
+import { ExclamationTriangleIcon, TrashIcon, UserIcon } from '../icons';
+import { Button, Typography } from '../ui';
 
 interface UserSettingsProps {
   onClose: () => void;
@@ -13,25 +13,25 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
   const navigate = useNavigate();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState("");
+  const [deleteError, setDeleteError] = useState('');
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate('/');
     onClose();
   };
 
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
-    setDeleteError("");
+    setDeleteError('');
 
     try {
       await deleteAccount();
-      navigate("/");
+      navigate('/');
       onClose();
     } catch (error) {
       setDeleteError(
-        error instanceof Error ? error.message : "Failed to delete account"
+        error instanceof Error ? error.message : 'Failed to delete account'
       );
     } finally {
       setIsDeleting(false);
@@ -44,7 +44,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
 
   const cancelDelete = () => {
     setShowDeleteConfirmation(false);
-    setDeleteError("");
+    setDeleteError('');
   };
 
   return (
@@ -75,11 +75,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200">
               <UserIcon className="w-8 h-8 text-gray-600" />
             </div>
-            <Typography
-              variant="h3"
-              color="primary"
-              className="mb-2 text-gray-800"
-            >
+            <Typography variant="h3" color="primary" className="mb-2 text-gray-800">
               Account Settings
             </Typography>
             <Typography variant="body" color="gray" className="text-gray-600">
@@ -94,38 +90,16 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
                 <Typography variant="body" color="gray" className="text-sm">
                   Username:
                 </Typography>
-                <Typography
-                  variant="body"
-                  color="primary"
-                  className="font-medium"
-                >
+                <Typography variant="body" color="primary" className="font-medium">
                   {user?.username}
                 </Typography>
               </div>
-              {user?.email && (
-                <div className="flex justify-between">
-                  <Typography variant="body" color="gray" className="text-sm">
-                    Email:
-                  </Typography>
-                  <Typography
-                    variant="body"
-                    color="primary"
-                    className="font-medium"
-                  >
-                    {user.email}
-                  </Typography>
-                </div>
-              )}
               <div className="flex justify-between">
                 <Typography variant="body" color="gray" className="text-sm">
                   Account Type:
                 </Typography>
-                <Typography
-                  variant="body"
-                  color="primary"
-                  className="font-medium"
-                >
-                  {user?.is_local ? "Local" : "Email Verified"}
+                <Typography variant="body" color="primary" className="font-medium">
+                  Local
                 </Typography>
               </div>
             </div>
@@ -159,11 +133,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
               <div className="bg-red-50 rounded-xl p-4 border border-red-200">
                 <div className="flex items-center gap-3 mb-3">
                   <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
-                  <Typography
-                    variant="h4"
-                    color="primary"
-                    className="text-red-700"
-                  >
+                  <Typography variant="h4" color="primary" className="text-red-700">
                     Delete Account
                   </Typography>
                 </div>
@@ -172,9 +142,8 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
                   color="gray"
                   className="text-sm leading-relaxed text-gray-600"
                 >
-                  This action cannot be undone. This will permanently delete
-                  your account and remove all your presets and data from our
-                  servers.
+                  This action cannot be undone. This will permanently delete your
+                  account and remove all your presets and data from our servers.
                 </Typography>
               </div>
 
@@ -197,7 +166,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
                   disabled={isDeleting}
                   className="flex-1 border border-red-300 bg-red-100 hover:scale-105 text-red-600 hover:text-red-700 transition-all duration-300 rounded-full py-3 disabled:opacity-50"
                 >
-                  {isDeleting ? "Deleting..." : "Yes, Delete"}
+                  {isDeleting ? 'Deleting...' : 'Yes, Delete'}
                 </Button>
 
                 <Button

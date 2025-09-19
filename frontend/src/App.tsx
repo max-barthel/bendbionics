@@ -1,21 +1,21 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from "react";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 
 // Feature imports - using direct imports to avoid export conflicts
-import { PresetManager } from "./features/presets/components/presets/PresetManager";
-import FormTabs from "./features/robot-config/components/FormTabs";
-import SubmitButton from "./features/robot-config/components/SubmitButton";
-import { useRobotState } from "./features/robot-config/hooks/useRobotState";
-import { ErrorBoundary } from "./features/shared/components/ErrorBoundary";
-import Visualizer3D from "./features/visualization/components/Visualizer3D";
+import { PresetManager } from './features/presets/components/presets/PresetManager';
+import FormTabs from './features/robot-config/components/FormTabs';
+import SubmitButton from './features/robot-config/components/SubmitButton';
+import { useRobotState } from './features/robot-config/hooks/useRobotState';
+import { ErrorBoundary } from './features/shared/components/ErrorBoundary';
+import Visualizer3D from './features/visualization/components/Visualizer3D';
 
-import { AuthPage } from "./components/auth/AuthPage";
-import { UserSettings } from "./components/auth/UserSettings";
+import { AuthPage } from './components/auth/AuthPage';
+import { UserSettings } from './components/auth/UserSettings';
 
-import { LoadingSpinner, Typography } from "./components/ui";
-import TahoeGlass from "./components/ui/TahoeGlass";
-import { AuthProvider, useAuth } from "./providers";
-import { type RobotConfiguration } from "./types/robot";
+import { LoadingSpinner, Typography } from './components/ui';
+import TahoeGlass from './components/ui/TahoeGlass';
+import { AuthProvider, useAuth } from './providers';
+import { type RobotConfiguration } from './types/robot';
 
 // Lazy load heavy components
 const LazyVisualizer3D = lazy(() => Promise.resolve({ default: Visualizer3D }));
@@ -29,8 +29,9 @@ function AppContent() {
   const [triggerComputation, setTriggerComputation] = useState(false);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [currentConfiguration, setCurrentConfiguration] =
-    useState<RobotConfiguration>({});
+  const [currentConfiguration, setCurrentConfiguration] = useState<RobotConfiguration>(
+    {}
+  );
   const [showPresetManager, setShowPresetManager] = useState(false);
   const [showTendonResults, setShowTendonResults] = useState(false);
   const [isLoadingPreset, setIsLoadingPreset] = useState(false);
@@ -43,24 +44,21 @@ function AppContent() {
   // Test localStorage functionality
   useEffect(() => {
     // Test localStorage without alert
-    const testKey = "app_test";
-    const testValue = "app_test_value";
+    const testKey = 'app_test';
+    const testValue = 'app_test_value';
     localStorage.setItem(testKey, testValue);
     const retrievedValue = localStorage.getItem(testKey);
 
     // Check if token exists
-    const existingToken = localStorage.getItem("token");
+    const existingToken = localStorage.getItem('token');
 
     // Log localStorage status
-    console.log("=== App localStorage Test ===");
-    console.log("Test value stored:", testValue);
-    console.log("Test value retrieved:", retrievedValue);
-    console.log("Existing token:", existingToken ? "EXISTS" : "NULL");
-    console.log(
-      "localStorage working:",
-      retrievedValue === testValue ? "YES" : "NO"
-    );
-    console.log("============================");
+    console.log('=== App localStorage Test ===');
+    console.log('Test value stored:', testValue);
+    console.log('Test value retrieved:', retrievedValue);
+    console.log('Existing token:', existingToken ? 'EXISTS' : 'NULL');
+    console.log('localStorage working:', retrievedValue === testValue ? 'YES' : 'NO');
+    console.log('============================');
   }, []);
 
   useEffect(() => {
@@ -90,7 +88,7 @@ function AppContent() {
   };
 
   const handleLoadPreset = (configuration: RobotConfiguration) => {
-    console.log("Loading preset configuration:", configuration);
+    console.log('Loading preset configuration:', configuration);
 
     // Set loading preset flag to prevent circular updates
     setIsLoadingPreset(true);
@@ -105,14 +103,11 @@ function AppContent() {
     const newRobotState = {
       segments: configuration.segments || 5,
       bendingAngles:
-        configuration.bendingAngles ||
-        Array(configuration.segments || 5).fill(0),
+        configuration.bendingAngles || Array(configuration.segments || 5).fill(0),
       rotationAngles:
-        configuration.rotationAngles ||
-        Array(configuration.segments || 5).fill(0),
+        configuration.rotationAngles || Array(configuration.segments || 5).fill(0),
       backboneLengths:
-        configuration.backboneLengths ||
-        Array(configuration.segments || 5).fill(0.07),
+        configuration.backboneLengths || Array(configuration.segments || 5).fill(0.07),
       couplingLengths:
         configuration.couplingLengths ||
         Array((configuration.segments || 5) + 1).fill(0.03),
@@ -124,14 +119,14 @@ function AppContent() {
       },
     };
 
-    console.log("Directly setting robot state:", newRobotState);
+    console.log('Directly setting robot state:', newRobotState);
     setRobotState(newRobotState);
 
     // Use setTimeout to ensure the reset happens before setting the new configuration
     setTimeout(() => {
       setCurrentConfiguration(configuration);
-      setPresetLoadKey((prev) => prev + 1); // Force FormTabs re-render
-      console.log("Preset configuration loaded:", configuration);
+      setPresetLoadKey(prev => prev + 1); // Force FormTabs re-render
+      console.log('Preset configuration loaded:', configuration);
 
       // Reset the loading preset flag after a short delay
       setTimeout(() => {
@@ -147,11 +142,11 @@ function AppContent() {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate('/');
   };
 
   const handleSignIn = () => {
-    navigate("/auth");
+    navigate('/auth');
   };
 
   const handleComputationTriggered = useCallback(() => {
@@ -175,9 +170,7 @@ function AppContent() {
             Loading Soft Robot App
           </Typography>
           <Typography variant="body" color="gray">
-            {isLoading
-              ? "Checking authentication..."
-              : "Initializing components..."}
+            {isLoading ? 'Checking authentication...' : 'Initializing components...'}
           </Typography>
         </div>
       </div>
@@ -199,11 +192,7 @@ function AppContent() {
                   fallback={
                     <div className="w-full h-full flex items-center justify-center bg-gray-100">
                       <div className="text-center">
-                        <LoadingSpinner
-                          size="lg"
-                          color="primary"
-                          className="mb-4"
-                        />
+                        <LoadingSpinner size="lg" color="primary" className="mb-4" />
                         <Typography variant="h3" color="gray" className="mb-2">
                           Loading 3D Visualizer...
                         </Typography>
@@ -227,10 +216,10 @@ function AppContent() {
 
               {/* Sidebar Overlay */}
               <div
-                className={`fixed top-0 left-0 h-full bg-white/15 backdrop-blur-3xl border-r border-white/30 shadow-2xl transition-all duration-500 ease-in-out overflow-hidden z-40 ${
+                className={`fixed top-0 left-0 h-full bg-white/15 backdrop-blur-3xl border-r border-white/30 shadow-2xl transition-all duration-300 ease-in-out overflow-hidden z-40 ${
                   sidebarCollapsed
-                    ? "w-0 -translate-x-full opacity-0"
-                    : "w-96 translate-x-0 opacity-100 rounded-r-2xl"
+                    ? 'w-0 -translate-x-full opacity-0'
+                    : 'w-96 translate-x-0 opacity-100 rounded-r-2xl'
                 }`}
               >
                 <div className="w-96 h-full pr-2">
@@ -255,12 +244,10 @@ function AppContent() {
                 onClick={toggleSidebar}
                 className={`fixed top-1/2 transform -translate-y-1/2 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105 ${
                   sidebarCollapsed
-                    ? "left-4 translate-x-0"
-                    : "left-[calc(384px-16px)] translate-x-0"
+                    ? 'left-4 translate-x-0'
+                    : 'left-[calc(384px-16px)] translate-x-0'
                 }`}
-                aria-label={
-                  sidebarCollapsed ? "Show parameters" : "Hide parameters"
-                }
+                aria-label={sidebarCollapsed ? 'Show parameters' : 'Hide parameters'}
               >
                 <svg
                   className="w-4 h-4 text-gray-600 transition-transform duration-300"
@@ -272,7 +259,7 @@ function AppContent() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d={sidebarCollapsed ? "M9 5l7 7-7 7" : "M15 19l-7-7 7-7"}
+                    d={sidebarCollapsed ? 'M9 5l7 7-7 7' : 'M15 19l-7-7 7-7'}
                   />
                 </svg>
               </button>
@@ -379,9 +366,7 @@ function AppContent() {
                         d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                       />
                     </svg>
-                    <span className="text-sm font-medium text-gray-900">
-                      Sign In
-                    </span>
+                    <span className="text-sm font-medium text-gray-900">Sign In</span>
                     <div className="absolute inset-0 rounded-full pointer-events-none z-0 bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
                   </button>
                 )}
@@ -390,8 +375,8 @@ function AppContent() {
 
             {/* Floating Compute Button */}
             <div
-              className={`fixed bottom-6 z-50 transition-all duration-500 ease-in-out ${
-                sidebarCollapsed ? "left-6" : "left-[calc(384px+16px)]"
+              className={`fixed bottom-6 z-50 transition-all duration-300 ease-in-out ${
+                sidebarCollapsed ? 'left-6' : 'left-[calc(384px+16px)]'
               }`}
             >
               <SubmitButton
@@ -429,7 +414,7 @@ function AppContent() {
                   <div className="p-6 overflow-y-auto max-h-[80vh]">
                     <PresetManager
                       currentConfiguration={currentConfiguration || {}}
-                      onLoadPreset={(config) => {
+                      onLoadPreset={config => {
                         handleLoadPreset(config);
                         setShowPresetManager(false);
                       }}

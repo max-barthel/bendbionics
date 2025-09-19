@@ -1,4 +1,4 @@
-type ErrorType = "network" | "validation" | "server" | "unknown";
+type ErrorType = 'network' | 'validation' | 'server' | 'unknown';
 
 interface ErrorState {
   type: ErrorType;
@@ -24,36 +24,36 @@ export function FormErrorDisplay({ error, onClose }: FormErrorDisplayProps) {
 
   const getErrorStyles = (type: ErrorType) => {
     switch (type) {
-      case "validation":
+      case 'validation':
         return {
-          container: "bg-amber-50 border-amber-400 text-amber-800",
-          icon: "text-amber-400",
-          button: "text-amber-500 hover:bg-amber-100 focus:ring-amber-500",
+          container: 'bg-amber-50 border-amber-400 text-amber-800',
+          icon: 'text-amber-400',
+          button: 'text-amber-500 hover:bg-amber-100 focus:ring-amber-500',
         };
-      case "network":
+      case 'network':
         return {
-          container: "bg-blue-50 border-blue-400 text-blue-800",
-          icon: "text-blue-400",
-          button: "text-blue-500 hover:bg-blue-100 focus:ring-blue-500",
+          container: 'bg-blue-50 border-blue-400 text-blue-800',
+          icon: 'text-blue-400',
+          button: 'text-blue-500 hover:bg-blue-100 focus:ring-blue-500',
         };
-      case "server":
+      case 'server':
         return {
-          container: "bg-red-50 border-red-400 text-red-800",
-          icon: "text-red-400",
-          button: "text-red-500 hover:bg-red-100 focus:ring-red-500",
+          container: 'bg-red-50 border-red-400 text-red-800',
+          icon: 'text-red-400',
+          button: 'text-red-500 hover:bg-red-100 focus:ring-red-500',
         };
       default:
         return {
-          container: "bg-gray-50 border-gray-400 text-gray-800",
-          icon: "text-gray-400",
-          button: "text-gray-500 hover:bg-gray-100 focus:ring-gray-500",
+          container: 'bg-gray-50 border-gray-400 text-gray-800',
+          icon: 'text-gray-400',
+          button: 'text-gray-500 hover:bg-gray-100 focus:ring-gray-500',
         };
     }
   };
 
   const getErrorIcon = (type: ErrorType) => {
     switch (type) {
-      case "validation":
+      case 'validation':
         return (
           <svg
             className="h-5 w-5 text-amber-400"
@@ -67,7 +67,7 @@ export function FormErrorDisplay({ error, onClose }: FormErrorDisplayProps) {
             />
           </svg>
         );
-      case "network":
+      case 'network':
         return (
           <svg
             className="h-5 w-5 text-blue-400"
@@ -81,13 +81,9 @@ export function FormErrorDisplay({ error, onClose }: FormErrorDisplayProps) {
             />
           </svg>
         );
-      case "server":
+      case 'server':
         return (
-          <svg
-            className="h-5 w-5 text-red-400"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
+          <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
             <path
               fillRule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"

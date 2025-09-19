@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
-from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
@@ -10,11 +9,7 @@ if TYPE_CHECKING:
 
 class UserBase(SQLModel):
     username: str = Field(unique=True, index=True)
-    email: Optional[EmailStr] = Field(default=None, unique=True, index=True)
-    # Local users don't need email verification
-    is_local: bool = Field(default=True)
     is_active: bool = Field(default=True)
-    is_verified: bool = Field(default=False)
 
 
 class User(UserBase, table=True):
@@ -30,7 +25,6 @@ class User(UserBase, table=True):
 class UserCreate(SQLModel):
     username: str
     password: str
-    email: Optional[EmailStr] = None
 
 
 class UserLogin(SQLModel):
@@ -41,10 +35,7 @@ class UserLogin(SQLModel):
 class UserResponse(SQLModel):
     id: int
     username: str
-    email: Optional[EmailStr] = None
-    is_local: bool
     is_active: bool
-    is_verified: bool
     created_at: datetime
 
 

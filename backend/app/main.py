@@ -1,20 +1,18 @@
 # FastAPI entry
 import os
 
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
 from app.api.auth_routes import router as auth_router
 from app.api.middleware import CORSMiddleware as CustomCORSMiddleware
-from app.api.middleware import (
-    ErrorHandlingMiddleware,
-    LoggingMiddleware,
-    RequestIDMiddleware,
-)
+from app.api.middleware import (ErrorHandlingMiddleware, LoggingMiddleware,
+                                RequestIDMiddleware)
 from app.api.preset_routes import router as preset_router
 from app.api.routes import router as pcc_router
 from app.api.tendon_routes import router as tendon_router
 from app.config import Settings
 from app.database import create_db_and_tables
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 
 settings = Settings()
 

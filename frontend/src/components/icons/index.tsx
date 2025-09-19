@@ -1,16 +1,11 @@
-import React from "react";
+import React from 'react';
 
 interface IconProps {
   className?: string;
 }
 
-export const RobotIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+export const RobotIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -20,13 +15,8 @@ export const RobotIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
-export const ControlIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+export const ControlIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -36,15 +26,8 @@ export const ControlIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
-export const ChevronDownIcon: React.FC<IconProps> = ({
-  className = "w-4 h-4",
-}) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+export const ChevronDownIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -54,15 +37,8 @@ export const ChevronDownIcon: React.FC<IconProps> = ({
   </svg>
 );
 
-export const LightningIcon: React.FC<IconProps> = ({
-  className = "w-4 h-4",
-}) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+export const LightningIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -72,13 +48,8 @@ export const LightningIcon: React.FC<IconProps> = ({
   </svg>
 );
 
-export const TendonIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+export const TendonIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -88,15 +59,8 @@ export const TendonIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
-export const AdvancedIcon: React.FC<IconProps> = ({
-  className = "w-4 h-4",
-}) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+export const AdvancedIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -106,13 +70,8 @@ export const AdvancedIcon: React.FC<IconProps> = ({
   </svg>
 );
 
-export const BendingIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+export const BendingIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -122,15 +81,8 @@ export const BendingIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
-export const RotationIcon: React.FC<IconProps> = ({
-  className = "w-4 h-4",
-}) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+export const RotationIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -140,13 +92,8 @@ export const RotationIcon: React.FC<IconProps> = ({
   </svg>
 );
 
-export const CheckIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+export const CheckIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -156,7 +103,7 @@ export const CheckIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
-export const ErrorIcon: React.FC<IconProps> = ({ className = "w-5 h-5" }) => (
+export const ErrorIcon: React.FC<IconProps> = ({ className = 'w-5 h-5' }) => (
   <svg className={className} viewBox="0 0 20 20" fill="currentColor">
     <path
       fillRule="evenodd"
@@ -166,7 +113,7 @@ export const ErrorIcon: React.FC<IconProps> = ({ className = "w-5 h-5" }) => (
   </svg>
 );
 
-export const CloseIcon: React.FC<IconProps> = ({ className = "w-5 h-5" }) => (
+export const CloseIcon: React.FC<IconProps> = ({ className = 'w-5 h-5' }) => (
   <svg className={className} viewBox="0 0 20 20" fill="currentColor">
     <path
       fillRule="evenodd"
@@ -176,13 +123,8 @@ export const CloseIcon: React.FC<IconProps> = ({ className = "w-5 h-5" }) => (
   </svg>
 );
 
-export const UploadIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+export const UploadIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -192,13 +134,8 @@ export const UploadIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
-export const UserIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+export const UserIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -208,13 +145,8 @@ export const UserIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
   </svg>
 );
 
-export const TrashIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+export const TrashIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -225,14 +157,9 @@ export const TrashIcon: React.FC<IconProps> = ({ className = "w-4 h-4" }) => (
 );
 
 export const ExclamationTriangleIcon: React.FC<IconProps> = ({
-  className = "w-4 h-4",
+  className = 'w-4 h-4',
 }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"

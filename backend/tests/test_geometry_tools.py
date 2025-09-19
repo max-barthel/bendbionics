@@ -1,4 +1,5 @@
 import numpy as np
+
 from app.utils.geometry_tools import extract_xyz_coordinates
 
 
@@ -10,18 +11,22 @@ class TestGeometryTools:
         # Create a single segment with 2 transformation matrices
         T_all = [
             [
-                np.array([
-                    [1, 0, 0, 0],  # Identity matrix at origin
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 0, 1]
-                ]),
-                np.array([
-                    [1, 0, 0, 1],  # Translated by 1 in x
-                    [0, 1, 0, 2],  # Translated by 2 in y
-                    [0, 0, 1, 3],  # Translated by 3 in z
-                    [0, 0, 0, 1]
-                ])
+                np.array(
+                    [
+                        [1, 0, 0, 0],  # Identity matrix at origin
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1],
+                    ]
+                ),
+                np.array(
+                    [
+                        [1, 0, 0, 1],  # Translated by 1 in x
+                        [0, 1, 0, 2],  # Translated by 2 in y
+                        [0, 0, 1, 3],  # Translated by 3 in z
+                        [0, 0, 0, 1],
+                    ]
+                ),
             ]
         ]
 
@@ -41,33 +46,13 @@ class TestGeometryTools:
         # Create two segments
         T_all = [
             [  # First segment
-                np.array([
-                    [1, 0, 0, 0],
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 0, 1]
-                ]),
-                np.array([
-                    [1, 0, 0, 1],
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 0, 1]
-                ])
+                np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]),
+                np.array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]),
             ],
             [  # Second segment
-                np.array([
-                    [1, 0, 0, 2],
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 0, 1]
-                ]),
-                np.array([
-                    [1, 0, 0, 3],
-                    [0, 1, 0, 1],
-                    [0, 0, 1, 0],
-                    [0, 0, 0, 1]
-                ])
-            ]
+                np.array([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]),
+                np.array([[1, 0, 0, 3], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]]),
+            ],
         ]
 
         result = extract_xyz_coordinates(T_all)
@@ -102,12 +87,14 @@ class TestGeometryTools:
 
         T_all = [
             [
-                np.array([
-                    [cos_a, -sin_a, 0, 1],  # Rotated and translated
-                    [sin_a, cos_a, 0, 2],
-                    [0, 0, 1, 3],
-                    [0, 0, 0, 1]
-                ])
+                np.array(
+                    [
+                        [cos_a, -sin_a, 0, 1],  # Rotated and translated
+                        [sin_a, cos_a, 0, 2],
+                        [0, 0, 1, 3],
+                        [0, 0, 0, 1],
+                    ]
+                )
             ]
         ]
 
@@ -130,18 +117,22 @@ class TestGeometryTools:
         # Create a more complex transformation matrix
         T_all = [
             [
-                np.array([
-                    [0.7071, -0.7071, 0, 10.5],  # 45° rotation + translation
-                    [0.7071, 0.7071, 0, -5.2],
-                    [0, 0, 1, 100.0],
-                    [0, 0, 0, 1]
-                ]),
-                np.array([
-                    [1, 0, 0, 0],  # Identity matrix
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 0, 1]
-                ])
+                np.array(
+                    [
+                        [0.7071, -0.7071, 0, 10.5],  # 45° rotation + translation
+                        [0.7071, 0.7071, 0, -5.2],
+                        [0, 0, 1, 100.0],
+                        [0, 0, 0, 1],
+                    ]
+                ),
+                np.array(
+                    [
+                        [1, 0, 0, 0],  # Identity matrix
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1],
+                    ]
+                ),
             ]
         ]
 
@@ -159,14 +150,7 @@ class TestGeometryTools:
     def test_extract_xyz_coordinates_data_types(self):
         """Test that the function returns correct data types."""
         T_all = [
-            [
-                np.array([
-                    [1, 0, 0, 1.5],
-                    [0, 1, 0, 2.7],
-                    [0, 0, 1, 3.9],
-                    [0, 0, 0, 1]
-                ])
-            ]
+            [np.array([[1, 0, 0, 1.5], [0, 1, 0, 2.7], [0, 0, 1, 3.9], [0, 0, 0, 1]])]
         ]
 
         result = extract_xyz_coordinates(T_all)

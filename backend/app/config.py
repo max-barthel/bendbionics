@@ -37,18 +37,6 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
-    # Email settings (empty by default, must be set in production)
-    mail_username: str = ""
-    mail_password: str = ""
-    mail_from: str = ""
-    mail_port: int = 587
-    mail_server: str = "smtp.gmail.com"
-    mail_tls: bool = True
-    mail_ssl: bool = False
-
-    # Frontend URL for email verification
-    frontend_url: str = "http://localhost:5173"
-
     @field_validator("cors_origins")
     @classmethod
     def validate_cors_origins(cls, v):
@@ -62,9 +50,7 @@ class Settings(BaseSettings):
             if not origin.strip():
                 raise ValueError("CORS origin cannot be empty string")
             # Basic URL format validation
-            if not (
-                origin.startswith("http://") or origin.startswith("https://")
-            ):
+            if not (origin.startswith("http://") or origin.startswith("https://")):
                 raise ValueError(f"Invalid CORS origin format: {origin}")
 
         return v

@@ -1,15 +1,21 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
-import { robotAPI, type PCCParams } from "../../../api/client";
-import { ControlIcon, RobotIcon } from "../../../components/icons";
-import { TabPanel, Tabs } from "../../../components/ui";
-import { type RobotConfiguration, type User } from "../../../types/robot";
-import { validateRobotConfiguration } from "../../../utils/formValidation";
-import { useConfigurationLoader } from "../../presets/hooks/useConfigurationLoader";
-import { ErrorDisplay } from "../../shared/components/ErrorDisplay";
-import { useErrorHandler } from "../../shared/hooks/useErrorHandler";
-import { useRobotState } from "../hooks/useRobotState";
-import { ControlTab } from "./tabs/ControlTab";
-import { RobotSetupTab } from "./tabs/RobotSetupTab";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react';
+import { robotAPI, type PCCParams } from '../../../api/client';
+import { ControlIcon, RobotIcon } from '../../../components/icons';
+import { TabPanel, Tabs } from '../../../components/ui';
+import { type RobotConfiguration, type User } from '../../../types/robot';
+import { validateRobotConfiguration } from '../../../utils/formValidation';
+import { useConfigurationLoader } from '../../presets/hooks/useConfigurationLoader';
+import { ErrorDisplay } from '../../shared/components/ErrorDisplay';
+import { useErrorHandler } from '../../shared/hooks/useErrorHandler';
+import { useRobotState } from '../hooks/useRobotState';
+import { ControlTab } from './tabs/ControlTab';
+import { RobotSetupTab } from './tabs/RobotSetupTab';
 
 type FormTabsProps = {
   onResult: (segments: number[][][], configuration: RobotConfiguration) => void;
@@ -43,12 +49,12 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
   ) => {
     const [robotState, setRobotState] = useRobotState();
     const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState("setup");
+    const [activeTab, setActiveTab] = useState('setup');
 
     const { error, showError, hideError } = useErrorHandler();
     useConfigurationLoader(initialConfiguration);
 
-    const handleSubmit = async () => {
+    const handleSubmit = useCallback(async () => {
       hideError();
       if (!(await validateRobotConfiguration(robotState, showError))) return;
 
@@ -97,16 +103,16 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
 
           onResult(result.data.segments, configuration);
         }
-      } catch (error: any) {
-        console.error("Computation failed:", error);
+      } catch (error: unknown) {
+        console.error('Computation failed:', error);
         showError(
-          "server",
-          error.response?.data?.detail || error.message || "Computation failed"
+          'server',
+          error.response?.data?.detail || error.message || 'Computation failed'
         );
       } finally {
         setLoading(false);
       }
-    };
+    }, [robotState, showError, hideError, onResult]);
 
     // Notify parent of loading state changes
     useEffect(() => {
@@ -119,7 +125,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
         handleSubmit();
         onComputationTriggered?.();
       }
-    }, [triggerComputation, loading, onComputationTriggered]);
+    }, [triggerComputation, loading, onComputationTriggered, handleSubmit]);
 
     useImperativeHandle(ref, () => ({
       handleSubmit,
@@ -127,22 +133,20 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
 
     const tabs = [
       {
-        id: "setup",
-        label: "Robot Setup",
+        id: 'setup',
+        label: 'Robot Setup',
         icon: <RobotIcon className="w-3 h-3" />,
       },
       {
-        id: "control",
-        label: "Control",
+        id: 'control',
+        label: 'Control',
         icon: <ControlIcon className="w-3 h-3" />,
       },
     ];
 
     return (
       <div className="h-full flex flex-col">
-        {error.visible && (
-          <ErrorDisplay message={error.message} onClose={hideError} />
-        )}
+        {error.visible && <ErrorDisplay message={error.message} onClose={hideError} />}
 
         <Tabs
           tabs={tabs}

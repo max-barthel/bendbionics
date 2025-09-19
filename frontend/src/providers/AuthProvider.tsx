@@ -6,9 +6,9 @@ import {
   useMemo,
   useRef,
   useState,
-} from "react";
-import type { LoginRequest, RegisterRequest, User } from "../api/auth";
-import { authAPI } from "../api/auth";
+} from 'react';
+import type { LoginRequest, RegisterRequest, User } from '../api/auth';
+import { authAPI } from '../api/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -25,18 +25,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem("token")
-  );
+  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
   const hasCheckedAuth = useRef(false);
 
@@ -54,16 +50,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             const userData = await authAPI.getCurrentUser();
             setUser(userData);
           } catch (error) {
-            console.log("Token validation failed, clearing token:", error);
+            console.log('Token validation failed, clearing token:', error);
             // Token is invalid, clear it
-            localStorage.removeItem("token");
+            localStorage.removeItem('token');
             setToken(null);
           }
         }
       } catch (error) {
-        console.error("Auth check failed:", error);
+        console.error('Auth check failed:', error);
         // If anything goes wrong, just clear everything and continue
-        localStorage.removeItem("token");
+        localStorage.removeItem('token');
         setToken(null);
         setUser(null);
       } finally {
@@ -74,7 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // Add a timeout to ensure we always set loading to false
     const timeoutId = setTimeout(() => {
       if (isLoading) {
-        console.log("Auth check timeout, setting loading to false");
+        console.log('Auth check timeout, setting loading to false');
         setIsLoading(false);
       }
     }, 5000);
@@ -90,20 +86,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const { access_token, user: userData } = response;
 
       // Clean the token before storing - remove any quotes
-      const cleanToken = access_token.replace(/^"|"$/g, "");
+      const cleanToken = access_token.replace(/^"|"$/g, '');
 
       // Store token in localStorage
-      localStorage.setItem("token", cleanToken);
+      localStorage.setItem('token', cleanToken);
 
       // Also store in global window object for Tauri compatibility
-      if (typeof window !== "undefined") {
+      if (typeof window !== 'undefined') {
         (window as Window & { authToken?: string }).authToken = cleanToken;
       }
 
       setToken(cleanToken);
       setUser(userData);
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error('Login failed:', error);
       throw error; // Re-throw so the calling component can handle it
     }
   }, []);
@@ -122,7 +118,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           await login(loginData);
         }
       } catch (error) {
-        console.error("Registration failed:", error);
+        console.error('Registration failed:', error);
         throw error; // Re-throw so the calling component can handle it
       }
     },
@@ -130,9 +126,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const logout = useCallback(() => {
-    localStorage.removeItem("token");
-    sessionStorage.removeItem("token");
-    if (typeof window !== "undefined") {
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    if (typeof window !== 'undefined') {
       (window as Window & { authToken?: string }).authToken = undefined;
     }
     setToken(null);
@@ -145,7 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // Clear all authentication data after successful deletion
       logout();
     } catch (error) {
-      console.error("Delete account failed:", error);
+      console.error('Delete account failed:', error);
       throw error; // Re-throw so the calling component can handle it
     }
   }, [logout]);

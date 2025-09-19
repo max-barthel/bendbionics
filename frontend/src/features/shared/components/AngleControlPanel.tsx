@@ -1,9 +1,5 @@
-import React, { useState } from "react";
-import {
-  SliderInput,
-  SubsectionTitle,
-  UnitSelector,
-} from "../../../components/ui";
+import React, { useState } from 'react';
+import { SliderInput, SubsectionTitle, UnitSelector } from '../../../components/ui';
 
 interface AngleControlPanelProps {
   values: number[];
@@ -16,7 +12,7 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
 }) => {
   const [selectedSegment, setSelectedSegment] = useState(0);
   const [useDegrees, setUseDegrees] = useState(true);
-  const angleUnits = ["deg", "rad"] as const;
+  const angleUnits = ['deg', 'rad'] as const;
 
   const updateSegmentValue = (index: number, newValueRadians: number) => {
     const newValues = [...values];
@@ -24,18 +20,12 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
     onChange(newValues);
   };
 
-  const updateSegmentValueDegrees = (
-    index: number,
-    newValueDegrees: number
-  ) => {
+  const updateSegmentValueDegrees = (index: number, newValueDegrees: number) => {
     const newValueRadians = (newValueDegrees * Math.PI) / 180;
     updateSegmentValue(index, newValueRadians);
   };
 
-  const updateSegmentValueRadians = (
-    index: number,
-    newValueRadians: number
-  ) => {
+  const updateSegmentValueRadians = (index: number, newValueRadians: number) => {
     updateSegmentValue(index, newValueRadians);
   };
 
@@ -50,8 +40,8 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
               key={index}
               className={`w-[calc(50%-4px)] h-16 flex flex-col justify-center flex-shrink-0 p-3 rounded-xl cursor-pointer ${
                 selectedSegment === index
-                  ? "bg-gradient-to-br from-blue-500/25 to-indigo-500/25 text-gray-900 shadow-lg border border-blue-400/30 shadow-blue-500/10"
-                  : "text-gray-600 hover:text-gray-800 hover:bg-white/20"
+                  ? 'bg-gradient-to-br from-blue-500/25 to-indigo-500/25 text-gray-900 shadow-lg border border-blue-400/30 shadow-blue-500/10'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-white/20'
               }`}
               onClick={() => setSelectedSegment(index)}
             >
@@ -59,13 +49,11 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
               <div className="text-gray-600 text-center text-xs leading-tight">
                 {useDegrees ? (
                   <>
-                    {((value * 180) / Math.PI).toFixed(1)}° ({value.toFixed(3)}{" "}
-                    rad)
+                    {((value * 180) / Math.PI).toFixed(1)}° ({value.toFixed(3)} rad)
                   </>
                 ) : (
                   <>
-                    {value.toFixed(3)} rad (
-                    {((value * 180) / Math.PI).toFixed(1)}°)
+                    {value.toFixed(3)} rad ({((value * 180) / Math.PI).toFixed(1)}°)
                   </>
                 )}
               </div>
@@ -80,8 +68,8 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
           <SubsectionTitle title={`Segment ${selectedSegment + 1} Value`} />
           <UnitSelector
             units={angleUnits}
-            selectedUnit={useDegrees ? "deg" : "rad"}
-            onUnitChange={(unit) => setUseDegrees(unit === "deg")}
+            selectedUnit={useDegrees ? 'deg' : 'rad'}
+            onUnitChange={unit => setUseDegrees(unit === 'deg')}
             ariaLabel="Angle"
           />
         </div>

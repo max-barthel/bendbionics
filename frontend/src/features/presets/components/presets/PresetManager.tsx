@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import type { CreatePresetRequest, Preset } from "../../../../api/auth";
-import { authAPI, presetAPI } from "../../../../api/auth";
-import { Button, Input, Typography } from "../../../../components/ui";
-import { useAuth } from "../../../../providers";
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import type { CreatePresetRequest, Preset } from '../../../../api/auth';
+import { authAPI, presetAPI } from '../../../../api/auth';
+import { Button, Input, Typography } from '../../../../components/ui';
+import { useAuth } from '../../../../providers';
 
 interface PresetManagerProps {
-  currentConfiguration: Record<string, any>;
-  onLoadPreset: (configuration: Record<string, any>) => void;
+  currentConfiguration: Record<string, unknown>;
+  onLoadPreset: (configuration: Record<string, unknown>) => void;
 }
 
 export const PresetManager: React.FC<PresetManagerProps> = ({
@@ -19,85 +19,82 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
   const [presets, setPresets] = useState<Preset[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSaveForm, setShowSaveForm] = useState(false);
-  const [presetName, setPresetName] = useState("");
-  const [presetDescription, setPresetDescription] = useState("");
-  const [error, setError] = useState("");
-  const [loadError, setLoadError] = useState("");
+  const [presetName, setPresetName] = useState('');
+  const [presetDescription, setPresetDescription] = useState('');
+  const [error, setError] = useState('');
+  const [loadError, setLoadError] = useState('');
   const [editingPreset, setEditingPreset] = useState<number | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editDescription, setEditDescription] = useState("");
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
 
   useEffect(() => {
     if (user) {
       loadPresets();
     }
-  }, [user]);
+  }, [user, loadPresets]);
 
-  const loadPresets = async () => {
+  const loadPresets = useCallback(async () => {
     if (!user) return;
 
     setIsLoading(true);
     try {
       // Debug: Check if user and token exist
-      const token = localStorage.getItem("token");
-      console.log("Loading presets for user:", user.username);
-      console.log("Token exists:", !!token);
-      console.log("Token length:", token?.length);
+      const token = localStorage.getItem('token');
+      console.log('Loading presets for user:', user.username);
+      console.log('Token exists:', !!token);
+      console.log('Token length:', token?.length);
 
       // Test authentication first
       try {
         const currentUser = await authAPI.getCurrentUser();
-        console.log(
-          "Auth test successful, current user:",
-          currentUser.username
-        );
-      } catch (authError: any) {
-        console.error("Auth test failed:", authError);
-        setLoadError("Authentication failed. Please sign in again.");
+        console.log('Auth test successful, current user:', currentUser.username);
+      } catch (authError: unknown) {
+        console.error('Auth test failed:', authError);
+        setLoadError('Authentication failed. Please sign in again.');
         return;
       }
 
       const userPresets = await presetAPI.getUserPresets();
-      console.log("Loaded presets:", userPresets);
+      console.log('Loaded presets:', userPresets);
       setPresets(userPresets);
-      setLoadError(""); // Clear any previous errors
-    } catch (error: any) {
-      console.error("Failed to load presets:", error);
-      console.error("Error response:", error.response);
-      console.error("Error status:", error.response?.status);
+      setLoadError(''); // Clear any previous errors
+    } catch (error: unknown) {
+      console.error('Failed to load presets:', error);
+      console.error('Error response:', error.response);
+      console.error('Error status:', error.response?.status);
       // Handle 403 Forbidden - user might not be properly authenticated
       if (error.response?.status === 403) {
-        setLoadError("Authentication required. Please sign in again.");
+        setLoadError('Authentication required. Please sign in again.');
         // Optionally redirect to login
         // navigate("/auth");
       } else {
-        setLoadError("Failed to load presets. Please try again.");
+        setLoadError('Failed to load presets. Please try again.');
       }
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   const handleSavePreset = async () => {
     if (!user) {
-      navigate("/auth");
+      navigate('/auth');
       return;
     }
 
     if (!presetName.trim()) {
-      setError("Preset name is required");
+      setError('Preset name is required');
       return;
     }
 
     setIsLoading(true);
-    setError("");
+    setError('');
 
     try {
       // Debug: Check if user and token exist
-      const token = localStorage.getItem("token");
-      console.log("Saving preset for user:", user.username);
-      console.log("Token exists:", !!token);
-      console.log("Token length:", token?.length);
+      const token = localStorage.getItem('token');
+      console.log('Saving preset for user:', user.username);
+      console.log('Token exists:', !!token);
+      console.log('Token length:', token?.length);
 
       const newPreset: CreatePresetRequest = {
         name: presetName.trim(),
@@ -107,19 +104,19 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       };
 
       await presetAPI.createPreset(newPreset);
-      setPresetName("");
-      setPresetDescription("");
+      setPresetName('');
+      setPresetDescription('');
       setShowSaveForm(false);
       await loadPresets(); // Reload presets
-    } catch (error: any) {
-      console.error("Failed to save preset:", error);
+    } catch (error: unknown) {
+      console.error('Failed to save preset:', error);
       // Handle 403 Forbidden - user might not be properly authenticated
       if (error.response?.status === 403) {
-        setError("Authentication required. Please sign in again.");
+        setError('Authentication required. Please sign in again.');
         // Optionally redirect to login
         // navigate("/auth");
       } else {
-        setError(error.response?.data?.detail || "Failed to save preset");
+        setError(error.response?.data?.detail || 'Failed to save preset');
       }
     } finally {
       setIsLoading(false);
@@ -130,50 +127,50 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
     try {
       onLoadPreset(preset.configuration);
     } catch (error) {
-      console.error("Failed to load preset:", error);
+      console.error('Failed to load preset:', error);
     }
   };
 
   const handleEditPreset = (preset: Preset) => {
     setEditingPreset(preset.id);
     setEditName(preset.name);
-    setEditDescription(preset.description || "");
-    setLoadError(""); // Clear any previous errors
+    setEditDescription(preset.description || '');
+    setLoadError(''); // Clear any previous errors
   };
 
   const handleCancelEdit = () => {
     setEditingPreset(null);
-    setEditName("");
-    setEditDescription("");
+    setEditName('');
+    setEditDescription('');
   };
 
   const handleSaveEdit = async (presetId: number) => {
     if (!editName.trim()) {
-      setLoadError("Preset name is required");
+      setLoadError('Preset name is required');
       return;
     }
 
     setIsLoading(true);
-    setLoadError("");
+    setLoadError('');
 
     try {
-      console.log("Updating preset with ID:", presetId);
+      console.log('Updating preset with ID:', presetId);
       const updateData = {
         name: editName.trim(),
         description: editDescription.trim() || undefined,
       };
 
       await presetAPI.updatePreset(presetId, updateData);
-      console.log("Preset updated successfully");
+      console.log('Preset updated successfully');
 
       // Reload presets to update the list
       await loadPresets();
       setEditingPreset(null);
-      setEditName("");
-      setEditDescription("");
-    } catch (error: any) {
-      console.error("Failed to update preset:", error);
-      console.error("Error details:", {
+      setEditName('');
+      setEditDescription('');
+    } catch (error: unknown) {
+      console.error('Failed to update preset:', error);
+      console.error('Error details:', {
         message: error.message,
         response: error.response,
         status: error.response?.status,
@@ -182,15 +179,13 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
       // Handle different error types
       if (error.response?.status === 403) {
-        setLoadError("Authentication required. Please sign in again.");
+        setLoadError('Authentication required. Please sign in again.');
       } else if (error.response?.status === 404) {
-        setLoadError("Preset not found. It may have been deleted.");
+        setLoadError('Preset not found. It may have been deleted.');
       } else if (error.response?.status === 500) {
-        setLoadError("Server error. Please try again later.");
+        setLoadError('Server error. Please try again later.');
       } else {
-        setLoadError(
-          `Failed to update preset: ${error.message || "Unknown error"}`
-        );
+        setLoadError(`Failed to update preset: ${error.message || 'Unknown error'}`);
       }
     } finally {
       setIsLoading(false);
@@ -198,40 +193,38 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
   };
 
   const handleDeletePreset = async (presetId: number) => {
-    console.log("Delete button clicked for preset ID:", presetId);
+    console.log('Delete button clicked for preset ID:', presetId);
 
     if (!user) {
-      console.log("No user, redirecting to auth");
-      navigate("/auth");
+      console.log('No user, redirecting to auth');
+      navigate('/auth');
       return;
     }
 
-    console.log("Showing confirmation dialog...");
-    const confirmed = await confirm(
-      "Are you sure you want to delete this preset?"
-    );
-    console.log("Confirmation result:", confirmed);
+    console.log('Showing confirmation dialog...');
+    const confirmed = await confirm('Are you sure you want to delete this preset?');
+    console.log('Confirmation result:', confirmed);
 
     if (!confirmed) {
-      console.log("User cancelled deletion");
+      console.log('User cancelled deletion');
       return;
     }
 
-    console.log("User confirmed deletion, proceeding...");
+    console.log('User confirmed deletion, proceeding...');
     setIsLoading(true);
-    setLoadError(""); // Clear any previous errors
+    setLoadError(''); // Clear any previous errors
 
     try {
-      console.log("Deleting preset with ID:", presetId);
+      console.log('Deleting preset with ID:', presetId);
       const result = await presetAPI.deletePreset(presetId);
-      console.log("Delete result:", result);
+      console.log('Delete result:', result);
 
       // Reload presets to update the list
       await loadPresets();
-      console.log("Preset deleted successfully");
-    } catch (error: any) {
-      console.error("Failed to delete preset:", error);
-      console.error("Error details:", {
+      console.log('Preset deleted successfully');
+    } catch (error: unknown) {
+      console.error('Failed to delete preset:', error);
+      console.error('Error details:', {
         message: error.message,
         response: error.response,
         status: error.response?.status,
@@ -240,15 +233,13 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
       // Handle different error types
       if (error.response?.status === 403) {
-        setLoadError("Authentication required. Please sign in again.");
+        setLoadError('Authentication required. Please sign in again.');
       } else if (error.response?.status === 404) {
-        setLoadError("Preset not found. It may have already been deleted.");
+        setLoadError('Preset not found. It may have already been deleted.');
       } else if (error.response?.status === 500) {
-        setLoadError("Server error. Please try again later.");
+        setLoadError('Server error. Please try again later.');
       } else {
-        setLoadError(
-          `Failed to delete preset: ${error.message || "Unknown error"}`
-        );
+        setLoadError(`Failed to delete preset: ${error.message || 'Unknown error'}`);
       }
     } finally {
       setIsLoading(false);
@@ -271,17 +262,13 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
         <div className="space-y-4">
           <Button
             variant="primary"
-            onClick={() => navigate("/auth")}
+            onClick={() => navigate('/auth')}
             className="backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
           >
             Sign In to Save Presets
           </Button>
           <div className="mt-4">
-            <Typography
-              variant="body"
-              color="gray"
-              className="text-sm text-gray-600"
-            >
+            <Typography variant="body" color="gray" className="text-sm text-gray-600">
               You can still use the app without signing in!
             </Typography>
           </div>
@@ -307,7 +294,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
           onClick={() => setShowSaveForm(!showSaveForm)}
           className="backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
         >
-          {showSaveForm ? "Cancel" : "Save Current Configuration"}
+          {showSaveForm ? 'Cancel' : 'Save Current Configuration'}
         </Button>
       </div>
 
@@ -326,9 +313,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
               <Input
                 type="text"
                 value={presetName}
-                onChange={(value: string | number) =>
-                  setPresetName(String(value))
-                }
+                onChange={(value: string | number) => setPresetName(String(value))}
                 placeholder="Enter preset name"
                 className="w-full"
               />
@@ -358,7 +343,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
               disabled={isLoading}
               className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
             >
-              {isLoading ? "Saving..." : "Save Preset"}
+              {isLoading ? 'Saving...' : 'Save Preset'}
             </Button>
           </div>
         </div>
@@ -406,7 +391,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
           </div>
         ) : (
           <div className="space-y-4">
-            {presets.map((preset) => (
+            {presets.map(preset => (
               <div
                 key={preset.id}
                 className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm"
@@ -450,7 +435,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
                         disabled={isLoading}
                         className="backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
                       >
-                        {isLoading ? "Saving..." : "Save"}
+                        {isLoading ? 'Saving...' : 'Save'}
                       </Button>
                       <Button
                         variant="outline"
@@ -473,11 +458,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
                         </Typography>
                       </div>
                       {preset.description && (
-                        <Typography
-                          variant="body"
-                          color="gray"
-                          className="mb-2"
-                        >
+                        <Typography variant="body" color="gray" className="mb-2">
                           {preset.description}
                         </Typography>
                       )}
@@ -488,8 +469,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
                         color="gray"
                         className="text-sm opacity-75"
                       >
-                        Created:{" "}
-                        {new Date(preset.created_at).toLocaleDateString()}
+                        Created: {new Date(preset.created_at).toLocaleDateString()}
                       </Typography>
                       <div className="flex gap-2">
                         <Button

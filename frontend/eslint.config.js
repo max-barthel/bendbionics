@@ -1,12 +1,17 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import { globalIgnores } from 'eslint/config'
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook";
+
+import js from '@eslint/js';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import sonarjs from 'eslint-plugin-sonarjs';
+import { globalIgnores } from 'eslint/config';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 export default tseslint.config([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'node_modules', 'coverage', 'build']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -14,10 +19,135 @@ export default tseslint.config([
       tseslint.configs.recommended,
       reactHooks.configs['recommended-latest'],
       reactRefresh.configs.vite,
+      jsxA11y.configs.recommended,
+      sonarjs.configs.recommended,
     ],
     languageOptions: {
-      ecmaVersion: 2020,
+      ecmaVersion: 2022,
       globals: globals.browser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    rules: {
+      // Modern line length standard
+      'max-len': [
+        'error',
+        {
+          code: 88,
+          ignoreUrls: true,
+          ignoreStrings: true,
+          ignoreTemplateLiterals: true,
+          ignoreRegExpLiterals: true,
+          ignoreComments: true,
+        },
+      ],
+
+      // Code Quality Rules
+      complexity: ['error', { max: 10 }],
+      'max-depth': ['error', 4],
+      'max-lines': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
+      'max-lines-per-function': [
+        'error',
+        { max: 50, skipBlankLines: true, skipComments: true },
+      ],
+      'max-params': ['error', 4],
+      'max-statements': ['error', 20],
+
+      // Best Practices
+      curly: ['error', 'all'],
+      eqeqeq: ['error', 'always'],
+      'no-console': ['warn'],
+      'no-debugger': ['error'],
+      'no-duplicate-imports': ['error'],
+      'no-else-return': ['error'],
+      'no-empty': ['error'],
+      'no-eval': ['error'],
+      'no-extra-boolean-cast': ['error'],
+      'no-extra-semi': ['error'],
+      'no-implied-eval': ['error'],
+      'no-lonely-if': ['error'],
+      'no-magic-numbers': ['warn', { ignore: [0, 1, -1], ignoreArrayIndexes: true }],
+      'no-multiple-empty-lines': ['error', { max: 2, maxEOF: 1 }],
+      'no-nested-ternary': ['error'],
+      'no-return-assign': ['error'],
+      'no-self-compare': ['error'],
+      'no-sequences': ['error'],
+      'no-throw-literal': ['error'],
+      'no-unmodified-loop-condition': ['error'],
+      'no-unused-expressions': ['error'],
+      'no-useless-call': ['error'],
+      'no-useless-concat': ['error'],
+      'no-useless-return': ['error'],
+      'no-var': ['error'],
+      'prefer-const': ['error'],
+      'prefer-template': ['error'],
+      radix: ['error'],
+
+      // TypeScript Specific Rules
+      '@typescript-eslint/no-explicit-any': ['error'],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/prefer-nullish-coalescing': ['error'],
+      '@typescript-eslint/prefer-optional-chain': ['error'],
+      '@typescript-eslint/no-non-null-assertion': ['error'],
+      '@typescript-eslint/no-unnecessary-type-assertion': ['error'],
+      '@typescript-eslint/prefer-as-const': ['error'],
+      '@typescript-eslint/no-floating-promises': ['error'],
+      '@typescript-eslint/await-thenable': ['error'],
+      '@typescript-eslint/no-misused-promises': ['error'],
+      '@typescript-eslint/require-await': ['error'],
+      '@typescript-eslint/return-await': ['error'],
+
+      // React Specific Rules
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+
+      // Import/Export Rules
+      'sort-imports': [
+        'error',
+        {
+          ignoreCase: true,
+          ignoreDeclarationSort: true,
+          ignoreMemberSort: false,
+          memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
+        },
+      ],
+
+      // Accessibility Rules
+      'jsx-a11y/alt-text': 'error',
+      'jsx-a11y/anchor-has-content': 'error',
+      'jsx-a11y/anchor-is-valid': 'error',
+      'jsx-a11y/aria-props': 'error',
+      'jsx-a11y/aria-proptypes': 'error',
+      'jsx-a11y/aria-unsupported-elements': 'error',
+      'jsx-a11y/heading-has-content': 'error',
+      'jsx-a11y/img-redundant-alt': 'error',
+      'jsx-a11y/no-access-key': 'error',
+      'jsx-a11y/role-has-required-aria-props': 'error',
+      'jsx-a11y/role-supports-aria-props': 'error',
+
+      // SonarJS Rules
+      'sonarjs/cognitive-complexity': ['error', 15],
+      'sonarjs/no-duplicate-string': ['error', { threshold: 3 }],
+      'sonarjs/no-identical-functions': 'error',
+      'sonarjs/no-redundant-boolean': 'error',
+      'sonarjs/no-unused-collection': 'error',
+      'sonarjs/no-useless-catch': 'error',
+      'sonarjs/prefer-immediate-return': 'error',
+      'sonarjs/prefer-object-literal': 'error',
+      'sonarjs/prefer-single-boolean-return': 'error',
+      'sonarjs/prefer-while': 'error',
     },
   },
-])
+  {
+    files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', '**/__tests__/**/*'],
+    rules: {
+      'no-magic-numbers': 'off',
+      'max-lines-per-function': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+], storybook.configs["flat/recommended"]);

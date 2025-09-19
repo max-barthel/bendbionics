@@ -2,16 +2,10 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
-from app.auth import (
-    TokenData,
-    create_access_token,
-    create_verification_token,
-    get_current_user,
-    get_password_hash,
-    verify_password,
-    verify_token,
-)
 from fastapi import HTTPException
+
+from app.auth import (TokenData, create_access_token, get_current_user,
+                      get_password_hash, verify_password, verify_token)
 
 
 class TestPasswordHashing:
@@ -94,9 +88,7 @@ class TestJWTTokenFunctions:
     def test_verify_token_expired(self):
         """Test verifying an expired token."""
         data = {"sub": "testuser"}
-        expires_delta = timedelta(
-            seconds=-1
-        )  # Negative expiration = already expired
+        expires_delta = timedelta(seconds=-1)  # Negative expiration = already expired
         token = create_access_token(data, expires_delta)
 
         result = verify_token(token)
@@ -111,20 +103,6 @@ class TestJWTTokenFunctions:
         result = verify_token(token)
 
         assert result is None
-
-    def test_create_verification_token(self):
-        """Test creating email verification token."""
-        email = "test@example.com"
-
-        token = create_verification_token(email)
-
-        assert isinstance(token, str)
-        assert len(token) > 0
-
-        # Verify the token contains the email
-        result = verify_token(token)
-        assert result is not None
-        assert result.username == email
 
 
 class TestAuthenticationFunctions:
@@ -189,8 +167,9 @@ class TestAuthRoutes:
     @pytest.fixture
     def client(self):
         """Create test client."""
-        from app.main import app
         from fastapi.testclient import TestClient
+
+        from app.main import app
 
         return TestClient(app)
 
@@ -219,9 +198,7 @@ class TestAuthRoutes:
 
     def test_login_success(self, client, mock_session):
         """Test successful login."""
-        with patch(
-            "app.api.auth_routes.get_session", return_value=mock_session
-        ):
+        with patch("app.api.auth_routes.get_session", return_value=mock_session):
             # Mock user with correct password
             mock_user = Mock()
             mock_user.id = 1
@@ -232,9 +209,7 @@ class TestAuthRoutes:
             mock_user.hashed_password = get_password_hash("testpassword")
 
             # Mock authenticate_user to return the user
-            with patch(
-                "app.api.auth_routes.authenticate_user", return_value=mock_user
-            ):
+            with patch("app.api.auth_routes.authenticate_user", return_value=mock_user):
                 payload = {"username": "testuser", "password": "testpassword"}
 
                 response = client.post("/auth/login", json=payload)
@@ -248,22 +223,15 @@ class TestAuthRoutes:
 
     def test_login_invalid_credentials(self, client, mock_session):
         """Test login with invalid credentials."""
-        with patch(
-            "app.api.auth_routes.get_session", return_value=mock_session
-        ):
+        with patch("app.api.auth_routes.get_session", return_value=mock_session):
             # Mock authenticate_user to return None
-            with patch(
-                "app.api.auth_routes.authenticate_user", return_value=None
-            ):
+            with patch("app.api.auth_routes.authenticate_user", return_value=None):
                 payload = {"username": "testuser", "password": "wrongpassword"}
 
                 response = client.post("/auth/login", json=payload)
 
                 assert response.status_code == 401
-                assert (
-                    "Incorrect username or password"
-                    in response.json()["detail"]
-                )
+                assert "Incorrect username or password" in response.json()["detail"]
 
     def test_get_current_user_info_success(self, client, mock_session):
         """Test getting current user info with valid token."""
@@ -273,9 +241,7 @@ class TestAuthRoutes:
 
     def test_get_current_user_info_invalid_token(self, client, mock_session):
         """Test getting current user info with invalid token."""
-        with patch(
-            "app.api.auth_routes.get_session", return_value=mock_session
-        ):
+        with patch("app.api.auth_routes.get_session", return_value=mock_session):
             # Mock get_current_user to raise HTTPException for invalid token
             with patch(
                 "app.api.auth_routes.get_current_user",
@@ -299,9 +265,7 @@ class TestAuthRoutes:
     @pytest.mark.skip(reason="Complex SQLAlchemy mocking - needs refactoring")
     def test_delete_account_success(self, client, mock_session):
         """Test successful account deletion."""
-        with patch(
-            "app.api.auth_routes.get_session", return_value=mock_session
-        ):
+        with patch("app.api.auth_routes.get_session", return_value=mock_session):
             # Mock user with proper SQLAlchemy attributes
             mock_user = Mock()
             mock_user.id = 1
@@ -327,9 +291,7 @@ class TestAuthRoutes:
             mock_presets = [mock_preset1, mock_preset2]
 
             # Mock get_current_user to return the user
-            with patch(
-                "app.api.auth_routes.get_current_user", return_value=mock_user
-            ):
+            with patch("app.api.auth_routes.get_current_user", return_value=mock_user):
                 # Mock session.exec to return presets directly
                 mock_exec_result = Mock()
                 mock_exec_result.all.return_value = mock_presets
@@ -351,7 +313,5 @@ class TestAuthRoutes:
                     assert data["message"] == "Account deleted successfully"
 
                     # Verify that presets and user were deleted
-                    assert (
-                        mock_session.delete.call_count == 3
-                    )  # 2 presets + 1 user
+                    assert mock_session.delete.call_count == 3  # 2 presets + 1 user
                     mock_session.commit.assert_called_once()

@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   combineStyles,
   getFloatingLabelStyles,
   getTahoeGlassStyles,
-} from "../../styles/tahoe-utils";
+} from '../../styles/tahoe-utils';
 
-type InputType = "text" | "number" | "email" | "password";
-type InputSize = "sm" | "md" | "lg";
+type InputType = 'text' | 'number' | 'password';
+type InputSize = 'sm' | 'md' | 'lg';
 
 interface InputProps {
   type?: InputType;
@@ -27,8 +27,8 @@ interface InputProps {
 }
 
 function Input({
-  type = "text",
-  size = "md",
+  type = 'text',
+  size = 'md',
   value,
   onChange,
   placeholder,
@@ -36,7 +36,7 @@ function Input({
   id,
   disabled = false,
   error,
-  className = "",
+  className = '',
   onBlur,
   onFocus,
   min,
@@ -44,29 +44,29 @@ function Input({
   step,
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
-  const hasValue = value !== "" && value !== undefined && value !== null;
+  const hasValue = value !== '' && value !== undefined && value !== null;
   const shouldFloat = isFocused || hasValue;
 
   // Base input classes using design system
-  const baseClasses = "text-gray-800 placeholder:text-gray-500 bg-gray-50";
+  const baseClasses = 'text-gray-800 placeholder:text-gray-500 bg-gray-50';
 
   // Tahoe glass styling for the input
   const tahoeGlassClasses = getTahoeGlassStyles(
-    "base", // glass variant
-    "subtle", // shadow variant (subtle for inputs)
-    "full", // border radius
-    "standard", // transition
-    "blue", // focus state (blue for inputs)
-    "subtle" // hover state (subtle for inputs)
+    'base', // glass variant
+    'subtle', // shadow variant (subtle for inputs)
+    'full', // border radius
+    'standard', // transition
+    'blue', // focus state (blue for inputs)
+    'subtle' // hover state (subtle for inputs)
   );
 
   const sizeClasses = {
-    sm: "pl-4 pr-2 py-2 text-sm",
-    md: "px-3 py-2.5 text-sm",
-    lg: "px-4 py-3 text-base",
+    sm: 'pl-4 pr-2 py-2 text-sm',
+    md: 'px-3 py-2.5 text-sm',
+    lg: 'px-4 py-3 text-base',
   };
 
-  const errorClasses = error ? "border-red-400/50 focus:ring-red-400/50" : "";
+  const errorClasses = error ? 'border-red-400/50 focus:ring-red-400/50' : '';
 
   const classes = combineStyles(
     baseClasses,
@@ -78,7 +78,7 @@ function Input({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    if (type === "number") {
+    if (type === 'number') {
       const parsed = parseFloat(val);
       onChange(isNaN(parsed) ? val : parsed);
     } else {
@@ -110,19 +110,19 @@ function Input({
         min={min}
         max={max}
         step={step}
-        className={combineStyles("w-full", classes, label ? "pt-3" : "")}
+        className={combineStyles('w-full', classes, label ? 'pt-3' : '')}
       />
       {label && (
         <label
           htmlFor={id}
           className={combineStyles(
-            "absolute left-3 pointer-events-none transition-all duration-200",
+            'absolute left-3 pointer-events-none transition-all duration-200',
             shouldFloat
               ? combineStyles(
-                  "top-0 transform -translate-y-1/2 text-xs text-gray-600",
+                  'top-0 transform -translate-y-1/2 text-xs text-gray-600',
                   getFloatingLabelStyles(true)
                 )
-              : "top-1/2 transform -translate-y-1/2 text-sm text-gray-600"
+              : 'top-1/2 transform -translate-y-1/2 text-sm text-gray-600'
           )}
         >
           {label}

@@ -1,5 +1,5 @@
 [tool.black]
-line-length = 79
+line-length = 88
 
 [tool.pylsp-mypy]
 enabled = true
@@ -11,7 +11,7 @@ ropeFolder = "backend"
 
 [tool.pylsp-flake8]
 enabled = true
-maxLineLength = 79
+maxLineLength = 88
 
 [tool.pylsp-pylint]
 enabled = true

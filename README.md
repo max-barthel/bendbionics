@@ -19,11 +19,35 @@ A modern desktop application for simulating soft robot kinematics using the Piec
 - **Node.js**: Version 18 or higher
 - **Python**: Version 3.8 or higher
 
-### Development Mode
+### Quick Start
 
-1. **Backend**: `cd backend && pip install -r requirements.txt`
-2. **Frontend**: `cd frontend && npm install`
-3. **Run**: `./dev.sh` (starts backend and Tauri development)
+```bash
+# First time setup
+./setup.sh
+
+# Start development
+./dev.sh
+
+# Build for production
+./build.sh
+```
+
+### Scripts Overview
+
+| Script              | Purpose              | Usage               |
+| ------------------- | -------------------- | ------------------- |
+| `./setup.sh`        | First time setup     | `./setup.sh`        |
+| `./dev.sh`          | Start development    | `./dev.sh`          |
+| `./build.sh`        | Build for production | `./build.sh`        |
+| `./health-check.sh` | Check system health  | `./health-check.sh` |
+| `./toolkit.sh`      | Development tools    | `./toolkit.sh`      |
+
+📖 **Documentation:**
+
+- [SCRIPTS.md](SCRIPTS.md) - Script usage guide
+- [DEVELOPMENT.md](DEVELOPMENT.md) - Development workflows and tools
+- [DEPLOYMENT.md](DEPLOYMENT.md) - CI/CD, monitoring, and production
+- [ISSUE_MANAGEMENT.md](ISSUE_MANAGEMENT.md) - GitHub Issues and project management
 
 ### Production Build
 

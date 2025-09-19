@@ -1,16 +1,16 @@
-import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { type RobotState } from "../../../hooks/useRobotState";
-import { ControlTab } from "../ControlTab";
+import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type RobotState } from '../../../hooks/useRobotState';
+import { ControlTab } from '../ControlTab';
 
 // Mock the components
-vi.mock("../../../shared/components/AngleControlPanel", () => ({
+vi.mock('../../../shared/components/AngleControlPanel', () => ({
   AngleControlPanel: vi.fn(() => (
     <div data-testid="angle-control-panel">Angle Control Panel</div>
   )),
 }));
 
-vi.mock("../../../shared/components/CollapsibleSection", () => ({
+vi.mock('../../../shared/components/CollapsibleSection', () => ({
   CollapsibleSection: vi.fn(({ children, title }) => (
     <div data-testid="collapsible-section">
       <div>{title}</div>
@@ -19,19 +19,19 @@ vi.mock("../../../shared/components/CollapsibleSection", () => ({
   )),
 }));
 
-vi.mock("../../../../components/icons", () => ({
+vi.mock('../../../../components/icons', () => ({
   BendingIcon: vi.fn(() => <div data-testid="bending-icon" />),
   RotationIcon: vi.fn(() => <div data-testid="rotation-icon" />),
   UploadIcon: vi.fn(() => <div data-testid="upload-icon" />),
 }));
 
-vi.mock("../../../../components/ui", () => ({
+vi.mock('../../../../components/ui', () => ({
   Typography: vi.fn(({ children, variant }) => (
     <div data-testid={`typography-${variant}`}>{children}</div>
   )),
 }));
 
-describe("ControlTab", () => {
+describe('ControlTab', () => {
   const mockSetRobotState = vi.fn();
   const mockOnShowPresetManager = vi.fn();
 
@@ -53,74 +53,59 @@ describe("ControlTab", () => {
     vi.clearAllMocks();
   });
 
-  it("renders with default props", () => {
+  it('renders with default props', () => {
     render(
-      <ControlTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <ControlTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getByText("Robot Control")).toBeInTheDocument();
-    expect(screen.getByText("Bending Angles")).toBeInTheDocument();
-    expect(screen.getByText("Rotation Angles")).toBeInTheDocument();
+    expect(screen.getByText('Robot Control')).toBeInTheDocument();
+    expect(screen.getByText('Bending Angles')).toBeInTheDocument();
+    expect(screen.getByText('Rotation Angles')).toBeInTheDocument();
   });
 
-  it("renders with user and preset manager", () => {
+  it('renders with user and preset manager', () => {
     render(
       <ControlTab
-        user={{ name: "Test User" }}
+        user={{ name: 'Test User' }}
         onShowPresetManager={mockOnShowPresetManager}
         robotState={defaultRobotState}
         setRobotState={mockSetRobotState}
       />
     );
 
-    expect(screen.getByText("Robot Control")).toBeInTheDocument();
+    expect(screen.getByText('Robot Control')).toBeInTheDocument();
   });
 
-  it("renders collapsible sections", () => {
+  it('renders collapsible sections', () => {
     render(
-      <ControlTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <ControlTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getAllByTestId("collapsible-section")).toHaveLength(2);
+    expect(screen.getAllByTestId('collapsible-section')).toHaveLength(2);
   });
 
-  it("renders angle control panels", () => {
+  it('renders angle control panels', () => {
     render(
-      <ControlTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <ControlTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getAllByTestId("angle-control-panel")).toHaveLength(2);
+    expect(screen.getAllByTestId('angle-control-panel')).toHaveLength(2);
   });
 
-  it("renders upload icon", () => {
+  it('renders upload icon', () => {
     render(
-      <ControlTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <ControlTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getByTestId("upload-icon")).toBeInTheDocument();
+    expect(screen.getByTestId('upload-icon')).toBeInTheDocument();
   });
 
-  it("renders typography components", () => {
+  it('renders typography components', () => {
     render(
-      <ControlTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <ControlTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getByTestId("typography-h4")).toBeInTheDocument();
-    expect(screen.getByTestId("typography-body")).toBeInTheDocument();
+    expect(screen.getByTestId('typography-h4')).toBeInTheDocument();
+    expect(screen.getByTestId('typography-body')).toBeInTheDocument();
   });
 });

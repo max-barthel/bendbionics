@@ -1,32 +1,22 @@
 from datetime import timedelta
 
-from app.api.responses import (
-    AuthenticationError,
-    ValidationError,
-    created_response,
-    success_response,
-)
-from app.auth import (
-    authenticate_user,
-    create_access_token,
-    get_current_user,
-    get_password_hash,
-    security,
-)
-from app.config import settings
-from app.database import get_session
-from app.models import User, UserCreate, UserLogin, UserResponse
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlmodel import Session, select
+
+from app.api.responses import (AuthenticationError, ValidationError,
+                               created_response, success_response)
+from app.auth import (authenticate_user, create_access_token, get_current_user,
+                      get_password_hash, security)
+from app.config import settings
+from app.database import get_session
+from app.models import User, UserCreate, UserLogin, UserResponse
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
 @router.post("/register")
-async def register(
-    user_data: UserCreate, session: Session = Depends(get_session)
-):
+async def register(user_data: UserCreate, session: Session = Depends(get_session)):
     """Register a new user"""
     # Check if username already exists
     existing_user = session.exec(
@@ -38,24 +28,11 @@ async def register(
             details={"field": "username", "value": user_data.username},
         )
 
-    # Check if email is provided and already exists
-    if user_data.email:
-        existing_email = session.exec(
-            select(User).where(User.email == user_data.email)
-        ).first()
-        if existing_email:
-            raise ValidationError(
-                message="Email already registered",
-                details={"field": "email", "value": user_data.email},
-            )
-
     # Create new user
     hashed_password = get_password_hash(user_data.password)
     user = User(
         username=user_data.username,
-        email=user_data.email,
         hashed_password=hashed_password,
-        is_local=user_data.email is None,  # Local user if no email
     )
 
     session.add(user)
@@ -65,10 +42,7 @@ async def register(
     user_response = UserResponse(
         id=user.id,
         username=user.username,
-        email=user.email,
-        is_local=user.is_local,
         is_active=user.is_active,
-        is_verified=user.is_verified,
         created_at=user.created_at,
     )
 
@@ -85,9 +59,7 @@ async def login(user_data: UserLogin, session: Session = Depends(get_session)):
     if not user:
         raise AuthenticationError("Incorrect username or password")
 
-    access_token_expires = timedelta(
-        minutes=settings.access_token_expire_minutes
-    )
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
@@ -98,8 +70,6 @@ async def login(user_data: UserLogin, session: Session = Depends(get_session)):
         "user": {
             "id": user.id,
             "username": user.username,
-            "email": user.email,
-            "is_local": user.is_local,
             "created_at": user.created_at.isoformat(),
         },
     }
@@ -117,10 +87,7 @@ async def get_current_user_info(
     return UserResponse(
         id=current_user.id,
         username=current_user.username,
-        email=current_user.email,
-        is_local=current_user.is_local,
         is_active=current_user.is_active,
-        is_verified=current_user.is_verified,
         created_at=current_user.created_at,
     )
 

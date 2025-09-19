@@ -1,8 +1,9 @@
 from unittest.mock import patch
 
+from fastapi.testclient import TestClient
+
 from app.api.routes import router
 from app.models.pcc.types import PCCParams
-from fastapi.testclient import TestClient
 
 
 class TestAPIRoutes:

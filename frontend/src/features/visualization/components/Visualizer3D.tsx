@@ -1,11 +1,11 @@
-import { Line, OrbitControls, Sphere } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
-import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { Typography } from "../../../components/ui";
-import TahoeGlass from "../../../components/ui/TahoeGlass";
-import { getTendonColor } from "../../../utils/tendonColors";
-import { TendonResultsPanel } from "./TendonResultsPanel";
+import { Line, OrbitControls, Sphere } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { useMemo, useRef } from 'react';
+import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
+import { Typography } from '../../../components/ui';
+import TahoeGlass from '../../../components/ui/TahoeGlass';
+import { getTendonColor } from '../../../utils/tendonColors';
+import { TendonResultsPanel } from './TendonResultsPanel';
 
 type Visualizer3DProps = {
   segments: number[][][];
@@ -50,7 +50,7 @@ function Visualizer3D({
     return segments
       .map((segment, index) => {
         const points = segment
-          .filter((point) => point.length === 3 && point.every(Number.isFinite))
+          .filter(point => point.length === 3 && point.every(Number.isFinite))
           .map(([x, y, z]) => [x, y, z] as [number, number, number]);
 
         if (points.length < 2) return null;
@@ -59,7 +59,7 @@ function Visualizer3D({
           <Line
             key={index}
             points={points}
-            color={index % 2 === 0 ? "#3b82f6" : "#22c55e"}
+            color={index % 2 === 0 ? '#3b82f6' : '#22c55e'}
             lineWidth={2}
           />
         );
@@ -119,8 +119,7 @@ function Visualizer3D({
         // Get tendon analysis data for this tendon
         const tendonId = i.toString();
         const tendonData = tendonAnalysis.actuation_commands[tendonId];
-        const isActive =
-          tendonData && Math.abs(tendonData.length_change_m) > 0.001;
+        const isActive = tendonData && Math.abs(tendonData.length_change_m) > 0.001;
 
         // Create eyelet sphere
         elements.push(
@@ -130,7 +129,7 @@ function Visualizer3D({
             position={[globalX, globalY, globalZ]}
           >
             <meshStandardMaterial
-              color={isActive ? "#ef4444" : "#6b7280"}
+              color={isActive ? '#ef4444' : '#6b7280'}
               metalness={0.8}
               roughness={0.2}
             />
@@ -145,7 +144,7 @@ function Visualizer3D({
               [globalX, globalY, globalZ],
               [x, y, z + offset],
             ]}
-            color={isActive ? "#dc2626" : "#9ca3af"}
+            color={isActive ? '#dc2626' : '#9ca3af'}
             lineWidth={1}
             dashed={!isActive}
           />
@@ -154,7 +153,7 @@ function Visualizer3D({
     });
 
     // Debug: Log the tendon analysis data structure
-    console.log("Tendon analysis debug:", {
+    console.log('Tendon analysis debug:', {
       hasTendonAnalysis: !!tendonAnalysis,
       tendonAnalysisKeys: tendonAnalysis ? Object.keys(tendonAnalysis) : [],
       routingPoints: tendonAnalysis?.tendon_analysis?.routing_points,
@@ -172,8 +171,7 @@ function Visualizer3D({
           const currentCouplingPos = couplingPositions[couplingIndex];
           const nextCouplingPos = couplingPositions[couplingIndex + 1];
 
-          if (currentCouplingPos.length < 3 || nextCouplingPos.length < 3)
-            continue;
+          if (currentCouplingPos.length < 3 || nextCouplingPos.length < 3) continue;
 
           // Get current eyelet position
           const currentEyelet =
@@ -184,17 +182,16 @@ function Visualizer3D({
 
           // Get next eyelet position
           const nextEyelet =
-            tendonAnalysis.tendon_analysis?.routing_points?.[
-              couplingIndex + 1
-            ]?.[tendonIndex];
+            tendonAnalysis.tendon_analysis?.routing_points?.[couplingIndex + 1]?.[
+              tendonIndex
+            ];
           if (!nextEyelet || nextEyelet.length < 3) continue;
 
           // Check if this tendon is active (has significant length change)
           // Backend uses 1-based indexing, so tendon 0 in frontend = tendon "1" in backend
           const tendonId = (tendonIndex + 1).toString();
           const tendonData = tendonAnalysis.actuation_commands[tendonId];
-          const isActive =
-            tendonData && Math.abs(tendonData.length_change_m) > 0.001;
+          const isActive = tendonData && Math.abs(tendonData.length_change_m) > 0.001;
 
           // Get tendon-specific color - always use the tendon color
           const tendonColor = getTendonColor(tendonId);
@@ -222,7 +219,7 @@ function Visualizer3D({
   const { center, size } = useMemo(() => {
     const allPoints = segments
       .flat()
-      .filter((p) => p.length === 3 && p.every(Number.isFinite));
+      .filter(p => p.length === 3 && p.every(Number.isFinite));
 
     if (allPoints.length === 0) {
       return { center: [0, 0, 0] as [number, number, number], size: 100 };
@@ -239,11 +236,11 @@ function Visualizer3D({
     const minZ = Math.min(...zs);
     const maxZ = Math.max(...zs);
 
-    const center = [
-      (minX + maxX) / 2,
-      (minY + maxY) / 2,
-      (minZ + maxZ) / 2,
-    ] as [number, number, number];
+    const center = [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2] as [
+      number,
+      number,
+      number,
+    ];
 
     const size = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
 
@@ -270,9 +267,7 @@ function Visualizer3D({
   };
 
   const hasData = useMemo(() => {
-    return (
-      segments.length > 0 && segments.some((segment) => segment.length > 0)
-    );
+    return segments.length > 0 && segments.some(segment => segment.length > 0);
   }, [segments]);
 
   return (
@@ -304,19 +299,13 @@ function Visualizer3D({
                     <div className="absolute top-1/2 -left-3 w-1 h-1 bg-blue-300/60 rounded-full animate-bounce [animation-delay:0.5s] [animation-duration:3s]"></div>
                   </div>
                 </div>
-                <Typography
-                  variant="h3"
-                  className="text-gray-800 mb-3 font-semibold"
-                >
+                <Typography variant="h3" className="text-gray-800 mb-3 font-semibold">
                   Ready to Compute
                 </Typography>
-                <Typography
-                  variant="body"
-                  className="text-gray-600 leading-relaxed"
-                >
-                  Configure your robot parameters and click{" "}
-                  <span className="font-medium text-gray-800">Compute</span> to
-                  see the 3D visualization
+                <Typography variant="body" className="text-gray-600 leading-relaxed">
+                  Configure your robot parameters and click{' '}
+                  <span className="font-medium text-gray-800">Compute</span> to see the
+                  3D visualization
                 </Typography>
               </div>
             </TahoeGlass>
@@ -359,7 +348,7 @@ function Visualizer3D({
             <button
               onClick={resetView}
               className={`absolute top-4 px-4 py-2 backdrop-blur-xl text-gray-900 text-sm font-medium border border-blue-400/30 shadow-lg transition-all duration-300 rounded-full hover:scale-105 z-50 bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20 ${
-                sidebarCollapsed ? "left-4" : "left-[calc(384px+16px)]"
+                sidebarCollapsed ? 'left-4' : 'left-[calc(384px+16px)]'
               }`}
             >
               <div className="flex items-center gap-2">

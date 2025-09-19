@@ -1,5 +1,6 @@
-from app.database import get_session
 from sqlmodel import text
+
+from app.database import get_session
 
 
 def test_database_schema():
@@ -14,9 +15,7 @@ def test_database_schema():
 
         print("Database schema for 'user' table:")
         for row in result:
-            print(
-                f"  {row[1]}: {row[2]} (nullable: {row[3]}, default: {row[4]})"
-            )
+            print(f"  {row[1]}: {row[2]} (nullable: {row[3]}, default: {row[4]})")
 
         # Check if is_active column exists
         is_active_exists = any(row[1] == "is_active" for row in result)

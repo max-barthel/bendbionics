@@ -1,4 +1,4 @@
-import { LoadingSpinner, Typography } from "../../../../components/ui";
+import { LoadingSpinner, Typography } from '../../../../components/ui';
 
 interface FormHeaderProps {
   title: string;

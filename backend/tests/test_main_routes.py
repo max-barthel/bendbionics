@@ -2,9 +2,10 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
-from app.api.routes import router
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
+from app.api.routes import router
 
 
 class TestMainRoutes:
@@ -220,9 +221,7 @@ class TestMainRoutes:
         from app.api.routes import _convert_result_to_serializable
 
         # Test data with nested structures
-        result = {
-            "nested_data": {"level1": {"level2": np.array([[1, 2], [3, 4]])}}
-        }
+        result = {"nested_data": {"level1": {"level2": np.array([[1, 2], [3, 4]])}}}
 
         serializable = _convert_result_to_serializable(result)
 

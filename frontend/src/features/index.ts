@@ -7,29 +7,37 @@
 
 // Re-export all items from each feature
 export {
-    ArrayInputGroup, FormTabs,
-    // Robot Configuration
-    RobotForm, SubmitButton, useFormSubmission, useRobotState
+  ArrayInputGroup,
+  FormTabs,
+  // Robot Configuration
+  RobotForm,
+  SubmitButton,
+  useFormSubmission,
+  useRobotState,
 } from './robot-config';
 
 export {
-    TendonConfigPanel,
-    TendonResultsPanel,
-    // Visualization
-    Visualizer3D
+  TendonConfigPanel,
+  TendonResultsPanel,
+  // Visualization
+  Visualizer3D,
 } from './visualization';
 
 export {
-    // Presets
-    PresetManager,
-    useConfigurationLoader
+  // Presets
+  PresetManager,
+  useConfigurationLoader,
 } from './presets';
 
 export {
-    AngleControlPanel, CollapsibleSection,
-    // Shared
-    ErrorBoundary,
-    ErrorDisplay, NumberInput, useErrorHandler, useLocalStorage,
-    useRetryAPI, useUnifiedErrorHandler
+  AngleControlPanel,
+  CollapsibleSection,
+  // Shared
+  ErrorBoundary,
+  ErrorDisplay,
+  NumberInput,
+  useErrorHandler,
+  useLocalStorage,
+  useRetryAPI,
+  useUnifiedErrorHandler,
 } from './shared';
-

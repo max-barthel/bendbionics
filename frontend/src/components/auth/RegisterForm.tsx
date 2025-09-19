@@ -1,52 +1,48 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUnifiedErrorHandler } from "../../features/shared/hooks/useUnifiedErrorHandler";
-import { useAuth } from "../../providers";
-import { Button, Input, Typography } from "../ui";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUnifiedErrorHandler } from '../../features/shared/hooks/useUnifiedErrorHandler';
+import { useAuth } from '../../providers';
+import { Button, Input, Typography } from '../ui';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
 }
 
-export const RegisterForm: React.FC<RegisterFormProps> = ({
-  onSwitchToLogin,
-}) => {
+export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState("");
+  const [success, setSuccess] = useState('');
 
   // Use unified error handler
-  const { error, showError, hideError, handleAuthError } =
-    useUnifiedErrorHandler();
+  const { error, showError, hideError, handleAuthError } = useUnifiedErrorHandler();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     hideError();
-    setSuccess("");
+    setSuccess('');
 
     // Validate passwords match
     if (password !== confirmPassword) {
-      showError("validation", "Passwords do not match");
+      showError('validation', 'Passwords do not match');
       return;
     }
 
     // Validate password strength
     if (password.length < 8) {
-      showError("validation", "Password must be at least 8 characters long");
+      showError('validation', 'Password must be at least 8 characters long');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      await register({ username, password, email: email || undefined });
-      setSuccess("Registration successful! You can now save your settings.");
-    } catch (err: any) {
+      await register({ username, password });
+      setSuccess('Registration successful! You can now save your settings.');
+    } catch (err: unknown) {
       // Use unified error handler for consistent error handling
       handleAuthError(err);
     } finally {
@@ -95,7 +91,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             <div className="mt-3">
               <Button
                 variant="outline"
-                onClick={() => navigate("/")}
+                onClick={() => navigate('/')}
                 className="w-full"
               >
                 Continue to App
@@ -119,26 +115,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             placeholder="Choose a username"
             className="w-full"
           />
-        </div>
-
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Email (Optional)
-          </label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(value: string | number) => setEmail(String(value))}
-            placeholder="Enter your email (optional)"
-            className="w-full"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Optional - for cloud sync across devices
-          </p>
         </div>
 
         <div>
@@ -172,9 +148,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             id="confirmPassword"
             type="password"
             value={confirmPassword}
-            onChange={(value: string | number) =>
-              setConfirmPassword(String(value))
-            }
+            onChange={(value: string | number) => setConfirmPassword(String(value))}
             placeholder="Confirm your password"
             className="w-full"
           />
@@ -187,13 +161,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
           disabled={isLoading}
         >
-          {isLoading ? "Creating account..." : "Create Account"}
+          {isLoading ? 'Creating account...' : 'Create Account'}
         </Button>
       </form>
 
       <div className="mt-6 text-center">
         <Typography variant="body" color="gray" className="text-gray-600">
-          Already have an account?{" "}
+          Already have an account?{' '}
           <button
             onClick={onSwitchToLogin}
             className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"

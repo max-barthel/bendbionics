@@ -1,5 +1,5 @@
-import React from "react";
-import { TahoeNumberInput } from "./TahoeNumberInput";
+import React from 'react';
+import { TahoeNumberInput } from './TahoeNumberInput';
 
 interface NumberInputProps {
   value: number;
@@ -11,8 +11,8 @@ interface NumberInputProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
-  size?: "sm" | "md" | "lg";
-  "data-testid"?: string;
+  size?: 'sm' | 'md' | 'lg';
+  'data-testid'?: string;
 }
 
 const NumberInput: React.FC<NumberInputProps> = ({
@@ -23,10 +23,10 @@ const NumberInput: React.FC<NumberInputProps> = ({
   step = 1,
   precision = 3,
   placeholder,
-  className = "",
+  className = '',
   disabled = false,
-  size = "md",
-  "data-testid": dataTestId,
+  size = 'md',
+  'data-testid': dataTestId,
 }) => {
   return (
     <TahoeNumberInput

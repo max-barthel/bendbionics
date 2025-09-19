@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUnifiedErrorHandler } from "../../features/shared/hooks/useUnifiedErrorHandler";
-import { useAuth } from "../../providers";
-import { Button, Input, Typography } from "../ui";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUnifiedErrorHandler } from '../../features/shared/hooks/useUnifiedErrorHandler';
+import { useAuth } from '../../providers';
+import { Button, Input, Typography } from '../ui';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
@@ -11,13 +11,12 @@ interface LoginFormProps {
 export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   // Use unified error handler
-  const { error, showError, hideError, handleAuthError } =
-    useUnifiedErrorHandler();
+  const { error, hideError, handleAuthError } = useUnifiedErrorHandler();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,8 +26,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     try {
       await login({ username, password });
       // Redirect to main app after successful login
-      navigate("/");
-    } catch (err: any) {
+      navigate('/');
+    } catch (err: unknown) {
       // Use unified error handler for consistent error handling
       handleAuthError(err);
     } finally {
@@ -112,13 +111,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
           className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
           disabled={isLoading}
         >
-          {isLoading ? "Signing in..." : "Sign In"}
+          {isLoading ? 'Signing in...' : 'Sign In'}
         </Button>
       </form>
 
       <div className="mt-6 text-center">
         <Typography variant="body" color="gray" className="text-gray-600">
-          Don't have an account?{" "}
+          Don't have an account?{' '}
           <button
             onClick={onSwitchToRegister}
             className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"

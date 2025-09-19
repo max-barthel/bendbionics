@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { combineStyles, getTahoeGlassStyles } from "../../styles/tahoe-utils";
+import React, { useEffect, useState } from 'react';
+import { combineStyles, getTahoeGlassStyles } from '../../styles/tahoe-utils';
 
 interface TahoeNumberInputProps {
   value: number;
@@ -11,8 +11,8 @@ interface TahoeNumberInputProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
-  size?: "sm" | "md" | "lg";
-  "data-testid"?: string;
+  size?: 'sm' | 'md' | 'lg';
+  'data-testid'?: string;
 }
 
 export function TahoeNumberInput({
@@ -20,13 +20,12 @@ export function TahoeNumberInput({
   onChange,
   min,
   max,
-  step = 1,
   precision = 3,
   placeholder,
-  className = "",
+  className = '',
   disabled = false,
-  size = "md",
-  "data-testid": dataTestId,
+  size = 'md',
+  'data-testid': dataTestId,
 }: TahoeNumberInputProps) {
   const [inputValue, setInputValue] = useState(value.toString());
   const [isFocused, setIsFocused] = useState(false);
@@ -43,7 +42,7 @@ export function TahoeNumberInput({
     setInputValue(newValue);
 
     // Allow empty input for better UX
-    if (newValue === "" || newValue === "-") {
+    if (newValue === '' || newValue === '-') {
       return;
     }
 
@@ -75,7 +74,7 @@ export function TahoeNumberInput({
   const handleBlur = () => {
     setIsFocused(false);
     // Only reset if the input value is empty or invalid
-    if (inputValue === "" || inputValue === "-") {
+    if (inputValue === '' || inputValue === '-') {
       setInputValue(value.toString());
     }
   };
@@ -85,34 +84,34 @@ export function TahoeNumberInput({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.currentTarget.blur();
     }
   };
 
   const sizeClasses = {
-    sm: "px-4 py-2 text-xs",
-    md: "px-5 py-2.5 text-sm",
-    lg: "px-6 py-3 text-base",
+    sm: 'px-4 py-2 text-xs',
+    md: 'px-5 py-2.5 text-sm',
+    lg: 'px-6 py-3 text-base',
   };
 
   // Get Tahoe glass styling
   const tahoeGlassClasses = getTahoeGlassStyles(
-    "subtle", // glass variant (subtle for number inputs)
-    "subtle", // shadow variant
-    "full", // border radius
-    "standard", // transition
-    "blue", // focus state
-    "subtle" // hover state (subtle for inputs)
+    'subtle', // glass variant (subtle for number inputs)
+    'subtle', // shadow variant
+    'full', // border radius
+    'standard', // transition
+    'blue', // focus state
+    'subtle' // hover state (subtle for inputs)
   );
 
   return (
-    <div className={combineStyles("relative group", className)}>
+    <div className={combineStyles('relative group', className)}>
       <div
         className={combineStyles(
-          "relative transition-all duration-300 ease-out",
+          'relative transition-all duration-300 ease-out',
           tahoeGlassClasses,
-          disabled ? "opacity-50 cursor-not-allowed" : ""
+          disabled ? 'opacity-50 cursor-not-allowed' : ''
         )}
       >
         <input
@@ -128,7 +127,7 @@ export function TahoeNumberInput({
           className={`w-full bg-transparent border-0 outline-none text-gray-900 placeholder-gray-500/70 font-medium pr-4 transition-all duration-300 ${
             sizeClasses[size]
           } [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${
-            isFocused ? "placeholder-gray-400/60" : ""
+            isFocused ? 'placeholder-gray-400/60' : ''
           }`}
         />
 
@@ -136,8 +135,8 @@ export function TahoeNumberInput({
         <div
           className={`absolute inset-0 rounded-full pointer-events-none transition-all duration-500 ${
             isFocused
-              ? "bg-gradient-to-br from-white/15 via-white/8 to-white/3 shadow-inner"
-              : "bg-gradient-to-br from-white/12 via-white/6 to-white/2 shadow-inner"
+              ? 'bg-gradient-to-br from-white/15 via-white/8 to-white/3 shadow-inner'
+              : 'bg-gradient-to-br from-white/12 via-white/6 to-white/2 shadow-inner'
           }`}
         />
 
@@ -149,7 +148,7 @@ export function TahoeNumberInput({
         {/* Micro-interaction feedback */}
         <div
           className={`absolute inset-0 rounded-full pointer-events-none transition-all duration-200 ${
-            isFocused ? "bg-gradient-to-r from-blue-500/5 to-indigo-500/5" : ""
+            isFocused ? 'bg-gradient-to-r from-blue-500/5 to-indigo-500/5' : ''
           }`}
         />
       </div>
@@ -158,14 +157,14 @@ export function TahoeNumberInput({
       {isFocused && placeholder && (
         <div
           className={combineStyles(
-            "absolute -top-3 left-3 px-2 text-xs font-medium text-gray-700 transition-all duration-300",
+            'absolute -top-3 left-3 px-2 text-xs font-medium text-gray-700 transition-all duration-300',
             getTahoeGlassStyles(
-              "base",
-              "subtle",
-              "medium",
-              "standard",
-              "white",
-              "glass",
+              'base',
+              'subtle',
+              'medium',
+              'standard',
+              'white',
+              'glass',
               false
             )
           )}

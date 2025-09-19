@@ -1,11 +1,8 @@
 import numpy as np
-from app.utils.cache import (
-    create_params_hash,
-    get_cached_result,
-    cache_result,
-    clear_cache,
-)
+
 from app.models.pcc.types import PCCParams
+from app.utils.cache import (cache_result, clear_cache, create_params_hash,
+                             get_cached_result)
 
 
 class TestCacheFunctions:
@@ -84,9 +81,7 @@ class TestCacheFunctions:
         cached = get_cached_result(params)
         assert cached is not None
         assert len(cached) == len(result)
-        assert all(
-            np.array_equal(cached[i], result[i]) for i in range(len(result))
-        )
+        assert all(np.array_equal(cached[i], result[i]) for i in range(len(result)))
 
     def test_cache_result_different_params(self):
         """Test that different parameters don't interfere with each other."""
@@ -155,7 +150,9 @@ class TestCacheFunctions:
                 coupling_lengths=[0.03, 0.03, 0.03, 0.015],
                 discretization_steps=10,
             )
-            result = [np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])]
+            result = [
+                np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+            ]
             cache_result(params, result)
 
         # The cache should not exceed 100 entries

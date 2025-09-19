@@ -1,6 +1,6 @@
-import React, { useRef } from "react";
-import { ChevronDownIcon } from "../../../components/icons";
-import { Typography } from "../../../components/ui";
+import React, { useRef } from 'react';
+import { ChevronDownIcon } from '../../../components/icons';
+import { Typography } from '../../../components/ui';
 
 interface CollapsibleSectionProps {
   title: string;
@@ -37,20 +37,20 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
         </Typography>
         <ChevronDownIcon
           className={`w-4 h-4 text-gray-500 transition-transform duration-700 ease-out ${
-            isOpen ? "rotate-180" : ""
+            isOpen ? 'rotate-180' : ''
           }`}
         />
       </button>
 
       <div
         className={`overflow-hidden transition-all duration-300 ease-out ${
-          isOpen ? "max-h-[2000px]" : "max-h-0"
+          isOpen ? 'max-h-[2000px]' : 'max-h-0'
         }`}
       >
         <div
           ref={contentRef}
           className={`pl-8 pr-4 pb-8 space-y-4 transition-all duration-300 ease-out ${
-            isOpen ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
+            isOpen ? 'translate-y-0 opacity-100' : '-translate-y-1 opacity-0'
           }`}
         >
           {children}
