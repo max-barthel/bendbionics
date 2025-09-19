@@ -8,7 +8,6 @@ A FastAPI-based backend for soft robot simulation and control.
 - **Tendon System**: Advanced tendon routing and length calculations
 - **Caching**: Intelligent caching for performance optimization
 - **Authentication**: JWT-based user authentication
-- **Email Verification**: Optional email verification system
 - **Preset Management**: Save and load robot configurations
 - **Comprehensive Testing**: Full test suite with 82 test cases
 

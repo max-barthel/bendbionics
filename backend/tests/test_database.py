@@ -1,9 +1,10 @@
 import json
 
 import pytest
+from sqlmodel import Session
+
 from app.database import create_db_and_tables, get_session
 from app.models import Preset, User
-from sqlmodel import Session
 
 
 class TestDatabaseFunctions:

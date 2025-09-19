@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Input } from "../../../components/ui";
+import { useEffect, useState } from 'react';
+import { Input } from '../../../components/ui';
 
 type NumberInputProps = {
   value: number;
@@ -23,12 +23,12 @@ function NumberInput({
   // Sync external value with internal string
   useEffect(() => {
     if (value !== parseFloat(internalValue)) {
-      setInternalValue(isNaN(value) ? "" : value.toString());
+      setInternalValue(isNaN(value) ? '' : value.toString());
     }
-  }, [value]);
+  }, [value, internalValue]);
 
   const handleChange = (newValue: string | number) => {
-    if (typeof newValue === "string") {
+    if (typeof newValue === 'string') {
       setInternalValue(newValue);
       const parsed = parseFloat(newValue);
       if (!isNaN(parsed)) {

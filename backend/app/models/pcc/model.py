@@ -1,12 +1,11 @@
 from typing import List
 
 import numpy as np
+
 from app.utils.cache import cache_result, get_cached_result
 
-from .transformations import (
-    transformation_matrix_backbone,
-    transformation_matrix_coupling,
-)
+from .transformations import (transformation_matrix_backbone,
+                              transformation_matrix_coupling)
 from .types import PCCParams
 
 
@@ -36,9 +35,7 @@ def compute_pcc(params: PCCParams) -> List[np.ndarray]:
     # Initial coupling
     T_coupling = transformation_matrix_coupling(coupling_lengths[0])
     T = T @ T_coupling
-    T_all.append(
-        np.array([T_start[:3, 3], T[:3, 3]])
-    )  # first coupling segment
+    T_all.append(np.array([T_start[:3, 3], T[:3, 3]]))  # first coupling segment
 
     for i, (theta, phi, l_bb, l_coup) in enumerate(
         zip(

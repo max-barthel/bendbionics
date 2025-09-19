@@ -14,11 +14,18 @@ export { default as NumberInput } from './components/NumberInput';
 
 // Hooks
 export { useErrorHandler } from './hooks/useErrorHandler';
-export { useLocalPresets, useLocalStorage, useRobotSettings } from './hooks/useLocalStorage';
+export {
+  useLocalPresets,
+  useLocalStorage,
+  useRobotSettings,
+} from './hooks/useLocalStorage';
 export { useRetryAPI } from './hooks/useRetryAPI';
 export { useUnifiedErrorHandler } from './hooks/useUnifiedErrorHandler';
 
 // Re-export types from hooks
 export type { RetryOptions } from './hooks/useRetryAPI';
-export type { ErrorState, ErrorType, UseUnifiedErrorHandlerOptions } from './hooks/useUnifiedErrorHandler';
-
+export type {
+  ErrorState,
+  ErrorType,
+  UseUnifiedErrorHandlerOptions,
+} from './hooks/useUnifiedErrorHandler';

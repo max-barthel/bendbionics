@@ -6,8 +6,8 @@ interface ProgressIndicatorProps {
 
 function ProgressIndicator({
   progress,
-  message = "Processing...",
-  className = "",
+  message = 'Processing...',
+  className = '',
 }: ProgressIndicatorProps) {
   return (
     <div className={`w-full ${className}`}>

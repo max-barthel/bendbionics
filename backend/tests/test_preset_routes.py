@@ -2,12 +2,13 @@ import json
 from unittest.mock import Mock, patch
 
 import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
 from app.api.preset_routes import router
 from app.auth import get_current_user
 from app.database import get_session
 from app.models.preset import Preset
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
 
 
 class TestPresetRoutes:
@@ -29,9 +30,7 @@ class TestPresetRoutes:
     )
     @patch("app.api.preset_routes.get_session")
     @patch("app.api.preset_routes.get_current_user")
-    def test_create_preset_success(
-        self, mock_get_current_user, mock_get_session
-    ):
+    def test_create_preset_success(self, mock_get_current_user, mock_get_session):
         """Test successful preset creation."""
         # Mock user
         mock_user = Mock()
@@ -81,9 +80,7 @@ class TestPresetRoutes:
     )
     @patch("app.api.preset_routes.get_session")
     @patch("app.api.preset_routes.get_current_user")
-    def test_get_user_presets_success(
-        self, mock_get_current_user, mock_get_session
-    ):
+    def test_get_user_presets_success(self, mock_get_current_user, mock_get_session):
         """Test successful retrieval of user presets."""
         # Mock user
         mock_user = Mock()
@@ -135,9 +132,7 @@ class TestPresetRoutes:
     )
     @patch("app.api.preset_routes.get_session")
     @patch("app.api.preset_routes.get_current_user")
-    def test_get_preset_by_id_success(
-        self, mock_get_current_user, mock_get_session
-    ):
+    def test_get_preset_by_id_success(self, mock_get_current_user, mock_get_session):
         """Test successful retrieval of preset by ID."""
         # Mock user
         mock_user = Mock()
@@ -175,9 +170,7 @@ class TestPresetRoutes:
     )
     @patch("app.api.preset_routes.get_session")
     @patch("app.api.preset_routes.get_current_user")
-    def test_get_preset_by_id_not_found(
-        self, mock_get_current_user, mock_get_session
-    ):
+    def test_get_preset_by_id_not_found(self, mock_get_current_user, mock_get_session):
         """Test preset not found by ID."""
         # Mock user
         mock_user = Mock()
@@ -204,9 +197,7 @@ class TestPresetRoutes:
     )
     @patch("app.api.preset_routes.get_session")
     @patch("app.api.preset_routes.get_current_user")
-    def test_update_preset_success(
-        self, mock_get_current_user, mock_get_session
-    ):
+    def test_update_preset_success(self, mock_get_current_user, mock_get_session):
         """Test successful preset update."""
         # Mock user
         mock_user = Mock()
@@ -255,9 +246,7 @@ class TestPresetRoutes:
     )
     @patch("app.api.preset_routes.get_session")
     @patch("app.api.preset_routes.get_current_user")
-    def test_delete_preset_success(
-        self, mock_get_current_user, mock_get_session
-    ):
+    def test_delete_preset_success(self, mock_get_current_user, mock_get_session):
         """Test successful preset deletion."""
         # Mock user
         mock_user = Mock()
@@ -288,9 +277,7 @@ class TestPresetRoutes:
     )
     @patch("app.api.preset_routes.get_session")
     @patch("app.api.preset_routes.get_current_user")
-    def test_get_public_presets_success(
-        self, mock_get_current_user, mock_get_session
-    ):
+    def test_get_public_presets_success(self, mock_get_current_user, mock_get_session):
         """Test successful retrieval of public presets."""
         # Mock user
         mock_user = Mock()
@@ -329,9 +316,7 @@ class TestPresetRoutes:
     )
     @patch("app.api.preset_routes.get_session")
     @patch("app.api.preset_routes.get_current_user")
-    def test_duplicate_preset_name(
-        self, mock_get_current_user, mock_get_session
-    ):
+    def test_duplicate_preset_name(self, mock_get_current_user, mock_get_session):
         """Test error when creating preset with duplicate name."""
         # Mock user
         mock_user = Mock()
@@ -344,9 +329,7 @@ class TestPresetRoutes:
 
         # Mock existing preset with same name
         mock_existing_preset = Mock()
-        mock_session.exec.return_value.first.return_value = (
-            mock_existing_preset
-        )
+        mock_session.exec.return_value.first.return_value = mock_existing_preset
 
         # Test data
         preset_data = {
@@ -371,9 +354,7 @@ class TestPresetRoutes:
     )
     @patch("app.api.preset_routes.get_session")
     @patch("app.api.preset_routes.get_current_user")
-    def test_update_nonexistent_preset(
-        self, mock_get_current_user, mock_get_session
-    ):
+    def test_update_nonexistent_preset(self, mock_get_current_user, mock_get_session):
         """Test error when updating non-existent preset."""
         # Mock user
         mock_user = Mock()
@@ -410,9 +391,7 @@ class TestPresetRoutes:
     )
     @patch("app.api.preset_routes.get_session")
     @patch("app.api.preset_routes.get_current_user")
-    def test_delete_nonexistent_preset(
-        self, mock_get_current_user, mock_get_session
-    ):
+    def test_delete_nonexistent_preset(self, mock_get_current_user, mock_get_session):
         """Test error when deleting non-existent preset."""
         # Mock user
         mock_user = Mock()

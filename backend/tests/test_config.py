@@ -2,8 +2,9 @@ import os
 from unittest.mock import patch
 
 import pytest
-from app.config import LogLevel, Settings
 from pydantic import ValidationError
+
+from app.config import LogLevel, Settings
 
 
 class TestLogLevel:
@@ -116,9 +117,7 @@ class TestSettings:
     def test_cors_origins_validation_empty_string(self):
         """Test that empty string CORS origins raises an error."""
         with patch.dict(os.environ, {"CORS_ORIGINS": "[]"}):
-            with pytest.raises(
-                ValueError, match="CORS origins cannot be empty"
-            ):
+            with pytest.raises(ValueError, match="CORS origins cannot be empty"):
                 Settings()
 
     def test_cors_origins_validation_whitespace_only(self):

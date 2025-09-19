@@ -1,27 +1,21 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   AdvancedIcon,
   LightningIcon,
   RobotIcon,
   TendonIcon,
   UploadIcon,
-} from "../../../../components/icons";
-import {
-  SliderInput,
-  SubsectionTitle,
-  Typography,
-} from "../../../../components/ui";
-import { CollapsibleSection } from "../../../shared/components/CollapsibleSection";
-import { TendonConfigPanel } from "../../../visualization/components/TendonConfigPanel";
-import { type RobotState } from "../../hooks/useRobotState";
-import ArrayInputGroup from "../ArrayInputGroup";
+} from '../../../../components/icons';
+import { SliderInput, SubsectionTitle, Typography } from '../../../../components/ui';
+import { CollapsibleSection } from '../../../shared/components/CollapsibleSection';
+import { TendonConfigPanel } from '../../../visualization/components/TendonConfigPanel';
+import { type RobotState } from '../../hooks/useRobotState';
+import ArrayInputGroup from '../ArrayInputGroup';
 
 interface RobotSetupTabProps {
   onShowPresetManager?: () => void;
   robotState: RobotState;
-  setRobotState: (
-    state: RobotState | ((prev: RobotState) => RobotState)
-  ) => void;
+  setRobotState: (state: RobotState | ((prev: RobotState) => RobotState)) => void;
 }
 
 export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
@@ -35,7 +29,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
   const [showTendonSettings, setShowTendonSettings] = useState(true);
 
   const updateRobotState = (updates: Partial<RobotState>) => {
-    setRobotState((prev) => ({ ...prev, ...updates }));
+    setRobotState(prev => ({ ...prev, ...updates }));
   };
 
   return (
@@ -107,9 +101,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
             <ArrayInputGroup
               label=""
               values={robotState.backboneLengths}
-              onChange={(backboneLengths) =>
-                updateRobotState({ backboneLengths })
-              }
+              onChange={backboneLengths => updateRobotState({ backboneLengths })}
               mode="length"
             />
           </div>
@@ -125,9 +117,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
             <ArrayInputGroup
               label=""
               values={robotState.couplingLengths}
-              onChange={(couplingLengths) =>
-                updateRobotState({ couplingLengths })
-              }
+              onChange={couplingLengths => updateRobotState({ couplingLengths })}
               mode="length"
             />
           </div>
@@ -150,7 +140,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
               coupling_offset: 0.0,
             }
           }
-          onConfigChange={(tendonConfig) => updateRobotState({ tendonConfig })}
+          onConfigChange={tendonConfig => updateRobotState({ tendonConfig })}
         />
       </CollapsibleSection>
 

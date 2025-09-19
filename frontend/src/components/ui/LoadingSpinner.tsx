@@ -1,24 +1,24 @@
 interface LoadingSpinnerProps {
-  size?: "sm" | "md" | "lg";
-  color?: "primary" | "white" | "gray";
+  size?: 'sm' | 'md' | 'lg';
+  color?: 'primary' | 'white' | 'gray';
   className?: string;
 }
 
 function LoadingSpinner({
-  size = "md",
-  color = "primary",
-  className = "",
+  size = 'md',
+  color = 'primary',
+  className = '',
 }: LoadingSpinnerProps) {
   const sizeClasses = {
-    sm: "w-4 h-4",
-    md: "w-6 h-6",
-    lg: "w-8 h-8",
+    sm: 'w-4 h-4',
+    md: 'w-6 h-6',
+    lg: 'w-8 h-8',
   };
 
   const colorClasses = {
-    primary: "text-blue-600",
-    white: "text-white",
-    gray: "text-gray-400",
+    primary: 'text-blue-600',
+    white: 'text-white',
+    gray: 'text-gray-400',
   };
 
   return (

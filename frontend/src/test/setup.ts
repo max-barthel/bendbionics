@@ -1,8 +1,7 @@
-import '@testing-library/jest-dom'
-import { vi } from 'vitest'
+import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 // Disable console.log during tests to prevent hanging
-const originalConsoleLog = console.log;
 console.log = vi.fn();
 
 // Mock Tauri API
@@ -12,7 +11,7 @@ global.__TAURI__ = {
     listen: vi.fn(),
     emit: vi.fn(),
   },
-} as any
+} as unknown;
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -27,18 +26,18 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
-})
+});
 
 // Mock ResizeObserver
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-}))
+}));
 
 // Mock IntersectionObserver
 global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
-}))
+}));

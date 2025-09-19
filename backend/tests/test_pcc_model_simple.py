@@ -1,6 +1,7 @@
 """Simple tests for PCC model to increase coverage."""
 
 import pytest
+
 from app.models.pcc.pcc_model import PCCRobotModel
 from app.models.pcc.types import PCCParams
 

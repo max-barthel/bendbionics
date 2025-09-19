@@ -1,5 +1,5 @@
-import { Typography } from "../../../components/ui";
-import { getTendonColorClasses } from "../../../utils/tendonColors";
+import { Typography } from '../../../components/ui';
+import { getTendonColorClasses } from '../../../utils/tendonColors';
 
 type TendonResultsPanelProps = {
   tendonAnalysis?: {
@@ -30,32 +30,15 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
 }) => {
   const formatLengthChange = (change: number) => {
     const mm = change * 1000; // Convert to mm
-    const sign = change > 0 ? "+" : "";
+    const sign = change > 0 ? '+' : '';
     return `${sign}${mm.toFixed(2)} mm`;
-  };
-
-  const getLengthChangeColor = (change: number) => {
-    if (change > 0) return "text-green-600";
-    if (change < 0) return "text-red-600";
-    return "text-gray-600";
-  };
-
-  const getLengthChangeBadgeVariant = (change: number) => {
-    if (change > 0) return "success" as const;
-    if (change < 0) return "error" as const;
-    return "secondary" as const;
   };
 
   const getPullDirectionIcon = (lengthChange: number) => {
     if (lengthChange < 0) {
       // Pull (negative) - downward arrow
       return (
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -67,12 +50,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     } else if (lengthChange > 0) {
       // Release (positive) - upward arrow
       return (
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -84,12 +62,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     } else {
       // Hold (zero) - horizontal line
       return (
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -127,9 +100,6 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
 
   const tendonEntries = Object.entries(tendonAnalysis.actuation_commands);
   const totalTendons = tendonEntries.length;
-  const activeTendons = tendonEntries.filter(
-    ([, data]) => Math.abs(data.length_change_m) > 0.001
-  ).length;
 
   // Calculate dynamic height based on number of tendons
   // Each tendon card is ~80px tall, plus padding and close button space
@@ -139,12 +109,9 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
   const firstTendonEntry = tendonEntries[0];
   const firstTendonId = firstTendonEntry?.[0];
   const firstTendonData = firstTendonEntry?.[1];
-  const firstTendonIsActive = firstTendonData
-    ? Math.abs(firstTendonData.length_change_m) > 0.001
-    : false;
   const firstTendonColorClasses = firstTendonId
     ? getTendonColorClasses(firstTendonId)
-    : { bg: "bg-gray-400" };
+    : { bg: 'bg-gray-400' };
 
   return (
     <>
@@ -167,23 +134,18 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                   className={`w-3 h-3 rounded-full ${firstTendonColorClasses.bg} border border-white/30`}
                   title={`Color identifier for Tendon ${firstTendonId}`}
                 />
-                <Typography
-                  variant="label"
-                  color="primary"
-                  className="font-semibold"
-                >
+                <Typography variant="label" color="primary" className="font-semibold">
                   Tendon {firstTendonId}
                 </Typography>
               </div>
               <div className="flex-1 flex justify-center">
                 <div
                   className={`px-3 py-1 rounded-full backdrop-blur-xl border shadow-lg relative ${
-                    firstTendonData.pull_direction.toLowerCase() === "pull"
-                      ? "border-red-400/30 bg-gradient-to-br from-red-500/25 to-red-600/25 shadow-red-500/20"
-                      : firstTendonData.pull_direction.toLowerCase() ===
-                        "release"
-                      ? "border-green-400/30 bg-gradient-to-br from-green-500/25 to-green-600/25 shadow-green-500/20"
-                      : "border-white/20 bg-gradient-to-br from-white/15 to-white/5 shadow-black/10"
+                    firstTendonData.pull_direction.toLowerCase() === 'pull'
+                      ? 'border-red-400/30 bg-gradient-to-br from-red-500/25 to-red-600/25 shadow-red-500/20'
+                      : firstTendonData.pull_direction.toLowerCase() === 'release'
+                        ? 'border-green-400/30 bg-gradient-to-br from-green-500/25 to-green-600/25 shadow-green-500/20'
+                        : 'border-white/20 bg-gradient-to-br from-white/15 to-white/5 shadow-black/10'
                   }`}
                 >
                   <span className="text-sm font-medium text-gray-900">
@@ -208,7 +170,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
         className={`fixed bottom-0 right-0 w-96 transition-all duration-500 ease-in-out z-40 ${
           isVisible
             ? `${dynamicHeightClass} translate-y-0 opacity-100`
-            : "h-0 translate-y-full opacity-0"
+            : 'h-0 translate-y-full opacity-0'
         }`}
       >
         <div className="w-96 h-full relative">
@@ -241,7 +203,6 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                 {/* Tendon Details */}
                 <div className="space-y-3 pb-4">
                   {tendonEntries.map(([tendonId, data]) => {
-                    const isActive = Math.abs(data.length_change_m) > 0.001;
                     const colorClasses = getTendonColorClasses(tendonId);
 
                     return (
@@ -267,10 +228,10 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                             <div
                               className={`px-3 py-1 rounded-full backdrop-blur-xl border shadow-lg relative ${
                                 data.length_change_m < 0
-                                  ? "border-red-400/30 bg-gradient-to-br from-red-500/25 to-red-600/25 shadow-red-500/20"
+                                  ? 'border-red-400/30 bg-gradient-to-br from-red-500/25 to-red-600/25 shadow-red-500/20'
                                   : data.length_change_m > 0
-                                  ? "border-green-400/30 bg-gradient-to-br from-green-500/25 to-green-600/25 shadow-green-500/20"
-                                  : "border-yellow-400/30 bg-gradient-to-br from-yellow-500/25 to-yellow-600/25 shadow-yellow-500/20"
+                                    ? 'border-green-400/30 bg-gradient-to-br from-green-500/25 to-green-600/25 shadow-green-500/20'
+                                    : 'border-yellow-400/30 bg-gradient-to-br from-yellow-500/25 to-yellow-600/25 shadow-yellow-500/20'
                               }`}
                             >
                               <span className="text-sm font-medium text-gray-900">
@@ -280,11 +241,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Typography
-                              variant="body"
-                              color="gray"
-                              className="text-sm"
-                            >
+                            <Typography variant="body" color="gray" className="text-sm">
                               {data.pull_direction}
                             </Typography>
                             {getPullDirectionIcon(data.length_change_m)}

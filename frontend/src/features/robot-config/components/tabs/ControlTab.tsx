@@ -1,25 +1,18 @@
-import React, { useState } from "react";
-import {
-  BendingIcon,
-  RotationIcon,
-  UploadIcon,
-} from "../../../../components/icons";
-import { Typography } from "../../../../components/ui";
-import { AngleControlPanel } from "../../../shared/components/AngleControlPanel";
-import { CollapsibleSection } from "../../../shared/components/CollapsibleSection";
-import { type RobotState } from "../../hooks/useRobotState";
+import React, { useState } from 'react';
+import { BendingIcon, RotationIcon, UploadIcon } from '../../../../components/icons';
+import { Typography } from '../../../../components/ui';
+import { AngleControlPanel } from '../../../shared/components/AngleControlPanel';
+import { CollapsibleSection } from '../../../shared/components/CollapsibleSection';
+import { type RobotState } from '../../hooks/useRobotState';
 
 interface ControlTabProps {
-  user?: any;
+  user?: { username: string };
   onShowPresetManager?: () => void;
   robotState: RobotState;
-  setRobotState: (
-    state: RobotState | ((prev: RobotState) => RobotState)
-  ) => void;
+  setRobotState: (state: RobotState | ((prev: RobotState) => RobotState)) => void;
 }
 
 export const ControlTab: React.FC<ControlTabProps> = ({
-  user,
   onShowPresetManager,
   robotState,
   setRobotState,
@@ -28,7 +21,7 @@ export const ControlTab: React.FC<ControlTabProps> = ({
   const [showRotationSettings, setShowRotationSettings] = useState(true);
 
   const updateRobotState = (updates: Partial<RobotState>) => {
-    setRobotState((prev) => {
+    setRobotState(prev => {
       const newState = { ...prev, ...updates };
       return newState;
     });
@@ -66,7 +59,7 @@ export const ControlTab: React.FC<ControlTabProps> = ({
       >
         <AngleControlPanel
           values={robotState.bendingAngles}
-          onChange={(bendingAngles) => updateRobotState({ bendingAngles })}
+          onChange={bendingAngles => updateRobotState({ bendingAngles })}
           label="Bending Angles"
           mode="bending"
           icon={<BendingIcon className="w-4 h-4 text-white" />}
@@ -85,7 +78,7 @@ export const ControlTab: React.FC<ControlTabProps> = ({
       >
         <AngleControlPanel
           values={robotState.rotationAngles}
-          onChange={(rotationAngles) => updateRobotState({ rotationAngles })}
+          onChange={rotationAngles => updateRobotState({ rotationAngles })}
           label="Rotation Angles"
           mode="rotation"
           icon={<RotationIcon className="w-4 h-4 text-white" />}

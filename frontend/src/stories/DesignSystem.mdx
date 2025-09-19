@@ -1,0 +1,309 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Design System/Overview" />
+
+# Soft Robot App Design System
+
+Welcome to the Soft Robot App Design System! This comprehensive guide provides everything you need to understand and implement our design language consistently across the application.
+
+## 🎨 Design Philosophy
+
+Our design system is built around the **macOS Tahoe 26** aesthetic with **frosted glass** as the signature style. We prioritize:
+
+- **Clarity**: Clean, uncluttered interfaces that focus on functionality
+- **Consistency**: Unified visual language across all components
+- **Accessibility**: Inclusive design that works for everyone
+- **Performance**: Lightweight, optimized components
+- **Developer Experience**: Easy-to-use, well-documented components
+
+## 🏗️ Architecture
+
+### Component Hierarchy
+
+```
+Design System
+├── Foundations
+│   ├── Colors
+│   ├── Typography
+│   ├── Spacing
+│   └── Shadows
+├── Components
+│   ├── UI Components
+│   ├── Layout Components
+│   └── Feature Components
+└── Patterns
+    ├── Forms
+    ├── Navigation
+    └── Data Display
+```
+
+### Technology Stack
+
+- **React**: Component library
+- **TypeScript**: Type safety
+- **Tailwind CSS**: Styling framework
+- **Storybook**: Documentation and testing
+- **Vitest**: Component testing
+
+## 🎯 Core Principles
+
+### 1. Tahoe Glass Aesthetic
+
+All components use our signature frosted glass styling:
+
+- **Background**: Semi-transparent with backdrop blur
+- **Borders**: Subtle, refined borders
+- **Shadows**: Soft, layered shadows for depth
+- **Transitions**: Smooth, natural animations
+
+### 2. Accessibility First
+
+Every component is built with accessibility in mind:
+
+- **Keyboard Navigation**: Full keyboard support
+- **Screen Readers**: Proper ARIA labels and semantic HTML
+- **Color Contrast**: WCAG AA compliant
+- **Focus Management**: Clear focus indicators
+
+### 3. Responsive Design
+
+Components adapt seamlessly across devices:
+
+- **Mobile First**: Designed for mobile, enhanced for desktop
+- **Flexible Layouts**: Components that work at any size
+- **Touch Friendly**: Appropriate touch targets
+- **Performance**: Optimized for all devices
+
+## 📚 Component Categories
+
+### UI Components
+
+Basic building blocks for user interfaces:
+
+- **Button**: Interactive elements with multiple variants
+- **Input**: Form controls with floating labels
+- **Card**: Content containers with consistent styling
+- **Badge**: Status indicators and labels
+- **Alert**: Notifications and feedback messages
+
+### Layout Components
+
+Structural elements for page organization:
+
+- **Container**: Content width management
+- **Grid**: Responsive layout system
+- **Stack**: Vertical and horizontal spacing
+- **Divider**: Visual separation elements
+
+### Feature Components
+
+Specialized components for specific functionality:
+
+- **Navigation**: Menu and routing components
+- **Data Display**: Tables, lists, and charts
+- **Forms**: Complete form layouts
+- **Modals**: Overlay dialogs and popups
+
+## 🎨 Visual Guidelines
+
+### Color Palette
+
+Our color system is designed for clarity and accessibility:
+
+#### Primary Colors
+
+- **Blue**: Primary actions and branding
+- **Green**: Success states and confirmations
+- **Red**: Errors and destructive actions
+- **Yellow**: Warnings and attention
+
+#### Neutral Colors
+
+- **Gray Scale**: Text, borders, and backgrounds
+- **White**: Clean backgrounds and contrast
+- **Black**: High contrast text and emphasis
+
+### Typography
+
+Clear, readable typography hierarchy:
+
+- **Headings**: Bold, structured hierarchy
+- **Body Text**: Optimized for readability
+- **Code**: Monospace for technical content
+- **Captions**: Subtle supporting text
+
+### Spacing
+
+Consistent spacing system based on 4px grid:
+
+- **xs**: 4px
+- **sm**: 8px
+- **md**: 16px
+- **lg**: 24px
+- **xl**: 32px
+- **2xl**: 48px
+
+## 🛠️ Usage Guidelines
+
+### Getting Started
+
+1. **Import Components**: Use named imports for better tree-shaking
+2. **Follow Patterns**: Use established patterns for consistency
+3. **Test Thoroughly**: Test across devices and browsers
+4. **Document Changes**: Update stories when modifying components
+
+### Best Practices
+
+#### Component Usage
+
+```tsx
+// ✅ Good: Use semantic props
+<Button variant="primary" size="md" onClick={handleClick}>
+  Save Changes
+</Button>
+
+// ❌ Avoid: Inline styles
+<button style={{ backgroundColor: 'blue' }}>Save</button>
+```
+
+#### Accessibility
+
+```tsx
+// ✅ Good: Proper labeling
+<Input
+  label="Email Address"
+  aria-describedby="email-help"
+  error="Please enter a valid email"
+/>
+
+// ❌ Avoid: Missing labels
+<input type="email" placeholder="Email" />
+```
+
+#### Performance
+
+```tsx
+// ✅ Good: Memoized components
+const MemoizedButton = React.memo(Button);
+
+// ✅ Good: Lazy loading
+const LazyModal = React.lazy(() => import('./Modal'));
+```
+
+## 🧪 Testing
+
+### Component Testing
+
+Every component includes comprehensive tests:
+
+- **Unit Tests**: Individual component behavior
+- **Integration Tests**: Component interactions
+- **Visual Tests**: Screenshot comparisons
+- **Accessibility Tests**: A11y compliance
+
+### Storybook Testing
+
+Use Storybook for:
+
+- **Visual Testing**: Component appearance
+- **Interaction Testing**: User interactions
+- **Accessibility Testing**: A11y addon
+- **Performance Testing**: Bundle analysis
+
+## 📖 Documentation
+
+### Story Structure
+
+Each component story includes:
+
+- **Overview**: Component purpose and usage
+- **Examples**: Common use cases
+- **Variants**: Different styles and states
+- **Accessibility**: A11y features and testing
+- **API**: Props and configuration options
+
+### Writing Stories
+
+```tsx
+// Component story structure
+export default {
+  title: 'UI/Button',
+  component: Button,
+  parameters: {
+    docs: {
+      description: {
+        component: 'A versatile button component...',
+      },
+    },
+  },
+  argTypes: {
+    variant: {
+      control: { type: 'select' },
+      options: ['primary', 'secondary'],
+    },
+  },
+} as Meta<typeof Button>;
+```
+
+## 🚀 Getting Started
+
+### Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Start Storybook
+npm run storybook
+
+# Run tests
+npm run test
+
+# Build for production
+npm run build
+```
+
+### Development Workflow
+
+1. **Create Component**: Build component with TypeScript
+2. **Write Stories**: Document component in Storybook
+3. **Add Tests**: Write comprehensive tests
+4. **Review**: Code review and accessibility check
+5. **Deploy**: Merge and deploy to production
+
+## 🤝 Contributing
+
+### Guidelines
+
+- **Follow Patterns**: Use established component patterns
+- **Write Tests**: Include tests for new features
+- **Update Docs**: Keep Storybook stories current
+- **Accessibility**: Ensure A11y compliance
+- **Performance**: Optimize for bundle size
+
+### Code Standards
+
+- **TypeScript**: Strict type checking enabled
+- **ESLint**: Follow configured linting rules
+- **Prettier**: Consistent code formatting
+- **Conventional Commits**: Standardized commit messages
+
+## 📞 Support
+
+### Resources
+
+- **Storybook**: Component documentation and testing
+- **GitHub**: Issue tracking and contributions
+- **Discord**: Community support and discussions
+- **Documentation**: Comprehensive guides and tutorials
+
+### Getting Help
+
+1. **Check Storybook**: Look for existing examples
+2. **Search Issues**: Check GitHub for known problems
+3. **Ask Community**: Post in Discord for help
+4. **Create Issue**: Report bugs or request features
+
+---
+
+_This design system is continuously evolving. Check back regularly for updates and new components._

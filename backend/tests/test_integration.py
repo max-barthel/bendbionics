@@ -1,8 +1,9 @@
 import time
 
+from fastapi.testclient import TestClient
+
 from app.main import app
 from app.utils.cache import clear_cache
-from fastapi.testclient import TestClient
 
 
 class TestFullAPIWorkflow:
@@ -136,9 +137,7 @@ class TestFullAPIWorkflow:
 
         for test_case in test_cases:
             response = self.client.post("/pcc", json=test_case["payload"])
-            assert (
-                response.status_code == 200
-            ), f"Failed for {test_case['name']}"
+            assert response.status_code == 200, f"Failed for {test_case['name']}"
             data = response.json()
             assert "segments" in data, f"Failed for {test_case['name']}"
             assert len(data["segments"]) > 0, f"Failed for {test_case['name']}"
@@ -252,9 +251,7 @@ class TestFullAPIWorkflow:
             response = self.client.post("/pcc", json=test_case["payload"])
             execution_time = time.time() - start_time
 
-            assert (
-                response.status_code == 200
-            ), f"Failed for {test_case['name']}"
+            assert response.status_code == 200, f"Failed for {test_case['name']}"
             assert (
                 execution_time < test_case["max_time"]
             ), f"Failed for {test_case['name']}"
@@ -409,9 +406,7 @@ class TestFullAPIWorkflow:
 
         for test_case in edge_cases:
             response = self.client.post("/pcc", json=test_case["payload"])
-            assert (
-                response.status_code == 200
-            ), f"Failed for {test_case['name']}"
+            assert response.status_code == 200, f"Failed for {test_case['name']}"
             data = response.json()
             assert "segments" in data, f"Failed for {test_case['name']}"
             assert len(data["segments"]) > 0, f"Failed for {test_case['name']}"

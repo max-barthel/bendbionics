@@ -1,20 +1,322 @@
 {
-  "python.testing.pytestEnabled": true,
-  "python.testing.unittestEnabled": false,
-  "python.testing.nosetestsEnabled": false,
-  "python.testing.pytestArgs": ["tests"],
+  "editor.rulers": [88],
+  "editor.wordWrap": "bounded",
+  "editor.wordWrapColumn": 88,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.suggestSelection": "first",
+  "editor.acceptSuggestionOnEnter": "on",
+  "editor.tabCompletion": "on",
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": true
+  },
+  "editor.parameterHints.enabled": true,
+  "editor.hover.delay": 300,
+  "editor.minimap.enabled": true,
+  "editor.minimap.showSlider": "always",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "files.autoSave": "onFocusChange",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/target": true,
+    "**/__pycache__": true,
+    "**/htmlcov": true,
+    "**/.git": true
+  },
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/htmlcov": true,
+    "**/target": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.suggest.includeCompletionsForImportStatements": true
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.suggest.includeCompletionsForImportStatements": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
   "python.defaultInterpreterPath": "./backend/.venv/bin/python",
-  "python.testing.cwd": "${workspaceFolder}/backend",
-  "python.testing.autoTestDiscoverOnSaveEnabled": true,
-  "vitest.enable": true,
-  "vitest.commandLine": "npm run test",
-  "vitest.include": [
-    "frontend/src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"
+  "python.terminal.activateEnvironment": true,
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.formatting.provider": "black",
+  "python.sortImports.args": ["--profile", "black"],
+  "tailwindCSS.includeLanguages": {
+    "typescript": "typescript",
+    "typescriptreact": "typescriptreact"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
-  "vitest.workspaceRoot": "frontend",
+
+  // Enhanced Productivity Settings
+  "workbench.startupEditor": "newUntitledFile",
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "workbench.editor.closeOnFileDelete": true,
+  "workbench.editor.decorations.badges": true,
+  "workbench.editor.decorations.colors": true,
+  "workbench.editor.showTabs": "multiple",
+  "workbench.editor.tabSizing": "shrink",
+  "workbench.editor.wrapTabs": true,
+  "workbench.editor.scrollToSwitchTabs": true,
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.editor.labelFormat": "short",
+  "workbench.editor.restoreViewState": true,
+  "workbench.editor.limit.enabled": true,
+  "workbench.editor.limit.value": 10,
+  "workbench.editor.limit.perEditorGroup": true,
+
+  // File Explorer
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.compactFolders": false,
+  "explorer.incrementalNaming": "smart",
+  "explorer.openEditors.visible": 0,
+  "explorer.sortOrder": "type",
+  "explorer.autoReveal": true,
+  "explorer.autoRevealExclude": {
+    "**/node_modules": true,
+    "**/target": true,
+    "**/__pycache__": true
+  },
+
+  // Search
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/target": true,
+    "**/__pycache__": true,
+    "**/htmlcov": true,
+    "**/.git": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/.next": true,
+    "**/storybook-static": true
+  },
+  "search.useGlobalIgnoreFiles": true,
+  "search.useIgnoreFiles": true,
+  "search.smartCase": true,
+  "search.followSymlinks": false,
+  "search.showLineNumbers": true,
+  "search.collapseResults": "auto",
+  "search.maxResults": 20000,
+
+  // Terminal
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.profiles.osx": {
+    "zsh": {
+      "path": "/bin/zsh",
+      "args": ["-l"]
+    }
+  },
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.fontFamily": "Monaco, 'Courier New', monospace",
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.cursorStyle": "line",
+  "terminal.integrated.scrollback": 10000,
+  "terminal.integrated.confirmOnExit": "hasChildProcesses",
+  "terminal.integrated.enableMultiLinePasteWarning": false,
+  "terminal.integrated.rightClickBehavior": "paste",
+  "terminal.integrated.copyOnSelection": true,
+  "terminal.integrated.shellIntegration.enabled": true,
+
+  // Git
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "git.autofetch": true,
+  "git.autofetchPeriod": 180,
+  "git.autoStash": true,
+  "git.allowCommitSigning": true,
+  "git.allowNoVerifyCommit": false,
+  "git.autoRepositoryDetection": true,
+  "git.detectSubmodules": true,
+  "git.detectSubmodulesLimit": 10,
+  "git.enableCommitSigning": false,
+  "git.ignoreLimitWarning": true,
+  "git.ignoreSubmodules": false,
+  "git.mergeEditor": true,
+  "git.mergeConflictOnEnter": "ask",
+  "git.openRepositoryInParentFolders": "always",
+  "git.postCommitCommand": "none",
+  "git.pruneOnFetch": false,
+  "git.pullBeforeCheckout": false,
+  "git.pullBeforePush": true,
+  "git.rebaseWhenSync": false,
+  "git.revertDialog": true,
+  "git.scmProviders": ["git"],
+  "git.showActionButton": {
+    "commit": true,
+    "publish": true,
+    "sync": true
+  },
+  "git.showProgress": true,
+  "git.suggestSmartCommit": true,
+  "git.supportCancellation": true,
+  "git.terminalAuthentication": false,
+  "git.useCommitInputAsStashMessage": false,
+  "git.verboseCommit": false,
+
+  // Debugging
+  "debug.allowBreakpointsEverywhere": true,
+  "debug.autoExpandGetters": false,
+  "debug.console.acceptSuggestionOnEnter": "on",
+  "debug.console.fontSize": 14,
+  "debug.console.lineHeight": 22,
+  "debug.console.wordWrap": true,
+  "debug.enableAllHovers": false,
+  "debug.focusEditorOnBreak": true,
+  "debug.inlineValues": "auto",
+  "debug.openDebug": "openOnDebugBreak",
+  "debug.openExplorerOnEnd": false,
+  "debug.showBreakpointsInOverviewRuler": true,
+  "debug.showInlineBreakpointCandidates": true,
+  "debug.showSubSessionsInToolBar": false,
+  "debug.terminal.clearBeforeReusing": true,
+  "debug.terminal.focusOnExit": "never",
+
+  // Testing
   "testing.automaticallyOpenPeekView": "never",
+  "testing.defaultGutterClickAction": "run",
   "testing.followRunningTest": true,
   "testing.gutterEnabled": true,
-  "testing.openTesting": "openExplorer",
-  "testing.automaticallyOpenTestResults": "openExplorer"
+  "testing.openTesting": "neverOpen",
+  "testing.saveBeforeTest": true,
+
+  // Breadcrumbs
+  "breadcrumbs.enabled": true,
+  "breadcrumbs.showFiles": true,
+  "breadcrumbs.showSymbols": true,
+  "breadcrumbs.showClasses": true,
+  "breadcrumbs.showMethods": true,
+  "breadcrumbs.showFunctions": true,
+  "breadcrumbs.showConstructors": true,
+  "breadcrumbs.showFields": true,
+  "breadcrumbs.showVariables": true,
+  "breadcrumbs.showConstants": true,
+  "breadcrumbs.showEnums": true,
+  "breadcrumbs.showEnumMembers": true,
+  "breadcrumbs.showEvents": true,
+  "breadcrumbs.showOperators": true,
+  "breadcrumbs.showModules": true,
+  "breadcrumbs.showNamespaces": true,
+  "breadcrumbs.showPackages": true,
+  "breadcrumbs.showProperties": true,
+  "breadcrumbs.showStructs": true,
+  "breadcrumbs.showTypeParameters": true,
+  "breadcrumbs.showInterfaces": true,
+  "breadcrumbs.showKeys": true,
+  "breadcrumbs.showValues": true,
+  "breadcrumbs.showColors": true,
+  "breadcrumbs.showStrings": true,
+  "breadcrumbs.showRegularExpressions": true,
+  "breadcrumbs.showNumbers": true,
+  "breadcrumbs.showBooleans": true,
+  "breadcrumbs.showArrays": true,
+  "breadcrumbs.showObjects": true,
+  "breadcrumbs.showKeys": true,
+  "breadcrumbs.showValues": true,
+  "breadcrumbs.showColors": true,
+  "breadcrumbs.showStrings": true,
+  "breadcrumbs.showRegularExpressions": true,
+  "breadcrumbs.showNumbers": true,
+  "breadcrumbs.showBooleans": true,
+  "breadcrumbs.showArrays": true,
+  "breadcrumbs.showObjects": true,
+
+  // Minimap
+  "editor.minimap.enabled": true,
+  "editor.minimap.showSlider": "always",
+  "editor.minimap.renderCharacters": true,
+  "editor.minimap.maxColumn": 120,
+  "editor.minimap.size": "proportional",
+  "editor.minimap.scale": 1,
+
+  // Problems Panel
+  "problems.decorations.enabled": true,
+  "problems.showCurrentInStatus": true,
+  "problems.sortOrder": "severity",
+
+  // Output Panel
+  "output.smartScroll.enabled": true,
+
+  // Welcome Page
+  "workbench.welcome.enabled": true,
+  "workbench.welcome.experimental.dynamic": true,
+
+  // Telemetry
+  "telemetry.telemetryLevel": "off",
+  "redhat.telemetry.enabled": false,
+
+  // Update
+  "update.mode": "start",
+  "update.showReleaseNotes": "onUpdate",
+
+  // Workbench
+  "workbench.productIconTheme": "Default",
+  "workbench.sideBar.location": "left",
+  "workbench.panel.defaultLocation": "bottom",
+  "workbench.activityBar.location": "default",
+  "workbench.statusBar.visible": true,
+  "workbench.activityBar.visible": true,
+  "workbench.sideBar.visible": true,
+  "workbench.panel.opensMaximized": "never",
+  "workbench.editor.showIcons": true,
+  "workbench.editor.tabCloseButton": "right",
+  "workbench.editor.tabSizing": "shrink",
+  "workbench.editor.wrapTabs": true,
+  "workbench.editor.scrollToSwitchTabs": true,
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.editor.labelFormat": "short",
+  "workbench.editor.restoreViewState": true,
+  "workbench.editor.limit.enabled": true,
+  "workbench.editor.limit.value": 10,
+  "workbench.editor.limit.perEditorGroup": true,
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "workbench.editor.closeOnFileDelete": true,
+  "workbench.editor.decorations.badges": true,
+  "workbench.editor.decorations.colors": true,
+  "workbench.editor.showTabs": "multiple",
+  "workbench.editor.tabSizing": "shrink",
+  "workbench.editor.wrapTabs": true,
+  "workbench.editor.scrollToSwitchTabs": true,
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.editor.labelFormat": "short",
+  "workbench.editor.restoreViewState": true,
+  "workbench.editor.limit.enabled": true,
+  "workbench.editor.limit.value": 10,
+  "workbench.editor.limit.perEditorGroup": true
 }

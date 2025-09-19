@@ -1,12 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  LoadingSpinner,
-  Typography,
-  UnitSelector,
-} from "../../../components/ui";
-import NumberInput from "../../shared/components/NumberInput";
+import { useEffect, useRef, useState } from 'react';
+import { LoadingSpinner, Typography, UnitSelector } from '../../../components/ui';
+import NumberInput from '../../shared/components/NumberInput';
 
-type UnitMode = "angle" | "length";
+type UnitMode = 'angle' | 'length';
 
 type ArrayInputGroupProps = {
   label: string;
@@ -19,12 +15,12 @@ function ArrayInputGroup({
   label,
   values,
   onChange,
-  mode = "angle",
+  mode = 'angle',
 }: ArrayInputGroupProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const timeoutRef = useRef<number | null>(null);
-  const angleUnits = ["deg", "rad"] as const;
-  const lengthUnits = ["mm", "cm", "m"] as const;
+  const angleUnits = ['deg', 'rad'] as const;
+  const lengthUnits = ['mm', 'cm', 'm'] as const;
 
   const angleConversion = {
     deg: {
@@ -52,19 +48,19 @@ function ArrayInputGroup({
     },
   };
 
-  const unitOptions = mode === "angle" ? angleUnits : lengthUnits;
-  const defaultUnit = mode === "angle" ? "deg" : "mm";
+  const unitOptions = mode === 'angle' ? angleUnits : lengthUnits;
+  const defaultUnit = mode === 'angle' ? 'deg' : 'mm';
   const [unit, setUnit] = useState<(typeof unitOptions)[number]>(defaultUnit);
 
   const convertToSI = (v: number) =>
-    mode === "angle"
-      ? angleConversion[unit as "deg" | "rad"].toSI(v)
-      : lengthConversion[unit as "mm" | "cm" | "m"].toSI(v);
+    mode === 'angle'
+      ? angleConversion[unit as 'deg' | 'rad'].toSI(v)
+      : lengthConversion[unit as 'mm' | 'cm' | 'm'].toSI(v);
 
   const convertFromSI = (v: number) =>
-    mode === "angle"
-      ? angleConversion[unit as "deg" | "rad"].fromSI(v)
-      : lengthConversion[unit as "mm" | "cm" | "m"].fromSI(v);
+    mode === 'angle'
+      ? angleConversion[unit as 'deg' | 'rad'].fromSI(v)
+      : lengthConversion[unit as 'mm' | 'cm' | 'm'].fromSI(v);
 
   const handleValueChange = (index: number, newDisplayValue: number) => {
     setIsUpdating(true);
@@ -123,7 +119,7 @@ function ArrayInputGroup({
           <NumberInput
             key={idx}
             value={Number(convertFromSI(val).toFixed(4))} // Rounded for UI
-            onChange={(value) => handleValueChange(idx, value)}
+            onChange={value => handleValueChange(idx, value)}
             placeholder={`#${idx + 1}`}
             data-testid={`number-input-${idx + 1}`}
           />

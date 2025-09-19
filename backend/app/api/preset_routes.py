@@ -1,12 +1,13 @@
 import json
 
+from fastapi import APIRouter, Depends
+from fastapi.security import HTTPAuthorizationCredentials
+from sqlmodel import Session, select
+
 from app.api.responses import NotFoundError, created_response, success_response
 from app.auth import get_current_user, security
 from app.database import get_session
 from app.models import Preset, PresetCreate, PresetResponse, PresetUpdate
-from fastapi import APIRouter, Depends
-from fastapi.security import HTTPAuthorizationCredentials
-from sqlmodel import Session, select
 
 router = APIRouter(prefix="/presets", tags=["presets"])
 
@@ -83,9 +84,7 @@ async def get_user_presets(
 @router.get("/public")
 async def get_public_presets(session: Session = Depends(get_session)):
     """Get all public presets"""
-    presets = session.exec(
-        select(Preset).where(Preset.is_public.is_(True))
-    ).all()
+    presets = session.exec(select(Preset).where(Preset.is_public.is_(True))).all()
 
     preset_responses = [
         PresetResponse(
@@ -118,10 +117,7 @@ async def get_preset(
     preset = session.exec(
         select(Preset).where(
             (Preset.id == preset_id)
-            & (
-                (Preset.user_id == current_user.id)
-                | Preset.is_public.is_(True)
-            )
+            & ((Preset.user_id == current_user.id) | Preset.is_public.is_(True))
         )
     ).first()
 

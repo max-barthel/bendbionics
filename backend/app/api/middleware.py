@@ -9,20 +9,18 @@ import traceback
 import uuid
 from typing import Callable
 
-from app.api.responses import APIException, error_response
-from app.utils.logging import logger
 from fastapi import HTTPException, Request, Response
-
 # JSONResponse imported in responses.py
 from starlette.middleware.base import BaseHTTPMiddleware
+
+from app.api.responses import APIException, error_response
+from app.utils.logging import logger
 
 
 class RequestIDMiddleware(BaseHTTPMiddleware):
     """Middleware to add unique request IDs to all requests."""
 
-    async def dispatch(
-        self, request: Request, call_next: Callable
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # Generate unique request ID
         request_id = str(uuid.uuid4())
         request.state.request_id = request_id
@@ -37,9 +35,7 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
 class ErrorHandlingMiddleware(BaseHTTPMiddleware):
     """Middleware for unified error handling across all endpoints."""
 
-    async def dispatch(
-        self, request: Request, call_next: Callable
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         try:
             response = await call_next(request)
             return response
@@ -105,9 +101,7 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
 class LoggingMiddleware(BaseHTTPMiddleware):
     """Middleware for request/response logging."""
 
-    async def dispatch(
-        self, request: Request, call_next: Callable
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # Log request
         logger.info(
             f"Request: {request.method} {request.url.path}",
@@ -129,9 +123,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             extra={
                 "request_id": getattr(request.state, "request_id", None),
                 "status_code": response.status_code,
-                "response_size": response.headers.get(
-                    "content-length", "unknown"
-                ),
+                "response_size": response.headers.get("content-length", "unknown"),
             },
         )
 
@@ -159,9 +151,7 @@ class CORSMiddleware(BaseHTTPMiddleware):
         ]
         self.allow_headers = allow_headers or ["*"]
 
-    async def dispatch(
-        self, request: Request, call_next: Callable
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # Handle preflight requests
         if request.method == "OPTIONS":
             response = Response()
@@ -181,14 +171,8 @@ class CORSMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
 
         # Add CORS headers to response
-        response.headers["Access-Control-Allow-Origin"] = ", ".join(
-            self.allow_origins
-        )
-        response.headers["Access-Control-Allow-Methods"] = ", ".join(
-            self.allow_methods
-        )
-        response.headers["Access-Control-Allow-Headers"] = ", ".join(
-            self.allow_headers
-        )
+        response.headers["Access-Control-Allow-Origin"] = ", ".join(self.allow_origins)
+        response.headers["Access-Control-Allow-Methods"] = ", ".join(self.allow_methods)
+        response.headers["Access-Control-Allow-Headers"] = ", ".join(self.allow_headers)
 
         return response

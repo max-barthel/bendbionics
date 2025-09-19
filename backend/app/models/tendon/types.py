@@ -19,9 +19,7 @@ class TendonConfig(BaseModel):
         if v < 3:
             raise ValueError("Must have at least 3 tendons for stability")
         if v > 12:
-            raise ValueError(
-                "Tendon count cannot exceed 12 for practical reasons"
-            )
+            raise ValueError("Tendon count cannot exceed 12 for practical reasons")
         return v
 
     @field_validator("radius")

@@ -1,50 +1,62 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import App from "../App";
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import App from '../App';
 
 // Mock the lazy-loaded Visualizer3D component
-vi.mock("../components/Visualizer3D", () => ({
+vi.mock('../components/Visualizer3D', () => ({
   default: vi.fn(() => <div data-testid="visualizer-3d">3D Visualizer</div>),
 }));
 
 // Mock the AuthProvider and useAuth hook
-vi.mock("../providers", () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
+vi.mock('../providers', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   useAuth: vi.fn(),
 }));
 
 // Mock the FormTabs component
-vi.mock("../components/FormTabs", () => ({
+vi.mock('../components/FormTabs', () => ({
   default: vi.fn(({ onResult, user, onLoadPreset, navigate }) => (
     <div data-testid="form-tabs">
-      <button onClick={() => onResult([[1, 2, 3]], { test: "config" })}>
+      <button onClick={() => onResult([[1, 2, 3]], { test: 'config' })}>
         Submit Form
       </button>
-      <button onClick={() => onLoadPreset({ preset: "test" })}>
-        Load Preset
-      </button>
-      <button onClick={() => navigate("/auth")}>Navigate to Auth</button>
+      <button onClick={() => onLoadPreset({ preset: 'test' })}>Load Preset</button>
+      <button onClick={() => navigate('/auth')}>Navigate to Auth</button>
       {user ? <span>User: {user.username}</span> : <span>No user</span>}
     </div>
   )),
 }));
 
 // Mock the AuthPage component
-vi.mock("../components/auth/AuthPage", () => ({
+vi.mock('../components/auth/AuthPage', () => ({
   AuthPage: () => <div data-testid="auth-page">Auth Page</div>,
 }));
 
 // Mock the UI components
-vi.mock("../components/ui", () => ({
-  LoadingSpinner: ({ size, color, className }: any) => (
+vi.mock('../components/ui', () => ({
+  LoadingSpinner: ({
+    size,
+    color,
+    className,
+  }: {
+    size?: string;
+    color?: string;
+    className?: string;
+  }) => (
     <div data-testid="loading-spinner" className={className}>
       Loading Spinner ({size}, {color})
     </div>
   ),
-  Typography: ({ variant, children, className }: any) => (
+  Typography: ({
+    variant,
+    children,
+    className,
+  }: {
+    variant?: string;
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
     <div data-testid={`typography-${variant}`} className={className}>
       {children}
     </div>
@@ -53,10 +65,16 @@ vi.mock("../components/ui", () => ({
     children,
     onClick,
     disabled,
-    loading,
     className,
     ...props
-  }: any) => (
+  }: {
+    children?: React.ReactNode;
+    onClick?: () => void;
+    disabled?: boolean;
+    loading?: boolean;
+    className?: string;
+    [key: string]: unknown;
+  }) => (
     <button
       data-testid="button"
       onClick={onClick}
@@ -67,22 +85,54 @@ vi.mock("../components/ui", () => ({
       {children}
     </button>
   ),
-  Alert: ({ children, variant, className }: any) => (
+  Alert: ({
+    children,
+    variant,
+    className,
+  }: {
+    children?: React.ReactNode;
+    variant?: string;
+    className?: string;
+  }) => (
     <div data-testid={`alert-${variant}`} className={className}>
       {children}
     </div>
   ),
-  Badge: ({ children, variant, className }: any) => (
+  Badge: ({
+    children,
+    variant,
+    className,
+  }: {
+    children?: React.ReactNode;
+    variant?: string;
+    className?: string;
+  }) => (
     <span data-testid={`badge-${variant}`} className={className}>
       {children}
     </span>
   ),
-  Card: ({ children, className }: any) => (
+  Card: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
     <div data-testid="card" className={className}>
       {children}
     </div>
   ),
-  Input: ({ placeholder, value, onChange, className }: any) => (
+  Input: ({
+    placeholder,
+    value,
+    onChange,
+    className,
+  }: {
+    placeholder?: string;
+    value?: string;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    className?: string;
+  }) => (
     <input
       data-testid="input"
       placeholder={placeholder}
@@ -91,17 +141,25 @@ vi.mock("../components/ui", () => ({
       className={className}
     />
   ),
-  LoadingOverlay: ({ children, isLoading, className }: any) => (
+  LoadingOverlay: ({
+    children,
+    isLoading,
+    className,
+  }: {
+    children?: React.ReactNode;
+    isLoading?: boolean;
+    className?: string;
+  }) => (
     <div data-testid="loading-overlay" className={className}>
-      {isLoading ? "Loading..." : children}
+      {isLoading ? 'Loading...' : children}
     </div>
   ),
-  Notification: ({ children, variant, className }: any) => (
+  Notification: ({ children, variant, className }: { [key: string]: unknown }) => (
     <div data-testid={`notification-${variant}`} className={className}>
       {children}
     </div>
   ),
-  NumberInput: ({ value, onChange, className }: any) => (
+  NumberInput: ({ value, onChange, className }: { [key: string]: unknown }) => (
     <input
       data-testid="number-input"
       type="number"
@@ -111,17 +169,17 @@ vi.mock("../components/ui", () => ({
       aria-label="Number input"
     />
   ),
-  ProgressIndicator: ({ value, max, className }: any) => (
+  ProgressIndicator: ({ value, max, className }: { [key: string]: unknown }) => (
     <div data-testid="progress-indicator" className={className}>
       Progress: {value}/{max}
     </div>
   ),
-  SkeletonLoader: ({ className }: any) => (
+  SkeletonLoader: ({ className }: { [key: string]: unknown }) => (
     <div data-testid="skeleton-loader" className={className}>
       Loading...
     </div>
   ),
-  SliderInput: ({ value, onChange, className }: any) => (
+  SliderInput: ({ value, onChange, className }: { [key: string]: unknown }) => (
     <input
       data-testid="slider-input"
       type="range"
@@ -131,42 +189,42 @@ vi.mock("../components/ui", () => ({
       aria-label="Slider input"
     />
   ),
-  Table: ({ children, className }: any) => (
+  Table: ({ children, className }: { [key: string]: unknown }) => (
     <table data-testid="table" className={className}>
       {children}
     </table>
   ),
-  TableBody: ({ children, className }: any) => (
+  TableBody: ({ children, className }: { [key: string]: unknown }) => (
     <tbody data-testid="table-body" className={className}>
       {children}
     </tbody>
   ),
-  TableCell: ({ children, className }: any) => (
+  TableCell: ({ children, className }: { [key: string]: unknown }) => (
     <td data-testid="table-cell" className={className}>
       {children}
     </td>
   ),
-  TableHead: ({ children, className }: any) => (
+  TableHead: ({ children, className }: { [key: string]: unknown }) => (
     <thead data-testid="table-head" className={className}>
       {children}
     </thead>
   ),
-  TableHeader: ({ children, className }: any) => (
+  TableHeader: ({ children, className }: { [key: string]: unknown }) => (
     <th data-testid="table-header" className={className}>
       {children}
     </th>
   ),
-  TableRow: ({ children, className }: any) => (
+  TableRow: ({ children, className }: { [key: string]: unknown }) => (
     <tr data-testid="table-row" className={className}>
       {children}
     </tr>
   ),
-  TabPanel: ({ children, className }: any) => (
+  TabPanel: ({ children, className }: { [key: string]: unknown }) => (
     <div data-testid="tab-panel" className={className}>
       {children}
     </div>
   ),
-  Tabs: ({ children, className }: any) => (
+  Tabs: ({ children, className }: { [key: string]: unknown }) => (
     <div data-testid="tabs" className={className}>
       {children}
     </div>
@@ -175,20 +233,24 @@ vi.mock("../components/ui", () => ({
 
 // Mock useNavigate
 const mockNavigate = vi.fn();
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
   return {
     ...actual,
     useNavigate: () => mockNavigate,
   };
 });
 
-describe("App", () => {
-  let mockUseAuth: any;
+describe('App', () => {
+  let mockUseAuth: {
+    user: { username: string } | null;
+    login: () => Promise<void>;
+    logout: () => void;
+  };
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const { useAuth } = await import("../providers");
+    const { useAuth } = await import('../providers');
     mockUseAuth = vi.mocked(useAuth);
   });
 
@@ -200,8 +262,8 @@ describe("App", () => {
     );
   };
 
-  describe("Loading States", () => {
-    it("shows loading spinner when auth is loading", () => {
+  describe('Loading States', () => {
+    it('shows loading spinner when auth is loading', () => {
       mockUseAuth.mockReturnValue({
         user: null,
         isLoading: true,
@@ -210,14 +272,12 @@ describe("App", () => {
 
       renderApp();
 
-      expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
-      expect(screen.getByText("Loading Soft Robot App")).toBeInTheDocument();
-      expect(
-        screen.getByText("Checking authentication...")
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
+      expect(screen.getByText('Loading Soft Robot App')).toBeInTheDocument();
+      expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
     });
 
-    it("shows loading spinner during app initialization", async () => {
+    it('shows loading spinner during app initialization', async () => {
       mockUseAuth.mockReturnValue({
         user: null,
         isLoading: false,
@@ -226,17 +286,15 @@ describe("App", () => {
 
       renderApp();
 
-      expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
-      expect(screen.getByText("Loading Soft Robot App")).toBeInTheDocument();
-      expect(
-        screen.getByText("Initializing components...")
-      ).toBeInTheDocument();
+      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
+      expect(screen.getByText('Loading Soft Robot App')).toBeInTheDocument();
+      expect(screen.getByText('Initializing components...')).toBeInTheDocument();
 
       // Wait for initialization to complete
       await waitFor(
         () => {
           expect(
-            screen.queryByText("Initializing components...")
+            screen.queryByText('Initializing components...')
           ).not.toBeInTheDocument();
         },
         { timeout: 1000 }
@@ -244,8 +302,8 @@ describe("App", () => {
     });
   });
 
-  describe("Authentication UI", () => {
-    it("shows sign in button when user is not authenticated", async () => {
+  describe('Authentication UI', () => {
+    it('shows sign in button when user is not authenticated', async () => {
       mockUseAuth.mockReturnValue({
         user: null,
         isLoading: false,
@@ -255,13 +313,13 @@ describe("App", () => {
       renderApp();
 
       await waitFor(() => {
-        expect(screen.getByText("Sign In")).toBeInTheDocument();
+        expect(screen.getByText('Sign In')).toBeInTheDocument();
       });
     });
 
-    it("shows user info and logout button when user is authenticated", async () => {
+    it('shows user info and logout button when user is authenticated', async () => {
       mockUseAuth.mockReturnValue({
-        user: { username: "testuser" },
+        user: { username: 'testuser' },
         isLoading: false,
         logout: vi.fn(),
       });
@@ -269,16 +327,16 @@ describe("App", () => {
       renderApp();
 
       await waitFor(() => {
-        expect(screen.getAllByText("testuser")[0]).toBeInTheDocument();
-        expect(screen.getByText("Sign Out")).toBeInTheDocument();
-        expect(screen.queryByText("Sign In")).not.toBeInTheDocument();
+        expect(screen.getAllByText('testuser')[0]).toBeInTheDocument();
+        expect(screen.getByText('Sign Out')).toBeInTheDocument();
+        expect(screen.queryByText('Sign In')).not.toBeInTheDocument();
       });
     });
 
-    it("calls logout and navigates when logout button is clicked", async () => {
+    it('calls logout and navigates when logout button is clicked', async () => {
       const mockLogout = vi.fn();
       mockUseAuth.mockReturnValue({
-        user: { username: "testuser" },
+        user: { username: 'testuser' },
         isLoading: false,
         logout: mockLogout,
       });
@@ -286,16 +344,16 @@ describe("App", () => {
       renderApp();
 
       await waitFor(() => {
-        expect(screen.getByText("Sign Out")).toBeInTheDocument();
+        expect(screen.getByText('Sign Out')).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText("Sign Out"));
+      fireEvent.click(screen.getByText('Sign Out'));
 
       expect(mockLogout).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith("/");
+      expect(mockNavigate).toHaveBeenCalledWith('/');
     });
 
-    it("navigates to auth page when sign in button is clicked", async () => {
+    it('navigates to auth page when sign in button is clicked', async () => {
       mockUseAuth.mockReturnValue({
         user: null,
         isLoading: false,
@@ -305,34 +363,17 @@ describe("App", () => {
       renderApp();
 
       await waitFor(() => {
-        expect(screen.getByText("Sign In")).toBeInTheDocument();
+        expect(screen.getByText('Sign In')).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByText("Sign In"));
+      fireEvent.click(screen.getByText('Sign In'));
 
-      expect(mockNavigate).toHaveBeenCalledWith("/auth");
-    });
-  });
-
-  describe("Routing", () => {
-    it("renders main app at root route", async () => {
-      mockUseAuth.mockReturnValue({
-        user: null,
-        isLoading: false,
-        logout: vi.fn(),
-      });
-
-      renderApp();
-
-      await waitFor(() => {
-        expect(screen.getByTestId("form-tabs")).toBeInTheDocument();
-        expect(screen.getByTestId("visualizer-3d")).toBeInTheDocument();
-      });
+      expect(mockNavigate).toHaveBeenCalledWith('/auth');
     });
   });
 
-  describe("Sidebar Functionality", () => {
-    it("shows sidebar by default", async () => {
+  describe('Routing', () => {
+    it('renders main app at root route', async () => {
       mockUseAuth.mockReturnValue({
         user: null,
         isLoading: false,
@@ -342,16 +383,33 @@ describe("App", () => {
       renderApp();
 
       await waitFor(() => {
-        expect(screen.getByTestId("form-tabs")).toBeInTheDocument();
+        expect(screen.getByTestId('form-tabs')).toBeInTheDocument();
+        expect(screen.getByTestId('visualizer-3d')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Sidebar Functionality', () => {
+    it('shows sidebar by default', async () => {
+      mockUseAuth.mockReturnValue({
+        user: null,
+        isLoading: false,
+        logout: vi.fn(),
+      });
+
+      renderApp();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('form-tabs')).toBeInTheDocument();
       });
 
       // Check that hide button is present
-      expect(screen.getByLabelText("Hide parameters")).toBeInTheDocument();
+      expect(screen.getByLabelText('Hide parameters')).toBeInTheDocument();
     });
   });
 
-  describe("Form Integration", () => {
-    it("renders form tabs component", async () => {
+  describe('Form Integration', () => {
+    it('renders form tabs component', async () => {
       mockUseAuth.mockReturnValue({
         user: null,
         isLoading: false,
@@ -361,13 +419,13 @@ describe("App", () => {
       renderApp();
 
       await waitFor(() => {
-        expect(screen.getByTestId("form-tabs")).toBeInTheDocument();
+        expect(screen.getByTestId('form-tabs')).toBeInTheDocument();
       });
     });
   });
 
-  describe("User Context", () => {
-    it("renders app with user context", async () => {
+  describe('User Context', () => {
+    it('renders app with user context', async () => {
       mockUseAuth.mockReturnValue({
         user: null,
         isLoading: false,
@@ -377,13 +435,13 @@ describe("App", () => {
       renderApp();
 
       await waitFor(() => {
-        expect(screen.getByTestId("form-tabs")).toBeInTheDocument();
+        expect(screen.getByTestId('form-tabs')).toBeInTheDocument();
       });
     });
   });
 
-  describe("Visualizer3D Integration", () => {
-    it("renders Visualizer3D component", async () => {
+  describe('Visualizer3D Integration', () => {
+    it('renders Visualizer3D component', async () => {
       mockUseAuth.mockReturnValue({
         user: null,
         isLoading: false,
@@ -393,14 +451,14 @@ describe("App", () => {
       renderApp();
 
       await waitFor(() => {
-        expect(screen.getByTestId("visualizer-3d")).toBeInTheDocument();
+        expect(screen.getByTestId('visualizer-3d')).toBeInTheDocument();
       });
     });
   });
 
-  describe("localStorage Integration", () => {
-    it("tests localStorage functionality on mount", async () => {
-      const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+  describe('localStorage Integration', () => {
+    it('tests localStorage functionality on mount', async () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       mockUseAuth.mockReturnValue({
         user: null,
@@ -411,18 +469,13 @@ describe("App", () => {
       renderApp();
 
       await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith('=== App localStorage Test ===');
+        expect(consoleSpy).toHaveBeenCalledWith('Test value stored:', 'app_test_value');
         expect(consoleSpy).toHaveBeenCalledWith(
-          "=== App localStorage Test ==="
+          'Test value retrieved:',
+          'app_test_value'
         );
-        expect(consoleSpy).toHaveBeenCalledWith(
-          "Test value stored:",
-          "app_test_value"
-        );
-        expect(consoleSpy).toHaveBeenCalledWith(
-          "Test value retrieved:",
-          "app_test_value"
-        );
-        expect(consoleSpy).toHaveBeenCalledWith("localStorage working:", "YES");
+        expect(consoleSpy).toHaveBeenCalledWith('localStorage working:', 'YES');
       });
 
       consoleSpy.mockRestore();

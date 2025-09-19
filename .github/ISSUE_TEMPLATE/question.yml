@@ -1,0 +1,80 @@
+name: ❓ Question
+description: Ask a question about the project
+title: "[QUESTION] "
+labels: ["question", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for asking a question! We're here to help. Please provide as much context as possible.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: ❓ Your Question
+      description: What would you like to know?
+      placeholder: Ask your question here...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: question-type
+    attributes:
+      label: 🏷️ Question Type
+      description: What type of question is this?
+      options:
+        - How to use a feature
+        - How to contribute
+        - Technical implementation
+        - Best practices
+        - Troubleshooting
+        - Architecture
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 🧩 Component
+      description: Which part of the project is this about?
+      options:
+        - Frontend
+        - Backend
+        - Database
+        - API
+        - Documentation
+        - CI/CD
+        - Development Tools
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 📋 Context
+      description: Provide context for your question
+      placeholder: |
+        - What are you trying to achieve?
+        - What have you tried so far?
+        - What specific part is unclear?
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 💻 Environment
+      description: Your development environment (if relevant)
+      placeholder: |
+        - OS: [e.g. macOS, Windows, Linux]
+        - Node.js: [e.g. 18.17.0]
+        - Python: [e.g. 3.9.0]
+        - Browser: [e.g. Chrome, Safari]
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📝 Additional Context
+      description: Any other context that might be helpful
+      placeholder: Any additional information...

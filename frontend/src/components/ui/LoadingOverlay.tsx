@@ -1,4 +1,4 @@
-import LoadingSpinner from "./LoadingSpinner";
+import LoadingSpinner from './LoadingSpinner';
 
 interface LoadingOverlayProps {
   isVisible: boolean;
@@ -8,7 +8,7 @@ interface LoadingOverlayProps {
 
 function LoadingOverlay({
   isVisible,
-  message = "Loading...",
+  message = 'Loading...',
   backdrop = true,
 }: LoadingOverlayProps) {
   if (!isVisible) return null;
@@ -16,7 +16,7 @@ function LoadingOverlay({
   return (
     <div
       className={`fixed inset-0 z-50 flex items-center justify-center ${
-        backdrop ? "bg-black bg-opacity-50" : ""
+        backdrop ? 'bg-black bg-opacity-50' : ''
       }`}
     >
       <div className="bg-white rounded-lg p-8 shadow-xl flex flex-col items-center">

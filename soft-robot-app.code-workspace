@@ -1,0 +1,85 @@
+{
+  "folders": [
+    {
+      "name": "Root",
+      "path": "."
+    },
+    {
+      "name": "Frontend",
+      "path": "./frontend"
+    },
+    {
+      "name": "Backend",
+      "path": "./backend"
+    }
+  ],
+  "settings": {
+    "workbench.colorTheme": "Default Dark+",
+    "workbench.iconTheme": "vs-seti",
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/__pycache__": true,
+      "**/target": true,
+      "**/dist": true,
+      "**/coverage": true,
+      "**/.pytest_cache": true,
+      "**/htmlcov": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/__pycache__": true,
+      "**/target": true,
+      "**/dist": true,
+      "**/coverage": true,
+      "**/.pytest_cache": true,
+      "**/htmlcov": true
+    },
+    "typescript.preferences.includePackageJsonAutoImports": "auto",
+    "python.defaultInterpreterPath": "./backend/venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "terminal.integrated.defaultProfile.osx": "zsh"
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-python.black-formatter",
+      "ms-python.isort",
+      "bradlc.vscode-tailwindcss",
+      "esbenp.prettier-vscode",
+      "ms-vscode.vscode-typescript-next",
+      "rust-lang.rust-analyzer",
+      "tauri-apps.tauri-vscode"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Start Development",
+        "type": "shell",
+        "command": "./dev.sh",
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new"
+        }
+      },
+      {
+        "label": "Run Tests",
+        "type": "shell",
+        "command": "./lint_check.sh",
+        "args": ["all", "test"],
+        "group": "test"
+      },
+      {
+        "label": "Lint Code",
+        "type": "shell",
+        "command": "./lint_check.sh",
+        "args": ["all", "lint"],
+        "group": "build"
+      }
+    ]
+  }
+}

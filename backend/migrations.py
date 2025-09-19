@@ -9,12 +9,13 @@ import sys
 # Add the app directory to the Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+from sqlmodel import Session, SQLModel, select  # noqa: E402
+
 # Import after path setup to avoid circular imports
 from app.database import engine  # noqa: E402
 from app.models.preset import Preset  # noqa: E402
 from app.models.user import User  # noqa: E402
 from app.utils.cache import clear_cache  # noqa: E402
-from sqlmodel import Session, SQLModel, select  # noqa: E402
 
 
 def create_tables():
@@ -25,8 +26,8 @@ def create_tables():
         print("✅ Tables created successfully!")
         print("📋 Created tables:")
         print(
-            "   - user (with fields: id, username, email, is_local, "
-            "is_active, is_verified, hashed_password, created_at, updated_at)"
+            "   - user (with fields: id, username, is_active, "
+            "hashed_password, created_at, updated_at)"
         )
         print(
             "   - preset (with fields: id, name, description, is_public, "
@@ -58,8 +59,7 @@ def drop_tables():
 def reset_database():
     """Reset the database by dropping and recreating all tables"""
     confirm = input(
-        "⚠️  This will delete ALL data and recreate tables. "
-        "Are you sure? (yes/no): "
+        "⚠️  This will delete ALL data and recreate tables. " "Are you sure? (yes/no): "
     )
     if confirm.lower() == "yes":
         print("Resetting database...")
@@ -98,9 +98,8 @@ def check_database_status():
             # Check table structure
             print("\n📋 Current table structure:")
             print(
-                "   User table fields: id, username, email, is_local, "
-                "is_active, is_verified, hashed_password, created_at, "
-                "updated_at"
+                "   User table fields: id, username, is_active, "
+                "hashed_password, created_at, updated_at"
             )
             print(
                 "   Preset table fields: id, name, description, is_public, "
@@ -113,8 +112,7 @@ def check_database_status():
     except Exception as e:
         print(f"❌ Database error: {e}")
         print(
-            "💡 Try running 'python migrations.py create' to create "
-            "missing tables"
+            "💡 Try running 'python migrations.py create' to create " "missing tables"
         )
         return False
 
@@ -133,9 +131,7 @@ def clear_cache_only():
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print(
-            "Usage: python migrations.py [create|drop|reset|status|clear-cache]"
-        )
+        print("Usage: python migrations.py [create|drop|reset|status|clear-cache]")
         print("  create      - Create all tables")
         print("  drop        - Drop all tables (DANGEROUS)")
         print("  reset       - Drop and recreate all tables (DANGEROUS)")

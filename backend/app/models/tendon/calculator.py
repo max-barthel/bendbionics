@@ -61,9 +61,7 @@ class TendonCalculator:
             Dictionary with tendon analysis results
         """
         if len(coupling_positions) != len(coupling_orientations):
-            raise ValueError(
-                "Positions and orientations must have same length"
-            )
+            raise ValueError("Positions and orientations must have same length")
 
         num_elements = len(coupling_positions)
         num_tendons = self.config.count
@@ -77,16 +75,11 @@ class TendonCalculator:
         segment_lengths = np.zeros((num_tendons, num_elements - 1))
 
         # Check if robot is straight (all coupling positions have same x,y)
-        print(f"DEBUG: coupling_positions[0] = {coupling_positions[0]}")
-        print(f"DEBUG: coupling_positions[1] = {coupling_positions[1]}")
-        print(f"DEBUG: coupling_positions[2] = {coupling_positions[2]}")
-
         is_straight = all(
             abs(coupling_positions[i][0]) < 1e-6
             and abs(coupling_positions[i][1]) < 1e-6
             for i in range(num_elements)
         )
-        print(f"DEBUG: is_straight = {is_straight}")
 
         # Always calculate segment lengths through eyelets for accuracy
         for i in range(num_elements - 1):
@@ -100,9 +93,7 @@ class TendonCalculator:
         total_lengths[:, 0] = 0  # Base position
 
         for i in range(1, num_elements):
-            total_lengths[:, i] = (
-                total_lengths[:, i - 1] + segment_lengths[:, i - 1]
-            )
+            total_lengths[:, i] = total_lengths[:, i - 1] + segment_lengths[:, i - 1]
 
         # Calculate length changes (how much each tendon needs to be pulled)
         # Reference is the straight configuration
@@ -187,8 +178,6 @@ class TendonCalculator:
         if backbone_lengths and coupling_lengths:
             # Use the MATLAB approach: sum of backbone + coupling lengths
             # This represents the tendon length when robot is straight
-            print(f"DEBUG: backbone_lengths={backbone_lengths}")
-            print(f"DEBUG: coupling_lengths={coupling_lengths}")
 
             # For a straight robot, use the actual tendon path length as
             # reference
@@ -203,10 +192,6 @@ class TendonCalculator:
                         # This gives us the true reference length for straight
                         # robot
                         reference_lengths[:, i] = total_lengths[0, i]
-                        print(
-                            f"DEBUG: coupling {i}: "
-                            f"reference_length={total_lengths[0, i]}"
-                        )
             else:
                 # For bent robot, use center path as reference
                 for i in range(num_elements):

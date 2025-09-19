@@ -2,7 +2,7 @@
 name = "soft-robot-app"
 version = "0.1.0"
 description = "Soft Robot Simulator Desktop Application"
-authors = ["Your Name"]
+authors = ["Max Barthel"]
 edition = "2021"
 rust-version = "1.70"
 

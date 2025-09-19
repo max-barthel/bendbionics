@@ -1,16 +1,14 @@
-import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { type RobotState } from "../../../hooks/useRobotState";
-import { RobotSetupTab } from "../RobotSetupTab";
+import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type RobotState } from '../../../hooks/useRobotState';
+import { RobotSetupTab } from '../RobotSetupTab';
 
 // Mock the components
-vi.mock("../../ArrayInputGroup", () => ({
-  default: vi.fn(() => (
-    <div data-testid="array-input-group">Array Input Group</div>
-  )),
+vi.mock('../../ArrayInputGroup', () => ({
+  default: vi.fn(() => <div data-testid="array-input-group">Array Input Group</div>),
 }));
 
-vi.mock("../../../shared/components/CollapsibleSection", () => ({
+vi.mock('../../../shared/components/CollapsibleSection', () => ({
   CollapsibleSection: vi.fn(({ children, title }) => (
     <div data-testid="collapsible-section">
       <div>{title}</div>
@@ -19,13 +17,13 @@ vi.mock("../../../shared/components/CollapsibleSection", () => ({
   )),
 }));
 
-vi.mock("../../../visualization/components/TendonConfigPanel", () => ({
+vi.mock('../../../visualization/components/TendonConfigPanel', () => ({
   TendonConfigPanel: vi.fn(() => (
     <div data-testid="tendon-config-panel">Tendon Config Panel</div>
   )),
 }));
 
-vi.mock("../../../../components/icons", () => ({
+vi.mock('../../../../components/icons', () => ({
   AdvancedIcon: vi.fn(() => <div data-testid="advanced-icon" />),
   LightningIcon: vi.fn(() => <div data-testid="lightning-icon" />),
   RobotIcon: vi.fn(() => <div data-testid="robot-icon" />),
@@ -33,7 +31,7 @@ vi.mock("../../../../components/icons", () => ({
   UploadIcon: vi.fn(() => <div data-testid="upload-icon" />),
 }));
 
-vi.mock("../../../../components/ui", () => ({
+vi.mock('../../../../components/ui', () => ({
   SliderInput: vi.fn(() => <div data-testid="slider-input">Slider Input</div>),
   SubsectionTitle: vi.fn(({ children }) => (
     <div data-testid="subsection-title">{children}</div>
@@ -43,7 +41,7 @@ vi.mock("../../../../components/ui", () => ({
   )),
 }));
 
-describe("RobotSetupTab", () => {
+describe('RobotSetupTab', () => {
   const mockSetRobotState = vi.fn();
   const mockOnShowPresetManager = vi.fn();
 
@@ -65,18 +63,15 @@ describe("RobotSetupTab", () => {
     vi.clearAllMocks();
   });
 
-  it("renders with default props", () => {
+  it('renders with default props', () => {
     render(
-      <RobotSetupTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <RobotSetupTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getByText("Robot Setup")).toBeInTheDocument();
+    expect(screen.getByText('Robot Setup')).toBeInTheDocument();
   });
 
-  it("renders with preset manager", () => {
+  it('renders with preset manager', () => {
     render(
       <RobotSetupTab
         onShowPresetManager={mockOnShowPresetManager}
@@ -85,84 +80,63 @@ describe("RobotSetupTab", () => {
       />
     );
 
-    expect(screen.getByText("Robot Setup")).toBeInTheDocument();
+    expect(screen.getByText('Robot Setup')).toBeInTheDocument();
   });
 
-  it("renders collapsible sections", () => {
+  it('renders collapsible sections', () => {
     render(
-      <RobotSetupTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <RobotSetupTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getAllByTestId("collapsible-section")).toHaveLength(4);
+    expect(screen.getAllByTestId('collapsible-section')).toHaveLength(4);
   });
 
-  it("renders array input groups", () => {
+  it('renders array input groups', () => {
     render(
-      <RobotSetupTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <RobotSetupTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getAllByTestId("array-input-group")).toHaveLength(2);
+    expect(screen.getAllByTestId('array-input-group')).toHaveLength(2);
   });
 
-  it("renders tendon config panel", () => {
+  it('renders tendon config panel', () => {
     render(
-      <RobotSetupTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <RobotSetupTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getByTestId("tendon-config-panel")).toBeInTheDocument();
+    expect(screen.getByTestId('tendon-config-panel')).toBeInTheDocument();
   });
 
-  it("renders slider inputs", () => {
+  it('renders slider inputs', () => {
     render(
-      <RobotSetupTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <RobotSetupTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getAllByTestId("slider-input")).toHaveLength(2);
+    expect(screen.getAllByTestId('slider-input')).toHaveLength(2);
   });
 
-  it("renders upload icon", () => {
+  it('renders upload icon', () => {
     render(
-      <RobotSetupTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <RobotSetupTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getByTestId("upload-icon")).toBeInTheDocument();
+    expect(screen.getByTestId('upload-icon')).toBeInTheDocument();
   });
 
-  it("renders typography components", () => {
+  it('renders typography components', () => {
     render(
-      <RobotSetupTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <RobotSetupTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getByTestId("typography-h4")).toBeInTheDocument();
-    expect(screen.getByTestId("typography-body")).toBeInTheDocument();
+    expect(screen.getByTestId('typography-h4')).toBeInTheDocument();
+    expect(screen.getByTestId('typography-body')).toBeInTheDocument();
   });
 
-  it("renders subsection titles", () => {
+  it('renders subsection titles', () => {
     render(
-      <RobotSetupTab
-        robotState={defaultRobotState}
-        setRobotState={mockSetRobotState}
-      />
+      <RobotSetupTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    expect(screen.getAllByTestId("subsection-title")).toHaveLength(4);
+    expect(screen.getAllByTestId('subsection-title')).toHaveLength(4);
   });
 });

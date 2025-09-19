@@ -1,5 +1,5 @@
-import React from "react";
-import Typography from "./Typography";
+import React from 'react';
+import Typography from './Typography';
 
 interface SubsectionTitleProps {
   title: string;
@@ -10,7 +10,7 @@ interface SubsectionTitleProps {
 export const SubsectionTitle: React.FC<SubsectionTitleProps> = ({
   title,
   description,
-  className = "",
+  className = '',
 }) => {
   return (
     <div className={`space-y-1 ${className}`}>
@@ -18,10 +18,7 @@ export const SubsectionTitle: React.FC<SubsectionTitleProps> = ({
         {title}
       </Typography>
       {description && (
-        <Typography
-          variant="caption"
-          className="text-gray-500 text-xs break-words"
-        >
+        <Typography variant="caption" className="text-gray-500 text-xs break-words">
           {description}
         </Typography>
       )}

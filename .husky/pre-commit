@@ -1,0 +1,66 @@
+echo "🔍 Running pre-commit checks..."
+
+# Check if we're in the right directory
+if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
+  echo "❌ Please run this script from the project root directory"
+  exit 1
+fi
+
+# Run quick checks first (fastest)
+echo "⚡ Running quick checks..."
+
+# Frontend quick checks
+echo "📝 Running frontend quick lint check..."
+cd frontend
+npm run lint:check
+if [ $? -ne 0 ]; then
+  echo "❌ Frontend linting failed. Please fix the issues before committing."
+  echo "💡 Run 'npm run lint:fix' to auto-fix some issues."
+  exit 1
+fi
+
+# Backend quick checks
+echo "🐍 Running backend quick checks..."
+cd ../backend
+python -m black . --check --quiet
+if [ $? -ne 0 ]; then
+  echo "❌ Backend formatting failed. Please fix the issues before committing."
+  echo "💡 Run 'python -m black .' to auto-fix formatting."
+  exit 1
+fi
+
+python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+if [ $? -ne 0 ]; then
+  echo "❌ Backend critical linting failed. Please fix the issues before committing."
+  exit 1
+fi
+
+cd ..
+
+# Run tests only if files have changed
+echo "🧪 Running tests for changed files..."
+
+# Check if test files or source files have changed
+if git diff --cached --name-only | grep -E '\.(ts|tsx|js|jsx|py)$' | grep -v '\.test\.' | grep -v '\.spec\.'; then
+  echo "📝 Source files changed, running frontend tests..."
+  cd frontend
+  npm run test:pre-commit
+  if [ $? -ne 0 ]; then
+    echo "❌ Frontend tests failed. Please fix the failing tests before committing."
+    exit 1
+  fi
+  cd ..
+
+  echo "🐍 Running backend tests..."
+  cd backend
+  python -m pytest --tb=short -q
+  if [ $? -ne 0 ]; then
+    echo "❌ Backend tests failed. Please fix the failing tests before committing."
+    exit 1
+  fi
+  cd ..
+else
+  echo "✅ No source files changed, skipping tests."
+fi
+
+echo "✅ All pre-commit checks passed!"
