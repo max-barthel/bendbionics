@@ -12,6 +12,8 @@ jobs:
       projects: write
     steps:
       - name: Add issue to project
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Your project ID from https://github.com/users/max-barthel/projects/2
           PROJECT_ID="PVT_kwDOOYVt384A0XT2"
@@ -30,6 +32,8 @@ jobs:
           echo "✅ Issue #${{ github.event.issue.number }} added to project"
 
       - name: Auto-assign labels
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           ISSUE_TITLE="${{ github.event.issue.title }}"
           

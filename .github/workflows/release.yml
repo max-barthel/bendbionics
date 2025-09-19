@@ -1,0 +1,292 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g., v1.0.0)"
+        required: true
+        type: string
+
+env:
+  NODE_VERSION: "18"
+  PYTHON_VERSION: "3.11"
+  RUST_VERSION: "stable"
+
+jobs:
+  # Validate release
+  validate-release:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [[ ! $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version format: $VERSION"
+            echo "Expected format: v1.0.0"
+            exit 1
+          fi
+          echo "Valid version: $VERSION"
+
+      - name: Check if version exists
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists"
+            exit 1
+          fi
+
+  # Run full CI pipeline
+  ci-pipeline:
+    name: CI Pipeline
+    runs-on: ubuntu-latest
+    needs: validate-release
+    uses: ./.github/workflows/ci.yml
+
+  # Build release artifacts
+  build-release:
+    name: Build Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, ci-pipeline]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Build Tauri app
+        run: |
+          cd frontend
+          npm run tauri build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-${{ matrix.os }}
+          path: |
+            frontend/dist/
+            frontend/src-tauri/target/release/bundle/
+
+  # Create release notes
+  generate-release-notes:
+    name: Generate Release Notes
+    runs-on: ubuntu-latest
+    needs: [validate-release]
+    outputs:
+      release-notes: ${{ steps.notes.outputs.notes }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "Generating changelog from $PREVIOUS_TAG to $VERSION"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD)
+          else
+            echo "First release - generating full changelog"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --reverse)
+          fi
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          CHANGELOG="${{ steps.changelog.outputs.changelog }}"
+
+          cat > release_notes.md << EOF
+          ## 🚀 Release $VERSION
+
+          ### 📋 Changes
+          $CHANGELOG
+
+          ### 📦 Installation
+
+          #### Frontend
+          \`\`\`bash
+          npm install
+          npm run build
+          \`\`\`
+
+          #### Backend
+          \`\`\`bash
+          pip install -r requirements.txt
+          python -m uvicorn app.main:app --reload
+          \`\`\`
+
+          ### 🔗 Links
+          - [Documentation](https://github.com/${{ github.repository }}/blob/main/README.md)
+          - [Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+          - [Issues](https://github.com/${{ github.repository }}/issues)
+
+          ### 📊 Quality Metrics
+          - ✅ All tests passing
+          - ✅ Code quality checks passed
+          - ✅ Security scan completed
+          - ✅ Performance tests passed
+          EOF
+
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          cat release_notes.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+  # Create GitHub release
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, build-release, generate-release-notes]
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./artifacts
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.validate-release.outputs.version }}
+          name: Release ${{ needs.validate-release.outputs.version }}
+          body: ${{ needs.generate-release-notes.outputs.release-notes }}
+          draft: false
+          prerelease: ${{ contains(needs.validate-release.outputs.version, 'alpha') || contains(needs.validate-release.outputs.version, 'beta') || contains(needs.validate-release.outputs.version, 'rc') }}
+          files: |
+            artifacts/release-ubuntu-latest/*
+            artifacts/release-windows-latest/*
+            artifacts/release-macos-latest/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Update package versions
+  update-versions:
+    name: Update Versions
+    runs-on: ubuntu-latest
+    needs: [validate-release, create-release]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Update package.json versions
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          VERSION_NUMBER=${VERSION#v}
+
+          # Update root package.json
+          npm version $VERSION_NUMBER --no-git-tag-version
+
+          # Update frontend package.json
+          cd frontend
+          npm version $VERSION_NUMBER --no-git-tag-version
+          cd ..
+
+      - name: Commit version updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package.json frontend/package.json
+          git commit -m "chore: bump version to ${{ needs.validate-release.outputs.version }}"
+          git push
+
+  # Deploy to staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [create-release]
+    environment: staging
+    steps:
+      - name: Deploy to staging
+        run: |
+          echo "Deploying ${{ needs.validate-release.outputs.version }} to staging..."
+          # Add your staging deployment commands here
+
+  # Deploy to production (only for stable releases)
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [create-release, deploy-staging]
+    if: ${{ !contains(needs.validate-release.outputs.version, 'alpha') && !contains(needs.validate-release.outputs.version, 'beta') && !contains(needs.validate-release.outputs.version, 'rc') }}
+    environment: production
+    steps:
+      - name: Deploy to production
+        run: |
+          echo "Deploying ${{ needs.validate-release.outputs.version }} to production..."
+          # Add your production deployment commands here
+
+  # Notify release
+  notify-release:
+    name: Notify Release
+    runs-on: ubuntu-latest
+    needs: [create-release, deploy-staging]
+    if: always()
+    steps:
+      - name: Notify release completion
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          STATUS="${{ needs.create-release.result }}"
+
+          if [ "$STATUS" = "success" ]; then
+            echo "✅ Release $VERSION created successfully!"
+            # Add notification logic here (Slack, Discord, email, etc.)
+          else
+            echo "❌ Release $VERSION failed!"
+            # Add failure notification logic here
+          fi

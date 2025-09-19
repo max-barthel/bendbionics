@@ -1,0 +1,480 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "18"
+  PYTHON_VERSION: "3.11"
+  RUST_VERSION: "stable"
+
+jobs:
+  # Quality Gates
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: |
+            frontend/package-lock.json
+            package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          components: rustfmt, clippy
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Frontend linting
+        run: |
+          cd frontend
+          npm run lint
+
+      - name: Frontend type checking
+        run: |
+          cd frontend
+          npx tsc --noEmit
+
+      - name: Backend formatting check
+        run: |
+          cd backend
+          python -m black --check app/
+
+      - name: Backend linting
+        run: |
+          cd backend
+          python -m flake8 app/
+
+      - name: Backend type checking
+        run: |
+          cd backend
+          python -m mypy app/
+
+      - name: Rust formatting check
+        run: |
+          cd frontend/src-tauri
+          cargo fmt -- --check
+
+      - name: Rust linting
+        run: |
+          cd frontend/src-tauri
+          cargo clippy -- -D warnings
+
+      - name: Code quality report
+        run: node scripts/code-quality-report.js
+
+  # Frontend Testing
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    needs: quality-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run unit tests
+        run: |
+          cd frontend
+          npm run test:run
+
+      - name: Run tests with coverage
+        run: |
+          cd frontend
+          npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./frontend/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+
+      - name: Install Playwright browsers
+        run: |
+          cd frontend
+          npx playwright install --with-deps
+
+      - name: Run integration tests
+        run: |
+          cd frontend
+          npm run test:integration
+
+      - name: Run visual regression tests
+        run: |
+          cd frontend
+          npm run test:visual
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: frontend-test-results
+          path: |
+            frontend/test-results/
+            frontend/playwright-report/
+
+  # Backend Testing
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    needs: quality-checks
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          cd backend
+          python -m pytest tests/ -v --cov=app --cov-report=xml --cov-report=html
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./backend/coverage.xml
+          flags: backend
+          name: backend-coverage
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: backend-test-results
+          path: backend/coverage/
+
+  # Build and Bundle Analysis
+  build-analysis:
+    name: Build Analysis
+    runs-on: ubuntu-latest
+    needs: [frontend-tests, backend-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Build Tauri app
+        run: |
+          cd frontend
+          npm run tauri build
+
+      - name: Bundle size analysis
+        run: |
+          cd frontend
+          npm run build:analyze
+
+      - name: Performance budget check
+        run: |
+          cd frontend
+          npm run build:size-check
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            frontend/dist/
+            frontend/src-tauri/target/release/bundle/
+
+  # Security Scanning
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: quality-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: |
+            frontend/package-lock.json
+            package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+          cd ../backend
+          pip install -r requirements.txt
+
+      - name: Run npm audit
+        run: |
+          cd frontend
+          npm audit --audit-level=moderate
+
+      - name: Run safety check
+        run: |
+          cd backend
+          pip install safety
+          safety check
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
+
+  # Documentation Build
+  docs-build:
+    name: Documentation Build
+    runs-on: ubuntu-latest
+    needs: quality-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+          cd ../backend
+          pip install -r requirements.txt
+          pip install sphinx sphinx-rtd-theme
+
+      - name: Build Storybook
+        run: |
+          cd frontend
+          npm run storybook:build
+
+      - name: Build API documentation
+        run: |
+          cd backend
+          sphinx-build -b html docs docs/_build/html
+
+      - name: Upload documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: documentation
+          path: |
+            frontend/storybook-static/
+            backend/docs/_build/html/
+
+  # Performance Testing
+  performance-test:
+    name: Performance Test
+    runs-on: ubuntu-latest
+    needs: build-analysis
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build application
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Run Lighthouse CI
+        run: |
+          cd frontend
+          npm run lighthouse:ci
+
+      - name: Upload Lighthouse results
+        uses: actions/upload-artifact@v3
+        with:
+          name: lighthouse-results
+          path: frontend/lighthouse-results/
+
+  # Deployment (only on main branch)
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [build-analysis, security-scan, performance-test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./artifacts
+
+      - name: Download documentation
+        uses: actions/download-artifact@v3
+        with:
+          name: documentation
+          path: ./docs
+
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production..."
+          # Add your deployment commands here
+          # Examples:
+          # - Deploy to Vercel, Netlify, or AWS
+          # - Deploy to Docker registry
+          # - Deploy to cloud storage
+
+      - name: Notify deployment
+        run: |
+          echo "Deployment completed successfully!"
+          # Add notification logic here (Slack, Discord, email, etc.)
+
+  # Summary Report
+  ci-summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs:
+      [
+        quality-checks,
+        frontend-tests,
+        backend-tests,
+        build-analysis,
+        security-scan,
+        docs-build,
+        performance-test,
+      ]
+    if: always()
+    steps:
+      - name: Generate CI summary
+        run: |
+          echo "## 🚀 CI/CD Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Quality Checks | ${{ needs.quality-checks.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend Tests | ${{ needs.frontend-tests.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend Tests | ${{ needs.backend-tests.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Analysis | ${{ needs.build-analysis.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Scan | ${{ needs.security-scan.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Documentation | ${{ needs.docs-build.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance | ${{ needs.performance-test.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Coverage Reports" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend: [View Coverage](https://codecov.io/gh/${{ github.repository }})" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend: [View Coverage](https://codecov.io/gh/${{ github.repository }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔍 Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Test Results: Available in Actions artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Build Artifacts: Available in Actions artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Documentation: Available in Actions artifacts" >> $GITHUB_STEP_SUMMARY
