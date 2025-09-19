@@ -1,0 +1,151 @@
+name: Auto-assign Issues to Project
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  assign-to-project:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      projects: write
+    steps:
+      - name: Get project information
+        id: project
+        run: |
+          # Your actual project ID from https://github.com/users/max-barthel/projects/2
+          PROJECT_ID="PVT_kwDOOYVt384A0XT2"
+
+          echo "project_id=$PROJECT_ID" >> $GITHUB_OUTPUT
+          echo "Found project ID: $PROJECT_ID"
+
+      - name: Add issue to project
+        if: steps.project.outputs.project_id != 'null' && steps.project.outputs.project_id != ''
+        run: |
+          gh api graphql -f query='
+            mutation($projectId: ID!, $contentId: ID!) {
+              addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
+                item {
+                  id
+                }
+              }
+            }
+          ' -f projectId="${{ steps.project.outputs.project_id }}" -f contentId="${{ github.event.issue.node_id }}"
+
+          echo "✅ Issue #${{ github.event.issue.number }} added to project"
+
+      - name: Add to Backlog column
+        if: steps.project.outputs.project_id != 'null' && steps.project.outputs.project_id != ''
+        run: |
+          # Get the project item ID
+          ITEM_ID=$(gh api graphql -f query='
+            query($projectId: ID!, $contentId: ID!) {
+              node(id: $projectId) {
+                ... on ProjectV2 {
+                  items(first: 100) {
+                    nodes {
+                      id
+                      content {
+                        ... on Issue {
+                          id
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ' -f projectId="${{ steps.project.outputs.project_id }}" -f contentId="${{ github.event.issue.node_id }}" --jq '.data.node.items.nodes[] | select(.content.id == "${{ github.event.issue.node_id }}") | .id')
+
+          if [ ! -z "$ITEM_ID" ]; then
+            # Get the Backlog column ID
+            BACKLOG_COLUMN_ID=$(gh api graphql -f query='
+              query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    fields(first: 20) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options {
+                            id
+                            name
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ' -f projectId="${{ steps.project.outputs.project_id }}" --jq '.data.node.fields.nodes[] | select(.name == "Status") | .options[] | select(.name == "Backlog") | .id')
+
+            if [ ! -z "$BACKLOG_COLUMN_ID" ]; then
+              # Update the item status to Backlog
+              gh api graphql -f query='
+                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: ID!) {
+                  updateProjectV2ItemFieldValue(input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: {singleSelectOptionId: $optionId}
+                  }) {
+                    projectV2Item {
+                      id
+                    }
+                  }
+                }
+              ' -f projectId="${{ steps.project.outputs.project_id }}" -f itemId="$ITEM_ID" -f fieldId="$BACKLOG_COLUMN_ID" -f optionId="$BACKLOG_COLUMN_ID"
+
+              echo "✅ Issue moved to Backlog column"
+            fi
+          fi
+
+      - name: Auto-assign labels based on issue type
+        run: |
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_BODY="${{ github.event.issue.body }}"
+
+          # Auto-assign labels based on title patterns
+          if [[ "$ISSUE_TITLE" =~ ^\[BUG\] ]]; then
+            gh issue edit ${{ github.event.issue.number }} --add-label "bug,status: needs-triage"
+            echo "✅ Auto-assigned bug labels"
+          elif [[ "$ISSUE_TITLE" =~ ^\[FEATURE\] ]]; then
+            gh issue edit ${{ github.event.issue.number }} --add-label "enhancement,status: needs-triage"
+            echo "✅ Auto-assigned enhancement labels"
+          elif [[ "$ISSUE_TITLE" =~ ^\[DOCS\] ]]; then
+            gh issue edit ${{ github.event.issue.number }} --add-label "documentation,status: needs-triage"
+            echo "✅ Auto-assigned documentation labels"
+          elif [[ "$ISSUE_TITLE" =~ ^\[QUESTION\] ]]; then
+            gh issue edit ${{ github.event.issue.number }} --add-label "question,status: needs-triage"
+            echo "✅ Auto-assigned question labels"
+          else
+            gh issue edit ${{ github.event.issue.number }} --add-label "status: needs-triage"
+            echo "✅ Auto-assigned needs-triage label"
+          fi
+
+      - name: Auto-assign component labels
+        run: |
+          ISSUE_BODY="${{ github.event.issue.body }}"
+
+          # Auto-assign component labels based on content
+          if [[ "$ISSUE_BODY" =~ frontend|Frontend|UI|React|TypeScript|Vite ]]; then
+            gh issue edit ${{ github.event.issue.number }} --add-label "component: frontend"
+            echo "✅ Auto-assigned frontend component label"
+          fi
+
+          if [[ "$ISSUE_BODY" =~ backend|Backend|API|Python|FastAPI ]]; then
+            gh issue edit ${{ github.event.issue.number }} --add-label "component: backend"
+            echo "✅ Auto-assigned backend component label"
+          fi
+
+          if [[ "$ISSUE_BODY" =~ database|Database|SQL|PostgreSQL ]]; then
+            gh issue edit ${{ github.event.issue.number }} --add-label "component: database"
+            echo "✅ Auto-assigned database component label"
+          fi
+
+          if [[ "$ISSUE_BODY" =~ CI|CD|pipeline|workflow|GitHub Actions ]]; then
+            gh issue edit ${{ github.event.issue.number }} --add-label "component: ci-cd"
+            echo "✅ Auto-assigned CI/CD component label"
+          fi
