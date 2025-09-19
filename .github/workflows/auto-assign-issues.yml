@@ -12,45 +12,55 @@ jobs:
       projects: write
     steps:
       - name: Add issue to project
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           # Your project ID from https://github.com/users/max-barthel/projects/2
           PROJECT_ID="PVT_kwDOOYVt384A0XT2"
           
-          # Add issue to project
-          gh api graphql -f query='
-            mutation($projectId: ID!, $contentId: ID!) {
-              addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
-                item {
-                  id
-                }
+          # Add issue to project using GitHub API
+          curl -X POST \
+            -H "Authorization: token ${{ github.token }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "query": "mutation($projectId: ID!, $contentId: ID!) { addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) { item { id } } }",
+              "variables": {
+                "projectId": "'$PROJECT_ID'",
+                "contentId": "${{ github.event.issue.node_id }}"
               }
-            }
-          ' -f projectId="$PROJECT_ID" -f contentId="${{ github.event.issue.node_id }}"
+            }' \
+            https://api.github.com/graphql
           
           echo "✅ Issue #${{ github.event.issue.number }} added to project"
 
       - name: Auto-assign labels
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
           
-          # Auto-assign labels based on title patterns
+          # Determine labels based on title patterns
           if [[ "$ISSUE_TITLE" =~ ^\[BUG\] ]]; then
-            gh issue edit ${{ github.event.issue.number }} --add-label "bug,status: needs-triage"
-            echo "✅ Auto-assigned bug labels"
+            LABELS='["bug", "status: needs-triage"]'
+            echo "✅ Auto-assigning bug labels"
           elif [[ "$ISSUE_TITLE" =~ ^\[FEATURE\] ]]; then
-            gh issue edit ${{ github.event.issue.number }} --add-label "enhancement,status: needs-triage"
-            echo "✅ Auto-assigned enhancement labels"
+            LABELS='["enhancement", "status: needs-triage"]'
+            echo "✅ Auto-assigning enhancement labels"
           elif [[ "$ISSUE_TITLE" =~ ^\[DOCS\] ]]; then
-            gh issue edit ${{ github.event.issue.number }} --add-label "documentation,status: needs-triage"
-            echo "✅ Auto-assigned documentation labels"
+            LABELS='["documentation", "status: needs-triage"]'
+            echo "✅ Auto-assigning documentation labels"
           elif [[ "$ISSUE_TITLE" =~ ^\[QUESTION\] ]]; then
-            gh issue edit ${{ github.event.issue.number }} --add-label "question,status: needs-triage"
-            echo "✅ Auto-assigned question labels"
+            LABELS='["question", "status: needs-triage"]'
+            echo "✅ Auto-assigning question labels"
           else
-            gh issue edit ${{ github.event.issue.number }} --add-label "status: needs-triage"
-            echo "✅ Auto-assigned needs-triage label"
+            LABELS='["status: needs-triage"]'
+            echo "✅ Auto-assigning needs-triage label"
           fi
+          
+          # Add labels using GitHub API
+          curl -X POST \
+            -H "Authorization: token ${{ github.token }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Content-Type: application/json" \
+            -d '{"labels": '$LABELS'}' \
+            https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUMBER/labels
+          
+          echo "✅ Labels added to issue #$ISSUE_NUMBER"
