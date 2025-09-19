@@ -1,0 +1,15 @@
+name: Test Trigger
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  test-trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test trigger
+        run: |
+          echo "✅ Workflow triggered for issue #${{ github.event.issue.number }}"
+          echo "Title: ${{ github.event.issue.title }}"
+          echo "This proves the workflow is being triggered correctly"
