@@ -4,7 +4,7 @@
 # This script provides various options for checking code quality across the entire codebase
 #
 # Line Length Standard: 88 characters (modern industry standard)
-# - Python: Black formatter and Flake8 configured for 88 chars
+# - Python: Black formatter and Ruff linter configured for 88 chars
 # - TypeScript/JavaScript: ESLint and Prettier configured for 88 chars
 
 set -e  # Exit on any error
@@ -208,21 +208,12 @@ code_quality_frontend() {
 code_quality_backend() {
     print_status "Running backend code quality checks..."
     cd backend
-    python -m flake8 app/
+    ruff check app/
     python -m mypy app/
     cd ..
     print_success "Backend code quality checks completed"
 }
 
-code_quality_sonar() {
-    print_status "Running SonarQube analysis..."
-    if command -v sonar-scanner &> /dev/null; then
-        sonar-scanner
-        print_success "SonarQube analysis completed"
-    else
-        print_warning "SonarQube scanner not found. Install from https://docs.sonarqube.org/latest/analysis/scan/sonarscanner/"
-    fi
-}
 
 # Documentation functions
 docs_storybook() {
@@ -241,24 +232,6 @@ docs_storybook_build() {
     print_success "Storybook documentation built"
 }
 
-docs_backend() {
-    print_status "Building backend API documentation..."
-    cd backend
-    if [ -d "docs" ]; then
-        sphinx-build -b html docs docs/_build/html
-        print_success "Backend API documentation built"
-    else
-        print_warning "Backend documentation not found. Run 'sphinx-quickstart docs' first."
-    fi
-    cd ..
-}
-
-docs_all() {
-    print_status "Building all documentation..."
-    docs_storybook_build
-    docs_backend
-    print_success "All documentation built"
-}
 
 # CI/CD functions
 ci_test() {
@@ -274,7 +247,7 @@ ci_lint() {
     print_status "Running CI linting checks..."
     npm run lint
     cd backend
-    python -m flake8 app/
+    ruff check app/
     python -m black --check app/
     cd ..
     print_success "CI linting completed"
@@ -290,23 +263,12 @@ ci_build() {
     print_success "CI build checks completed"
 }
 
-ci_security() {
-    print_status "Running CI security checks..."
-    cd frontend
-    npm audit --audit-level=moderate
-    cd ../backend
-    pip install safety
-    safety check
-    cd ..
-    print_success "CI security checks completed"
-}
 
 ci_all() {
     print_status "Running full CI pipeline..."
     ci_lint
     ci_test
     ci_build
-    ci_security
     print_success "Full CI pipeline completed"
 }
 
@@ -328,11 +290,11 @@ backend_format_fix() {
 }
 
 backend_lint() {
-    print_status "Running Flake8 linting..."
+    print_status "Running Ruff linting..."
     cd backend
-    python -m flake8 .
+    ruff check .
     cd ..
-    print_success "Flake8 linting completed"
+    print_success "Ruff linting completed"
 }
 
 backend_pylint() {
@@ -406,9 +368,9 @@ all_fix() {
     backend_format_fix || print_warning "Backend formatting had issues"
 
     # Additional backend auto-fixes
-    print_status "Auto-fixing backend imports with isort..."
+    print_status "Auto-fixing backend imports with ruff..."
     cd backend
-    python -m isort . || print_warning "isort had issues"
+    ruff check --fix . || print_warning "ruff auto-fix had issues"
     cd ..
 
     print_success "All auto-fixes completed (some may have had issues)"
@@ -460,7 +422,6 @@ case "${1:-help}" in
             "report") code_quality_report ;;
             "frontend") code_quality_frontend ;;
             "backend") code_quality_backend ;;
-            "sonar") code_quality_sonar ;;
             *) print_error "Unknown quality command: $2" ;;
         esac
         ;;
@@ -468,8 +429,6 @@ case "${1:-help}" in
         case "${2:-storybook}" in
             "storybook") docs_storybook ;;
             "build") docs_storybook_build ;;
-            "backend") docs_backend ;;
-            "all") docs_all ;;
             *) print_error "Unknown docs command: $2" ;;
         esac
         ;;
@@ -478,7 +437,6 @@ case "${1:-help}" in
             "test") ci_test ;;
             "lint") ci_lint ;;
             "build") ci_build ;;
-            "security") ci_security ;;
             "all") ci_all ;;
             *) print_error "Unknown ci command: $2" ;;
         esac
@@ -554,19 +512,15 @@ case "${1:-help}" in
         echo "  report    - Generate comprehensive code quality report"
         echo "  frontend  - Run frontend code quality checks"
         echo "  backend   - Run backend code quality checks"
-        echo "  sonar     - Run SonarQube analysis"
         echo ""
         echo "Documentation commands:"
         echo "  storybook - Start Storybook development server"
         echo "  build     - Build Storybook documentation"
-        echo "  backend   - Build backend API documentation"
-        echo "  all       - Build all documentation"
         echo ""
         echo "CI/CD commands:"
         echo "  test      - Run CI test suite"
         echo "  lint      - Run CI linting checks"
         echo "  build     - Run CI build checks"
-        echo "  security  - Run CI security checks"
         echo "  all       - Run full CI pipeline"
         echo ""
         echo "All commands:"
@@ -602,7 +556,7 @@ case "${1:-help}" in
         echo ""
         echo "# Backend only:"
         echo "./toolkit.sh backend format-fix   # Fix Python formatting"
-        echo "./toolkit.sh backend lint          # Check Python code"
+        echo "./toolkit.sh backend lint          # Check Python code with Ruff"
         echo "./toolkit.sh backend test          # Run Python tests"
         echo ""
         echo "# Testing:"

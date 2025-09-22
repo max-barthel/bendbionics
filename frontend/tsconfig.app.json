@@ -33,7 +33,6 @@
     /* Advanced Type Checking */
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
-    "noImplicitUseStrict": true,
     "noStrictGenericChecks": false,
     "suppressExcessPropertyErrors": false,
     "suppressImplicitAnyIndexErrors": false,

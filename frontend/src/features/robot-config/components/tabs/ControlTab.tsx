@@ -22,8 +22,7 @@ export const ControlTab: React.FC<ControlTabProps> = ({
 
   const updateRobotState = (updates: Partial<RobotState>) => {
     setRobotState(prev => {
-      const newState = { ...prev, ...updates };
-      return newState;
+      return { ...prev, ...updates };
     });
   };
 

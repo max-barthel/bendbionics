@@ -1,5 +1,8 @@
 {
-  "editor.rulers": [88],
+  // ===== CURSOR IDE OPTIMIZED SETTINGS =====
+
+  // Core Editor Settings - Optimized for AI-assisted development
+  "editor.rulers": [88, 120],
   "editor.wordWrap": "bounded",
   "editor.wordWrapColumn": 88,
   "editor.formatOnSave": true,
@@ -16,34 +19,151 @@
     "strings": true
   },
   "editor.parameterHints.enabled": true,
-  "editor.hover.delay": 300,
+  "editor.hover.delay": 200,
+  "editor.inlineSuggest.enabled": true,
+  "editor.suggest.preview": true,
+  "editor.suggest.showKeywords": true,
+  "editor.suggest.showSnippets": true,
+  "editor.suggest.showClasses": true,
+  "editor.suggest.showFunctions": true,
+  "editor.suggest.showConstructors": true,
+  "editor.suggest.showMethods": true,
+  "editor.suggest.showProperties": true,
+  "editor.suggest.showVariables": true,
+  "editor.suggest.showConstants": true,
+  "editor.suggest.showEnums": true,
+  "editor.suggest.showEnumMembers": true,
+  "editor.suggest.showEvents": true,
+  "editor.suggest.showOperators": true,
+  "editor.suggest.showUnits": true,
+  "editor.suggest.showValues": true,
+  "editor.suggest.showText": true,
+  "editor.suggest.showColors": true,
+  "editor.suggest.showFiles": true,
+  "editor.suggest.showReferences": true,
+  "editor.suggest.showCustomcolors": true,
+  "editor.suggest.showFolders": true,
+  "editor.suggest.showTypeParameters": true,
+  "editor.suggest.showIssues": true,
+  "editor.suggest.showUsers": true,
+  "editor.suggest.showWords": true,
+
+  // Enhanced Editor Features for AI Development
+  "editor.semanticHighlighting.enabled": true,
+  "editor.semanticTokenColorCustomizations": {
+    "enabled": true
+  },
+  "editor.linkedEditing": true,
+  "editor.stickyScroll.enabled": true,
+  "editor.stickyScroll.maxLineCount": 5,
+  "editor.smoothScrolling": true,
+  "editor.cursorBlinking": "smooth",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "editor.cursorStyle": "line",
+  "editor.cursorWidth": 0,
+  "editor.renderWhitespace": "selection",
+"editor.renderControlCharacters": false,
+  "editor.autoClosingBrackets": "languageDefined",
+  "editor.autoClosingQuotes": "languageDefined",
+  "editor.autoSurround": "languageDefined",
+  "editor.autoIndent": "advanced",
+  "editor.dragAndDrop": true,
+  "editor.emptySelectionClipboard": false,
+"editor.copyWithSyntaxHighlighting": true,
+  "editor.codeLens": true,
+  "editor.folding": true,
+  "editor.foldingStrategy": "indentation",
+  "editor.foldingImportsByDefault": false,
+  "editor.showFoldingControls": "mouseover",
+  "editor.unfoldOnClickAfterEnd": false,
+  "editor.links": true,
+
+  // Find and Replace - Enhanced for AI workflows
+  "editor.find.autoFindInSelection": "multiline",
+  "editor.find.seedSearchStringFromSelection": "always",
+  "editor.find.addExtraSpaceOnTop": true,
+  "editor.find.loop": true,
+  "editor.find.globalFindClipboard": false,
+
+  // Minimap - Enhanced for code navigation
   "editor.minimap.enabled": true,
   "editor.minimap.showSlider": "always",
+  "editor.minimap.renderCharacters": true,
+  "editor.minimap.maxColumn": 120,
+  "editor.minimap.size": "proportional",
+  "editor.minimap.scale": 1,
+  "editor.minimap.side": "right",
+
+  // Bracket Pair Colorization
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": true,
+  "editor.guides.bracketPairsHorizontal": "active",
+  "editor.guides.highlightActiveIndentation": true,
+  "editor.guides.indentation": true,
+
+  // File Management
   "files.autoSave": "onFocusChange",
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "files.trimFinalNewlines": true,
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/target/**": true,
+    "**/__pycache__/**": true,
+    "**/htmlcov/**": true,
+    "**/.git/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/coverage/**": true,
+    "**/.next/**": true,
+    "**/storybook-static/**": true
+  },
+
+  // Search - Optimized for large codebases
   "search.exclude": {
     "**/node_modules": true,
     "**/target": true,
     "**/__pycache__": true,
     "**/htmlcov": true,
-    "**/.git": true
+    "**/.git": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/.next": true,
+    "**/storybook-static": true,
+    "**/soft_robot.db": true
   },
+  "search.useGlobalIgnoreFiles": true,
+  "search.useIgnoreFiles": true,
+  "search.smartCase": true,
+  "search.followSymlinks": false,
+  "search.showLineNumbers": true,
+  "search.collapseResults": "auto",
+  "search.maxResults": 20000,
+  "search.seedOnFocus": true,
+  "search.seedWithNearestWord": true,
+
   "files.exclude": {
     "**/__pycache__": true,
     "**/htmlcov": true,
-    "**/target": true
+    "**/target": true,
+    "**/soft_robot.db": true
   },
+
+  // Language-specific formatters
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.suggest.includeCompletionsForImportStatements": true
+    "editor.suggest.includeCompletionsForImportStatements": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.suggest.includeCompletionsForImportStatements": true
+    "editor.suggest.includeCompletionsForImportStatements": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -54,34 +174,57 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
+      "source.organizeImports": "explicit",
+      "source.fixAll.ruff": "explicit"
     }
   },
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
+
+  // Python Configuration
   "python.defaultInterpreterPath": "./backend/.venv/bin/python",
   "python.terminal.activateEnvironment": true,
   "python.linting.enabled": true,
-  "python.linting.flake8Enabled": true,
+  "python.linting.flake8Enabled": false,
   "python.linting.pylintEnabled": true,
   "python.linting.mypyEnabled": true,
   "python.formatting.provider": "black",
   "python.sortImports.args": ["--profile", "black"],
+
+  // Ruff Configuration (replaces flake8)
+  "ruff.enable": true,
+  "ruff.organizeImports": true,
+  "ruff.fixAll": true,
+
+  // Tailwind CSS - Enhanced for component development
   "tailwindCSS.includeLanguages": {
     "typescript": "typescript",
     "typescriptreact": "typescriptreact"
   },
   "tailwindCSS.experimental.classRegex": [
     ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
-    ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+    ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
+  "tailwindCSS.emmetCompletions": true,
+  "tailwindCSS.validate": true,
+  "tailwindCSS.lint.cssConflict": "warning",
+  "tailwindCSS.lint.invalidApply": "error",
+  "tailwindCSS.lint.invalidConfigPath": "error",
+  "tailwindCSS.lint.invalidScreen": "error",
+  "tailwindCSS.lint.invalidTailwindDirective": "error",
+  "tailwindCSS.lint.invalidVariant": "error",
+  "tailwindCSS.lint.recommendedVariantOrder": "warning",
 
-  // Enhanced Productivity Settings
+  // Workbench - Optimized for productivity
   "workbench.startupEditor": "newUntitledFile",
   "workbench.editor.enablePreview": false,
   "workbench.editor.enablePreviewFromQuickOpen": false,
@@ -96,10 +239,20 @@
   "workbench.editor.labelFormat": "short",
   "workbench.editor.restoreViewState": true,
   "workbench.editor.limit.enabled": true,
-  "workbench.editor.limit.value": 10,
+  "workbench.editor.limit.value": 15,
   "workbench.editor.limit.perEditorGroup": true,
+  "workbench.editor.showIcons": true,
+  "workbench.editor.tabCloseButton": "right",
+  "workbench.editor.tabActionLocation": "right",
+  "workbench.sideBar.location": "left",
+  "workbench.sideBar.visible": true,
+  "workbench.panel.defaultLocation": "bottom",
+  "workbench.panel.opensMaximized": "never",
+  "workbench.activityBar.location": "default",
+  "workbench.statusBar.visible": true,
+  "workbench.productIconTheme": "Default",
 
-  // File Explorer
+  // File Explorer - Streamlined
   "explorer.confirmDelete": false,
   "explorer.confirmDragAndDrop": false,
   "explorer.compactFolders": false,
@@ -113,28 +266,7 @@
     "**/__pycache__": true
   },
 
-  // Search
-  "search.exclude": {
-    "**/node_modules": true,
-    "**/target": true,
-    "**/__pycache__": true,
-    "**/htmlcov": true,
-    "**/.git": true,
-    "**/dist": true,
-    "**/build": true,
-    "**/coverage": true,
-    "**/.next": true,
-    "**/storybook-static": true
-  },
-  "search.useGlobalIgnoreFiles": true,
-  "search.useIgnoreFiles": true,
-  "search.smartCase": true,
-  "search.followSymlinks": false,
-  "search.showLineNumbers": true,
-  "search.collapseResults": "auto",
-  "search.maxResults": 20000,
-
-  // Terminal
+  // Terminal - Enhanced for development
   "terminal.integrated.defaultProfile.osx": "zsh",
   "terminal.integrated.profiles.osx": {
     "zsh": {
@@ -153,7 +285,7 @@
   "terminal.integrated.copyOnSelection": true,
   "terminal.integrated.shellIntegration.enabled": true,
 
-  // Git
+  // Git - Streamlined workflow
   "git.enableSmartCommit": true,
   "git.confirmSync": false,
   "git.autofetch": true,
@@ -189,7 +321,7 @@
   "git.useCommitInputAsStashMessage": false,
   "git.verboseCommit": false,
 
-  // Debugging
+  // Debugging - Enhanced for AI development
   "debug.allowBreakpointsEverywhere": true,
   "debug.autoExpandGetters": false,
   "debug.console.acceptSuggestionOnEnter": "on",
@@ -207,15 +339,16 @@
   "debug.terminal.clearBeforeReusing": true,
   "debug.terminal.focusOnExit": "never",
 
-  // Testing
+  // Testing - Optimized for TDD
   "testing.automaticallyOpenPeekView": "never",
+  "testing.automaticallyOpenTestResults": "neverOpen",
   "testing.defaultGutterClickAction": "run",
   "testing.followRunningTest": true,
   "testing.gutterEnabled": true,
   "testing.openTesting": "neverOpen",
   "testing.saveBeforeTest": true,
 
-  // Breadcrumbs
+  // Breadcrumbs - Simplified for better navigation
   "breadcrumbs.enabled": true,
   "breadcrumbs.showFiles": true,
   "breadcrumbs.showSymbols": true,
@@ -237,32 +370,6 @@
   "breadcrumbs.showStructs": true,
   "breadcrumbs.showTypeParameters": true,
   "breadcrumbs.showInterfaces": true,
-  "breadcrumbs.showKeys": true,
-  "breadcrumbs.showValues": true,
-  "breadcrumbs.showColors": true,
-  "breadcrumbs.showStrings": true,
-  "breadcrumbs.showRegularExpressions": true,
-  "breadcrumbs.showNumbers": true,
-  "breadcrumbs.showBooleans": true,
-  "breadcrumbs.showArrays": true,
-  "breadcrumbs.showObjects": true,
-  "breadcrumbs.showKeys": true,
-  "breadcrumbs.showValues": true,
-  "breadcrumbs.showColors": true,
-  "breadcrumbs.showStrings": true,
-  "breadcrumbs.showRegularExpressions": true,
-  "breadcrumbs.showNumbers": true,
-  "breadcrumbs.showBooleans": true,
-  "breadcrumbs.showArrays": true,
-  "breadcrumbs.showObjects": true,
-
-  // Minimap
-  "editor.minimap.enabled": true,
-  "editor.minimap.showSlider": "always",
-  "editor.minimap.renderCharacters": true,
-  "editor.minimap.maxColumn": 120,
-  "editor.minimap.size": "proportional",
-  "editor.minimap.scale": 1,
 
   // Problems Panel
   "problems.decorations.enabled": true,
@@ -276,47 +383,11 @@
   "workbench.welcome.enabled": true,
   "workbench.welcome.experimental.dynamic": true,
 
-  // Telemetry
+  // Telemetry - Privacy focused
   "telemetry.telemetryLevel": "off",
   "redhat.telemetry.enabled": false,
 
   // Update
   "update.mode": "start",
-  "update.showReleaseNotes": "onUpdate",
-
-  // Workbench
-  "workbench.productIconTheme": "Default",
-  "workbench.sideBar.location": "left",
-  "workbench.panel.defaultLocation": "bottom",
-  "workbench.activityBar.location": "default",
-  "workbench.statusBar.visible": true,
-  "workbench.activityBar.visible": true,
-  "workbench.sideBar.visible": true,
-  "workbench.panel.opensMaximized": "never",
-  "workbench.editor.showIcons": true,
-  "workbench.editor.tabCloseButton": "right",
-  "workbench.editor.tabSizing": "shrink",
-  "workbench.editor.wrapTabs": true,
-  "workbench.editor.scrollToSwitchTabs": true,
-  "workbench.editor.highlightModifiedTabs": true,
-  "workbench.editor.labelFormat": "short",
-  "workbench.editor.restoreViewState": true,
-  "workbench.editor.limit.enabled": true,
-  "workbench.editor.limit.value": 10,
-  "workbench.editor.limit.perEditorGroup": true,
-  "workbench.editor.enablePreview": false,
-  "workbench.editor.enablePreviewFromQuickOpen": false,
-  "workbench.editor.closeOnFileDelete": true,
-  "workbench.editor.decorations.badges": true,
-  "workbench.editor.decorations.colors": true,
-  "workbench.editor.showTabs": "multiple",
-  "workbench.editor.tabSizing": "shrink",
-  "workbench.editor.wrapTabs": true,
-  "workbench.editor.scrollToSwitchTabs": true,
-  "workbench.editor.highlightModifiedTabs": true,
-  "workbench.editor.labelFormat": "short",
-  "workbench.editor.restoreViewState": true,
-  "workbench.editor.limit.enabled": true,
-  "workbench.editor.limit.value": 10,
-  "workbench.editor.limit.perEditorGroup": true
+  "update.showReleaseNotes": "onUpdate"
 }

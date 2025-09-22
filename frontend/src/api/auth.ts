@@ -62,13 +62,12 @@ export const authAPI = {
     if (isTauri) {
       const response = await tauriClient.post<{ data: User }>('/auth/register', data);
       if (!response.success) {
-        throw new Error(response.error || 'Registration failed');
+        throw new Error(response.error ?? 'Registration failed');
       }
       return (response.data as { data: User }).data;
-    } else {
-      const response = await client().post<{ data: User }>('/auth/register', data);
-      return response.data.data;
     }
+    const response = await client().post<{ data: User }>('/auth/register', data);
+    return response.data.data;
   },
 
   // Login user
@@ -82,14 +81,13 @@ export const authAPI = {
       );
 
       if (!response.success) {
-        throw new Error(response.error || 'Login failed');
+        throw new Error(response.error ?? 'Login failed');
       }
 
       return (response.data as { data: User }).data as AuthResponse;
-    } else {
-      const response = await client().post<{ data: AuthResponse }>('/auth/login', data);
-      return response.data.data;
     }
+    const response = await client().post<{ data: AuthResponse }>('/auth/login', data);
+    return response.data.data;
   },
 
   // Get current user info
@@ -100,13 +98,12 @@ export const authAPI = {
     if (isTauri) {
       const response = await tauriClient.get<User>('/auth/me');
       if (!response.success) {
-        throw new Error(response.error || 'Failed to get user info');
+        throw new Error(response.error ?? 'Failed to get user info');
       }
       return response.data as User;
-    } else {
-      const response = await client().get<User>('/auth/me');
-      return response.data;
     }
+    const response = await client().get<User>('/auth/me');
+    return response.data;
   },
 
   // Delete user account
@@ -116,7 +113,7 @@ export const authAPI = {
     if (isTauri) {
       const response = await tauriClient.delete('/auth/account');
       if (!response.success) {
-        throw new Error(response.error || 'Failed to delete account');
+        throw new Error(response.error ?? 'Failed to delete account');
       }
     } else {
       await client().delete('/auth/account');
@@ -134,13 +131,12 @@ export const presetAPI = {
     ) {
       const response = await tauriClient.get<{ data: Preset[] }>('/presets/');
       if (!response.success) {
-        throw new Error(response.error || 'Failed to get presets');
+        throw new Error(response.error ?? 'Failed to get presets');
       }
       return (response.data as { data: User }).data as Preset[];
-    } else {
-      const response = await client().get<{ data: Preset[] }>('/presets/');
-      return response.data.data;
     }
+    const response = await client().get<{ data: Preset[] }>('/presets/');
+    return response.data.data;
   },
 
   // Get public presets
@@ -151,13 +147,12 @@ export const presetAPI = {
     ) {
       const response = await tauriClient.get<{ data: Preset[] }>('/presets/public');
       if (!response.success) {
-        throw new Error(response.error || 'Failed to get public presets');
+        throw new Error(response.error ?? 'Failed to get public presets');
       }
       return (response.data as { data: User }).data as Preset[];
-    } else {
-      const response = await client().get<{ data: Preset[] }>('/presets/public');
-      return response.data.data;
     }
+    const response = await client().get<{ data: Preset[] }>('/presets/public');
+    return response.data.data;
   },
 
   // Get specific preset
@@ -168,13 +163,12 @@ export const presetAPI = {
     ) {
       const response = await tauriClient.get<{ data: Preset }>(`/presets/${id}`);
       if (!response.success) {
-        throw new Error(response.error || 'Failed to get preset');
+        throw new Error(response.error ?? 'Failed to get preset');
       }
       return (response.data as { data: User }).data as Preset;
-    } else {
-      const response = await client().get<{ data: Preset }>(`/presets/${id}`);
-      return response.data.data;
     }
+    const response = await client().get<{ data: Preset }>(`/presets/${id}`);
+    return response.data.data;
   },
 
   // Create new preset
@@ -185,13 +179,12 @@ export const presetAPI = {
     ) {
       const response = await tauriClient.post<{ data: Preset }>('/presets/', data);
       if (!response.success) {
-        throw new Error(response.error || 'Failed to create preset');
+        throw new Error(response.error ?? 'Failed to create preset');
       }
       return (response.data as { data: User }).data as Preset;
-    } else {
-      const response = await client().post<{ data: Preset }>('/presets/', data);
-      return response.data.data;
     }
+    const response = await client().post<{ data: Preset }>('/presets/', data);
+    return response.data.data;
   },
 
   // Update preset
@@ -202,13 +195,12 @@ export const presetAPI = {
     ) {
       const response = await tauriClient.put<{ data: Preset }>(`/presets/${id}`, data);
       if (!response.success) {
-        throw new Error(response.error || 'Failed to update preset');
+        throw new Error(response.error ?? 'Failed to update preset');
       }
       return (response.data as { data: User }).data as Preset;
-    } else {
-      const response = await client().put<{ data: Preset }>(`/presets/${id}`, data);
-      return response.data.data;
     }
+    const response = await client().put<{ data: Preset }>(`/presets/${id}`, data);
+    return response.data.data;
   },
 
   // Delete preset
@@ -221,14 +213,13 @@ export const presetAPI = {
         `/presets/${id}`
       );
       if (!response.success) {
-        throw new Error(response.error || 'Failed to delete preset');
+        throw new Error(response.error ?? 'Failed to delete preset');
       }
       return (response.data as { data: User }).data as { message: string };
-    } else {
-      const response = await client().delete<{ data: { message: string } }>(
-        `/presets/${id}`
-      );
-      return response.data.data;
     }
+    const response = await client().delete<{ data: { message: string } }>(
+      `/presets/${id}`
+    );
+    return response.data.data;
   },
 };

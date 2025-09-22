@@ -7,21 +7,21 @@
 
 import {
   borderRadius,
+  type BorderRadiusVariant,
   borders,
   boxShadows,
   disabledStates,
   focusStates,
+  type FocusStateVariant,
   gradients,
   hoverStates,
+  type HoverStateVariant,
   shadows,
+  type ShadowVariant,
   styleCombinations,
   tahoeGlass,
-  transitions,
-  type BorderRadiusVariant,
-  type FocusStateVariant,
-  type HoverStateVariant,
-  type ShadowVariant,
   type TahoeGlassVariant,
+  transitions,
   type TransitionVariant,
 } from './design-tokens';
 
@@ -66,7 +66,9 @@ export function getStyleCombination(
  * Get dynamic focus styles for inline styling
  */
 export function getFocusStyles(isFocused: boolean, variant: 'blue' | 'white' = 'blue') {
-  if (!isFocused) return {};
+  if (!isFocused) {
+    return {};
+  }
 
   if (variant === 'blue') {
     return {
@@ -86,7 +88,9 @@ export function getFocusStyles(isFocused: boolean, variant: 'blue' | 'white' = '
  * Get dynamic hover styles for inline styling
  */
 export function getHoverStyles(isHovered: boolean) {
-  if (!isHovered) return {};
+  if (!isHovered) {
+    return {};
+  }
 
   return {
     background: gradients.whiteOverlayEnhanced,
@@ -157,11 +161,15 @@ export function getResponsiveStyles(
     xl?: string;
   }
 ): string {
-  if (!responsiveOverrides) return baseStyles;
+  if (!responsiveOverrides) {
+    return baseStyles;
+  }
 
   const responsiveClasses = Object.entries(responsiveOverrides)
     .map(([breakpoint, styles]) => {
-      if (!styles) return '';
+      if (!styles) {
+        return '';
+      }
       return `${breakpoint === 'sm' ? '' : `${breakpoint}:`}${styles}`;
     })
     .filter(Boolean)

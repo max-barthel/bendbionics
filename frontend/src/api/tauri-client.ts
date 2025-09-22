@@ -101,14 +101,12 @@ export class TauriApiClient {
         authToken === undefined
       );
 
-      const response = await invoke<ApiResponse<T>>('call_backend_api', {
+      return await invoke<ApiResponse<T>>('call_backend_api', {
         endpoint,
         data: null,
         auth_token: authToken || null,
         token: authToken || null, // Try alternative parameter name
       });
-
-      return response;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       return {
@@ -136,13 +134,12 @@ export class TauriApiClient {
         authToken === undefined
       );
 
-      const response = await invoke<ApiResponse<T>>('call_backend_api', {
+      return await invoke<ApiResponse<T>>('call_backend_api', {
         endpoint,
         data,
         auth_token: authToken || null,
         token: authToken || null, // Try alternative parameter name
       });
-      return response;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       return {
@@ -164,14 +161,12 @@ export class TauriApiClient {
         authToken ? `Bearer ${authToken.substring(0, 20)}...` : 'None'
       );
 
-      const response = await invoke<ApiResponse<T>>('call_backend_api', {
+      return await invoke<ApiResponse<T>>('call_backend_api', {
         endpoint,
         data: { _method: 'DELETE' },
         auth_token: authToken || null,
         token: authToken || null,
       });
-
-      return response;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       return {

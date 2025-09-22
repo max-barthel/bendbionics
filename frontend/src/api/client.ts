@@ -132,7 +132,8 @@ async function withRetry<T>(
     }
   }
 
-  throw lastError!;
+  if (lastError) {throw lastError;}
+  throw new Error('All retry attempts failed');
 }
 
 // Get API URL dynamically with fallback
@@ -149,8 +150,7 @@ function getApiUrl(): string {
 
     // For web deployment, use the configured API URL
     if ((window as { APP_CONFIG?: { API_URL?: string } }).APP_CONFIG?.API_URL) {
-      const url = (window as { APP_CONFIG: { API_URL: string } }).APP_CONFIG.API_URL;
-      return url;
+      return (window as { APP_CONFIG: { API_URL: string } }).APP_CONFIG.API_URL;
     }
   }
 
@@ -225,15 +225,14 @@ export const robotAPI = {
       ) {
         const response = await tauriClient.post<PCCResponse>('/pcc', params);
         if (!response.success) {
-          throw new Error(response.error || 'API call failed');
+          throw new Error(response.error ?? 'API call failed');
         }
         return response.data as PCCResponse;
-      } else {
-        // Fallback to axios for web development
-        const client = getApiClient();
-        const response = await client.post('/pcc', params);
-        return response.data as PCCResponse;
       }
+      // Fallback to axios for web development
+      const client = getApiClient();
+      const response = await client.post('/pcc', params);
+      return response.data as PCCResponse;
     }, retryConfig);
   },
   computePCCWithTendons: async (
@@ -251,15 +250,14 @@ export const robotAPI = {
           params
         );
         if (!response.success) {
-          throw new Error(response.error || 'API call failed');
+          throw new Error(response.error ?? 'API call failed');
         }
         return response.data as TendonAnalysisResponse;
-      } else {
-        // Fallback to axios for web development
-        const client = getApiClient();
-        const response = await client.post('/pcc-with-tendons', params);
-        return response.data as TendonAnalysisResponse;
       }
+      // Fallback to axios for web development
+      const client = getApiClient();
+      const response = await client.post('/pcc-with-tendons', params);
+      return response.data as TendonAnalysisResponse;
     }, retryConfig);
   },
 };

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Protocol
 import numpy as np
 from pydantic import BaseModel, field_validator
 
-from ..tendon.types import TendonConfig
+from app.models.tendon.types import TendonConfig
 
 
 class RobotModelInterface(Protocol):
@@ -42,14 +42,17 @@ class PCCParams(BaseModel):
     @classmethod
     def validate_non_empty_arrays(cls, v):
         if not v:
-            raise ValueError("Arrays cannot be empty")
+            msg = "Arrays cannot be empty"
+            raise ValueError(msg)
         return v
 
     @field_validator("discretization_steps")
     @classmethod
     def validate_discretization_steps(cls, v):
         if v <= 0:
-            raise ValueError("Discretization steps must be positive")
+            msg = "Discretization steps must be positive"
+            raise ValueError(msg)
         if v > 10000:
-            raise ValueError("Discretization steps cannot exceed 10000")
+            msg = "Discretization steps cannot exceed 10000"
+            raise ValueError(msg)
         return v

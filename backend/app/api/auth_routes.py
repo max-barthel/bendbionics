@@ -4,10 +4,19 @@ from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlmodel import Session, select
 
-from app.api.responses import (AuthenticationError, ValidationError,
-                               created_response, success_response)
-from app.auth import (authenticate_user, create_access_token, get_current_user,
-                      get_password_hash, security)
+from app.api.responses import (
+    AuthenticationError,
+    ValidationError,
+    created_response,
+    success_response,
+)
+from app.auth import (
+    authenticate_user,
+    create_access_token,
+    get_current_user,
+    get_password_hash,
+    security,
+)
 from app.config import settings
 from app.database import get_session
 from app.models import User, UserCreate, UserLogin, UserResponse
@@ -16,7 +25,9 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
 @router.post("/register")
-async def register(user_data: UserCreate, session: Session = Depends(get_session)):
+async def register(
+    user_data: UserCreate, session: Session = Depends(get_session)
+):
     """Register a new user"""
     # Check if username already exists
     existing_user = session.exec(
@@ -57,9 +68,12 @@ async def login(user_data: UserLogin, session: Session = Depends(get_session)):
     """Login user and return access token with user data"""
     user = authenticate_user(session, user_data.username, user_data.password)
     if not user:
-        raise AuthenticationError("Incorrect username or password")
+        msg = "Incorrect username or password"
+        raise AuthenticationError(msg)
 
-    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+    access_token_expires = timedelta(
+        minutes=settings.access_token_expire_minutes
+    )
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )

@@ -17,25 +17,32 @@ class TendonConfig(BaseModel):
     @classmethod
     def validate_tendon_count(cls, v):
         if v < 3:
-            raise ValueError("Must have at least 3 tendons for stability")
+            msg = "Must have at least 3 tendons for stability"
+            raise ValueError(msg)
         if v > 12:
-            raise ValueError("Tendon count cannot exceed 12 for practical reasons")
+            msg = "Tendon count cannot exceed 12 for practical reasons"
+            raise ValueError(
+                msg
+            )
         return v
 
     @field_validator("radius")
     @classmethod
     def validate_radius(cls, v):
         if v <= 0:
-            raise ValueError("Tendon radius must be positive")
+            msg = "Tendon radius must be positive"
+            raise ValueError(msg)
         if v > 0.1:  # Max 10cm
-            raise ValueError("Radius cannot exceed 10cm")
+            msg = "Radius cannot exceed 10cm"
+            raise ValueError(msg)
         return v
 
     @field_validator("coupling_offset")
     @classmethod
     def validate_offset(cls, v):
         if abs(v) > 0.05:  # 5cm max offset
-            raise ValueError("Coupling offset cannot exceed 5cm")
+            msg = "Coupling offset cannot exceed 5cm"
+            raise ValueError(msg)
         return v
 
 

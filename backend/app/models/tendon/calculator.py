@@ -46,8 +46,8 @@ class TendonCalculator:
         self,
         coupling_positions: List[np.ndarray],
         coupling_orientations: List[np.ndarray],
-        backbone_lengths: List[float] = None,
-        coupling_lengths: List[float] = None,
+        backbone_lengths: List[float] | None = None,
+        coupling_lengths: List[float] | None = None,
     ) -> Dict[str, Any]:
         """
         Calculate tendon lengths based on coupling element data.
@@ -61,7 +61,10 @@ class TendonCalculator:
             Dictionary with tendon analysis results
         """
         if len(coupling_positions) != len(coupling_orientations):
-            raise ValueError("Positions and orientations must have same length")
+            msg = "Positions and orientations must have same length"
+            raise ValueError(
+                msg
+            )
 
         num_elements = len(coupling_positions)
         num_tendons = self.config.count
@@ -93,7 +96,9 @@ class TendonCalculator:
         total_lengths[:, 0] = 0  # Base position
 
         for i in range(1, num_elements):
-            total_lengths[:, i] = total_lengths[:, i - 1] + segment_lengths[:, i - 1]
+            total_lengths[:, i] = (
+                total_lengths[:, i - 1] + segment_lengths[:, i - 1]
+            )
 
         # Calculate length changes (how much each tendon needs to be pulled)
         # Reference is the straight configuration
@@ -150,8 +155,8 @@ class TendonCalculator:
     def _calculate_reference_lengths(
         self,
         coupling_positions: List[np.ndarray],
-        backbone_lengths: List[float] = None,
-        coupling_lengths: List[float] = None,
+        backbone_lengths: List[float] | None = None,
+        coupling_lengths: List[float] | None = None,
         is_straight: bool = False,
         total_lengths: np.ndarray = None,
     ) -> np.ndarray:
@@ -208,10 +213,6 @@ class TendonCalculator:
                             if j + 1 < len(coupling_lengths):
                                 cumulative_length += coupling_lengths[j + 1]
 
-                        print(
-                            f"DEBUG: coupling {i}: "
-                            f"cumulative_length={cumulative_length}"
-                        )
                         # All tendons have the same reference length in
                         # straight
                         # config

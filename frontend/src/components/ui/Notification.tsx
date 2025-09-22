@@ -31,7 +31,9 @@ function Notification({
     }
   }, [isVisible, autoHide, duration, onClose]);
 
-  if (!isVisible) return null;
+  if (!isVisible) {
+    return null;
+  }
 
   const typeClasses = {
     success: 'bg-green-50 border-green-400 text-green-800',

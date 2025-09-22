@@ -18,7 +18,7 @@ export const TENDON_COLORS = [
 // Backend uses 1-based indexing (1, 2, 3, ...), so we convert to 0-based for color array
 export const getTendonColor = (tendonId: string): string => {
   const index = parseInt(tendonId, 10) - 1; // Convert from 1-based to 0-based
-  return TENDON_COLORS[index % TENDON_COLORS.length] || '#6b7280';
+  return TENDON_COLORS[index % TENDON_COLORS.length] ?? '#6b7280';
 };
 
 // Function to get Tailwind color classes for tendon identification
@@ -48,7 +48,7 @@ export const getTendonColorClasses = (
   ];
 
   return (
-    colorMap[colorIndex] || {
+    colorMap[colorIndex] ?? {
       bg: 'bg-gray-400',
       border: 'border-gray-400',
       text: 'text-gray-600',

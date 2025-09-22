@@ -16,7 +16,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
   const [deleteError, setDeleteError] = useState('');
 
   const handleLogout = () => {
-    logout();
+    void logout();
     navigate('/');
     onClose();
   };

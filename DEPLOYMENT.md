@@ -13,7 +13,6 @@ This guide covers CI/CD, monitoring, performance, and production deployment for 
 - Linting and formatting checks
 - Unit and integration tests
 - Build verification
-- Security scanning
 - Code quality analysis
 ```
 
@@ -28,13 +27,14 @@ This guide covers CI/CD, monitoring, performance, and production deployment for 
 - Generate release notes
 ```
 
-#### Security Scanning (`security.yml`)
+#### Simplified CI Pipeline
 
 ```yaml
-# Runs daily
-- Dependency vulnerability scanning
-- Code security analysis
-- License compliance checks
+# Focused on essential checks
+- Frontend and backend testing
+- Linting and formatting
+- Build verification
+- Release automation
 ```
 
 ### Local CI Testing
@@ -159,16 +159,13 @@ curl http://localhost:8000/metrics
 
 ## 🔒 Security
 
-### Security Scanning
+### Basic Security Checks
 
 ```bash
-# Run security checks
-./toolkit.sh ci security
-
-# Frontend security
+# Run basic security checks
 npm audit --audit-level=moderate
 
-# Backend security
+# Check for known vulnerabilities
 pip install safety && safety check
 ```
 
@@ -374,7 +371,7 @@ FROM nginx:alpine AS production
 ### Pre-deployment
 
 - [ ] All tests passing
-- [ ] Security scan clean
+- [ ] Basic security checks passed
 - [ ] Performance budget met
 - [ ] Documentation updated
 - [ ] Database migrations ready

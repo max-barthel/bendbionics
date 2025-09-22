@@ -154,8 +154,8 @@ backend/
 # Backend quality
 ./toolkit.sh quality backend
 
-# SonarQube analysis
-./toolkit.sh quality sonar
+# Code quality report
+./toolkit.sh quality report
 ```
 
 ### Code Standards
@@ -199,7 +199,7 @@ frontend/
 └── .storybook/         # Storybook config
 
 backend/
-└── docs/               # Sphinx documentation
+└── app/                # Backend application code
 ```
 
 ## 🔧 Git Workflow

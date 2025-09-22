@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
 import Button from './Button';
 
 const meta: Meta<typeof Button> = {
@@ -49,7 +48,7 @@ const meta: Meta<typeof Button> = {
     },
   },
   args: {
-    onClick: fn(),
+    onClick: () => console.log('Button clicked'),
   },
 };
 
@@ -142,7 +141,7 @@ export const LoadingWithText: Story = {
 export const Interactive: Story = {
   args: {
     children: 'Click me!',
-    onClick: fn(),
+    onClick: () => console.log('Button clicked'),
   },
   parameters: {
     docs: {

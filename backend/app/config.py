@@ -41,17 +41,23 @@ class Settings(BaseSettings):
     @classmethod
     def validate_cors_origins(cls, v):
         if not v:
-            raise ValueError("CORS origins cannot be empty")
+            msg = "CORS origins cannot be empty"
+            raise ValueError(msg)
 
         # Validate each origin format
         for origin in v:
             if not isinstance(origin, str):
-                raise ValueError(f"Invalid CORS origin type: {type(origin)}")
+                msg = f"Invalid CORS origin type: {type(origin)}"
+                raise ValueError(msg)
             if not origin.strip():
-                raise ValueError("CORS origin cannot be empty string")
+                msg = "CORS origin cannot be empty string"
+                raise ValueError(msg)
             # Basic URL format validation
-            if not (origin.startswith("http://") or origin.startswith("https://")):
-                raise ValueError(f"Invalid CORS origin format: {origin}")
+            if not (
+                origin.startswith(("http://", "https://"))
+            ):
+                msg = f"Invalid CORS origin format: {origin}"
+                raise ValueError(msg)
 
         return v
 
@@ -59,14 +65,14 @@ class Settings(BaseSettings):
     @classmethod
     def validate_cors_allow_all_origins(cls, v):
         # Warn if allowing all origins in production-like environment
-        if v and False:  # Temporarily disabled cls.debug check
+        if False:  # Temporarily disabled cls.debug check
             import warnings
 
             msg = (
                 "CORS_ALLOW_ALL_ORIGINS is enabled in non-debug mode. "
                 "This is not recommended for production environments."
             )
-            warnings.warn(msg, UserWarning)
+            warnings.warn(msg, UserWarning, stacklevel=2)
         return v
 
     def get_cors_origins(self) -> List[str]:

@@ -38,10 +38,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
             minutes=settings.access_token_expire_minutes
         )
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(
+    return jwt.encode(
         to_encode, settings.secret_key, algorithm=settings.algorithm
     )
-    return encoded_jwt
 
 
 def verify_token(token: str) -> Optional[TokenData]:
@@ -85,7 +84,9 @@ def get_current_user(
     return user
 
 
-def authenticate_user(session: Session, username: str, password: str) -> Optional[User]:
+def authenticate_user(
+    session: Session, username: str, password: str
+) -> Optional[User]:
     """Authenticate user with username and password"""
     user = session.exec(select(User).where(User.username == username)).first()
     if not user:

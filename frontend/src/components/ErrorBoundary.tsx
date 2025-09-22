@@ -74,7 +74,7 @@ class ErrorBoundary extends Component<Props, State> {
 
     // Report to external service if enabled
     if (enableReporting) {
-      this.reportError(error, errorInfo, errorId);
+      void this.reportError(error, errorInfo, errorId);
     }
 
     this.setState({ errorInfo });

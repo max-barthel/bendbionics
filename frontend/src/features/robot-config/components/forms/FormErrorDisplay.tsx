@@ -20,7 +20,9 @@ interface FormErrorDisplayProps {
  * - Dismissible error messages
  */
 export function FormErrorDisplay({ error, onClose }: FormErrorDisplayProps) {
-  if (!error.visible) return null;
+  if (!error.visible) {
+    return null;
+  }
 
   const getErrorStyles = (type: ErrorType) => {
     switch (type) {

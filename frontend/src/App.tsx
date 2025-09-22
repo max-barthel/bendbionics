@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 
 // Feature imports - using direct imports to avoid export conflicts
@@ -16,6 +16,16 @@ import { LoadingSpinner, Typography } from './components/ui';
 import TahoeGlass from './components/ui/TahoeGlass';
 import { AuthProvider, useAuth } from './providers';
 import { type RobotConfiguration } from './types/robot';
+
+// Constants
+const DEFAULT_SEGMENTS = 5;
+const DEFAULT_BACKBONE_LENGTH = 0.07;
+const DEFAULT_COUPLING_LENGTH = 0.03;
+const DEFAULT_DISCRETIZATION_STEPS = 1000;
+const DEFAULT_TENDON_COUNT = 3;
+const DEFAULT_TENDON_RADIUS = 0.01;
+const DEFAULT_TENDON_OFFSET = 0.0;
+const DEFAULT_TIMEOUT = 100;
 
 // Lazy load heavy components
 const LazyVisualizer3D = lazy(() => Promise.resolve({ default: Visualizer3D }));
@@ -101,21 +111,27 @@ function AppContent() {
 
     // Directly update robot state with preset configuration
     const newRobotState = {
-      segments: configuration.segments || 5,
+      segments: configuration.segments ?? DEFAULT_SEGMENTS,
       bendingAngles:
-        configuration.bendingAngles || Array(configuration.segments || 5).fill(0),
+        configuration.bendingAngles ??
+        Array(configuration.segments ?? DEFAULT_SEGMENTS).fill(0),
       rotationAngles:
-        configuration.rotationAngles || Array(configuration.segments || 5).fill(0),
+        configuration.rotationAngles ??
+        Array(configuration.segments ?? DEFAULT_SEGMENTS).fill(0),
       backboneLengths:
-        configuration.backboneLengths || Array(configuration.segments || 5).fill(0.07),
+        configuration.backboneLengths ??
+        Array(configuration.segments ?? DEFAULT_SEGMENTS).fill(DEFAULT_BACKBONE_LENGTH),
       couplingLengths:
-        configuration.couplingLengths ||
-        Array((configuration.segments || 5) + 1).fill(0.03),
-      discretizationSteps: configuration.discretizationSteps || 1000,
-      tendonConfig: configuration.tendonConfig || {
-        count: 3,
-        radius: 0.01,
-        coupling_offset: 0.0,
+        configuration.couplingLengths ??
+        Array((configuration.segments ?? DEFAULT_SEGMENTS) + 1).fill(
+          DEFAULT_COUPLING_LENGTH
+        ),
+      discretizationSteps:
+        configuration.discretizationSteps ?? DEFAULT_DISCRETIZATION_STEPS,
+      tendonConfig: configuration.tendonConfig ?? {
+        count: DEFAULT_TENDON_COUNT,
+        radius: DEFAULT_TENDON_RADIUS,
+        coupling_offset: DEFAULT_TENDON_OFFSET,
       },
     };
 
@@ -131,7 +147,7 @@ function AppContent() {
       // Reset the loading preset flag after a short delay
       setTimeout(() => {
         setIsLoadingPreset(false);
-      }, 100);
+      }, DEFAULT_TIMEOUT);
     }, 10);
 
     // Auto-unfold tendon results panel if preset contains tendon analysis data
@@ -141,7 +157,7 @@ function AppContent() {
   };
 
   const handleLogout = () => {
-    logout();
+    void logout();
     navigate('/');
   };
 

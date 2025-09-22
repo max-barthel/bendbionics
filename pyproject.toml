@@ -9,9 +9,35 @@ strict = false
 [tool.pylsp-rope]
 ropeFolder = "backend"
 
-[tool.pylsp-flake8]
+[tool.pylsp-ruff]
 enabled = true
-maxLineLength = 88
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "COM", "C4", "DTZ", "T10", "EM", "EXE", "FA", "ISC", "ICN", "G", "INP", "PIE", "T20", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "TCH", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "NPY", "AIR", "PERF", "FURB", "LOG", "RUF"]
+ignore = [
+    "E203",  # whitespace before ':'
+    "S101",  # use of assert
+    "PLR0913",  # too many arguments
+    "PLR0912",  # too many branches
+    "PLR0915",  # too many statements
+    "C901",  # too complex
+    "UP045",  # non-pep604-annotation-optional
+    "UP006",  # non-pep585-annotation
+    "UP035",  # deprecated-import
+    "COM812",  # missing-trailing-comma
+    "RUF022",  # unsorted-dunder-all
+    "B905",  # zip-without-explicit-strict
+    "PLR5501",  # collapsible-else-if
+    "RUF010",  # explicit-f-string-type-conversion
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/**/*.py" = ["S101", "PLR2004", "S106", "S108"]
 
 [tool.pylsp-pylint]
 enabled = true

@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 import { analyzer } from 'vite-bundle-analyzer';
 
 // https://vite.dev/config/
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
   const isAnalyze = process.env.ANALYZE === 'true';
 
@@ -97,7 +97,7 @@ export default defineConfig(({ command, mode }) => {
           },
           // Optimize chunk naming for better caching
           chunkFileNames: chunkInfo => {
-            const facadeModuleId = chunkInfo.facadeModuleId
+            const _facadeModuleId = chunkInfo.facadeModuleId
               ? chunkInfo.facadeModuleId
                   .split('/')
                   .pop()

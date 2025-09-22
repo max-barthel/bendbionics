@@ -6,8 +6,11 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.auth_routes import router as auth_router
 from app.api.middleware import CORSMiddleware as CustomCORSMiddleware
-from app.api.middleware import (ErrorHandlingMiddleware, LoggingMiddleware,
-                                RequestIDMiddleware)
+from app.api.middleware import (
+    ErrorHandlingMiddleware,
+    LoggingMiddleware,
+    RequestIDMiddleware,
+)
 from app.api.preset_routes import router as preset_router
 from app.api.routes import router as pcc_router
 from app.api.tendon_routes import router as tendon_router
@@ -22,7 +25,8 @@ app = FastAPI(
     description="""
     ## Soft Robot Simulation API
 
-    A comprehensive API for soft robot simulation and analysis with unified response system.
+    A comprehensive API for soft robot simulation and analysis with unified
+    response system.
 
     ### Features
     - PCC (Piecewise Constant Curvature) robot computation
@@ -31,13 +35,16 @@ app = FastAPI(
     - Real-time 3D visualization data
 
     ### Response Format
-    All API responses follow a consistent format with `success`, `data`, `message`, `timestamp`, and `request_id` fields.
+    All API responses follow a consistent format with `success`, `data`,
+    `message`, `timestamp`, and `request_id` fields.
 
     ### Error Handling
-    Standardized error responses with proper HTTP status codes and detailed error information.
+    Standardized error responses with proper HTTP status codes and detailed
+    error information.
 
     ### Authentication
-    Most endpoints require Bearer token authentication. Register/login to get your token.
+    Most endpoints require Bearer token authentication. Register/login to get
+    your token.
     """,
     version="1.0.0",
     docs_url="/docs",

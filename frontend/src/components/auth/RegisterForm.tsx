@@ -61,7 +61,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
         </Typography>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          void handleSubmit(e);
+        }}
+        className="space-y-4"
+      >
         {error.visible && (
           <div className="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-md shadow-sm">
             <div className="flex">
