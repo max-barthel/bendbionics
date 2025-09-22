@@ -7,10 +7,8 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "09:00"
-      timezone: ""
+      timezone: "Etc/UTC"
     open-pull-requests-limit: 10
-    reviewers:
-      - "soft-robot-team"
     assignees:
       - "soft-robot-team"
     commit-message:
@@ -62,10 +60,8 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "09:00"
-      timezone: "UTC"
+      timezone: "Etc/UTC"
     open-pull-requests-limit: 5
-    reviewers:
-      - "soft-robot-team"
     assignees:
       - "soft-robot-team"
     commit-message:
@@ -97,10 +93,8 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "09:00"
-      timezone: "UTC"
+      timezone: "Etc/UTC"
     open-pull-requests-limit: 10
-    reviewers:
-      - "soft-robot-team"
     assignees:
       - "soft-robot-team"
     commit-message:
@@ -158,10 +152,8 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "09:00"
-      timezone: "UTC"
+      timezone: "Etc/UTC"
     open-pull-requests-limit: 5
-    reviewers:
-      - "soft-robot-team"
     assignees:
       - "soft-robot-team"
     commit-message:
@@ -191,10 +183,8 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "09:00"
-      timezone: "UTC"
+      timezone: "Etc/UTC"
     open-pull-requests-limit: 5
-    reviewers:
-      - "soft-robot-team"
     assignees:
       - "soft-robot-team"
     commit-message:

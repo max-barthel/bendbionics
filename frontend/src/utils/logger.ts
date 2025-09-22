@@ -180,23 +180,29 @@ class Logger {
   }
 
   private getResourceType(url: string): string {
-    if (url.includes('.js')) return 'script';
-    if (url.includes('.css')) return 'stylesheet';
+    if (url.includes('.js')) {
+      return 'script';
+    }
+    if (url.includes('.css')) {
+      return 'stylesheet';
+    }
     if (
       url.includes('.png') ||
       url.includes('.jpg') ||
       url.includes('.jpeg') ||
       url.includes('.gif') ||
       url.includes('.svg')
-    )
+    ) {
       return 'image';
+    }
     if (
       url.includes('.woff') ||
       url.includes('.woff2') ||
       url.includes('.ttf') ||
       url.includes('.otf')
-    )
+    ) {
       return 'font';
+    }
     return 'other';
   }
 
@@ -236,7 +242,9 @@ class Logger {
     component?: string,
     action?: string
   ): void {
-    if (!this.shouldLog(level)) return;
+    if (!this.shouldLog(level)) {
+      return;
+    }
 
     const entry = this.createLogEntry(level, context, message, data, component, action);
 
@@ -321,7 +329,9 @@ class Logger {
   }
 
   private async flushLogs(): Promise<void> {
-    if (this.logQueue.length === 0 || !this.config.remoteEndpoint) return;
+    if (this.logQueue.length === 0 || !this.config.remoteEndpoint) {
+      return;
+    }
 
     const logsToFlush = this.logQueue.splice(0, this.config.batchSize);
 

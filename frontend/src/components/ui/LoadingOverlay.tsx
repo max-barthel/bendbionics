@@ -11,7 +11,9 @@ function LoadingOverlay({
   message = 'Loading...',
   backdrop = true,
 }: LoadingOverlayProps) {
-  if (!isVisible) return null;
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <div

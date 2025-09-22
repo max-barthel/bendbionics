@@ -29,9 +29,10 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+ruff check . --select=E9,F63,F7,F82
 if [ $? -ne 0 ]; then
   echo "❌ Backend critical linting failed. Please fix the issues before committing."
+  echo "💡 Run 'ruff check --fix .' to auto-fix some issues."
   exit 1
 fi
 

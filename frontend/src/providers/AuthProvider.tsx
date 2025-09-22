@@ -7,8 +7,12 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { LoginRequest, RegisterRequest, User } from '../api/auth';
-import { authAPI } from '../api/auth';
+import {
+  authAPI,
+  type LoginRequest,
+  type RegisterRequest,
+  type User,
+} from '../api/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -40,7 +44,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Check if user is authenticated on mount
   useEffect(() => {
-    if (hasCheckedAuth.current) return;
+    if (hasCheckedAuth.current) {
+      return;
+    }
 
     const checkAuth = async () => {
       try {
@@ -75,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }, 5000);
 
-    checkAuth();
+    void checkAuth();
 
     return () => clearTimeout(timeoutId);
   }, [token, isLoading]);

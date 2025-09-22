@@ -126,7 +126,7 @@ setup_backend() {
 
     # Install development dependencies
     print_status "Installing development dependencies..."
-    pip install black flake8 pylint mypy pytest pytest-cov isort
+    pip install black ruff pylint mypy pytest pytest-cov isort
 
     cd ..
 

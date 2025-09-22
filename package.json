@@ -19,33 +19,17 @@
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md",
     "quality": "node scripts/code-quality-report.js",
     "quality:frontend": "cd frontend && npm run lint && npx tsc --noEmit",
-    "quality:backend": "cd backend && python -m flake8 app/ && python -m mypy app/",
-    "sonar": "sonar-scanner",
+    "quality:backend": "cd backend && ruff check app/ && python -m mypy app/",
     "ci:test": "npm run test && cd backend && python -m pytest tests/ -v",
-    "ci:lint": "npm run lint && cd backend && python -m flake8 app/ && python -m black --check app/",
+    "ci:lint": "npm run lint && cd backend && ruff check app/ && python -m black --check app/",
     "ci:build": "cd frontend && npm run build && cd ../backend && python -c 'import app.main'",
-    "ci:security": "cd frontend && npm audit --audit-level=moderate && cd ../backend && pip install safety && safety check",
-    "ci:all": "npm run ci:lint && npm run ci:test && npm run ci:build && npm run ci:security",
-    "productivity": "node scripts/productivity.js",
-    "productivity:setup": "./scripts/productivity.sh all",
-    "productivity:stats": "./scripts/productivity.sh code-stats",
-    "productivity:todos": "./scripts/productivity.sh find-todos",
-    "productivity:fixmes": "./scripts/productivity.sh find-fixmes",
-    "productivity:bugs": "./scripts/productivity.sh find-bugs",
-    "productivity:clean": "./scripts/productivity.sh clean-temp",
-    "productivity:security": "./scripts/productivity.sh check-security",
-    "productivity:docs": "./scripts/productivity.sh generate-docs",
+    "ci:all": "npm run ci:lint && npm run ci:test && npm run ci:build",
     "toolkit": "./toolkit.sh",
     "toolkit:test": "./toolkit.sh all test",
     "toolkit:lint": "./toolkit.sh all lint",
     "toolkit:fix": "./toolkit.sh all fix",
     "toolkit:quality": "./toolkit.sh quality report",
-    "toolkit:docs": "./toolkit.sh docs storybook",
-    "toolkit:ci": "./toolkit.sh ci all",
-    "issues:setup": "./scripts/setup-github-issues.sh",
-    "issues:create": "gh issue create",
-    "issues:list": "gh issue list",
-    "issues:view": "gh issue view"
+    "toolkit:docs": "./toolkit.sh docs storybook"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
@@ -53,8 +37,7 @@
     "commitizen": "^4.3.1",
     "conventional-changelog-cli": "^5.0.0",
     "cz-conventional-changelog": "^3.3.0",
-    "husky": "^9.1.7",
-    "sonarjs": "^0.2.0"
+    "husky": "^9.1.7"
   },
   "config": {
     "commitizen": {

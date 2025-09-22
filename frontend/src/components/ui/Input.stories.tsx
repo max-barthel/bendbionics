@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+// import { fn } from '@storybook/test';
 import { useState } from 'react';
 import Input from './Input';
 
@@ -61,9 +61,9 @@ const meta: Meta<typeof Input> = {
     },
   },
   args: {
-    onChange: fn(),
-    onFocus: fn(),
-    onBlur: fn(),
+    onChange: () => console.log('Input changed'),
+    onFocus: () => console.log('Input focused'),
+    onBlur: () => console.log('Input blurred'),
   },
 };
 

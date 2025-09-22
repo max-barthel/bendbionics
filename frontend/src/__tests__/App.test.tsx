@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App';
@@ -130,7 +131,7 @@ vi.mock('../components/ui', () => ({
   }: {
     placeholder?: string;
     value?: string;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onChange?: (_e: React.ChangeEvent<HTMLInputElement>) => void;
     className?: string;
   }) => (
     <input

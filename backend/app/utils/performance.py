@@ -4,13 +4,14 @@ Performance monitoring utilities for the Soft Robot App
 
 import asyncio
 import time
-from contextlib import asynccontextmanager, contextmanager
+from contextlib import asynccontextmanager, suppress
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import wraps
 from typing import Any, Callable, Dict, Optional
 
 import psutil
+
 from app.utils.logger import LogContext, default_logger
 
 
@@ -68,19 +69,13 @@ class PerformanceMonitor:
 
         if self.monitor_task:
             self.monitor_task.cancel()
-            try:
+            with suppress(asyncio.CancelledError):
                 await self.monitor_task
-            except asyncio.CancelledError:
-                pass
 
         default_logger.info(
             LogContext.PERFORMANCE,
             "Performance monitoring stopped",
-            {
-                "duration": (
-                    time.time() - self.start_time if self.start_time else 0
-                )
-            },
+            {"duration": (time.time() - self.start_time if self.start_time else 0)},
             "PerformanceMonitor",
             "stop_monitoring",
         )
@@ -328,11 +323,7 @@ class FunctionProfiler:
                     )
                     raise
 
-            return (
-                async_wrapper
-                if asyncio.iscoroutinefunction(func)
-                else sync_wrapper
-            )
+            return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
 
         return decorator
 
@@ -347,9 +338,7 @@ class DatabaseProfiler:
         self.query_count = 0
         self.total_query_time = 0.0
 
-    def profile_query(
-        self, query: str, params: Optional[Dict[str, Any]] = None
-    ):
+    def profile_query(self, query: str, params: Optional[Dict[str, Any]] = None):
         """Context manager to profile database queries"""
 
         @asynccontextmanager
@@ -368,9 +357,7 @@ class DatabaseProfiler:
                         duration,
                         {
                             "query": (
-                                query[:200] + "..."
-                                if len(query) > 200
-                                else query
+                                query[:200] + "..." if len(query) > 200 else query
                             ),
                             "params": params,
                             "query_count": self.query_count,
@@ -385,9 +372,7 @@ class DatabaseProfiler:
                     LogContext.DATABASE,
                     "Database query failed",
                     {
-                        "query": (
-                            query[:200] + "..." if len(query) > 200 else query
-                        ),
+                        "query": (query[:200] + "..." if len(query) > 200 else query),
                         "params": params,
                         "duration": duration,
                         "error": str(e),
@@ -403,9 +388,7 @@ class DatabaseProfiler:
     def get_stats(self) -> Dict[str, Any]:
         """Get database profiling statistics"""
         avg_query_time = (
-            self.total_query_time / self.query_count
-            if self.query_count > 0
-            else 0
+            self.total_query_time / self.query_count if self.query_count > 0 else 0
         )
 
         return {
@@ -418,9 +401,7 @@ class DatabaseProfiler:
 class MemoryProfiler:
     """Memory usage profiler"""
 
-    def __init__(
-        self, log_threshold_mb: float = 10.0
-    ):  # Log memory changes > 10MB
+    def __init__(self, log_threshold_mb: float = 10.0):  # Log memory changes > 10MB
         self.log_threshold_mb = log_threshold_mb
         self.baseline_memory = None
 
@@ -500,9 +481,7 @@ def profile_function(
     return function_profiler.profile(context, component)
 
 
-def profile_database_query(
-    query: str, params: Optional[Dict[str, Any]] = None
-):
+def profile_database_query(query: str, params: Optional[Dict[str, Any]] = None):
     """Convenience function for database query profiling"""
     return database_profiler.profile_query(query, params)
 

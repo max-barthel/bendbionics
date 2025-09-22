@@ -7,8 +7,8 @@ This guide explains how to effectively use GitHub Issues for project management 
 ### Setup GitHub Issues Integration
 
 ```bash
-# Run the setup script
-./scripts/setup-github-issues.sh
+# GitHub Issues are ready to use out of the box
+# No additional setup required
 ```
 
 ### Create Your First Issue
@@ -403,35 +403,13 @@ jobs:
             }
 ```
 
-### Auto-assign Reviewers
+### Manual Issue Management
 
-```yaml
-# In .github/workflows/auto-assign.yml
-name: Auto-assign Reviewers
-on:
-  pull_request:
-    types: [opened]
-
-jobs:
-  auto-assign:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Auto-assign reviewers
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const { data: pr } = context.payload.pull_request;
-            const changedFiles = pr.changed_files;
-
-            // Auto-assign based on file changes
-            if (changedFiles.some(file => file.startsWith('frontend/'))) {
-              await github.rest.pulls.requestReviewers({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: pr.number,
-                reviewers: ['frontend-reviewer']
-              });
-            }
+```bash
+# Use GitHub CLI for issue management
+gh issue create --title "Bug Report" --body "Description"
+gh issue list --label bug
+gh issue edit 123 --add-label "priority: high"
 ```
 
 ## 📊 Reporting and Analytics

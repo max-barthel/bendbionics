@@ -34,7 +34,9 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
   }, [user, loadPresets]);
 
   const loadPresets = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     setIsLoading(true);
     try {

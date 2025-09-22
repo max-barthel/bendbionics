@@ -5,7 +5,7 @@ import {
   useImperativeHandle,
   useState,
 } from 'react';
-import { robotAPI, type PCCParams } from '../../../api/client';
+import { type PCCParams, robotAPI } from '../../../api/client';
 import { ControlIcon, RobotIcon } from '../../../components/icons';
 import { TabPanel, Tabs } from '../../../components/ui';
 import { type RobotConfiguration, type User } from '../../../types/robot';
@@ -56,7 +56,9 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
 
     const handleSubmit = useCallback(async () => {
       hideError();
-      if (!(await validateRobotConfiguration(robotState, showError))) return;
+      if (!(await validateRobotConfiguration(robotState, showError))) {
+        return;
+      }
 
       setLoading(true);
 

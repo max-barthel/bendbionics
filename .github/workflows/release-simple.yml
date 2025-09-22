@@ -117,11 +117,11 @@ jobs:
           name: Release ${{ github.ref_name }}
           body: |
             ## 🚀 Release ${{ github.ref_name }}
-            
+
             ### 📦 Installation
-            
+
             Download the appropriate build for your platform from the assets below.
-            
+
             ### 🔗 Links
             - [Documentation](https://github.com/${{ github.repository }}/blob/main/README.md)
             - [Issues](https://github.com/${{ github.repository }}/issues)

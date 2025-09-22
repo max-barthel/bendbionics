@@ -8,25 +8,17 @@ import json
 import logging
 import sys
 import traceback
-import uuid
 from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
-
-import aiofiles
-import uvicorn
+from typing import Any, Dict, Optional
 
 # Context variables for request tracking
-request_id_var: ContextVar[Optional[str]] = ContextVar(
-    "request_id", default=None
-)
+request_id_var: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
 user_id_var: ContextVar[Optional[str]] = ContextVar("user_id", default=None)
-session_id_var: ContextVar[Optional[str]] = ContextVar(
-    "session_id", default=None
-)
+session_id_var: ContextVar[Optional[str]] = ContextVar("session_id", default=None)
 
 
 class LogLevel(Enum):
@@ -136,8 +128,8 @@ class AsyncLogHandler:
             try:
                 await asyncio.sleep(self.config.flush_interval)
                 await self.flush_logs()
-            except Exception as e:
-                print(f"Error in flush loop: {e}")
+            except Exception:
+                pass
 
     async def add_log(self, log_entry: LogEntry):
         """Add log to queue"""
@@ -170,9 +162,8 @@ class AsyncLogHandler:
                         headers={"Content-Type": "application/json"},
                     ) as response:
                         if response.status != 200:
-                            print(f"Failed to send logs: {response.status}")
-            except Exception as e:
-                print(f"Error sending logs: {e}")
+                            pass
+            except Exception:
                 # Re-queue logs for retry
                 for log_dict in logs_to_send:
                     log_entry = LogEntry(**log_dict)

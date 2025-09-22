@@ -53,7 +53,9 @@ function Visualizer3D({
           .filter(point => point.length === 3 && point.every(Number.isFinite))
           .map(([x, y, z]) => [x, y, z] as [number, number, number]);
 
-        if (points.length < 2) return null;
+        if (points.length < 2) {
+          return null;
+        }
 
         return (
           <Line
@@ -81,7 +83,9 @@ function Visualizer3D({
 
     // For each coupling point, create tendon eyelets with proper orientation
     couplingPositions.forEach((couplingPos, couplingIndex) => {
-      if (couplingPos.length < 3) return;
+      if (couplingPos.length < 3) {
+        return;
+      }
 
       // Extract x, y, z coordinates as numbers
       const x = Number(couplingPos[0]) || 0;
@@ -89,7 +93,9 @@ function Visualizer3D({
       const z = Number(couplingPos[2]) || 0;
       const orientation = couplingOrientations[couplingIndex];
 
-      if (!orientation || orientation.length < 3) return;
+      if (!orientation || orientation.length < 3) {
+        return;
+      }
 
       // Extract rotation matrix components as numbers
       const r11 = Number(orientation[0]?.[0]) || 1;
@@ -171,21 +177,27 @@ function Visualizer3D({
           const currentCouplingPos = couplingPositions[couplingIndex];
           const nextCouplingPos = couplingPositions[couplingIndex + 1];
 
-          if (currentCouplingPos.length < 3 || nextCouplingPos.length < 3) continue;
+          if (currentCouplingPos.length < 3 || nextCouplingPos.length < 3) {
+            continue;
+          }
 
           // Get current eyelet position
           const currentEyelet =
             tendonAnalysis.tendon_analysis?.routing_points?.[couplingIndex]?.[
               tendonIndex
             ];
-          if (!currentEyelet || currentEyelet.length < 3) continue;
+          if (!currentEyelet || currentEyelet.length < 3) {
+            continue;
+          }
 
           // Get next eyelet position
           const nextEyelet =
             tendonAnalysis.tendon_analysis?.routing_points?.[couplingIndex + 1]?.[
               tendonIndex
             ];
-          if (!nextEyelet || nextEyelet.length < 3) continue;
+          if (!nextEyelet || nextEyelet.length < 3) {
+            continue;
+          }
 
           // Check if this tendon is active (has significant length change)
           // Backend uses 1-based indexing, so tendon 0 in frontend = tendon "1" in backend
@@ -256,7 +268,9 @@ function Visualizer3D({
   }, [size]);
 
   const resetView = () => {
-    if (!controlsRef.current) return;
+    if (!controlsRef.current) {
+      return;
+    }
     controlsRef.current.target.set(...center);
     controlsRef.current.object.position.set(
       center[0] + cameraDistance,

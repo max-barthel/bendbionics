@@ -9,7 +9,8 @@ from typing import Any, Dict, List
 
 import numpy as np
 
-from ..tendon.engine import RobotModelInterface
+from app.models.tendon.engine import RobotModelInterface
+
 from .model import compute_pcc
 from .types import PCCParams
 
@@ -26,7 +27,9 @@ class PCCRobotModel(RobotModelInterface):
         """Initialize the PCC robot model."""
         self.model_type = "pcc"
 
-    def compute_robot_position(self, params: PCCParams) -> List[List[np.ndarray]]:
+    def compute_robot_position(
+        self, params: PCCParams
+    ) -> List[List[np.ndarray]]:
         """
         Compute robot position using the PCC model.
 
@@ -85,8 +88,10 @@ class PCCRobotModel(RobotModelInterface):
                 if np.linalg.norm(direction) > 1e-6:
                     # Calculate orientation based on direction
                     z_axis = direction / np.linalg.norm(direction)
-                    current_orientation = self._create_orientation_from_direction(
-                        z_axis, segment_index
+                    current_orientation = (
+                        self._create_orientation_from_direction(
+                            z_axis, segment_index
+                        )
                     )
 
                 current_position = coupling_middle
@@ -101,9 +106,13 @@ class PCCRobotModel(RobotModelInterface):
                     # Calculate average direction of the curved segment
                     segment_direction = segment[-1] - segment[0]
                     if np.linalg.norm(segment_direction) > 1e-6:
-                        z_axis = segment_direction / np.linalg.norm(segment_direction)
-                        current_orientation = self._create_orientation_from_direction(
-                            z_axis, segment_index
+                        z_axis = segment_direction / np.linalg.norm(
+                            segment_direction
+                        )
+                        current_orientation = (
+                            self._create_orientation_from_direction(
+                                z_axis, segment_index
+                            )
                         )
 
         return {
@@ -157,7 +166,9 @@ class PCCRobotModel(RobotModelInterface):
         # Rotation around z-axis by phi
         cos_phi = np.cos(phi)
         sin_phi = np.sin(phi)
-        Rz_phi = np.array([[cos_phi, -sin_phi, 0], [sin_phi, cos_phi, 0], [0, 0, 1]])
+        Rz_phi = np.array(
+            [[cos_phi, -sin_phi, 0], [sin_phi, cos_phi, 0], [0, 0, 1]]
+        )
 
         # Rotation around y-axis by theta
         cos_theta = np.cos(theta)
@@ -170,9 +181,8 @@ class PCCRobotModel(RobotModelInterface):
         Rz_neg_phi = Rz_phi.T
 
         # Combine rotations: Rz(phi) * Ry(theta) * Rz(-phi)
-        orientation = Rz_phi @ Ry_theta @ Rz_neg_phi
+        return Rz_phi @ Ry_theta @ Rz_neg_phi
 
-        return orientation
 
 
 # Convenience function for backward compatibility
@@ -189,7 +199,7 @@ def compute_pcc_with_tendons(params: PCCParams) -> Dict[str, Any]:
     Returns:
         Dictionary containing robot position and tendon analysis
     """
-    from ..tendon.engine import TendonAnalysisEngine
+    from app.models.tendon.engine import TendonAnalysisEngine
 
     # Create the PCC robot model
     pcc_model = PCCRobotModel()

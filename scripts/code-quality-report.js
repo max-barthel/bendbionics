@@ -141,37 +141,30 @@ function analyzeBackend(backendReport) {
   backendReport.lines = stats.lines;
   backendReport.avgLinesPerFile = Math.round(stats.lines / stats.files);
 
-  // Run Flake8 analysis
+  // Run Ruff analysis
   try {
-    log("Running Flake8 analysis...", "blue");
-    const flake8Output = execSync(
-      "cd backend && python -m flake8 app/ --count --statistics",
-      {
-        encoding: "utf8",
-        stdio: "pipe",
-      }
-    );
+    log("Running Ruff analysis...", "blue");
+    const ruffOutput = execSync("cd backend && ruff check app/ --statistics", {
+      encoding: "utf8",
+      stdio: "pipe",
+    });
 
-    const lines = flake8Output.trim().split("\n");
+    const lines = ruffOutput.trim().split("\n");
     const lastLine = lines[lines.length - 1];
-    const match = lastLine.match(/(\d+) files checked, (\d+) errors/);
+    const match = lastLine.match(/Found (\d+) errors/);
 
     if (match) {
-      backendReport.flake8 = {
-        files: parseInt(match[1]),
-        errors: parseInt(match[2]),
+      backendReport.ruff = {
+        errors: parseInt(match[1]),
       };
-      log(
-        `✅ Flake8: ${match[2]} errors in ${match[1]} files`,
-        match[2] > 0 ? "red" : "green"
-      );
+      log(`✅ Ruff: ${match[1]} errors found`, match[1] > 0 ? "red" : "green");
     } else {
-      backendReport.flake8 = { files: 0, errors: 0 };
-      log("✅ Flake8: No errors", "green");
+      backendReport.ruff = { errors: 0 };
+      log("✅ Ruff: No errors", "green");
     }
   } catch (error) {
-    log("⚠️ Flake8 analysis failed", "yellow");
-    backendReport.flake8 = { files: 0, errors: 0 };
+    log("⚠️ Ruff analysis failed", "yellow");
+    backendReport.ruff = { errors: 0 };
   }
 
   // Run MyPy analysis
@@ -254,7 +247,7 @@ function calculateOverallMetrics(report) {
     totalErrors:
       (frontend.eslint?.errors || 0) +
       (frontend.typescript?.errors || 0) +
-      (backend.flake8?.errors || 0) +
+      (backend.ruff?.errors || 0) +
       (backend.mypy?.errors || 0),
     totalWarnings:
       (frontend.eslint?.warnings || 0) +
@@ -320,8 +313,8 @@ function generateReport(report) {
     log(`Files: ${formatNumber(report.backend.files)}`, "blue");
     log(`Lines: ${formatNumber(report.backend.lines)}`, "blue");
     log(
-      `Flake8 Errors: ${formatNumber(report.backend.flake8?.errors || 0)}`,
-      (report.backend.flake8?.errors || 0) > 0 ? "red" : "green"
+      `Ruff Errors: ${formatNumber(report.backend.ruff?.errors || 0)}`,
+      (report.backend.ruff?.errors || 0) > 0 ? "red" : "green"
     );
     log(
       `MyPy Errors: ${formatNumber(report.backend.mypy?.errors || 0)}`,

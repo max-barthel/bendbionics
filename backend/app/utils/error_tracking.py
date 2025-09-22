@@ -3,15 +3,16 @@ Error tracking and reporting utilities for the Soft Robot App
 """
 
 import asyncio
-import json
 import traceback
 import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import aiohttp
+from fastapi import HTTPException
+
 from app.utils.logger import (
     LogContext,
     default_logger,
@@ -19,7 +20,6 @@ from app.utils.logger import (
     session_id_var,
     user_id_var,
 )
-from fastapi import HTTPException
 
 
 class ErrorSeverity(Enum):
@@ -174,16 +174,10 @@ class ErrorTracker:
         if "auth" in str(context).lower() or "login" in str(context).lower():
             return ErrorCategory.AUTHENTICATION
 
-        if (
-            "permission" in str(context).lower()
-            or "access" in str(context).lower()
-        ):
+        if "permission" in str(context).lower() or "access" in str(context).lower():
             return ErrorCategory.AUTHORIZATION
 
-        if (
-            "validation" in str(context).lower()
-            or "input" in str(context).lower()
-        ):
+        if "validation" in str(context).lower() or "input" in str(context).lower():
             return ErrorCategory.VALIDATION
 
         if "database" in str(context).lower() or "sql" in str(context).lower():
@@ -305,24 +299,23 @@ class ErrorTracker:
     async def _report_error_remote(self, error_report: ErrorReport):
         """Report error to remote endpoint"""
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    self.remote_endpoint,
-                    json=asdict(error_report),
-                    headers={"Content-Type": "application/json"},
-                ) as response:
-                    if response.status != 200:
-                        default_logger.warning(
-                            LogContext.ERROR,
-                            "Failed to report error to remote endpoint",
-                            {
-                                "error_id": error_report.error_id,
-                                "status_code": response.status,
-                                "response": await response.text(),
-                            },
-                            "ErrorTracker",
-                            "_report_error_remote",
-                        )
+            async with aiohttp.ClientSession() as session, session.post(
+                self.remote_endpoint,
+                json=asdict(error_report),
+                headers={"Content-Type": "application/json"},
+            ) as response:
+                if response.status != 200:
+                    default_logger.warning(
+                        LogContext.ERROR,
+                        "Failed to report error to remote endpoint",
+                        {
+                            "error_id": error_report.error_id,
+                            "status_code": response.status,
+                            "response": await response.text(),
+                        },
+                        "ErrorTracker",
+                        "_report_error_remote",
+                    )
         except Exception as e:
             default_logger.error(
                 LogContext.ERROR,
@@ -341,9 +334,7 @@ class ErrorTracker:
 
         # Track error counts
         current_time = datetime.utcnow()
-        error_key = (
-            f"{error_report.category.value}:{error_report.severity.value}"
-        )
+        error_key = f"{error_report.category.value}:{error_report.severity.value}"
 
         if error_key not in self.error_counts:
             self.error_counts[error_key] = []
@@ -361,18 +352,19 @@ class ErrorTracker:
         # Check if threshold exceeded
         if (
             error_report.severity == ErrorSeverity.CRITICAL
-            and len(self.error_counts[error_key])
-            >= self.critical_error_threshold
+            and len(self.error_counts[error_key]) >= self.critical_error_threshold
         ):
 
-            await self._send_alert(
-                error_report, len(self.error_counts[error_key])
-            )
+            await self._send_alert(error_report, len(self.error_counts[error_key]))
 
     async def _send_alert(self, error_report: ErrorReport, count: int):
         """Send alert for critical errors"""
 
-        alert_message = f"Critical error threshold exceeded: {count} {error_report.severity.value} errors in {self.alert_time_window} seconds"
+        alert_message = (
+            f"Critical error threshold exceeded: {count} "
+            f"{error_report.severity.value} errors in "
+            f"{self.alert_time_window} seconds"
+        )
 
         default_logger.critical(
             LogContext.ERROR,
@@ -547,9 +539,7 @@ def get_errors(
     return error_tracker.get_errors(severity, category, limit, resolved)
 
 
-def resolve_error(
-    error_id: str, resolved_by: str, notes: Optional[str] = None
-):
+def resolve_error(error_id: str, resolved_by: str, notes: Optional[str] = None):
     """Convenience function to resolve an error"""
     error_tracker.resolve_error(error_id, resolved_by, notes)
 

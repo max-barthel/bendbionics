@@ -45,9 +45,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         ]
         self.max_body_size = max_body_size
 
-    async def dispatch(
-        self, request: Request, call_next: Callable
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # Skip logging for excluded paths
         if request.url.path in self.exclude_paths:
             return await call_next(request)
@@ -68,7 +66,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 # This is a simplified example - in real implementation,
                 # you would decode the JWT token properly
                 if auth_header.startswith("Bearer "):
-                    token = auth_header.split(" ")[1]
+                    # token = auth_header.split(" ")[1]
                     # Decode JWT and extract user_id
                     # user_id = decode_jwt_token(token).get("user_id")
                     pass
@@ -174,9 +172,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                     except (json.JSONDecodeError, UnicodeDecodeError):
                         request_data["body"] = body.decode(errors="replace")
                 else:
-                    request_data["body"] = (
-                        f"<body too large: {len(body)} bytes>"
-                    )
+                    request_data["body"] = f"<body too large: {len(body)} bytes>"
             except Exception as e:
                 request_data["body_error"] = str(e)
 
@@ -223,9 +219,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                     except (json.JSONDecodeError, UnicodeDecodeError):
                         response_data["body"] = body.decode(errors="replace")
                 else:
-                    response_data["body"] = (
-                        f"<body too large: {len(body)} bytes>"
-                    )
+                    response_data["body"] = f"<body too large: {len(body)} bytes>"
             except Exception as e:
                 response_data["body_error"] = str(e)
 
@@ -241,7 +235,8 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         if log_level == "error":
             default_logger.error(
                 LogContext.API,
-                f"Response: {request.method} {request.url.path} - {response.status_code}",
+                f"Response: {request.method} {request.url.path} - "
+                f"{response.status_code}",
                 response_data,
                 "API",
                 "response",
@@ -249,7 +244,8 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         elif log_level == "warning":
             default_logger.warning(
                 LogContext.API,
-                f"Response: {request.method} {request.url.path} - {response.status_code}",
+                f"Response: {request.method} {request.url.path} - "
+                f"{response.status_code}",
                 response_data,
                 "API",
                 "response",
@@ -257,7 +253,8 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         else:
             default_logger.info(
                 LogContext.API,
-                f"Response: {request.method} {request.url.path} - {response.status_code}",
+                f"Response: {request.method} {request.url.path} - "
+                f"{response.status_code}",
                 response_data,
                 "API",
                 "response",
@@ -277,9 +274,7 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
         self.slow_request_threshold = slow_request_threshold
         self.log_slow_requests = log_slow_requests
 
-    async def dispatch(
-        self, request: Request, call_next: Callable
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         start_time = time.time()
 
         response = await call_next(request)
@@ -326,9 +321,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         self.max_requests_per_minute = max_requests_per_minute
         self.request_counts = {}  # In production, use Redis or similar
 
-    async def dispatch(
-        self, request: Request, call_next: Callable
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         client_ip = request.client.host if request.client else "unknown"
         current_time = time.time()
 
@@ -385,9 +378,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 
         return response
 
-    async def _is_rate_limited(
-        self, client_ip: str, current_time: float
-    ) -> bool:
+    async def _is_rate_limited(self, client_ip: str, current_time: float) -> bool:
         """Check if client is rate limited"""
         minute = int(current_time // 60)
         key = f"{client_ip}:{minute}"
@@ -399,18 +390,14 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 
         # Clean up old entries
         old_minutes = [
-            k
-            for k in self.request_counts.keys()
-            if int(k.split(":")[1]) < minute - 1
+            k for k in self.request_counts if int(k.split(":")[1]) < minute - 1
         ]
         for old_key in old_minutes:
             del self.request_counts[old_key]
 
         return self.request_counts[key] > self.max_requests_per_minute
 
-    async def _check_suspicious_patterns(
-        self, request: Request, client_ip: str
-    ):
+    async def _check_suspicious_patterns(self, request: Request, client_ip: str):
         """Check for suspicious request patterns"""
         path = request.url.path.lower()
         user_agent = request.headers.get("user-agent", "").lower()
