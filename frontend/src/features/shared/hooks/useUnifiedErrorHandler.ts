@@ -1,5 +1,15 @@
 import { useCallback, useState } from 'react';
 
+// HTTP status codes for error handling
+const HTTP_STATUS = {
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  INTERNAL_SERVER_ERROR: 500,
+} as const;
+
 export type ErrorType = 'network' | 'validation' | 'server' | 'auth' | 'unknown';
 
 export interface ErrorState {
@@ -101,12 +111,12 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
         );
       }
       // Server errors
-      else if (err.response?.status === 500) {
+      else if (err.response?.status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
         showError(
           'server',
           'Server error occurred. Please try again later or contact support.'
         );
-      } else if (err.response?.status === 404) {
+      } else if (err.response?.status === HTTP_STATUS.NOT_FOUND) {
         showError(
           'server',
           'Service not found. Please check if the backend is running.'
@@ -116,7 +126,7 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
       else if (err.response?.status === 400) {
         showError(
           'validation',
-          err.response?.data?.detail ||
+          err.response?.data?.detail ??
             'Invalid parameters provided. Please check your input values.'
         );
       }
@@ -136,8 +146,8 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
       else {
         showError(
           'unknown',
-          err.response?.data?.detail ||
-            err.message ||
+          err.response?.data?.detail ??
+            err.message ??
             'An unexpected error occurred. Please try again.'
         );
       }
@@ -167,17 +177,17 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
         return;
       }
 
-      if (err.response?.status === 401) {
+      if (err.response?.status === HTTP_STATUS.UNAUTHORIZED) {
         showError(
           'auth',
           'Invalid username or password. Please check your credentials and try again.'
         );
-      } else if (err.response?.status === 400) {
+      } else if (err.response?.status === HTTP_STATUS.BAD_REQUEST) {
         showError(
           'auth',
-          err.response?.data?.detail || 'Account is not active. Please contact support.'
+          err.response?.data?.detail ?? 'Account is not active. Please contact support.'
         );
-      } else if (err.response?.status === 409) {
+      } else if (err.response?.status === HTTP_STATUS.CONFLICT) {
         showError(
           'auth',
           'An account with this username already exists. Please try logging in instead.'

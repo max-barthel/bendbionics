@@ -1,6 +1,11 @@
 import { useCallback, useState } from 'react';
-import type { PCCParams, PCCResponse, RetryConfig } from '../../../api/client';
-import { defaultRetryConfig, robotAPI } from '../../../api/client';
+import {
+  defaultRetryConfig,
+  robotAPI,
+  type PCCParams,
+  type PCCResponse,
+  type RetryConfig,
+} from '../../../api/client';
 
 interface UseRetryAPIState<T> {
   data: T | null;
@@ -49,7 +54,7 @@ export function useRetryAPI<T = PCCResponse>(
         return result as T;
       } catch (error: unknown) {
         const errorMessage =
-          error.response?.data?.detail || error.message || 'An error occurred';
+          error.response?.data?.detail ?? error.message ?? 'An error occurred';
         setState(prev => ({
           ...prev,
           loading: false,

@@ -60,13 +60,44 @@ export interface RetryConfig {
   retryableErrors: string[];
 }
 
+// HTTP status codes
+const HTTP_STATUS = {
+  REQUEST_TIMEOUT: 408,
+  TOO_MANY_REQUESTS: 429,
+  INTERNAL_SERVER_ERROR: 500,
+  BAD_GATEWAY: 502,
+  SERVICE_UNAVAILABLE: 503,
+  GATEWAY_TIMEOUT: 504,
+  UNAUTHORIZED: 401,
+} as const;
+
+// Retry configuration constants
+const RETRY_CONFIG = {
+  MAX_RETRIES: 3,
+  BASE_DELAY: 1000,
+  MAX_DELAY: 10000,
+  BACKOFF_MULTIPLIER: 2,
+} as const;
+
+// API configuration constants
+const API_CONFIG = {
+  TIMEOUT: 30000,
+} as const;
+
 // Default retry configuration
 const defaultRetryConfig: RetryConfig = {
-  maxRetries: 3,
-  baseDelay: 1000,
-  maxDelay: 10000,
-  backoffMultiplier: 2,
-  retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+  maxRetries: RETRY_CONFIG.MAX_RETRIES,
+  baseDelay: RETRY_CONFIG.BASE_DELAY,
+  maxDelay: RETRY_CONFIG.MAX_DELAY,
+  backoffMultiplier: RETRY_CONFIG.BACKOFF_MULTIPLIER,
+  retryableStatusCodes: [
+    HTTP_STATUS.REQUEST_TIMEOUT,
+    HTTP_STATUS.TOO_MANY_REQUESTS,
+    HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    HTTP_STATUS.BAD_GATEWAY,
+    HTTP_STATUS.SERVICE_UNAVAILABLE,
+    HTTP_STATUS.GATEWAY_TIMEOUT,
+  ],
   retryableErrors: ['ECONNABORTED', 'ETIMEDOUT', 'NETWORK_ERROR'],
 };
 
@@ -132,7 +163,9 @@ async function withRetry<T>(
     }
   }
 
-  if (lastError) {throw lastError;}
+  if (lastError) {
+    throw lastError;
+  }
   throw new Error('All retry attempts failed');
 }
 
@@ -169,7 +202,7 @@ function createApiClient() {
 
   const client = axios.create({
     baseURL: apiUrl,
-    timeout: 30000,
+    timeout: API_CONFIG.TIMEOUT,
   });
 
   // Add request interceptor for authentication
@@ -199,13 +232,16 @@ function addAuthToken(config: { headers?: Record<string, string> }) {
 function handleResponseError(error: { response?: { status?: number } }) {
   // Handle 401 Unauthorized - clear token but don't redirect automatically
   // Let individual components handle the error appropriately
-  if (error.response?.status === 401) {
+  if (error.response?.status === HTTP_STATUS.UNAUTHORIZED) {
     localStorage.removeItem('token');
     // Don't automatically redirect - let the component handle it
   }
 
   // Log server errors in development
-  if (import.meta.env.DEV && error.response?.status === 500) {
+  if (
+    import.meta.env.DEV &&
+    error.response?.status === HTTP_STATUS.INTERNAL_SERVER_ERROR
+  ) {
     console.error('Server error:', error.response.data);
   }
   return Promise.reject(error);
