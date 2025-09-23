@@ -18,10 +18,7 @@ describe('SliderInput', () => {
   });
 
   it('renders without label', () => {
-    const { label, ...propsWithoutLabel } = defaultProps;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _unused = label;
-    render(<SliderInput {...propsWithoutLabel} />);
+    render(<SliderInput value={50} min={0} max={100} />);
 
     expect(screen.queryByText('Test Slider')).not.toBeInTheDocument();
     expect(screen.getByRole('slider')).toBeInTheDocument();
