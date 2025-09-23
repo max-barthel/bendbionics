@@ -10,14 +10,14 @@ updates:
       timezone: "Etc/UTC"
     open-pull-requests-limit: 10
     assignees:
-      - "soft-robot-team"
+      - "max-barthel"
     commit-message:
       prefix: "chore(frontend)"
       include: "scope"
     labels:
       - "dependencies"
-      - "frontend"
-      - "javascript"
+      - "component: frontend"
+      - "language: javascript"
     ignore:
       # Ignore major version updates for now
       - dependency-name: "*"
@@ -63,14 +63,14 @@ updates:
       timezone: "Etc/UTC"
     open-pull-requests-limit: 5
     assignees:
-      - "soft-robot-team"
+      - "max-barthel"
     commit-message:
       prefix: "chore(root)"
       include: "scope"
     labels:
       - "dependencies"
       - "root"
-      - "javascript"
+      - "language: javascript"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
@@ -96,14 +96,14 @@ updates:
       timezone: "Etc/UTC"
     open-pull-requests-limit: 10
     assignees:
-      - "soft-robot-team"
+      - "max-barthel"
     commit-message:
       prefix: "chore(backend)"
       include: "scope"
     labels:
       - "dependencies"
-      - "backend"
-      - "python"
+      - "component: backend"
+      - "language: python"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
@@ -155,14 +155,14 @@ updates:
       timezone: "Etc/UTC"
     open-pull-requests-limit: 5
     assignees:
-      - "soft-robot-team"
+      - "max-barthel"
     commit-message:
       prefix: "chore(tauri)"
       include: "scope"
     labels:
       - "dependencies"
       - "tauri"
-      - "rust"
+      - "language: rust"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
@@ -186,13 +186,13 @@ updates:
       timezone: "Etc/UTC"
     open-pull-requests-limit: 5
     assignees:
-      - "soft-robot-team"
+      - "max-barthel"
     commit-message:
       prefix: "chore(ci)"
       include: "scope"
     labels:
       - "dependencies"
-      - "ci"
+      - "component: ci-di"
       - "github-actions"
     groups:
       # Group common action updates
