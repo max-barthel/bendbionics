@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
 
+// Default configuration constants
+const DEFAULT_VALUES = {
+  BACKBONE_LENGTH: 0.07,
+  COUPLING_LENGTH: 0.03,
+} as const;
+
 export interface RobotState {
   segments: number;
   bendingAngles: number[];
@@ -23,8 +29,21 @@ export function useRobotState() {
           segments: 5,
           bendingAngles: [0, 0, 0, 0, 0],
           rotationAngles: [0, 0, 0, 0, 0],
-          backboneLengths: [0.07, 0.07, 0.07, 0.07, 0.07],
-          couplingLengths: [0.03, 0.03, 0.03, 0.03, 0.03, 0.03],
+          backboneLengths: [
+            DEFAULT_VALUES.BACKBONE_LENGTH,
+            DEFAULT_VALUES.BACKBONE_LENGTH,
+            DEFAULT_VALUES.BACKBONE_LENGTH,
+            DEFAULT_VALUES.BACKBONE_LENGTH,
+            DEFAULT_VALUES.BACKBONE_LENGTH,
+          ],
+          couplingLengths: [
+            DEFAULT_VALUES.COUPLING_LENGTH,
+            DEFAULT_VALUES.COUPLING_LENGTH,
+            DEFAULT_VALUES.COUPLING_LENGTH,
+            DEFAULT_VALUES.COUPLING_LENGTH,
+            DEFAULT_VALUES.COUPLING_LENGTH,
+            DEFAULT_VALUES.COUPLING_LENGTH,
+          ],
           discretizationSteps: 1000,
           tendonConfig: {
             count: 3,

@@ -1,9 +1,18 @@
 import { useEffect } from 'react';
 import { Card, SliderInput } from '../../../components/ui';
 import { useFormSubmission } from '../hooks/useFormSubmission';
-import { type RobotState, useRobotState } from '../hooks/useRobotState';
+import { useRobotState, type RobotState } from '../hooks/useRobotState';
 import ArrayInputGroup from './ArrayInputGroup';
 import { FormActions, FormErrorDisplay, FormHeader, RobotStructureInfo } from './forms';
+
+// Default configuration constants
+const DEFAULT_CONFIG = {
+  SEGMENTS: 5,
+  BENDING_ANGLE: 0.628319, // ~36 degrees in radians
+  BACKBONE_LENGTH: 0.07,
+  COUPLING_LENGTH: 0.03,
+  DISCRETIZATION_STEPS: 1000,
+} as const;
 
 type FormProps = {
   onResult: (segments: number[][][], configuration: Record<string, unknown>) => void;
@@ -25,14 +34,32 @@ function Form({ onResult, initialConfiguration }: FormProps) {
     if (initialConfiguration) {
       const config = initialConfiguration;
       setRobotState({
-        segments: config.segments || 5,
-        bendingAngles: config.bendingAngles || [
-          0.628319, 0.628319, 0.628319, 0.628319, 0.628319,
+        segments: config.segments ?? DEFAULT_CONFIG.SEGMENTS,
+        bendingAngles: config.bendingAngles ?? [
+          DEFAULT_CONFIG.BENDING_ANGLE,
+          DEFAULT_CONFIG.BENDING_ANGLE,
+          DEFAULT_CONFIG.BENDING_ANGLE,
+          DEFAULT_CONFIG.BENDING_ANGLE,
+          DEFAULT_CONFIG.BENDING_ANGLE,
         ],
-        rotationAngles: config.rotationAngles || [0, 0, 0, 0, 0],
-        backboneLengths: config.backboneLengths || [0.07, 0.07, 0.07, 0.07, 0.07],
-        couplingLengths: config.couplingLengths || [0.03, 0.03, 0.03, 0.03, 0.03, 0.03],
-        discretizationSteps: config.discretizationSteps || 1000,
+        rotationAngles: config.rotationAngles ?? [0, 0, 0, 0, 0],
+        backboneLengths: config.backboneLengths ?? [
+          DEFAULT_CONFIG.BACKBONE_LENGTH,
+          DEFAULT_CONFIG.BACKBONE_LENGTH,
+          DEFAULT_CONFIG.BACKBONE_LENGTH,
+          DEFAULT_CONFIG.BACKBONE_LENGTH,
+          DEFAULT_CONFIG.BACKBONE_LENGTH,
+        ],
+        couplingLengths: config.couplingLengths ?? [
+          DEFAULT_CONFIG.COUPLING_LENGTH,
+          DEFAULT_CONFIG.COUPLING_LENGTH,
+          DEFAULT_CONFIG.COUPLING_LENGTH,
+          DEFAULT_CONFIG.COUPLING_LENGTH,
+          DEFAULT_CONFIG.COUPLING_LENGTH,
+          DEFAULT_CONFIG.COUPLING_LENGTH,
+        ],
+        discretizationSteps:
+          config.discretizationSteps ?? DEFAULT_CONFIG.DISCRETIZATION_STEPS,
       });
     }
     // If no initialConfiguration is provided, the useRobotState hook will use its own defaults
