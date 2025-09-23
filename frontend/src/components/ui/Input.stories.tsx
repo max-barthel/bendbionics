@@ -176,6 +176,7 @@ export const Disabled: Story = {
     value: 'Disabled input',
     label: 'Disabled Input',
     disabled: true,
+    'aria-label': 'Disabled Input',
   },
 };
 
@@ -192,6 +193,7 @@ export const WithValue: Story = {
   args: {
     value: 'john.doe@example.com',
     label: 'Email Address',
+    'aria-label': 'Email Address',
   },
 };
 
