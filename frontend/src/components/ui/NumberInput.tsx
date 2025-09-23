@@ -1,6 +1,9 @@
 import React from 'react';
 import { TahoeNumberInput } from './TahoeNumberInput';
 
+// Constants
+const DEFAULT_PRECISION = 3;
+
 interface NumberInputProps {
   value: number;
   onChange: (value: number) => void;
@@ -21,7 +24,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
   min,
   max,
   step = 1,
-  precision = 3,
+  precision = DEFAULT_PRECISION,
   placeholder,
   className = '',
   disabled = false,

@@ -64,7 +64,7 @@ function Typography({
   const classes = `${baseClasses} ${variantClasses[variant]} ${colorClasses[color]} ${className}`;
 
   const Component =
-    as ||
+    as ??
     ((variant.startsWith('h') ? variant : 'span') as keyof React.JSX.IntrinsicElements);
 
   return React.createElement(Component, { className: classes, htmlFor }, children);

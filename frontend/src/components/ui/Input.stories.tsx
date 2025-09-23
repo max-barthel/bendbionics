@@ -3,6 +3,16 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import Input from './Input';
 
+// Constants for placeholder text
+const PLACEHOLDERS = {
+  EMAIL: 'Enter your email',
+  FULL_NAME: 'Enter your full name',
+  AGE: 'Enter your age',
+  PASSWORD: 'Enter your password',
+  PHONE: 'Enter your phone number',
+  MESSAGE: 'Enter your message',
+} as const;
+
 const meta: Meta<typeof Input> = {
   title: 'UI/Input',
   component: Input,
@@ -71,15 +81,15 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Interactive wrapper for controlled inputs
-const InteractiveInput = (args: any) => {
-  const [value, setValue] = useState(args.value || '');
+const InteractiveInput = (args: Record<string, unknown>) => {
+  const [value, setValue] = useState((args.value as string) ?? '');
   return (
     <Input
       {...args}
       value={value}
-      onChange={newValue => {
+      onChange={(newValue: string) => {
         setValue(newValue);
-        args.onChange?.(newValue);
+        (args.onChange as ((value: string) => void) | undefined)?.(newValue);
       }}
     />
   );
@@ -98,7 +108,7 @@ export const WithLabel: Story = {
   render: InteractiveInput,
   args: {
     label: 'Email Address',
-    placeholder: 'Enter your email',
+    placeholder: PLACEHOLDERS.EMAIL,
   },
 };
 
@@ -108,7 +118,7 @@ export const TextInput: Story = {
   args: {
     type: 'text',
     label: 'Full Name',
-    placeholder: 'Enter your full name',
+    placeholder: PLACEHOLDERS.FULL_NAME,
   },
 };
 
@@ -117,7 +127,7 @@ export const NumberInput: Story = {
   args: {
     type: 'number',
     label: 'Age',
-    placeholder: 'Enter your age',
+    placeholder: PLACEHOLDERS.AGE,
     min: 0,
     max: 120,
   },
@@ -128,7 +138,7 @@ export const PasswordInput: Story = {
   args: {
     type: 'password',
     label: 'Password',
-    placeholder: 'Enter your password',
+    placeholder: PLACEHOLDERS.PASSWORD,
   },
 };
 
@@ -173,7 +183,7 @@ export const WithError: Story = {
   render: InteractiveInput,
   args: {
     label: 'Email Address',
-    placeholder: 'Enter your email',
+    placeholder: PLACEHOLDERS.EMAIL,
     error: 'Please enter a valid email address',
   },
 };
@@ -186,34 +196,36 @@ export const WithValue: Story = {
 };
 
 // Form examples
-export const LoginForm: Story = {
-  render: () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+const LoginFormComponent = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-    return (
-      <div className="w-80 space-y-4">
-        <h3 className="text-lg font-semibold mb-4">Login Form</h3>
-        <Input
-          type="text"
-          label="Email"
-          value={email}
-          onChange={setEmail}
-          placeholder="Enter your email"
-        />
-        <Input
-          type="password"
-          label="Password"
-          value={password}
-          onChange={setPassword}
-          placeholder="Enter your password"
-        />
-        <button className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors">
-          Sign In
-        </button>
-      </div>
-    );
-  },
+  return (
+    <div className="w-80 space-y-4">
+      <h3 className="text-lg font-semibold mb-4">Login Form</h3>
+      <Input
+        type="text"
+        label="Email"
+        value={email}
+        onChange={setEmail}
+        placeholder={PLACEHOLDERS.EMAIL}
+      />
+      <Input
+        type="password"
+        label="Password"
+        value={password}
+        onChange={setPassword}
+        placeholder={PLACEHOLDERS.PASSWORD}
+      />
+      <button className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors">
+        Sign In
+      </button>
+    </div>
+  );
+};
+
+export const LoginForm: Story = {
+  render: LoginFormComponent,
   parameters: {
     docs: {
       description: {
@@ -223,52 +235,54 @@ export const LoginForm: Story = {
   },
 };
 
-export const ContactForm: Story = {
-  render: () => {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [message, setMessage] = useState('');
+const ContactFormComponent = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [message, setMessage] = useState('');
 
-    return (
-      <div className="w-96 space-y-4">
-        <h3 className="text-lg font-semibold mb-4">Contact Form</h3>
-        <Input
-          label="Full Name"
-          value={name}
-          onChange={setName}
-          placeholder="Enter your full name"
+  return (
+    <div className="w-96 space-y-4">
+      <h3 className="text-lg font-semibold mb-4">Contact Form</h3>
+      <Input
+        label="Full Name"
+        value={name}
+        onChange={setName}
+        placeholder={PLACEHOLDERS.FULL_NAME}
+      />
+      <Input
+        type="text"
+        label="Email"
+        value={email}
+        onChange={setEmail}
+        placeholder={PLACEHOLDERS.EMAIL}
+      />
+      <Input
+        type="text"
+        label="Phone Number"
+        value={phone}
+        onChange={setPhone}
+        placeholder={PLACEHOLDERS.PHONE}
+      />
+      <div>
+        <label className="block text-sm font-medium mb-1">Message</label>
+        <textarea
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          rows={4}
+          placeholder={PLACEHOLDERS.MESSAGE}
+          value={message}
+          onChange={e => setMessage(e.target.value)}
         />
-        <Input
-          type="text"
-          label="Email"
-          value={email}
-          onChange={setEmail}
-          placeholder="Enter your email"
-        />
-        <Input
-          type="text"
-          label="Phone Number"
-          value={phone}
-          onChange={setPhone}
-          placeholder="Enter your phone number"
-        />
-        <div>
-          <label className="block text-sm font-medium mb-1">Message</label>
-          <textarea
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            rows={4}
-            placeholder="Enter your message"
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-          />
-        </div>
-        <button className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors">
-          Send Message
-        </button>
       </div>
-    );
-  },
+      <button className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors">
+        Send Message
+      </button>
+    </div>
+  );
+};
+
+export const ContactForm: Story = {
+  render: ContactFormComponent,
   parameters: {
     docs: {
       description: {
