@@ -1,8 +1,16 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import type { MockedFunction } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App';
+
+// Define the auth context type for testing
+interface AuthContextType {
+  user: { username: string } | null;
+  isLoading: boolean;
+  logout: () => void;
+}
 
 // Mock the lazy-loaded Visualizer3D component
 vi.mock('../components/Visualizer3D', () => ({
@@ -131,7 +139,7 @@ vi.mock('../components/ui', () => ({
   }: {
     placeholder?: string;
     value?: string;
-    onChange?: (_e: React.ChangeEvent<HTMLInputElement>) => void;
+    onChange?: React.ChangeEventHandler<HTMLInputElement>;
     className?: string;
   }) => (
     <input
@@ -155,12 +163,28 @@ vi.mock('../components/ui', () => ({
       {isLoading ? 'Loading...' : children}
     </div>
   ),
-  Notification: ({ children, variant, className }: { [key: string]: unknown }) => (
+  Notification: ({
+    children,
+    variant,
+    className,
+  }: {
+    children?: React.ReactNode;
+    variant?: string;
+    className?: string;
+  }) => (
     <div data-testid={`notification-${variant}`} className={className}>
       {children}
     </div>
   ),
-  NumberInput: ({ value, onChange, className }: { [key: string]: unknown }) => (
+  NumberInput: ({
+    value,
+    onChange,
+    className,
+  }: {
+    value?: string | number;
+    onChange?: React.ChangeEventHandler<HTMLInputElement>;
+    className?: string;
+  }) => (
     <input
       data-testid="number-input"
       type="number"
@@ -170,17 +194,33 @@ vi.mock('../components/ui', () => ({
       aria-label="Number input"
     />
   ),
-  ProgressIndicator: ({ value, max, className }: { [key: string]: unknown }) => (
+  ProgressIndicator: ({
+    value,
+    max,
+    className,
+  }: {
+    value?: string | number;
+    max?: string | number;
+    className?: string;
+  }) => (
     <div data-testid="progress-indicator" className={className}>
       Progress: {value}/{max}
     </div>
   ),
-  SkeletonLoader: ({ className }: { [key: string]: unknown }) => (
+  SkeletonLoader: ({ className }: { className?: string }) => (
     <div data-testid="skeleton-loader" className={className}>
       Loading...
     </div>
   ),
-  SliderInput: ({ value, onChange, className }: { [key: string]: unknown }) => (
+  SliderInput: ({
+    value,
+    onChange,
+    className,
+  }: {
+    value?: string | number;
+    onChange?: React.ChangeEventHandler<HTMLInputElement>;
+    className?: string;
+  }) => (
     <input
       data-testid="slider-input"
       type="range"
@@ -190,42 +230,90 @@ vi.mock('../components/ui', () => ({
       aria-label="Slider input"
     />
   ),
-  Table: ({ children, className }: { [key: string]: unknown }) => (
+  Table: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
     <table data-testid="table" className={className}>
       {children}
     </table>
   ),
-  TableBody: ({ children, className }: { [key: string]: unknown }) => (
+  TableBody: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
     <tbody data-testid="table-body" className={className}>
       {children}
     </tbody>
   ),
-  TableCell: ({ children, className }: { [key: string]: unknown }) => (
+  TableCell: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
     <td data-testid="table-cell" className={className}>
       {children}
     </td>
   ),
-  TableHead: ({ children, className }: { [key: string]: unknown }) => (
+  TableHead: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
     <thead data-testid="table-head" className={className}>
       {children}
     </thead>
   ),
-  TableHeader: ({ children, className }: { [key: string]: unknown }) => (
+  TableHeader: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
     <th data-testid="table-header" className={className}>
       {children}
     </th>
   ),
-  TableRow: ({ children, className }: { [key: string]: unknown }) => (
+  TableRow: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
     <tr data-testid="table-row" className={className}>
       {children}
     </tr>
   ),
-  TabPanel: ({ children, className }: { [key: string]: unknown }) => (
+  TabPanel: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
     <div data-testid="tab-panel" className={className}>
       {children}
     </div>
   ),
-  Tabs: ({ children, className }: { [key: string]: unknown }) => (
+  Tabs: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
     <div data-testid="tabs" className={className}>
       {children}
     </div>
@@ -243,11 +331,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('App', () => {
-  let mockUseAuth: {
-    user: { username: string } | null;
-    login: () => Promise<void>;
-    logout: () => void;
-  };
+  let mockUseAuth: MockedFunction<() => AuthContextType>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -269,7 +353,7 @@ describe('App', () => {
         user: null,
         isLoading: true,
         logout: vi.fn(),
-      });
+      } as AuthContextType);
 
       renderApp();
 
@@ -283,7 +367,7 @@ describe('App', () => {
         user: null,
         isLoading: false,
         logout: vi.fn(),
-      });
+      } as AuthContextType);
 
       renderApp();
 
@@ -309,7 +393,7 @@ describe('App', () => {
         user: null,
         isLoading: false,
         logout: vi.fn(),
-      });
+      } as AuthContextType);
 
       renderApp();
 
@@ -323,7 +407,7 @@ describe('App', () => {
         user: { username: 'testuser' },
         isLoading: false,
         logout: vi.fn(),
-      });
+      } as AuthContextType);
 
       renderApp();
 
@@ -340,7 +424,7 @@ describe('App', () => {
         user: { username: 'testuser' },
         isLoading: false,
         logout: mockLogout,
-      });
+      } as AuthContextType);
 
       renderApp();
 
@@ -359,7 +443,7 @@ describe('App', () => {
         user: null,
         isLoading: false,
         logout: vi.fn(),
-      });
+      } as AuthContextType);
 
       renderApp();
 
@@ -379,7 +463,7 @@ describe('App', () => {
         user: null,
         isLoading: false,
         logout: vi.fn(),
-      });
+      } as AuthContextType);
 
       renderApp();
 
@@ -396,7 +480,7 @@ describe('App', () => {
         user: null,
         isLoading: false,
         logout: vi.fn(),
-      });
+      } as AuthContextType);
 
       renderApp();
 
@@ -415,7 +499,7 @@ describe('App', () => {
         user: null,
         isLoading: false,
         logout: vi.fn(),
-      });
+      } as AuthContextType);
 
       renderApp();
 
@@ -431,7 +515,7 @@ describe('App', () => {
         user: null,
         isLoading: false,
         logout: vi.fn(),
-      });
+      } as AuthContextType);
 
       renderApp();
 
@@ -447,7 +531,7 @@ describe('App', () => {
         user: null,
         isLoading: false,
         logout: vi.fn(),
-      });
+      } as AuthContextType);
 
       renderApp();
 
@@ -465,7 +549,7 @@ describe('App', () => {
         user: null,
         isLoading: false,
         logout: vi.fn(),
-      });
+      } as AuthContextType);
 
       renderApp();
 
