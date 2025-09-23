@@ -1,9 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { CreatePresetRequest, Preset } from '../../../../api/auth';
-import { authAPI, presetAPI } from '../../../../api/auth';
+import {
+  authAPI,
+  presetAPI,
+  type CreatePresetRequest,
+  type Preset,
+} from '../../../../api/auth';
 import { Button, Input, Typography } from '../../../../components/ui';
 import { useAuth } from '../../../../providers';
+
+// Constants for error messages
+const ERROR_MESSAGES = {
+  AUTH_REQUIRED: 'Authentication required. Please sign in again.',
+  LOAD_FAILED: 'Failed to load presets. Please try again.',
+  SAVE_FAILED: 'Failed to save preset',
+  DELETE_FAILED: 'Failed to delete preset',
+  UPDATE_FAILED: 'Failed to update preset',
+} as const;
 
 interface PresetManagerProps {
   currentConfiguration: Record<string, unknown>;
@@ -66,11 +79,11 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       console.error('Error status:', error.response?.status);
       // Handle 403 Forbidden - user might not be properly authenticated
       if (error.response?.status === 403) {
-        setLoadError('Authentication required. Please sign in again.');
+        setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
         // Optionally redirect to login
         // navigate("/auth");
       } else {
-        setLoadError('Failed to load presets. Please try again.');
+        setLoadError(ERROR_MESSAGES.LOAD_FAILED);
       }
     } finally {
       setIsLoading(false);
@@ -114,11 +127,11 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       console.error('Failed to save preset:', error);
       // Handle 403 Forbidden - user might not be properly authenticated
       if (error.response?.status === 403) {
-        setError('Authentication required. Please sign in again.');
+        setError(ERROR_MESSAGES.AUTH_REQUIRED);
         // Optionally redirect to login
         // navigate("/auth");
       } else {
-        setError(error.response?.data?.detail || 'Failed to save preset');
+        setError(error.response?.data?.detail ?? ERROR_MESSAGES.SAVE_FAILED);
       }
     } finally {
       setIsLoading(false);
@@ -136,7 +149,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
   const handleEditPreset = (preset: Preset) => {
     setEditingPreset(preset.id);
     setEditName(preset.name);
-    setEditDescription(preset.description || '');
+    setEditDescription(preset.description ?? '');
     setLoadError(''); // Clear any previous errors
   };
 
@@ -181,7 +194,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
       // Handle different error types
       if (error.response?.status === 403) {
-        setLoadError('Authentication required. Please sign in again.');
+        setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
       } else if (error.response?.status === 404) {
         setLoadError('Preset not found. It may have been deleted.');
       } else if (error.response?.status === 500) {
@@ -235,7 +248,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
       // Handle different error types
       if (error.response?.status === 403) {
-        setLoadError('Authentication required. Please sign in again.');
+        setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
       } else if (error.response?.status === 404) {
         setLoadError('Preset not found. It may have already been deleted.');
       } else if (error.response?.status === 500) {

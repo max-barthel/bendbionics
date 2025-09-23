@@ -1,8 +1,15 @@
 import { useCallback, useState } from 'react';
-import { type PCCParams, robotAPI } from '../../../api/client';
+import { robotAPI, type PCCParams } from '../../../api/client';
 import { validateRobotConfiguration } from '../../../utils/formValidation';
 import { useErrorHandler } from '../../shared/hooks/useErrorHandler';
 import { useRobotState } from './useRobotState';
+
+// Progress and timeout constants
+const PROGRESS_CONFIG = {
+  INITIAL: 15,
+  COMPLETE: 90,
+  FINAL: 200,
+} as const;
 
 export interface FormSubmissionResult {
   segments: number[][][];
@@ -48,10 +55,12 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
     // Simulate progress for better UX
     const progressInterval = setInterval(() => {
       setComputationProgress(prev => {
-        const newProgress = prev + Math.random() * 15;
-        return newProgress >= 90 ? 90 : newProgress;
+        const newProgress = prev + Math.random() * PROGRESS_CONFIG.INITIAL;
+        return newProgress >= PROGRESS_CONFIG.COMPLETE
+          ? PROGRESS_CONFIG.COMPLETE
+          : newProgress;
       });
-    }, 200);
+    }, PROGRESS_CONFIG.FINAL);
 
     try {
       const params: PCCParams = {
