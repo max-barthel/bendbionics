@@ -216,10 +216,11 @@ class TestAuthRoutes:
 
                 assert response.status_code == 200
                 data = response.json()
-                assert "access_token" in data
-                assert data["token_type"] == "bearer"
-                assert "user" in data
-                assert data["user"]["username"] == "testuser"
+                assert "data" in data
+                assert "access_token" in data["data"]
+                assert data["data"]["token_type"] == "bearer"
+                assert "user" in data["data"]
+                assert data["data"]["user"]["username"] == "testuser"
 
     def test_login_invalid_credentials(self, client, mock_session):
         """Test login with invalid credentials."""

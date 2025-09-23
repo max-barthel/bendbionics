@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app, startup_event
@@ -28,6 +29,7 @@ class TestMainApp:
         assert any("/api" in path for path in router_paths)
 
     @patch("app.main.create_db_and_tables")
+    @pytest.mark.asyncio
     async def test_startup_event(self, mock_create_db):
         """Test startup event function."""
         await startup_event()

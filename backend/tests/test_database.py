@@ -45,12 +45,12 @@ class TestDatabaseOperations:
         session = next(session_gen)
 
         try:
-            # Create a test user
+            # Create a test user with unique username
+            import time
+            unique_username = f"testuser_db_{int(time.time())}"
             user = User(
-                username="testuser_db",
-                email="test_db@example.com",
+                username=unique_username,
                 hashed_password=get_password_hash("testpassword"),
-                is_local=False,
                 is_active=True,
             )
 
@@ -61,8 +61,7 @@ class TestDatabaseOperations:
 
             # Verify user was created
             assert user.id is not None
-            assert user.username == "testuser_db"
-            assert user.email == "test_db@example.com"
+            assert user.username == unique_username
             assert user.is_active is True
 
             # Clean up
