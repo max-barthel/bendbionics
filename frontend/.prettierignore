@@ -5,6 +5,7 @@ node_modules/
 dist/
 build/
 target/
+storybook-static/
 
 # Tauri build files
 src-tauri/target/

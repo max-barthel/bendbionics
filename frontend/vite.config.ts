@@ -96,14 +96,7 @@ export default defineConfig(({ mode }) => {
             }
           },
           // Optimize chunk naming for better caching
-          chunkFileNames: chunkInfo => {
-            const _facadeModuleId = chunkInfo.facadeModuleId
-              ? chunkInfo.facadeModuleId
-                  .split('/')
-                  .pop()
-                  ?.replace('.tsx', '')
-                  .replace('.ts', '')
-              : 'chunk';
+          chunkFileNames: () => {
             return `js/[name]-[hash].js`;
           },
           entryFileNames: 'js/[name]-[hash].js',

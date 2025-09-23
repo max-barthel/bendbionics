@@ -12,7 +12,7 @@ echo "⚡ Running quick checks..."
 # Frontend quick checks
 echo "📝 Running frontend quick lint check..."
 cd frontend
-npm run lint:check
+npm run lint
 if [ $? -ne 0 ]; then
   echo "❌ Frontend linting failed. Please fix the issues before committing."
   echo "💡 Run 'npm run lint:fix' to auto-fix some issues."
