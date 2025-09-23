@@ -27,10 +27,15 @@ const DEFAULT_TENDON_RADIUS = 0.01;
 const DEFAULT_TENDON_OFFSET = 0.0;
 const DEFAULT_TIMEOUT = 100;
 
+// Timing constants
+const INITIALIZATION_DELAY = 800;
+const PRESET_LOAD_DELAY = 10;
+
 // Lazy load heavy components
 const LazyVisualizer3D = lazy(() => Promise.resolve({ default: Visualizer3D }));
 
-function AppContent() {
+// Custom hook for app state management
+function useAppState() {
   const { user, isLoading, logout } = useAuth();
   const navigate = useNavigate();
   const [segments, setSegments] = useState<number[][][]>([]);
@@ -51,7 +56,39 @@ function AppContent() {
   // Get direct access to robot state for preset loading
   const [, setRobotState] = useRobotState();
 
-  // Test localStorage functionality
+  return {
+    user,
+    isLoading,
+    logout,
+    navigate,
+    segments,
+    setSegments,
+    isInitializing,
+    setIsInitializing,
+    loading,
+    setLoading,
+    triggerComputation,
+    setTriggerComputation,
+    sidebarCollapsed,
+    setSidebarCollapsed,
+    currentConfiguration,
+    setCurrentConfiguration,
+    showPresetManager,
+    setShowPresetManager,
+    showTendonResults,
+    setShowTendonResults,
+    isLoadingPreset,
+    setIsLoadingPreset,
+    presetLoadKey,
+    setPresetLoadKey,
+    showUserSettings,
+    setShowUserSettings,
+    setRobotState,
+  };
+}
+
+// Custom hook for app initialization
+function useAppInitialization(setIsInitializing: (value: boolean) => void) {
   useEffect(() => {
     // Test localStorage without alert
     const testKey = 'app_test';
@@ -62,389 +99,591 @@ function AppContent() {
     // Check if token exists
     const existingToken = localStorage.getItem('token');
 
-    // Log localStorage status
-    console.log('=== App localStorage Test ===');
-    console.log('Test value stored:', testValue);
-    console.log('Test value retrieved:', retrievedValue);
-    console.log('Existing token:', existingToken ? 'EXISTS' : 'NULL');
-    console.log('localStorage working:', retrievedValue === testValue ? 'YES' : 'NO');
-    console.log('============================');
+    // Log localStorage status (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('=== App localStorage Test ===');
+      console.log('Test value stored:', testValue);
+      console.log('Test value retrieved:', retrievedValue);
+      console.log('Existing token:', existingToken ? 'EXISTS' : 'NULL');
+      console.log('localStorage working:', retrievedValue === testValue ? 'YES' : 'NO');
+      console.log('============================');
+    }
   }, []);
 
   useEffect(() => {
     // Simulate app initialization
     const timer = setTimeout(() => {
       setIsInitializing(false);
-    }, 800);
+    }, INITIALIZATION_DELAY);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [setIsInitializing]);
+}
 
-  const handleFormResult = (
-    result: number[][][],
-    configuration: RobotConfiguration
-  ) => {
-    setSegments(result);
+// Helper function to create array with default values
+function createArrayWithDefaults(length: number, defaultValue: number) {
+  return Array(length).fill(defaultValue);
+}
 
-    // Only update currentConfiguration if we're not loading a preset
-    if (!isLoadingPreset) {
-      setCurrentConfiguration(configuration);
+// Helper function to create tendon config
+function createTendonConfig(configuration: RobotConfiguration) {
+  return (
+    configuration.tendonConfig ?? {
+      count: DEFAULT_TENDON_COUNT,
+      radius: DEFAULT_TENDON_RADIUS,
+      coupling_offset: DEFAULT_TENDON_OFFSET,
     }
+  );
+}
 
-    // Auto-unfold tendon results panel if tendon analysis data is available
-    if (configuration.tendonAnalysis?.actuation_commands) {
-      setShowTendonResults(true);
-    }
+// Helper function to create robot state from configuration
+function createRobotStateFromConfiguration(configuration: RobotConfiguration) {
+  const segments = configuration.segments ?? DEFAULT_SEGMENTS;
+
+  return {
+    segments,
+    bendingAngles: configuration.bendingAngles ?? createArrayWithDefaults(segments, 0),
+    rotationAngles:
+      configuration.rotationAngles ?? createArrayWithDefaults(segments, 0),
+    backboneLengths:
+      configuration.backboneLengths ??
+      createArrayWithDefaults(segments, DEFAULT_BACKBONE_LENGTH),
+    couplingLengths:
+      configuration.couplingLengths ??
+      createArrayWithDefaults(segments + 1, DEFAULT_COUPLING_LENGTH),
+    discretizationSteps:
+      configuration.discretizationSteps ?? DEFAULT_DISCRETIZATION_STEPS,
+    tendonConfig: createTendonConfig(configuration),
   };
+}
 
-  const handleLoadPreset = (configuration: RobotConfiguration) => {
-    console.log('Loading preset configuration:', configuration);
+// Helper function to handle preset loading completion
+function handlePresetLoadingCompletion(
+  configuration: RobotConfiguration,
+  setCurrentConfiguration: (config: RobotConfiguration) => void,
+  setPresetLoadKey: (fn: (prev: number) => number) => void,
+  setIsLoadingPreset: (loading: boolean) => void
+) {
+  setCurrentConfiguration(configuration);
+  setPresetLoadKey(prev => prev + 1); // Force FormTabs re-render
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Preset configuration loaded:', configuration);
+  }
 
-    // Set loading preset flag to prevent circular updates
-    setIsLoadingPreset(true);
+  // Reset the loading preset flag after a short delay
+  setTimeout(() => {
+    setIsLoadingPreset(false);
+  }, DEFAULT_TIMEOUT);
+}
 
-    // Clear the visualization immediately
-    setSegments([]);
+// Custom hook for preset loading logic
+function usePresetLoading(setters: {
+  setSegments: (segments: number[][][]) => void;
+  setCurrentConfiguration: (config: RobotConfiguration) => void;
+  setIsLoadingPreset: (loading: boolean) => void;
+  setPresetLoadKey: (fn: (prev: number) => number) => void;
+  setShowTendonResults: (show: boolean) => void;
+  setRobotState: (state: any) => void;
+}) {
+  const handleLoadPreset = useCallback(
+    (configuration: RobotConfiguration) => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Loading preset configuration:', configuration);
+      }
 
-    // Reset the current configuration to ensure clean state
-    setCurrentConfiguration({});
+      // Set loading preset flag to prevent circular updates
+      setters.setIsLoadingPreset(true);
 
-    // Directly update robot state with preset configuration
-    const newRobotState = {
-      segments: configuration.segments ?? DEFAULT_SEGMENTS,
-      bendingAngles:
-        configuration.bendingAngles ??
-        Array(configuration.segments ?? DEFAULT_SEGMENTS).fill(0),
-      rotationAngles:
-        configuration.rotationAngles ??
-        Array(configuration.segments ?? DEFAULT_SEGMENTS).fill(0),
-      backboneLengths:
-        configuration.backboneLengths ??
-        Array(configuration.segments ?? DEFAULT_SEGMENTS).fill(DEFAULT_BACKBONE_LENGTH),
-      couplingLengths:
-        configuration.couplingLengths ??
-        Array((configuration.segments ?? DEFAULT_SEGMENTS) + 1).fill(
-          DEFAULT_COUPLING_LENGTH
-        ),
-      discretizationSteps:
-        configuration.discretizationSteps ?? DEFAULT_DISCRETIZATION_STEPS,
-      tendonConfig: configuration.tendonConfig ?? {
-        count: DEFAULT_TENDON_COUNT,
-        radius: DEFAULT_TENDON_RADIUS,
-        coupling_offset: DEFAULT_TENDON_OFFSET,
-      },
-    };
+      // Clear the visualization immediately
+      setters.setSegments([]);
 
-    console.log('Directly setting robot state:', newRobotState);
-    setRobotState(newRobotState);
+      // Reset the current configuration to ensure clean state
+      setters.setCurrentConfiguration({});
 
-    // Use setTimeout to ensure the reset happens before setting the new configuration
-    setTimeout(() => {
-      setCurrentConfiguration(configuration);
-      setPresetLoadKey(prev => prev + 1); // Force FormTabs re-render
-      console.log('Preset configuration loaded:', configuration);
+      // Create and set robot state
+      const newRobotState = createRobotStateFromConfiguration(configuration);
 
-      // Reset the loading preset flag after a short delay
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Directly setting robot state:', newRobotState);
+      }
+      setters.setRobotState(newRobotState);
+
+      // Use setTimeout to ensure the reset happens before setting the new configuration
       setTimeout(() => {
-        setIsLoadingPreset(false);
-      }, DEFAULT_TIMEOUT);
-    }, 10);
+        handlePresetLoadingCompletion(
+          configuration,
+          setters.setCurrentConfiguration,
+          setters.setPresetLoadKey,
+          setters.setIsLoadingPreset
+        );
+      }, PRESET_LOAD_DELAY);
 
-    // Auto-unfold tendon results panel if preset contains tendon analysis data
-    if (configuration.tendonAnalysis?.actuation_commands) {
-      setShowTendonResults(true);
-    }
-  };
+      // Auto-unfold tendon results panel if preset contains tendon analysis data
+      if (configuration.tendonAnalysis?.actuation_commands) {
+        setters.setShowTendonResults(true);
+      }
+    },
+    [setters]
+  );
 
-  const handleLogout = () => {
-    void logout();
-    navigate('/');
-  };
+  return { handleLoadPreset };
+}
 
-  const handleSignIn = () => {
-    navigate('/auth');
-  };
+// Loading screen component
+function LoadingScreen({
+  isLoading,
+  isInitializing: _isInitializing,
+}: {
+  isLoading: boolean;
+  isInitializing: boolean;
+}) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <LoadingSpinner size="lg" color="primary" className="mb-4" />
+        <Typography variant="h2" color="primary" className="mb-2">
+          Loading Soft Robot App
+        </Typography>
+        <Typography variant="body" color="gray">
+          {isLoading ? 'Checking authentication...' : 'Initializing components...'}
+        </Typography>
+      </div>
+    </div>
+  );
+}
 
-  const handleComputationTriggered = useCallback(() => {
-    setTriggerComputation(false);
-  }, []);
+// User avatar icon component
+function UserAvatarIcon({ size = 'w-6 h-6' }: { size?: string }) {
+  return (
+    <div
+      className={`${size} bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center`}
+    >
+      <svg
+        className="w-3 h-3 text-white"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+        />
+      </svg>
+    </div>
+  );
+}
 
-  const handleShowPresetManager = useCallback(() => {
-    setShowPresetManager(true);
-  }, []);
-
-  const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
-  };
-
-  if (isLoading || isInitializing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <LoadingSpinner size="lg" color="primary" className="mb-4" />
-          <Typography variant="h2" color="primary" className="mb-2">
-            Loading Soft Robot App
-          </Typography>
-          <Typography variant="body" color="gray">
-            {isLoading ? 'Checking authentication...' : 'Initializing components...'}
-          </Typography>
+// User dropdown menu component
+function UserDropdownMenu({ appState }: { appState: any }) {
+  return (
+    <TahoeGlass className="absolute top-full right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible">
+      <div className="p-3 border-b border-white/20">
+        <div className="flex items-center gap-2">
+          <UserAvatarIcon size="w-8 h-8" />
+          <div>
+            <p className="text-sm font-medium text-gray-800">
+              {appState.user.username}
+            </p>
+            <p className="text-xs text-gray-600">Signed in</p>
+          </div>
         </div>
       </div>
+      <div className="p-1">
+        <button
+          onClick={() => appState.setShowUserSettings(true)}
+          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white/30 rounded-lg transition-colors"
+        >
+          Settings
+        </button>
+        <button
+          onClick={() => {
+            void appState.logout();
+            appState.navigate('/');
+          }}
+          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white/30 rounded-lg transition-colors"
+        >
+          Sign Out
+        </button>
+      </div>
+    </TahoeGlass>
+  );
+}
+
+// Signed in user menu component
+function SignedInUserMenu({ appState }: { appState: any }) {
+  return (
+    <div className="group relative">
+      <TahoeGlass as="button" className="flex items-center gap-2 hover:scale-105">
+        <UserAvatarIcon />
+        <span className="text-sm font-medium text-gray-800">
+          {appState.user.username}
+        </span>
+        <svg
+          className="w-4 h-4 text-gray-600 transition-transform group-hover:rotate-180"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </TahoeGlass>
+      <UserDropdownMenu appState={appState} />
+    </div>
+  );
+}
+
+// Sign in button component
+function SignInButton({ appState }: { appState: any }) {
+  return (
+    <button
+      onClick={() => appState.navigate('/auth')}
+      className="flex items-center gap-2 px-4 py-2 backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full relative z-[60] bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
+    >
+      <svg
+        className="w-4 h-4 text-gray-900"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+        />
+      </svg>
+      <span className="text-sm font-medium text-gray-900">Sign In</span>
+      <div className="absolute inset-0 rounded-full pointer-events-none z-0 bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
+    </button>
+  );
+}
+
+// User menu component
+function UserMenu({ appState }: { appState: any }) {
+  return (
+    <div className="fixed top-4 right-4 z-50">
+      {appState.user ? (
+        <SignedInUserMenu appState={appState} />
+      ) : (
+        <SignInButton appState={appState} />
+      )}
+    </div>
+  );
+}
+
+// Sidebar component
+function Sidebar({
+  appState,
+  handleFormResult,
+  handleLoadPreset,
+  handleComputationTriggered,
+  handleShowPresetManager,
+}: {
+  appState: any;
+  handleFormResult: (result: number[][][], configuration: RobotConfiguration) => void;
+  handleLoadPreset: (configuration: RobotConfiguration) => void;
+  handleComputationTriggered: () => void;
+  handleShowPresetManager: () => void;
+}) {
+  return (
+    <div
+      className={`fixed top-0 left-0 h-full bg-white/15 backdrop-blur-3xl border-r border-white/30 shadow-2xl transition-all duration-300 ease-in-out overflow-hidden z-40 ${
+        appState.sidebarCollapsed
+          ? 'w-0 -translate-x-full opacity-0'
+          : 'w-96 translate-x-0 opacity-100 rounded-r-2xl'
+      }`}
+    >
+      <div className="w-96 h-full pr-2">
+        <FormTabs
+          key={appState.presetLoadKey}
+          onResult={handleFormResult}
+          initialConfiguration={appState.currentConfiguration}
+          user={appState.user}
+          currentConfiguration={appState.currentConfiguration}
+          onLoadPreset={handleLoadPreset}
+          navigate={appState.navigate}
+          onLoadingChange={appState.setLoading}
+          triggerComputation={appState.triggerComputation}
+          onComputationTriggered={handleComputationTriggered}
+          onShowPresetManager={handleShowPresetManager}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Sidebar toggle button component
+function SidebarToggle({
+  appState,
+  toggleSidebar,
+}: {
+  appState: any;
+  toggleSidebar: () => void;
+}) {
+  return (
+    <button
+      onClick={toggleSidebar}
+      className={`fixed top-1/2 transform -translate-y-1/2 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105 ${
+        appState.sidebarCollapsed
+          ? 'left-4 translate-x-0'
+          : 'left-[calc(384px-16px)] translate-x-0'
+      }`}
+      aria-label={appState.sidebarCollapsed ? 'Show parameters' : 'Hide parameters'}
+    >
+      <svg
+        className="w-4 h-4 text-gray-600 transition-transform duration-300"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d={appState.sidebarCollapsed ? 'M9 5l7 7-7 7' : 'M15 19l-7-7 7-7'}
+        />
+      </svg>
+    </button>
+  );
+}
+
+// Preset manager modal component
+function PresetManagerModal({
+  appState,
+  handleLoadPreset,
+}: {
+  appState: any;
+  handleLoadPreset: (configuration: RobotConfiguration) => void;
+}) {
+  if (!appState.showPresetManager) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden relative">
+        <button
+          onClick={() => appState.setShowPresetManager(false)}
+          className="absolute top-4 right-4 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out hover:scale-105 z-10"
+          aria-label="Close preset manager"
+        >
+          <svg
+            className="w-4 h-4 text-gray-600 transition-transform duration-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+        <div className="p-6 overflow-y-auto max-h-[80vh]">
+          <PresetManager
+            currentConfiguration={appState.currentConfiguration || {}}
+            onLoadPreset={config => {
+              handleLoadPreset(config);
+              appState.setShowPresetManager(false);
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Modals component
+function AppModals({
+  appState,
+  handleLoadPreset,
+}: {
+  appState: any;
+  handleLoadPreset: (configuration: RobotConfiguration) => void;
+}) {
+  return (
+    <>
+      <PresetManagerModal appState={appState} handleLoadPreset={handleLoadPreset} />
+      {appState.showUserSettings && (
+        <UserSettings onClose={() => appState.setShowUserSettings(false)} />
+      )}
+    </>
+  );
+}
+
+// 3D Visualizer component
+function Visualizer3DWrapper({ appState }: { appState: any }) {
+  return (
+    <div className="w-full h-full bg-white/10 backdrop-blur-sm relative">
+      <Suspense
+        fallback={
+          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <div className="text-center">
+              <LoadingSpinner size="lg" color="primary" className="mb-4" />
+              <Typography variant="h3" color="gray" className="mb-2">
+                Loading 3D Visualizer...
+              </Typography>
+              <Typography variant="body" color="gray">
+                Initializing Three.js components
+              </Typography>
+            </div>
+          </div>
+        }
+      >
+        <LazyVisualizer3D
+          segments={appState.segments}
+          tendonConfig={appState.currentConfiguration.tendonConfig}
+          tendonAnalysis={appState.currentConfiguration.tendonAnalysis}
+          sidebarCollapsed={appState.sidebarCollapsed}
+          showTendonResults={appState.showTendonResults}
+          setShowTendonResults={appState.setShowTendonResults}
+        />
+      </Suspense>
+    </div>
+  );
+}
+
+// Floating compute button component
+function FloatingComputeButton({ appState }: { appState: any }) {
+  return (
+    <div
+      className={`fixed bottom-6 z-50 transition-all duration-300 ease-in-out ${
+        appState.sidebarCollapsed ? 'left-6' : 'left-[calc(384px+16px)]'
+      }`}
+    >
+      <SubmitButton
+        onClick={() => {
+          // Trigger computation from FormTabs
+          appState.setTriggerComputation(true);
+        }}
+        loading={appState.loading}
+      />
+    </div>
+  );
+}
+
+// Main app layout component
+function MainAppLayout({
+  appState,
+  handleFormResult,
+  handleLoadPreset,
+  handleComputationTriggered,
+  handleShowPresetManager,
+  toggleSidebar,
+}: {
+  appState: any;
+  handleFormResult: (result: number[][][], configuration: RobotConfiguration) => void;
+  handleLoadPreset: (configuration: RobotConfiguration) => void;
+  handleComputationTriggered: () => void;
+  handleShowPresetManager: () => void;
+  toggleSidebar: () => void;
+}) {
+  return (
+    <div className="h-screen flex flex-col">
+      <div className="flex-1 bg-gradient-to-br from-gray-200 to-gray-300 relative overflow-hidden">
+        <Visualizer3DWrapper appState={appState} />
+        <Sidebar
+          appState={appState}
+          handleFormResult={handleFormResult}
+          handleLoadPreset={handleLoadPreset}
+          handleComputationTriggered={handleComputationTriggered}
+          handleShowPresetManager={handleShowPresetManager}
+        />
+        <SidebarToggle appState={appState} toggleSidebar={toggleSidebar} />
+        <UserMenu appState={appState} />
+      </div>
+      <FloatingComputeButton appState={appState} />
+      <AppModals appState={appState} handleLoadPreset={handleLoadPreset} />
+    </div>
+  );
+}
+
+// Custom hook for app handlers
+function useAppHandlers(appState: any) {
+  const handleFormResult = useCallback(
+    (result: number[][][], configuration: RobotConfiguration) => {
+      appState.setSegments(result);
+
+      // Only update currentConfiguration if we're not loading a preset
+      if (!appState.isLoadingPreset) {
+        appState.setCurrentConfiguration(configuration);
+      }
+
+      // Auto-unfold tendon results panel if tendon analysis data is available
+      if (configuration.tendonAnalysis?.actuation_commands) {
+        appState.setShowTendonResults(true);
+      }
+    },
+    [appState]
+  );
+
+  const handleComputationTriggered = useCallback(() => {
+    appState.setTriggerComputation(false);
+  }, [appState.setTriggerComputation]);
+
+  const handleShowPresetManager = useCallback(() => {
+    appState.setShowPresetManager(true);
+  }, [appState.setShowPresetManager]);
+
+  const toggleSidebar = useCallback(() => {
+    appState.setSidebarCollapsed(!appState.sidebarCollapsed);
+  }, [appState.setSidebarCollapsed]);
+
+  return {
+    handleFormResult,
+    handleComputationTriggered,
+    handleShowPresetManager,
+    toggleSidebar,
+  };
+}
+
+function AppContent() {
+  const appState = useAppState();
+  useAppInitialization(appState.setIsInitializing);
+
+  const { handleLoadPreset } = usePresetLoading({
+    setSegments: appState.setSegments,
+    setCurrentConfiguration: appState.setCurrentConfiguration,
+    setIsLoadingPreset: appState.setIsLoadingPreset,
+    setPresetLoadKey: appState.setPresetLoadKey,
+    setShowTendonResults: appState.setShowTendonResults,
+    setRobotState: appState.setRobotState,
+  });
+
+  const handlers = useAppHandlers(appState);
+
+  if (appState.isLoading || appState.isInitializing) {
+    return (
+      <LoadingScreen
+        isLoading={appState.isLoading}
+        isInitializing={appState.isInitializing}
+      />
     );
   }
 
   return (
     <Routes>
       <Route path="/auth" element={<AuthPage />} />
-
       <Route
         path="/"
         element={
-          <div className="h-screen flex flex-col">
-            <div className="flex-1 bg-gradient-to-br from-gray-200 to-gray-300 relative overflow-hidden">
-              {/* Full-width visualizer */}
-              <div className="w-full h-full bg-white/10 backdrop-blur-sm relative">
-                <Suspense
-                  fallback={
-                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                      <div className="text-center">
-                        <LoadingSpinner size="lg" color="primary" className="mb-4" />
-                        <Typography variant="h3" color="gray" className="mb-2">
-                          Loading 3D Visualizer...
-                        </Typography>
-                        <Typography variant="body" color="gray">
-                          Initializing Three.js components
-                        </Typography>
-                      </div>
-                    </div>
-                  }
-                >
-                  <LazyVisualizer3D
-                    segments={segments}
-                    tendonConfig={currentConfiguration.tendonConfig}
-                    tendonAnalysis={currentConfiguration.tendonAnalysis}
-                    sidebarCollapsed={sidebarCollapsed}
-                    showTendonResults={showTendonResults}
-                    setShowTendonResults={setShowTendonResults}
-                  />
-                </Suspense>
-              </div>
-
-              {/* Sidebar Overlay */}
-              <div
-                className={`fixed top-0 left-0 h-full bg-white/15 backdrop-blur-3xl border-r border-white/30 shadow-2xl transition-all duration-300 ease-in-out overflow-hidden z-40 ${
-                  sidebarCollapsed
-                    ? 'w-0 -translate-x-full opacity-0'
-                    : 'w-96 translate-x-0 opacity-100 rounded-r-2xl'
-                }`}
-              >
-                <div className="w-96 h-full pr-2">
-                  <FormTabs
-                    key={presetLoadKey}
-                    onResult={handleFormResult}
-                    initialConfiguration={currentConfiguration}
-                    user={user}
-                    currentConfiguration={currentConfiguration}
-                    onLoadPreset={handleLoadPreset}
-                    navigate={navigate}
-                    onLoadingChange={setLoading}
-                    triggerComputation={triggerComputation}
-                    onComputationTriggered={handleComputationTriggered}
-                    onShowPresetManager={handleShowPresetManager}
-                  />
-                </div>
-              </div>
-
-              {/* Hide button - positioned outside sidebar */}
-              <button
-                onClick={toggleSidebar}
-                className={`fixed top-1/2 transform -translate-y-1/2 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105 ${
-                  sidebarCollapsed
-                    ? 'left-4 translate-x-0'
-                    : 'left-[calc(384px-16px)] translate-x-0'
-                }`}
-                aria-label={sidebarCollapsed ? 'Show parameters' : 'Hide parameters'}
-              >
-                <svg
-                  className="w-4 h-4 text-gray-600 transition-transform duration-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d={sidebarCollapsed ? 'M9 5l7 7-7 7' : 'M15 19l-7-7 7-7'}
-                  />
-                </svg>
-              </button>
-
-              {/* Floating User Menu */}
-              <div className="fixed top-4 right-4 z-50">
-                {user ? (
-                  <div className="group relative">
-                    <TahoeGlass
-                      as="button"
-                      className="flex items-center gap-2 hover:scale-105"
-                    >
-                      <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                        <svg
-                          className="w-3 h-3 text-white"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-sm font-medium text-gray-800">
-                        {user.username}
-                      </span>
-                      <svg
-                        className="w-4 h-4 text-gray-600 transition-transform group-hover:rotate-180"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </TahoeGlass>
-
-                    {/* Dropdown Menu */}
-                    <TahoeGlass className="absolute top-full right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible">
-                      <div className="p-3 border-b border-white/20">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                            <svg
-                              className="w-4 h-4 text-white"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                              />
-                            </svg>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-800">
-                              {user.username}
-                            </p>
-                            <p className="text-xs text-gray-600">Signed in</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-1">
-                        <button
-                          onClick={() => setShowUserSettings(true)}
-                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white/30 rounded-lg transition-colors"
-                        >
-                          Settings
-                        </button>
-                        <button
-                          onClick={handleLogout}
-                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white/30 rounded-lg transition-colors"
-                        >
-                          Sign Out
-                        </button>
-                      </div>
-                    </TahoeGlass>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleSignIn}
-                    className="flex items-center gap-2 px-4 py-2 backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full relative z-[60] bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
-                  >
-                    <svg
-                      className="w-4 h-4 text-gray-900"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                      />
-                    </svg>
-                    <span className="text-sm font-medium text-gray-900">Sign In</span>
-                    <div className="absolute inset-0 rounded-full pointer-events-none z-0 bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Floating Compute Button */}
-            <div
-              className={`fixed bottom-6 z-50 transition-all duration-300 ease-in-out ${
-                sidebarCollapsed ? 'left-6' : 'left-[calc(384px+16px)]'
-              }`}
-            >
-              <SubmitButton
-                onClick={() => {
-                  // Trigger computation from FormTabs
-                  setTriggerComputation(true);
-                }}
-                loading={loading}
-              />
-            </div>
-
-            {/* Preset Manager Modal */}
-            {showPresetManager && (
-              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden relative">
-                  <button
-                    onClick={() => setShowPresetManager(false)}
-                    className="absolute top-4 right-4 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out hover:scale-105 z-10"
-                    aria-label="Close preset manager"
-                  >
-                    <svg
-                      className="w-4 h-4 text-gray-600 transition-transform duration-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                  <div className="p-6 overflow-y-auto max-h-[80vh]">
-                    <PresetManager
-                      currentConfiguration={currentConfiguration || {}}
-                      onLoadPreset={config => {
-                        handleLoadPreset(config);
-                        setShowPresetManager(false);
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* User Settings Modal */}
-            {showUserSettings && (
-              <UserSettings onClose={() => setShowUserSettings(false)} />
-            )}
-          </div>
+          <MainAppLayout
+            appState={appState}
+            handleFormResult={handlers.handleFormResult}
+            handleLoadPreset={handleLoadPreset}
+            handleComputationTriggered={handlers.handleComputationTriggered}
+            handleShowPresetManager={handlers.handleShowPresetManager}
+            toggleSidebar={handlers.toggleSidebar}
+          />
         }
       />
     </Routes>
