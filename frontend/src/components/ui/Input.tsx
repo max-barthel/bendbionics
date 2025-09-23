@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import {
   combineStyles,
   getFloatingLabelStyles,
@@ -149,6 +149,9 @@ function Input({
   max,
   step,
 }: InputProps) {
+  // Ensure label is correctly associated even if no id is passed in
+  const reactGeneratedId = useId();
+  const inputId = id ?? `input-${reactGeneratedId}`;
   const { isFocused, setIsFocused, classes } = useInputStateAndStyling(
     size,
     error,
@@ -164,7 +167,7 @@ function Input({
   return (
     <div className="w-full relative">
       <input
-        id={id}
+        id={inputId}
         type={type}
         value={value}
         onChange={e => handleInputChange(e, type, onChange)}
@@ -177,7 +180,7 @@ function Input({
         step={step}
         className={combineStyles('w-full', classes, label ? 'pt-3' : '')}
       />
-      {label && <FloatingLabel label={label} id={id} shouldFloat={shouldFloat} />}
+      {label && <FloatingLabel label={label} id={inputId} shouldFloat={shouldFloat} />}
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
