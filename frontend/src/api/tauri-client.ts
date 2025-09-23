@@ -1,5 +1,10 @@
 import { invoke } from '@tauri-apps/api/tauri';
 
+// Constants for error messages
+const ERROR_MESSAGES = {
+  UNKNOWN_ERROR: 'Unknown error',
+} as const;
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -13,12 +18,14 @@ export class TauriApiClient {
     const testValue = 'test_value';
     localStorage.setItem(testKey, testValue);
     const retrievedValue = localStorage.getItem(testKey);
-    console.log(
-      'TauriApiClient: localStorage test - stored:',
-      testValue,
-      'retrieved:',
-      retrievedValue
-    );
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        'TauriApiClient: localStorage test - stored:',
+        testValue,
+        'retrieved:',
+        retrievedValue
+      );
+    }
   }
 
   private getAuthToken(): string | null {
@@ -38,7 +45,7 @@ export class TauriApiClient {
     ) {
       // For Tauri, we might need to use a different approach
       // Let's try to get it from the global state
-      token = (window as { authToken?: string }).authToken || null;
+      token = (window as { authToken?: string }).authToken ?? null;
     }
 
     // Clean the token - remove any extra quotes and parse if needed
@@ -55,30 +62,32 @@ export class TauriApiClient {
       }
     }
 
-    // Debug: Log all storage methods
-    console.log('=== getAuthToken Debug ===');
-    console.log(
-      'localStorage token:',
-      localStorage.getItem('token') ? 'EXISTS' : 'NULL'
-    );
-    console.log(
-      'sessionStorage token:',
-      sessionStorage.getItem('token') ? 'EXISTS' : 'NULL'
-    );
-    console.log(
-      'window.authToken:',
-      (window as { authToken?: string }).authToken ? 'EXISTS' : 'NULL'
-    );
-    console.log('Final token:', token ? `"${token.substring(0, 20)}..."` : 'NULL');
-    console.log('Token length:', token ? token.length : 0);
-    console.log('Token starts with quote:', token ? token.startsWith('"') : false);
-    console.log('Token ends with quote:', token ? token.endsWith('"') : false);
-    console.log('Token first 20 chars:', token ? token.substring(0, 20) : 'NULL');
-    console.log(
-      'Token last 20 chars:',
-      token ? token.substring(token.length - 20) : 'NULL'
-    );
-    console.log('========================');
+    // Debug: Log all storage methods (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('=== getAuthToken Debug ===');
+      console.log(
+        'localStorage token:',
+        localStorage.getItem('token') ? 'EXISTS' : 'NULL'
+      );
+      console.log(
+        'sessionStorage token:',
+        sessionStorage.getItem('token') ? 'EXISTS' : 'NULL'
+      );
+      console.log(
+        'window.authToken:',
+        (window as { authToken?: string }).authToken ? 'EXISTS' : 'NULL'
+      );
+      console.log('Final token:', token ? `"${token.substring(0, 20)}..."` : 'NULL');
+      console.log('Token length:', token ? token.length : 0);
+      console.log('Token starts with quote:', token ? token.startsWith('"') : false);
+      console.log('Token ends with quote:', token ? token.endsWith('"') : false);
+      console.log('Token first 20 chars:', token ? token.substring(0, 20) : 'NULL');
+      console.log(
+        'Token last 20 chars:',
+        token ? token.substring(token.length - 20) : 'NULL'
+      );
+      console.log('========================');
+    }
 
     return token;
   }
@@ -86,29 +95,32 @@ export class TauriApiClient {
   async get<T>(endpoint: string): Promise<ApiResponse<T>> {
     try {
       const authToken = this.getAuthToken();
-      console.log(
-        `Tauri GET ${endpoint} - Auth token:`,
-        authToken ? `Bearer ${authToken.substring(0, 20)}...` : 'None'
-      );
-      console.log(
-        `Tauri GET ${endpoint} - Auth token passed to Rust:`,
-        authToken ? 'YES' : 'NO'
-      );
-      console.log(`Tauri GET ${endpoint} - Auth token type:`, typeof authToken);
-      console.log(`Tauri GET ${endpoint} - Auth token is null:`, authToken === null);
-      console.log(
-        `Tauri GET ${endpoint} - Auth token is undefined:`,
-        authToken === undefined
-      );
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `Tauri GET ${endpoint} - Auth token:`,
+          authToken ? `Bearer ${authToken.substring(0, 20)}...` : 'None'
+        );
+        console.log(
+          `Tauri GET ${endpoint} - Auth token passed to Rust:`,
+          authToken ? 'YES' : 'NO'
+        );
+        console.log(`Tauri GET ${endpoint} - Auth token type:`, typeof authToken);
+        console.log(`Tauri GET ${endpoint} - Auth token is null:`, authToken === null);
+        console.log(
+          `Tauri GET ${endpoint} - Auth token is undefined:`,
+          authToken === undefined
+        );
+      }
 
       return await invoke<ApiResponse<T>>('call_backend_api', {
         endpoint,
         data: null,
-        auth_token: authToken || null,
-        token: authToken || null, // Try alternative parameter name
+        auth_token: authToken ?? null,
+        token: authToken ?? null, // Try alternative parameter name
       });
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      const errorMsg =
+        error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR;
       return {
         success: false,
         error: errorMsg,
@@ -119,29 +131,32 @@ export class TauriApiClient {
   async post<T>(endpoint: string, data: unknown): Promise<ApiResponse<T>> {
     try {
       const authToken = this.getAuthToken();
-      console.log(
-        `Tauri POST ${endpoint} - Auth token:`,
-        authToken ? `Bearer ${authToken.substring(0, 20)}...` : 'None'
-      );
-      console.log(
-        `Tauri POST ${endpoint} - Auth token passed to Rust:`,
-        authToken ? 'YES' : 'NO'
-      );
-      console.log(`Tauri POST ${endpoint} - Auth token type:`, typeof authToken);
-      console.log(`Tauri POST ${endpoint} - Auth token is null:`, authToken === null);
-      console.log(
-        `Tauri POST ${endpoint} - Auth token is undefined:`,
-        authToken === undefined
-      );
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `Tauri POST ${endpoint} - Auth token:`,
+          authToken ? `Bearer ${authToken.substring(0, 20)}...` : 'None'
+        );
+        console.log(
+          `Tauri POST ${endpoint} - Auth token passed to Rust:`,
+          authToken ? 'YES' : 'NO'
+        );
+        console.log(`Tauri POST ${endpoint} - Auth token type:`, typeof authToken);
+        console.log(`Tauri POST ${endpoint} - Auth token is null:`, authToken === null);
+        console.log(
+          `Tauri POST ${endpoint} - Auth token is undefined:`,
+          authToken === undefined
+        );
+      }
 
       return await invoke<ApiResponse<T>>('call_backend_api', {
         endpoint,
         data,
-        auth_token: authToken || null,
-        token: authToken || null, // Try alternative parameter name
+        auth_token: authToken ?? null,
+        token: authToken ?? null, // Try alternative parameter name
       });
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      const errorMsg =
+        error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR;
       return {
         success: false,
         error: errorMsg,
@@ -156,19 +171,22 @@ export class TauriApiClient {
   async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
     try {
       const authToken = this.getAuthToken();
-      console.log(
-        `Tauri DELETE ${endpoint} - Auth token:`,
-        authToken ? `Bearer ${authToken.substring(0, 20)}...` : 'None'
-      );
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `Tauri DELETE ${endpoint} - Auth token:`,
+          authToken ? `Bearer ${authToken.substring(0, 20)}...` : 'None'
+        );
+      }
 
       return await invoke<ApiResponse<T>>('call_backend_api', {
         endpoint,
         data: { _method: 'DELETE' },
-        auth_token: authToken || null,
-        token: authToken || null,
+        auth_token: authToken ?? null,
+        token: authToken ?? null,
       });
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      const errorMsg =
+        error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR;
       return {
         success: false,
         error: errorMsg,
