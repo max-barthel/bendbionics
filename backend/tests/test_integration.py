@@ -33,12 +33,13 @@ class TestFullAPIWorkflow:
         assert response.headers["content-type"] == "application/json"
 
         data = response.json()
-        assert "segments" in data
-        assert isinstance(data["segments"], list)
-        assert len(data["segments"]) == 7  # 3 backbone + 4 coupling segments
+        assert "data" in data
+        assert "segments" in data["data"]
+        assert isinstance(data["data"]["segments"], list)
+        assert len(data["data"]["segments"]) == 7  # 3 backbone + 4 coupling segments
 
         # Step 4: Verify segment structure
-        for segment in data["segments"]:
+        for segment in data["data"]["segments"]:
             assert isinstance(segment, list)
             assert len(segment) > 0
             for point in segment:
@@ -66,8 +67,10 @@ class TestFullAPIWorkflow:
         assert response2.status_code == 200
         data2 = response2.json()
 
-        # Results should be identical
-        assert data1 == data2
+        # Results should be identical (excluding timestamp)
+        data1_no_timestamp = {k: v for k, v in data1.items() if k != 'timestamp'}
+        data2_no_timestamp = {k: v for k, v in data2.items() if k != 'timestamp'}
+        assert data1_no_timestamp == data2_no_timestamp
 
         # Test that cache is actually being used by checking cache hit
         # We'll use a different approach: test with a more complex payload
@@ -139,8 +142,9 @@ class TestFullAPIWorkflow:
             response = self.client.post("/pcc", json=test_case["payload"])
             assert response.status_code == 200, f"Failed for {test_case['name']}"
             data = response.json()
-            assert "segments" in data, f"Failed for {test_case['name']}"
-            assert len(data["segments"]) > 0, f"Failed for {test_case['name']}"
+            assert "data" in data
+            assert "segments" in data["data"], f"Failed for {test_case['name']}"
+            assert len(data["data"]["segments"]) > 0, f"Failed for {test_case['name']}"
 
     def test_workflow_error_handling(self):
         """Test error handling throughout the workflow."""
@@ -298,7 +302,8 @@ class TestFullAPIWorkflow:
         while not results.empty():
             status_code, data = results.get()
             assert status_code == 200
-            assert "segments" in data
+            assert "data" in data
+        assert "segments" in data["data"]
 
     def test_workflow_with_malformed_json(self):
         """Test workflow with malformed JSON requests."""
@@ -328,9 +333,10 @@ class TestFullAPIWorkflow:
         response = self.client.post("/pcc", json=payload)
         assert response.status_code == 200
         data = response.json()
-        assert "segments" in data
+        assert "data" in data
+        assert "segments" in data["data"]
         # 20 backbone + 21 coupling segments
-        assert len(data["segments"]) == 41
+        assert len(data["data"]["segments"]) == 41
 
     def test_workflow_cache_invalidation(self):
         """Test that cache works correctly with different parameters."""
@@ -363,7 +369,10 @@ class TestFullAPIWorkflow:
         response3 = self.client.post("/pcc", json=base_payload)
         assert response3.status_code == 200
         data3 = response3.json()
-        assert data1 == data3
+        # Results should be identical (excluding timestamp)
+        data1_no_timestamp = {k: v for k, v in data1.items() if k != 'timestamp'}
+        data3_no_timestamp = {k: v for k, v in data3.items() if k != 'timestamp'}
+        assert data1_no_timestamp == data3_no_timestamp
 
     def test_workflow_edge_cases(self):
         """Test workflow with edge case parameters."""
@@ -408,8 +417,9 @@ class TestFullAPIWorkflow:
             response = self.client.post("/pcc", json=test_case["payload"])
             assert response.status_code == 200, f"Failed for {test_case['name']}"
             data = response.json()
-            assert "segments" in data, f"Failed for {test_case['name']}"
-            assert len(data["segments"]) > 0, f"Failed for {test_case['name']}"
+            assert "data" in data
+            assert "segments" in data["data"], f"Failed for {test_case['name']}"
+            assert len(data["data"]["segments"]) > 0, f"Failed for {test_case['name']}"
 
     def test_workflow_api_documentation(self):
         """Test that API documentation is accessible."""

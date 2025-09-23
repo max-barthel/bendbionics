@@ -63,11 +63,12 @@ class TestMainRoutes:
 
         assert response.status_code == 200
         data = response.json()
-        assert "result" in data
-        assert "robot_positions" in data["result"]
-        assert "coupling_data" in data["result"]
-        assert "tendon_analysis" in data["result"]
-        assert "actuation_commands" in data["result"]
+        assert "data" in data
+        assert "result" in data["data"]
+        assert "robot_positions" in data["data"]["result"]
+        assert "coupling_data" in data["data"]["result"]
+        assert "tendon_analysis" in data["data"]["result"]
+        assert "actuation_commands" in data["data"]["result"]
 
     @patch("app.api.routes.compute_pcc_with_tendons")
     def test_run_pcc_with_tendons_error(self, mock_compute):
@@ -96,7 +97,7 @@ class TestMainRoutes:
 
         assert response.status_code == 500
         data = response.json()
-        assert "Computation failed" in data["detail"]
+        assert "PCC with tendons computation failed" in data["detail"]
 
     def test_options_pcc_cors(self):
         """Test CORS preflight request handling."""
