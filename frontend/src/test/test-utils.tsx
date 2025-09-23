@@ -53,7 +53,7 @@ export const createMockTendonResult = (overrides = {}) => ({
 
 // Mock API responses
 export const mockApiResponses = {
-  success: (data: any) => ({
+  success: (data: unknown) => ({
     ok: true,
     status: 200,
     json: () => Promise.resolve(data),
@@ -73,7 +73,7 @@ export const mockLocalStorage = () => {
   const store: Record<string, string> = {};
 
   return {
-    getItem: vi.fn((key: string) => store[key] || null),
+    getItem: vi.fn((key: string) => store[key] ?? null),
     setItem: vi.fn((key: string, value: string) => {
       store[key] = value;
     }),
@@ -87,7 +87,7 @@ export const mockLocalStorage = () => {
 };
 
 // Mock fetch
-export const mockFetch = (response: any, shouldReject = false) => {
+export const mockFetch = (response: unknown, shouldReject = false) => {
   const mockResponse = {
     ok: true,
     status: 200,

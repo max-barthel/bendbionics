@@ -3,6 +3,13 @@
  * Provides structured logging with different levels, contexts, and remote reporting
  */
 
+// Constants for error messages
+const ERROR_MESSAGES = {
+  LOG_LOCAL_STORAGE: 'Failed to log to localStorage:',
+  READ_LOCAL_STORAGE: 'Failed to read logs from localStorage:',
+  SEND_REMOTE: 'Failed to send logs to remote endpoint:',
+} as const;
+
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
@@ -26,7 +33,7 @@ export interface LogEntry {
   level: LogLevel;
   context: LogContext;
   message: string;
-  data?: any;
+  data?: unknown;
   userId?: string;
   sessionId?: string;
   userAgent?: string;
@@ -206,21 +213,22 @@ class Logger {
     return 'other';
   }
 
-  private createLogEntry(
-    level: LogLevel,
-    context: LogContext,
-    message: string,
-    data?: any,
-    component?: string,
-    action?: string
-  ): LogEntry {
+  private createLogEntry(params: {
+    level: LogLevel;
+    context: LogContext;
+    message: string;
+    data?: unknown;
+    component?: string;
+    action?: string;
+  }): LogEntry {
+    const { level, context, message, data, component, action } = params;
     return {
       timestamp: new Date().toISOString(),
       level,
       context,
       message,
       data,
-      userId: this.userId || undefined,
+      userId: this.userId ?? undefined,
       sessionId: this.sessionId,
       userAgent: navigator.userAgent,
       url: window.location.href,
@@ -238,7 +246,7 @@ class Logger {
     level: LogLevel,
     context: LogContext,
     message: string,
-    data?: any,
+    data?: unknown,
     component?: string,
     action?: string
   ): void {
@@ -246,7 +254,14 @@ class Logger {
       return;
     }
 
-    const entry = this.createLogEntry(level, context, message, data, component, action);
+    const entry = this.createLogEntry({
+      level,
+      context,
+      message,
+      data,
+      component,
+      action,
+    });
 
     // Console logging
     if (this.config.enableConsole) {
@@ -301,7 +316,7 @@ class Logger {
 
       localStorage.setItem('soft-robot-logs', JSON.stringify(logs));
     } catch (error) {
-      console.warn('Failed to log to localStorage:', error);
+      console.warn(ERROR_MESSAGES.LOG_LOCAL_STORAGE, error);
     }
   }
 
@@ -310,7 +325,7 @@ class Logger {
       const logs = localStorage.getItem('soft-robot-logs');
       return logs ? JSON.parse(logs) : [];
     } catch (error) {
-      console.warn('Failed to read logs from localStorage:', error);
+      console.warn(ERROR_MESSAGES.READ_LOCAL_STORAGE, error);
       return [];
     }
   }
@@ -344,7 +359,7 @@ class Logger {
         body: JSON.stringify({ logs: logsToFlush }),
       });
     } catch (error) {
-      console.warn('Failed to send logs to remote endpoint:', error);
+      console.warn(ERROR_MESSAGES.SEND_REMOTE, error);
       // Re-add logs to queue for retry
       this.logQueue.unshift(...logsToFlush);
     }
@@ -359,54 +374,89 @@ class Logger {
     this.config = { ...this.config, ...config };
   }
 
-  public debug(
-    context: LogContext,
-    message: string,
-    data?: any,
-    component?: string,
-    action?: string
-  ): void {
-    this.log(LogLevel.DEBUG, context, message, data, component, action);
+  public debug(params: {
+    context: LogContext;
+    message: string;
+    data?: unknown;
+    component?: string;
+    action?: string;
+  }): void {
+    this.log(
+      LogLevel.DEBUG,
+      params.context,
+      params.message,
+      params.data,
+      params.component,
+      params.action
+    );
   }
 
-  public info(
-    context: LogContext,
-    message: string,
-    data?: any,
-    component?: string,
-    action?: string
-  ): void {
-    this.log(LogLevel.INFO, context, message, data, component, action);
+  public info(params: {
+    context: LogContext;
+    message: string;
+    data?: unknown;
+    component?: string;
+    action?: string;
+  }): void {
+    this.log(
+      LogLevel.INFO,
+      params.context,
+      params.message,
+      params.data,
+      params.component,
+      params.action
+    );
   }
 
-  public warn(
-    context: LogContext,
-    message: string,
-    data?: any,
-    component?: string,
-    action?: string
-  ): void {
-    this.log(LogLevel.WARN, context, message, data, component, action);
+  public warn(params: {
+    context: LogContext;
+    message: string;
+    data?: unknown;
+    component?: string;
+    action?: string;
+  }): void {
+    this.log(
+      LogLevel.WARN,
+      params.context,
+      params.message,
+      params.data,
+      params.component,
+      params.action
+    );
   }
 
-  public error(
-    context: LogContext,
-    message: string,
-    data?: any,
-    component?: string,
-    action?: string
-  ): void {
-    this.log(LogLevel.ERROR, context, message, data, component, action);
+  public error(params: {
+    context: LogContext;
+    message: string;
+    data?: unknown;
+    component?: string;
+    action?: string;
+  }): void {
+    this.log(
+      LogLevel.ERROR,
+      params.context,
+      params.message,
+      params.data,
+      params.component,
+      params.action
+    );
   }
 
-  public fatal(
-    context: LogContext,
-    message: string,
-    data?: any,
-    component?: string,
-    action?: string
-  ): void {
-    this.log(LogLevel.FATAL, context, message, data, component, action);
+  public fatal(params: {
+    context: LogContext;
+    message: string;
+    data?: unknown;
+    component?: string;
+    action?: string;
+  }): void {
+    this.log(
+      LogLevel.FATAL,
+      params.context,
+      params.message,
+      params.data,
+      params.component,
+      params.action
+    );
   }
 
   public getLogs(level?: LogLevel, context?: LogContext, limit?: number): LogEntry[] {
