@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
+// Ensure a Node-like global in browser test environment
+const global = globalThis as unknown as typeof globalThis & Record<string, unknown>;
+
 // Disable console.log during tests to prevent hanging
 console.log = vi.fn();
 
