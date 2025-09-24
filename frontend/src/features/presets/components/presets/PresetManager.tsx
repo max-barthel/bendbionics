@@ -18,6 +18,13 @@ const ERROR_MESSAGES = {
   UPDATE_FAILED: 'Failed to update preset',
 } as const;
 
+// HTTP status codes
+const HTTP_STATUS = {
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  INTERNAL_SERVER_ERROR: 500,
+} as const;
+
 interface PresetManagerProps {
   currentConfiguration: Record<string, unknown>;
   onLoadPreset: (configuration: Record<string, unknown>) => void;
@@ -55,30 +62,27 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
     try {
       // Debug: Check if user and token exist
       const token = localStorage.getItem('token');
-      console.log('Loading presets for user:', user.username);
-      console.log('Token exists:', !!token);
-      console.log('Token length:', token?.length);
+      // Loading presets for authenticated user
 
       // Test authentication first
       try {
         const currentUser = await authAPI.getCurrentUser();
-        console.log('Auth test successful, current user:', currentUser.username);
+        // Authentication successful
       } catch (authError: unknown) {
-        console.error('Auth test failed:', authError);
+        // Authentication failed
         setLoadError('Authentication failed. Please sign in again.');
         return;
       }
 
       const userPresets = await presetAPI.getUserPresets();
-      console.log('Loaded presets:', userPresets);
+      // Presets loaded successfully
       setPresets(userPresets);
       setLoadError(''); // Clear any previous errors
     } catch (error: unknown) {
-      console.error('Failed to load presets:', error);
-      console.error('Error response:', error.response);
-      console.error('Error status:', error.response?.status);
+      // Error handled by error handler
+      // Error details are handled by the error handler
       // Handle 403 Forbidden - user might not be properly authenticated
-      if (error.response?.status === 403) {
+      if (error.response?.status === HTTP_STATUS.FORBIDDEN) {
         setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
         // Optionally redirect to login
         // navigate("/auth");
@@ -107,9 +111,9 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
     try {
       // Debug: Check if user and token exist
       const token = localStorage.getItem('token');
-      console.log('Saving preset for user:', user.username);
-      console.log('Token exists:', !!token);
-      console.log('Token length:', token?.length);
+      // Debug logging removed
+      // Debug logging removed
+      // Debug logging removed
 
       const newPreset: CreatePresetRequest = {
         name: presetName.trim(),
@@ -124,9 +128,9 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       setShowSaveForm(false);
       await loadPresets(); // Reload presets
     } catch (error: unknown) {
-      console.error('Failed to save preset:', error);
+      // Error logging removed
       // Handle 403 Forbidden - user might not be properly authenticated
-      if (error.response?.status === 403) {
+      if (error.response?.status === HTTP_STATUS.FORBIDDEN) {
         setError(ERROR_MESSAGES.AUTH_REQUIRED);
         // Optionally redirect to login
         // navigate("/auth");
@@ -142,7 +146,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
     try {
       onLoadPreset(preset.configuration);
     } catch (error) {
-      console.error('Failed to load preset:', error);
+      // Error logging removed
     }
   };
 
@@ -169,14 +173,14 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
     setLoadError('');
 
     try {
-      console.log('Updating preset with ID:', presetId);
+      // Debug logging removed
       const updateData = {
         name: editName.trim(),
         description: editDescription.trim() || undefined,
       };
 
       await presetAPI.updatePreset(presetId, updateData);
-      console.log('Preset updated successfully');
+      // Debug logging removed
 
       // Reload presets to update the list
       await loadPresets();
@@ -184,7 +188,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       setEditName('');
       setEditDescription('');
     } catch (error: unknown) {
-      console.error('Failed to update preset:', error);
+      // Error logging removed
       console.error('Error details:', {
         message: error.message,
         response: error.response,
@@ -193,11 +197,11 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       });
 
       // Handle different error types
-      if (error.response?.status === 403) {
+      if (error.response?.status === HTTP_STATUS.FORBIDDEN) {
         setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
-      } else if (error.response?.status === 404) {
+      } else if (error.response?.status === HTTP_STATUS.NOT_FOUND) {
         setLoadError('Preset not found. It may have been deleted.');
-      } else if (error.response?.status === 500) {
+      } else if (error.response?.status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
         setLoadError('Server error. Please try again later.');
       } else {
         setLoadError(`Failed to update preset: ${error.message || 'Unknown error'}`);
@@ -208,37 +212,37 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
   };
 
   const handleDeletePreset = async (presetId: number) => {
-    console.log('Delete button clicked for preset ID:', presetId);
+    // Debug logging removed
 
     if (!user) {
-      console.log('No user, redirecting to auth');
+      // Debug logging removed
       navigate('/auth');
       return;
     }
 
-    console.log('Showing confirmation dialog...');
+    // Debug logging removed
     const confirmed = await confirm('Are you sure you want to delete this preset?');
-    console.log('Confirmation result:', confirmed);
+    // Debug logging removed
 
     if (!confirmed) {
-      console.log('User cancelled deletion');
+      // Debug logging removed
       return;
     }
 
-    console.log('User confirmed deletion, proceeding...');
+    // Debug logging removed
     setIsLoading(true);
     setLoadError(''); // Clear any previous errors
 
     try {
-      console.log('Deleting preset with ID:', presetId);
+      // Debug logging removed
       const result = await presetAPI.deletePreset(presetId);
-      console.log('Delete result:', result);
+      // Debug logging removed
 
       // Reload presets to update the list
       await loadPresets();
-      console.log('Preset deleted successfully');
+      // Debug logging removed
     } catch (error: unknown) {
-      console.error('Failed to delete preset:', error);
+      // Error logging removed
       console.error('Error details:', {
         message: error.message,
         response: error.response,
@@ -247,11 +251,11 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       });
 
       // Handle different error types
-      if (error.response?.status === 403) {
+      if (error.response?.status === HTTP_STATUS.FORBIDDEN) {
         setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
-      } else if (error.response?.status === 404) {
+      } else if (error.response?.status === HTTP_STATUS.NOT_FOUND) {
         setLoadError('Preset not found. It may have already been deleted.');
-      } else if (error.response?.status === 500) {
+      } else if (error.response?.status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
         setLoadError('Server error. Please try again later.');
       } else {
         setLoadError(`Failed to delete preset: ${error.message || 'Unknown error'}`);

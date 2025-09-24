@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { SliderInput, SubsectionTitle, UnitSelector } from '../../../components/ui';
 
+// Constants for angle calculations
+const ANGLE_CONSTANTS = {
+  DEGREES_TO_RADIANS: Math.PI / ANGLE_CONSTANTS.MAX_ANGLE_DEGREES,
+  MAX_ANGLE_DEGREES: ANGLE_CONSTANTS.MAX_ANGLE_DEGREES,
+  MIN_ANGLE_DEGREES: -ANGLE_CONSTANTS.MAX_ANGLE_DEGREES,
+} as const;
+
 interface AngleControlPanelProps {
   values: number[];
   onChange: (values: number[]) => void;
@@ -21,7 +28,7 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
   };
 
   const updateSegmentValueDegrees = (index: number, newValueDegrees: number) => {
-    const newValueRadians = (newValueDegrees * Math.PI) / 180;
+    const newValueRadians = newValueDegrees * ANGLE_CONSTANTS.DEGREES_TO_RADIANS;
     updateSegmentValue(index, newValueRadians);
   };
 
@@ -49,11 +56,11 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
               <div className="text-gray-600 text-center text-xs leading-tight">
                 {useDegrees ? (
                   <>
-                    {((value * 180) / Math.PI).toFixed(1)}° ({value.toFixed(3)} rad)
+                    {((value * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) / Math.PI).toFixed(1)}° ({value.toFixed(3)} rad)
                   </>
                 ) : (
                   <>
-                    {value.toFixed(3)} rad ({((value * 180) / Math.PI).toFixed(1)}°)
+                    {value.toFixed(3)} rad ({((value * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) / Math.PI).toFixed(1)}°)
                   </>
                 )}
               </div>
@@ -78,7 +85,7 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
           <SliderInput
             value={
               useDegrees
-                ? (values[selectedSegment] * 180) / Math.PI
+                ? (values[selectedSegment] * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) / Math.PI
                 : values[selectedSegment]
             }
             onChange={(value: number) => {
@@ -88,9 +95,9 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
                 updateSegmentValueRadians(selectedSegment, value);
               }
             }}
-            min={useDegrees ? -180 : -Math.PI}
-            max={useDegrees ? 180 : Math.PI}
-            step={useDegrees ? 1 : Math.PI / 180}
+            min={useDegrees ? -ANGLE_CONSTANTS.MAX_ANGLE_DEGREES : -Math.PI}
+            max={useDegrees ? ANGLE_CONSTANTS.MAX_ANGLE_DEGREES : Math.PI}
+            step={useDegrees ? 1 : Math.PI / ANGLE_CONSTANTS.MAX_ANGLE_DEGREES}
             placeholder={`#${selectedSegment + 1}`}
             label=""
           />
