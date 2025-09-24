@@ -1,9 +1,13 @@
 import { invoke } from '@tauri-apps/api/tauri';
+import logger from '../utils/logger';
 
 // Constants for error messages
 const ERROR_MESSAGES = {
   UNKNOWN_ERROR: 'Unknown error',
 } as const;
+
+// Constants for token display
+const TOKEN_DISPLAY_LENGTH = 20;
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -19,7 +23,7 @@ export class TauriApiClient {
     localStorage.setItem(testKey, testValue);
     const retrievedValue = localStorage.getItem(testKey);
     if (process.env.NODE_ENV === 'development') {
-      console.log(
+      logger.debug(
         'TauriApiClient: localStorage test - stored:',
         testValue,
         'retrieved:',
@@ -28,66 +32,80 @@ export class TauriApiClient {
     }
   }
 
-  private getAuthToken(): string | null {
-    // Try multiple ways to get the token
+  private getTokenFromStorage(): string | null {
     let token = localStorage.getItem('token');
+    token ??= sessionStorage.getItem('token');
+    return token;
+  }
 
-    // If localStorage doesn't work, try sessionStorage
-    if (!token) {
-      token = sessionStorage.getItem('token');
-    }
-
-    // If still no token, try to get it from the AuthProvider context
+  private getTokenFromWindow(): string | null {
     if (
-      !token &&
       typeof window !== 'undefined' &&
       (window as { __TAURI__?: unknown }).__TAURI__
     ) {
-      // For Tauri, we might need to use a different approach
-      // Let's try to get it from the global state
-      token = (window as { authToken?: string }).authToken ?? null;
+      return (window as { authToken?: string }).authToken ?? null;
     }
+    return null;
+  }
+
+  private cleanToken(token: string): string {
+    try {
+      return JSON.parse(token) as string;
+    } catch {
+      return token.replace(/^"|"$/g, ''); // Remove leading and trailing quotes
+    }
+  }
+
+  private logTokenDebug(token: string | null): void {
+    if (process.env.NODE_ENV !== 'development') {
+      return;
+    }
+
+    logger.debug('=== getAuthToken Debug ===');
+    logger.debug(
+      'localStorage token:',
+      localStorage.getItem('token') ? 'EXISTS' : 'NULL'
+    );
+    logger.debug(
+      'sessionStorage token:',
+      sessionStorage.getItem('token') ? 'EXISTS' : 'NULL'
+    );
+    logger.debug(
+      'window.authToken:',
+      (window as { authToken?: string }).authToken ? 'EXISTS' : 'NULL'
+    );
+    logger.debug(
+      'Final token:',
+      token ? `"${token.substring(0, TOKEN_DISPLAY_LENGTH)}..."` : 'NULL'
+    );
+    logger.debug('Token length:', token ? token.length : 0);
+    logger.debug('Token starts with quote:', token ? token.startsWith('"') : false);
+    logger.debug('Token ends with quote:', token ? token.endsWith('"') : false);
+    logger.debug(
+      'Token first 20 chars:',
+      token ? token.substring(0, TOKEN_DISPLAY_LENGTH) : 'NULL'
+    );
+    logger.debug(
+      'Token last 20 chars:',
+      token ? token.substring(token.length - TOKEN_DISPLAY_LENGTH) : 'NULL'
+    );
+    logger.debug('========================');
+  }
+
+  private getAuthToken(): string | null {
+    // Try multiple ways to get the token
+    let token = this.getTokenFromStorage();
+
+    // If still no token, try to get it from the AuthProvider context
+    token ??= this.getTokenFromWindow();
 
     // Clean the token - remove any extra quotes and parse if needed
     if (token) {
-      // First try to parse as JSON in case it's stringified
-      try {
-        const parsed = JSON.parse(token);
-        token = parsed;
-      } catch {
-        // If not JSON, just remove quotes
-        if (token) {
-          token = token.replace(/^"|"$/g, ''); // Remove leading and trailing quotes
-        }
-      }
+      token = this.cleanToken(token);
     }
 
     // Debug: Log all storage methods (only in development)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('=== getAuthToken Debug ===');
-      console.log(
-        'localStorage token:',
-        localStorage.getItem('token') ? 'EXISTS' : 'NULL'
-      );
-      console.log(
-        'sessionStorage token:',
-        sessionStorage.getItem('token') ? 'EXISTS' : 'NULL'
-      );
-      console.log(
-        'window.authToken:',
-        (window as { authToken?: string }).authToken ? 'EXISTS' : 'NULL'
-      );
-      console.log('Final token:', token ? `"${token.substring(0, 20)}..."` : 'NULL');
-      console.log('Token length:', token ? token.length : 0);
-      console.log('Token starts with quote:', token ? token.startsWith('"') : false);
-      console.log('Token ends with quote:', token ? token.endsWith('"') : false);
-      console.log('Token first 20 chars:', token ? token.substring(0, 20) : 'NULL');
-      console.log(
-        'Token last 20 chars:',
-        token ? token.substring(token.length - 20) : 'NULL'
-      );
-      console.log('========================');
-    }
+    this.logTokenDebug(token);
 
     return token;
   }
@@ -96,17 +114,19 @@ export class TauriApiClient {
     try {
       const authToken = this.getAuthToken();
       if (process.env.NODE_ENV === 'development') {
-        console.log(
+        logger.debug(
           `Tauri GET ${endpoint} - Auth token:`,
-          authToken ? `Bearer ${authToken.substring(0, 20)}...` : 'None'
+          authToken
+            ? `Bearer ${authToken.substring(0, TOKEN_DISPLAY_LENGTH)}...`
+            : 'None'
         );
-        console.log(
+        logger.debug(
           `Tauri GET ${endpoint} - Auth token passed to Rust:`,
           authToken ? 'YES' : 'NO'
         );
-        console.log(`Tauri GET ${endpoint} - Auth token type:`, typeof authToken);
-        console.log(`Tauri GET ${endpoint} - Auth token is null:`, authToken === null);
-        console.log(
+        logger.debug(`Tauri GET ${endpoint} - Auth token type:`, typeof authToken);
+        logger.debug(`Tauri GET ${endpoint} - Auth token is null:`, authToken === null);
+        logger.debug(
           `Tauri GET ${endpoint} - Auth token is undefined:`,
           authToken === undefined
         );
@@ -132,17 +152,22 @@ export class TauriApiClient {
     try {
       const authToken = this.getAuthToken();
       if (process.env.NODE_ENV === 'development') {
-        console.log(
+        logger.debug(
           `Tauri POST ${endpoint} - Auth token:`,
-          authToken ? `Bearer ${authToken.substring(0, 20)}...` : 'None'
+          authToken
+            ? `Bearer ${authToken.substring(0, TOKEN_DISPLAY_LENGTH)}...`
+            : 'None'
         );
-        console.log(
+        logger.debug(
           `Tauri POST ${endpoint} - Auth token passed to Rust:`,
           authToken ? 'YES' : 'NO'
         );
-        console.log(`Tauri POST ${endpoint} - Auth token type:`, typeof authToken);
-        console.log(`Tauri POST ${endpoint} - Auth token is null:`, authToken === null);
-        console.log(
+        logger.debug(`Tauri POST ${endpoint} - Auth token type:`, typeof authToken);
+        logger.debug(
+          `Tauri POST ${endpoint} - Auth token is null:`,
+          authToken === null
+        );
+        logger.debug(
           `Tauri POST ${endpoint} - Auth token is undefined:`,
           authToken === undefined
         );
@@ -172,9 +197,11 @@ export class TauriApiClient {
     try {
       const authToken = this.getAuthToken();
       if (process.env.NODE_ENV === 'development') {
-        console.log(
+        logger.debug(
           `Tauri DELETE ${endpoint} - Auth token:`,
-          authToken ? `Bearer ${authToken.substring(0, 20)}...` : 'None'
+          authToken
+            ? `Bearer ${authToken.substring(0, TOKEN_DISPLAY_LENGTH)}...`
+            : 'None'
         );
       }
 

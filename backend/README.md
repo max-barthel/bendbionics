@@ -50,7 +50,7 @@ python -m pytest --cov=app --cov-report=term-missing
 
 ### Test Structure
 
-```
+```text
 tests/
 ├── test_api_routes.py      # API endpoint tests
 ├── test_cache.py          # Caching system tests

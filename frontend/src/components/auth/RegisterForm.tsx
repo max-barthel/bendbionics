@@ -8,6 +8,144 @@ interface RegisterFormProps {
   onSwitchToLogin: () => void;
 }
 
+const RegisterFormHeader: React.FC = () => (
+  <div className="text-center mb-6">
+    <Typography variant="h2" color="primary" className="mb-2 text-gray-800">
+      Create Account
+    </Typography>
+    <Typography variant="body" color="gray" className="text-gray-600">
+      Join the Soft Robot community
+    </Typography>
+  </div>
+);
+
+const RegisterFormError: React.FC<{
+  error: { visible: boolean; message: string };
+}> = ({ error }) => {
+  if (!error.visible) {
+    return null;
+  }
+
+  return (
+    <div className="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-md shadow-sm">
+      <div className="flex">
+        <div className="flex-shrink-0">
+          <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </div>
+        <div className="ml-3">
+          <p className="text-sm font-medium">{error.message}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const RegisterFormSuccess: React.FC<{
+  success: string;
+  onContinue: () => void;
+}> = ({ success, onContinue }) => (
+  <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+    {success}
+    <div className="mt-3">
+      <Button variant="outline" onClick={onContinue} className="w-full">
+        Continue to App
+      </Button>
+    </div>
+  </div>
+);
+
+const RegisterFormFields: React.FC<{
+  username: string;
+  password: string;
+  confirmPassword: string;
+  setUsername: (value: string) => void;
+  setPassword: (value: string) => void;
+  setConfirmPassword: (value: string) => void;
+}> = ({
+  username,
+  password,
+  confirmPassword,
+  setUsername,
+  setPassword,
+  setConfirmPassword,
+}) => (
+  <>
+    <div>
+      <label
+        htmlFor="username"
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
+        Username *
+      </label>
+      <Input
+        id="username"
+        type="text"
+        value={username}
+        onChange={(value: string | number) => setUsername(String(value))}
+        placeholder="Choose a username"
+        className="w-full"
+      />
+    </div>
+
+    <div>
+      <label
+        htmlFor="password"
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
+        Password
+      </label>
+      <Input
+        id="password"
+        type="password"
+        value={password}
+        onChange={(value: string | number) => setPassword(String(value))}
+        placeholder="Enter your password"
+        className="w-full"
+      />
+      <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters long</p>
+    </div>
+
+    <div>
+      <label
+        htmlFor="confirmPassword"
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
+        Confirm Password
+      </label>
+      <Input
+        id="confirmPassword"
+        type="password"
+        value={confirmPassword}
+        onChange={(value: string | number) => setConfirmPassword(String(value))}
+        placeholder="Confirm your password"
+        className="w-full"
+      />
+    </div>
+  </>
+);
+
+const RegisterFormFooter: React.FC<{ onSwitchToLogin: () => void }> = ({
+  onSwitchToLogin,
+}) => (
+  <div className="mt-6 text-center">
+    <Typography variant="body" color="gray" className="text-gray-600">
+      Already have an account?{' '}
+      <button
+        onClick={onSwitchToLogin}
+        className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"
+      >
+        Sign in
+      </button>
+    </Typography>
+  </div>
+);
+
 export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -52,14 +190,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-white border border-gray-200 rounded-2xl shadow-sm">
-      <div className="text-center mb-6">
-        <Typography variant="h2" color="primary" className="mb-2 text-gray-800">
-          Create Account
-        </Typography>
-        <Typography variant="body" color="gray" className="text-gray-600">
-          Join the Soft Robot community
-        </Typography>
-      </div>
+      <RegisterFormHeader />
 
       <form
         onSubmit={e => {
@@ -68,97 +199,23 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
         }}
         className="space-y-4"
       >
-        {error.visible && (
-          <div className="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-md shadow-sm">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium">{error.message}</p>
-              </div>
-            </div>
-          </div>
-        )}
+        <RegisterFormError error={error} />
 
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-            {success}
-            <div className="mt-3">
-              <Button
-                variant="outline"
-                onClick={() => navigate('/')}
-                className="w-full"
-              >
-                Continue to App
-              </Button>
-            </div>
-          </div>
+          <RegisterFormSuccess
+            success={success}
+            onContinue={() => void navigate('/')}
+          />
         )}
 
-        <div>
-          <label
-            htmlFor="username"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Username *
-          </label>
-          <Input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(value: string | number) => setUsername(String(value))}
-            placeholder="Choose a username"
-            className="w-full"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Password
-          </label>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(value: string | number) => setPassword(String(value))}
-            placeholder="Enter your password"
-            className="w-full"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Must be at least 8 characters long
-          </p>
-        </div>
-
-        <div>
-          <label
-            htmlFor="confirmPassword"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Confirm Password
-          </label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={(value: string | number) => setConfirmPassword(String(value))}
-            placeholder="Confirm your password"
-            className="w-full"
-          />
-        </div>
+        <RegisterFormFields
+          username={username}
+          password={password}
+          confirmPassword={confirmPassword}
+          setUsername={setUsername}
+          setPassword={setPassword}
+          setConfirmPassword={setConfirmPassword}
+        />
 
         <Button
           type="submit"
@@ -171,17 +228,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
         </Button>
       </form>
 
-      <div className="mt-6 text-center">
-        <Typography variant="body" color="gray" className="text-gray-600">
-          Already have an account?{' '}
-          <button
-            onClick={onSwitchToLogin}
-            className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"
-          >
-            Sign in
-          </button>
-        </Typography>
-      </div>
+      <RegisterFormFooter onSwitchToLogin={onSwitchToLogin} />
     </div>
   );
 };

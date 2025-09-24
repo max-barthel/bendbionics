@@ -1,9 +1,8 @@
 import time
 
-from fastapi.testclient import TestClient
-
 from app.main import app
 from app.utils.cache import clear_cache
+from fastapi.testclient import TestClient
 
 
 class TestFullAPIWorkflow:
@@ -68,8 +67,8 @@ class TestFullAPIWorkflow:
         data2 = response2.json()
 
         # Results should be identical (excluding timestamp)
-        data1_no_timestamp = {k: v for k, v in data1.items() if k != 'timestamp'}
-        data2_no_timestamp = {k: v for k, v in data2.items() if k != 'timestamp'}
+        data1_no_timestamp = {k: v for k, v in data1.items() if k != "timestamp"}
+        data2_no_timestamp = {k: v for k, v in data2.items() if k != "timestamp"}
         assert data1_no_timestamp == data2_no_timestamp
 
         # Test that cache is actually being used by checking cache hit
@@ -370,8 +369,8 @@ class TestFullAPIWorkflow:
         assert response3.status_code == 200
         data3 = response3.json()
         # Results should be identical (excluding timestamp)
-        data1_no_timestamp = {k: v for k, v in data1.items() if k != 'timestamp'}
-        data3_no_timestamp = {k: v for k, v in data3.items() if k != 'timestamp'}
+        data1_no_timestamp = {k: v for k, v in data1.items() if k != "timestamp"}
+        data3_no_timestamp = {k: v for k, v in data3.items() if k != "timestamp"}
         assert data1_no_timestamp == data3_no_timestamp
 
     def test_workflow_edge_cases(self):
