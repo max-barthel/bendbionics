@@ -124,7 +124,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
     // Handle external computation trigger
     useEffect(() => {
       if (triggerComputation && !loading) {
-        handleSubmit();
+        void handleSubmit();
         onComputationTriggered?.();
       }
     }, [triggerComputation, loading, onComputationTriggered, handleSubmit]);

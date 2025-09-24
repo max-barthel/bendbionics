@@ -9,7 +9,7 @@ export const useConfigurationLoader = (
   useEffect(() => {
     if (initialConfiguration && Object.keys(initialConfiguration).length > 0) {
       const config = initialConfiguration;
-      console.log('useConfigurationLoader: Loading configuration:', config);
+      // Loading configuration from initial data
 
       // Only load if this is a preset (has segments but no tendonAnalysis from computation)
       // or if it's an empty config (reset)
@@ -32,7 +32,7 @@ export const useConfigurationLoader = (
             coupling_offset: 0.0,
           },
         };
-        console.log('useConfigurationLoader: Setting robot state:', newState);
+        // Setting robot state with new configuration
         setRobotState(newState);
       }
     }

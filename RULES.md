@@ -26,7 +26,7 @@ Encode domain-specific knowledge about your codebase
 Automate project-specific workflows or templates
 Standardize style or architecture decisions
 
-## Rule anatomy
+### Rule anatomy
 
 Each rule file is written in MDC (.mdc), a format supporting metadata and content. Control how rules are applied from the type dropdown which changes properties description, globs, alwaysApply.
 
