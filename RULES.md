@@ -61,11 +61,11 @@ project/
 --frontend/
 ----.cursor/rules/ # Frontend-specific rules
 
-## Creating a rule
+### Creating a rule
 
 Create rules using the New Cursor Rule command or going to Cursor Settings > Rules. This creates a new rule file in .cursor/rules. From settings you can see all rules and their status.
 
-## Generating rules
+### Generating rules
 
 Generate rules directly in conversations using the /Generate Cursor Rules command. Useful when you've made decisions about agent behavior and want to reuse them.
 
