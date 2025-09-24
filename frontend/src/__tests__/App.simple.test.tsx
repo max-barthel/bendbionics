@@ -18,15 +18,9 @@ vi.mock('../providers', () => ({
 }));
 
 vi.mock('../components/FormTabs', () => ({
-  default: ({
-    onResult,
-  }: {
-    onResult: (segments: number[][][], config: any) => void;
-  }) => (
+  default: ({ onResult }: { onResult: () => void }) => (
     <div data-testid="form-tabs">
-      <button onClick={() => onResult([[1, 2, 3]], { test: 'config' })}>
-        Submit Form
-      </button>
+      <button onClick={() => onResult()}>Submit Form</button>
     </div>
   ),
 }));

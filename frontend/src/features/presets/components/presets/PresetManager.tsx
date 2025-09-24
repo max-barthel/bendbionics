@@ -122,9 +122,6 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
     try {
       // Debug: Check if user and token exist
-      const token = localStorage.getItem('token');
-      // Debug logging removed
-      // Debug logging removed
       // Debug logging removed
 
       const newPreset: CreatePresetRequest = {
@@ -157,7 +154,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
   const handleLoadPreset = async (preset: Preset) => {
     try {
       onLoadPreset(preset.configuration);
-    } catch (error) {
+    } catch {
       // Error logging removed
     }
   };
@@ -250,7 +247,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
     try {
       // Debug logging removed
-      const result = await presetAPI.deletePreset(presetId);
+      await presetAPI.deletePreset(presetId);
       // Debug logging removed
 
       // Reload presets to update the list

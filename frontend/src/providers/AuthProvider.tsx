@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           try {
             const userData = await authAPI.getCurrentUser();
             setUser(userData);
-          } catch (error) {
+          } catch {
             // Token validation failed, clearing token
             // Token is invalid, clear it
             localStorage.removeItem('token');

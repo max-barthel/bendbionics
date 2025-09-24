@@ -1,5 +1,5 @@
 ---
-description: Startup Development Philosophy - Agile and Friction-Free
+description: Startup Development Philosophy - Build What Matters
 globs: ["**/*"]
 alwaysApply: true
 ---
@@ -8,46 +8,48 @@ alwaysApply: true
 
 ## Core Principles
 
-Work startup-style: **quick and agile with lots of iterations like steering a car, not a rocket**.
+Work like a true startup: **learn fast, focus relentlessly, and build what only we can build**.
+Think **steering a car with a compass**: quick course corrections guided by vision, not endless roadmaps.
 
 ### Key Values
 
-- **Optimization by Reduction**: Remove complexity, not add it
-- **Simple but Not Easy**: Achieve simplicity through thoughtful design, not shortcuts
-- **Minimum Bureaucracy**: Eliminate processes that create friction
-- **Friction = Failure**: Everything that slows down iteration leads to startup failure
+- **Validated Learning > Output**: Progress is measured by learning from users, not lines of code
+- **Do the Hard Thing**: Aim for simplicity, but don’t confuse easy hacks with meaningful progress
+- **Default to Action**: Small steps forward beat perfect plans standing still
+- **Friction Kills**: Every barrier to iteration is a risk to survival
 
 ## Development Approach
 
-- **Rapid Iteration**: Make small, frequent changes rather than large, infrequent ones
-- **Quick Wins**: Prioritize features that deliver immediate value
-- **Fail Fast**: Identify problems early and pivot quickly
-- **Reduce Friction**: Remove barriers to development and deployment
+- **Rapid Experimentation**: Ship small, test quickly, validate assumptions
+- **First, Nail It**: Achieve product–user fit before optimizing for scale
+- **Quick Wins, Long Vision**: Prioritize near-term value while keeping the long-term direction clear
+- **Pivot or Persevere**: Let data decide whether to double down or change course
 
 ## Code Philosophy
 
-- **YAGNI (You Aren't Gonna Need It)**: Don't build for hypothetical future needs
-- **KISS (Keep It Simple, Stupid)**: Choose simple solutions over complex ones
-- **DRY with Purpose**: Don't repeat yourself, but don't over-abstract either
-- **Premature Optimization**: Avoid it - optimize when you have real performance problems
+- **YAGNI**: Don’t build for a future that may never come
+- **KISS**: Prefer simple, maintainable solutions over clever ones
+- **DRY, But Realistic**: Reuse where it clarifies; avoid abstractions that slow learning
+- **Pragmatic Performance**: Optimize only when users feel the pain
 
 ## Decision Making
 
-- **Bias for Action**: Make decisions quickly, iterate based on results
-- **Good Enough**: Ship when it's good enough, not perfect
-- **Measure and Learn**: Use data to guide decisions, not assumptions
-- **Embrace Constraints**: Use limitations as creative catalysts
+- **Bias for Action**: Ship, measure, learn — faster than competitors
+- **Good Enough to Learn**: Perfection delays insight; release when value is testable
+- **User-Centered Evidence**: Let real usage guide direction, not assumptions
+- **Leverage Constraints**: Treat limitations as forcing functions for creativity
 
 ## Process Guidelines
 
-- **Minimal Documentation**: Document only what's essential for team understanding
-- **Automated Testing**: Focus on tests that prevent real bugs, not theoretical ones
-- **Continuous Deployment**: Deploy frequently to reduce risk
-- **User Feedback**: Get feedback early and often from real users
+- **Lightweight Documentation**: Capture only what helps the team move faster
+- **Right-Sized Testing**: Automate what saves real pain; don’t gold-plate test suites
+- **Continuous Delivery**: Ship often to derisk deployments and accelerate feedback
+- **Talk to Users**: Every release should shorten the distance to real user feedback
 
 ## Anti-Patterns to Avoid
 
-- **Over-Engineering**: Building for scale you don't have yet
-- **Analysis Paralysis**: Spending too much time planning instead of building
-- **Perfect Code**: Writing code for other developers instead of users
-- **Process Over Product**: Letting process become more important than outcomes
+- **Over-Engineering**: Don’t build for hypothetical scale before validating demand
+- **Analysis Paralysis**: Planning is useful only if it accelerates building
+- **Perfect Code Fallacy**: Users care about value, not elegance
+- **Process Worship**: Process exists to serve the product, not the other way around
+- **False Optimizations**: Don’t polish what hasn’t proven to matter
