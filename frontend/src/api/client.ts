@@ -243,7 +243,7 @@ function handleResponseError(error: { response?: { status?: number } }) {
     import.meta.env.DEV &&
     error.response?.status === HTTP_STATUS.INTERNAL_SERVER_ERROR
   ) {
-    console.error('Server error:', (error.response as any).data);
+    console.error('Server error:', (error.response as { data?: unknown }).data);
   }
   return Promise.reject(error);
 }
