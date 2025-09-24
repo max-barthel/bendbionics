@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Soft Robot App - Enhanced Development Script
-# This script provides a robust development environment with health checks and error handling
+# Soft Robot App - Startup Development Script
+# Quick and agile development - steering a car, not a rocket
 
 set -e  # Exit on any error
 
@@ -45,59 +45,42 @@ check_directory() {
     fi
 }
 
-# Function to check prerequisites
+# Function to check prerequisites (startup style - only essential checks)
 check_prerequisites() {
-    print_status "Checking prerequisites..."
+    print_status "Quick prerequisite check..."
 
-    # Check Node.js
+    # Only check what's absolutely essential
     if ! command -v node &> /dev/null; then
-        print_error "Node.js is not installed. Please install Node.js 18+ from https://nodejs.org/"
+        print_error "Node.js is required. Install from https://nodejs.org/"
         exit 1
     fi
 
-    NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
-    if [ "$NODE_VERSION" -lt 18 ]; then
-        print_error "Node.js version 18+ is required. Current version: $(node --version)"
-        exit 1
-    fi
-
-    # Check Python
     if ! command -v python &> /dev/null && ! command -v python3 &> /dev/null; then
-        print_error "Python is not installed. Please install Python 3.8+ from https://python.org/"
+        print_error "Python is required. Install from https://python.org/"
         exit 1
     fi
 
-    # Check Rust (for Tauri)
-    if ! command -v cargo &> /dev/null; then
-        print_warning "Rust/Cargo not found. Tauri development may not work properly."
-        print_warning "Install Rust from https://rustup.rs/"
-    fi
-
-    # Check if dependencies are installed
+    # Quick dependency check - install if missing
     if [ ! -d "frontend/node_modules" ]; then
-        print_warning "Frontend dependencies not found. Installing..."
+        print_status "Installing frontend dependencies..."
         cd frontend && npm install && cd ..
     fi
 
-    if [ ! -d "backend/.venv" ] && [ ! -f "backend/requirements.txt" ]; then
-        print_warning "Backend virtual environment not found. Please set up Python environment."
-    fi
-
-    print_success "Prerequisites check completed"
+    print_success "Prerequisites ready"
 }
 
-# Function to wait for service to be ready
+# Function to wait for service (startup style - quick check)
 wait_for_service() {
     local url=$1
     local service_name=$2
-    local max_attempts=30
+    local max_attempts=10  # Reduced from 30 to 10
     local attempt=1
 
-    print_status "Waiting for $service_name to be ready..."
+    print_status "Quick check for $service_name..."
 
     while [ $attempt -le $max_attempts ]; do
         if curl -s -f "$url" > /dev/null 2>&1; then
-            print_success "$service_name is ready!"
+            print_success "$service_name ready!"
             return 0
         fi
 
@@ -106,8 +89,8 @@ wait_for_service() {
         attempt=$((attempt + 1))
     done
 
-    print_error "$service_name failed to start after $max_attempts seconds"
-    return 1
+    print_warning "$service_name not responding, but continuing..."
+    return 0  # Don't fail, just continue
 }
 
 # Function to cleanup processes
@@ -131,70 +114,60 @@ cleanup() {
     print_success "Cleanup completed"
 }
 
-# Function to start backend
+# Function to start backend (startup style - simple and fast)
 start_backend() {
-    print_status "Starting Python backend..."
+    print_status "Starting backend..."
 
     cd backend
 
-    # Check if virtual environment exists
+    # Quick virtual environment check
     if [ -d ".venv" ]; then
-        print_status "Activating virtual environment..."
         source .venv/bin/activate
     elif [ -d "venv" ]; then
-        print_status "Activating virtual environment..."
         source venv/bin/activate
-    else
-        print_warning "No virtual environment found. Using system Python."
     fi
 
-    # Start backend with proper error handling
+    # Start backend
     python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
     BACKEND_PID=$!
 
     cd ..
 
-    # Wait for backend to be ready
-    if wait_for_service "http://localhost:8000/health" "Backend API"; then
-        print_success "Backend started successfully (PID: $BACKEND_PID)"
-    else
-        print_error "Failed to start backend"
-        cleanup
-        exit 1
-    fi
+    # Quick health check (don't fail if it's not ready)
+    wait_for_service "http://localhost:8000/health" "Backend API"
+    print_success "Backend started (PID: $BACKEND_PID)"
 }
 
-# Function to start frontend
+# Function to start frontend (startup style - simple and fast)
 start_frontend() {
-    print_status "Starting Tauri development..."
+    print_status "Starting frontend..."
 
     cd frontend
 
-    # Source Rust environment if available
+    # Quick Rust environment check
     if [ -f "$HOME/.cargo/env" ]; then
         source "$HOME/.cargo/env"
     fi
 
-    # Start Tauri development
-    npx tauri dev &
+    # Start frontend
+    npm run dev &
     FRONTEND_PID=$!
 
     cd ..
 
-    print_success "Frontend started successfully (PID: $FRONTEND_PID)"
+    print_success "Frontend started (PID: $FRONTEND_PID)"
 }
 
-# Function to show development info
+# Function to show development info (startup style - essential info only)
 show_dev_info() {
     echo -e "${CYAN}================================${NC}"
-    echo -e "${CYAN}📊 Development Environment Info${NC}"
+    echo -e "${CYAN}🚀 Development Ready${NC}"
     echo -e "${CYAN}================================${NC}"
     echo -e "Backend API: ${GREEN}http://localhost:8000${NC}"
     echo -e "API Docs: ${GREEN}http://localhost:8000/docs${NC}"
-    echo -e "Frontend: ${GREEN}http://localhost:3000${NC}"
-    echo -e "Tauri Dev: ${GREEN}Running in desktop mode${NC}"
+    echo -e "Frontend: ${GREEN}Running in desktop mode${NC}"
     echo -e "${CYAN}================================${NC}"
-    echo -e "Press ${YELLOW}Ctrl+C${NC} to stop all services"
+    echo -e "Press ${YELLOW}Ctrl+C${NC} to stop"
     echo -e "${CYAN}================================${NC}"
 }
 

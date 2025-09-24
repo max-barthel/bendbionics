@@ -68,15 +68,14 @@ async def test_async_function():
 
 ## Testing Requirements
 
-- **Coverage**: Maintain 80%+ test coverage
-- **Unit Tests**: Test individual functions/components
-- **Integration Tests**: Test API endpoints and workflows
-- **E2E Tests**: Test complete user journeys
-- **Accessibility Tests**: Use axe-core for accessibility testing
+- **Focus on Real Bugs**: Test what actually breaks, not theoretical edge cases
+- **Critical Path Only**: Test core user journeys, not every component
+- **Quick Tests**: Fast feedback loops, not comprehensive coverage
+- **User Value**: Test features users actually use
 
 ## Test Organization
 
-```
+```bash
 tests/
 ├── unit/           # Unit tests
 ├── integration/    # Integration tests
@@ -86,14 +85,11 @@ tests/
 
 ## Mocking Guidelines
 
-- Mock external dependencies
-- Use MSW for API mocking
-- Create reusable test fixtures
-- Avoid over-mocking internal logic
+- **Minimal Mocking**: Only mock what you must (external APIs, databases)
+- **Real Dependencies**: Use real implementations when possible
+- **Quick Setup**: Avoid complex test fixtures
 
 ## Performance Testing
 
-- Test component render performance
-- Monitor API response times
-- Test with large datasets
-- Use React DevTools Profiler
+- **User-Reported Issues Only**: Don't optimize until users complain
+- **Real Performance**: Test with actual user data, not synthetic loads

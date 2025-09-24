@@ -12,6 +12,7 @@
     "lint:fix": "cd frontend && npm run lint:fix",
     "lint:check": "cd frontend && npm run lint -- --quiet",
     "test": "cd frontend && npm run test:run",
+    "test:core": "cd frontend && npm run test -- --run && cd ../backend && python -m pytest tests/test_core_apis.py -v",
     "test:watch": "cd frontend && npm run test:watch",
     "test:coverage": "cd frontend && npm run test:coverage",
     "commit": "cz",
