@@ -6,19 +6,6 @@ import {
   useState,
 } from 'react';
 import { robotAPI, type PCCParams } from '../../../api/client';
-
-// Type guard for API response with result
-const isApiResponseWithResult = (response: unknown): response is { data: { result: { robot_positions: number[][][]; segments?: number[][][]; } } } => {
-  return response !== null && 
-         typeof response === 'object' && 
-         'data' in response && 
-         response.data !== null && 
-         typeof response.data === 'object' && 
-         'result' in response.data &&
-         response.data.result !== null &&
-         typeof response.data.result === 'object' &&
-         'robot_positions' in response.data.result;
-};
 import { ControlIcon, RobotIcon } from '../../../components/icons';
 import { TabPanel, Tabs } from '../../../components/ui';
 import { type RobotConfiguration, type User } from '../../../types/robot';
@@ -29,6 +16,25 @@ import { useErrorHandler } from '../../shared/hooks/useErrorHandler';
 import { useRobotState } from '../hooks/useRobotState';
 import { ControlTab } from './tabs/ControlTab';
 import { RobotSetupTab } from './tabs/RobotSetupTab';
+
+// Type guard for API response with result
+const isApiResponseWithResult = (
+  response: unknown
+): response is {
+  data: { result: { robot_positions: number[][][]; segments?: number[][][] } };
+} => {
+  return (
+    response !== null &&
+    typeof response === 'object' &&
+    'data' in response &&
+    response.data !== null &&
+    typeof response.data === 'object' &&
+    'result' in response.data &&
+    response.data.result !== null &&
+    typeof response.data.result === 'object' &&
+    'robot_positions' in response.data.result
+  );
+};
 
 type FormTabsProps = {
   onResult: (segments: number[][][], configuration: RobotConfiguration) => void;
@@ -90,7 +96,9 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
         if (robotState.tendonConfig) {
           result = await robotAPI.computePCCWithTendons(params);
           // Extract segments from tendon result - fix nested data access
-          const segments = isApiResponseWithResult(result) ? result.data.result.robot_positions : [];
+          const segments = isApiResponseWithResult(result)
+            ? result.data.result.robot_positions
+            : [];
 
           const configuration = {
             segments: robotState.segments,
@@ -116,7 +124,12 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
             discretizationSteps: robotState.discretizationSteps,
           };
 
-          onResult(isApiResponseWithResult(result) ? result.data.result.segments || result.data.result.robot_positions : [], configuration);
+          onResult(
+            isApiResponseWithResult(result)
+              ? result.data.result.segments || result.data.result.robot_positions
+              : [],
+            configuration
+          );
         }
       } catch (error: unknown) {
         // Error handled by error handler

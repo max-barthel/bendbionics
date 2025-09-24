@@ -1,0 +1,75 @@
+---
+description: Development Workflow and Best Practices
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Development Workflow
+
+## Project Scripts
+
+Use the provided scripts for consistent development:
+
+```bash
+# Development
+./dev.sh              # Start development servers
+./setup.sh            # First-time setup
+./build.sh            # Production build
+./health-check.sh     # System health check
+./toolkit.sh          # Development tools
+```
+
+## Code Quality Standards
+
+- **Linting**: ESLint + Prettier for frontend, Ruff + Black for backend
+- **Type Checking**: TypeScript strict mode, MyPy for Python
+- **Testing**: Vitest for frontend, Pytest for backend
+- **Commits**: Conventional commits with commitizen
+
+## Git Workflow
+
+```bash
+# Feature development
+git checkout -b feature/description
+# Make changes
+npm run commit  # Use commitizen for conventional commits
+git push origin feature/description
+```
+
+## Development Tools
+
+- **Frontend**: Vite + React + TypeScript + Tailwind
+- **Backend**: FastAPI + SQLAlchemy + Pydantic
+- **Desktop**: Tauri for native performance
+- **Testing**: Playwright for E2E, Vitest for unit tests
+
+## Code Organization
+
+```
+frontend/src/
+├── components/     # Reusable UI components
+├── features/       # Feature-specific components
+├── hooks/         # Custom React hooks
+├── api/           # API client and types
+└── utils/         # Utility functions
+
+backend/app/
+├── api/           # API routes
+├── models/        # Data models and business logic
+├── utils/         # Utility functions
+└── tests/         # Test files
+```
+
+## Performance Optimization
+
+- **Frontend**: Code splitting, lazy loading, memoization
+- **Backend**: Async operations, caching, database optimization
+- **Desktop**: Tauri's native performance benefits
+- **Bundle Size**: Monitor with bundle analyzer
+
+## Documentation
+
+- **API Docs**: Auto-generated with FastAPI
+- **Component Docs**: Storybook for UI components
+- **Code Comments**: Clear, concise documentation
+- **README**: Comprehensive setup and usage guides

@@ -1,0 +1,42 @@
+---
+description: Soft Robot Simulator - Project Overview and Architecture
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Soft Robot Simulator Project
+
+## Project Overview
+
+This is a modern desktop application for simulating soft robot kinematics using the Piecewise Constant Curvature (PCC) model, built with Tauri for optimal performance.
+
+## Architecture
+
+- **Frontend**: React + TypeScript + Tailwind CSS + Tauri (desktop)
+- **Backend**: FastAPI + Python with comprehensive testing
+- **Design**: macOS Tahoe 26 aesthetic with frosted glass styling
+- **Testing**: 82+ test cases with full coverage
+
+## Key Features
+
+- 3D visualization of robot segments with real-time updates
+- Real-time parameter adjustment with live preview
+- Unit conversion (degrees/radians, mm/cm/m)
+- Preset Management with user authentication
+- Native desktop performance with Tauri
+
+## Development Workflow
+
+- Use `./dev.sh` for development
+- Use `./build.sh` for production builds
+- Use `./toolkit.sh` for development tools
+- All styling with Tailwind CSS only (no direct CSS)
+- Follow Tahoe glass design system consistently
+
+## Code Quality Standards
+
+- Comprehensive testing required for all features
+- TypeScript strict mode enabled
+- ESLint + Prettier for code formatting
+- Conventional commits with commitizen
+- Full API documentation with FastAPI

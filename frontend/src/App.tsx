@@ -6,8 +6,8 @@ import { PresetManager } from './features/presets/components/presets/PresetManag
 import FormTabs from './features/robot-config/components/FormTabs';
 import SubmitButton from './features/robot-config/components/SubmitButton';
 import {
-  type RobotState,
   useRobotState,
+  type RobotState,
 } from './features/robot-config/hooks/useRobotState';
 import { ErrorBoundary } from './features/shared/components/ErrorBoundary';
 import Visualizer3D from './features/visualization/components/Visualizer3D';
