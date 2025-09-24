@@ -22,7 +22,7 @@ export class TauriApiClient {
     const testValue = 'test_value';
     localStorage.setItem(testKey, testValue);
     const retrievedValue = localStorage.getItem(testKey);
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       logger.debug(
         'TauriApiClient: localStorage test - stored:',
         testValue,
@@ -57,7 +57,7 @@ export class TauriApiClient {
   }
 
   private logTokenDebug(token: string | null): void {
-    if (process.env.NODE_ENV !== 'development') {
+    if (!import.meta.env.DEV) {
       return;
     }
 
@@ -113,7 +113,7 @@ export class TauriApiClient {
   async get<T>(endpoint: string): Promise<ApiResponse<T>> {
     try {
       const authToken = this.getAuthToken();
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         logger.debug(
           `Tauri GET ${endpoint} - Auth token:`,
           authToken
@@ -151,7 +151,7 @@ export class TauriApiClient {
   async post<T>(endpoint: string, data: unknown): Promise<ApiResponse<T>> {
     try {
       const authToken = this.getAuthToken();
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         logger.debug(
           `Tauri POST ${endpoint} - Auth token:`,
           authToken
@@ -196,7 +196,7 @@ export class TauriApiClient {
   async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
     try {
       const authToken = this.getAuthToken();
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         logger.debug(
           `Tauri DELETE ${endpoint} - Auth token:`,
           authToken

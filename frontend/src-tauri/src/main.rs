@@ -46,7 +46,7 @@ async fn call_backend_api(endpoint: String, data: Option<serde_json::Value>, aut
 
     // Add authentication header if provided
     let token_to_use = auth_token.as_ref().or(token.as_ref());
-    let mut request_builder = if let Some(token) = token_to_use {
+    let request_builder = if let Some(token) = token_to_use {
         // Clean the token - remove any quotes that might be present
         let clean_token = token.trim_matches('"');
         println!("Adding auth header: Bearer {}", clean_token);

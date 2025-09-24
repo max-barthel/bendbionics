@@ -186,3 +186,10 @@ temp/
 
 *storybook.log
 storybook-static
+
+# Playwright test reports and artifacts
+playwright-report/
+test-results/
+frontend/playwright-report/
+frontend/test-results/
+frontend/e2e/*.spec.ts-snapshots/

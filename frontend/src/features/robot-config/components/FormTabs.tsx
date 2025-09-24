@@ -173,7 +173,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
     ];
 
     return (
-      <div className="h-full flex flex-col">
+      <div className="h-full flex flex-col" data-testid="form-tabs">
         {error.visible && <ErrorDisplay message={error.message} onClose={hideError} />}
 
         <Tabs

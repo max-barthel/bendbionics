@@ -134,7 +134,7 @@ start_backend() {
     cd ..
 
     # Quick health check (don't fail if it's not ready)
-    wait_for_service "http://localhost:8000/health" "Backend API"
+    wait_for_service "http://localhost:8000/api/health" "Backend API"
     print_success "Backend started (PID: $BACKEND_PID)"
 }
 
@@ -149,8 +149,8 @@ start_frontend() {
         source "$HOME/.cargo/env"
     fi
 
-    # Start frontend
-    npm run dev &
+    # Start frontend (Tauri desktop app)
+    npm run tauri:dev &
     FRONTEND_PID=$!
 
     cd ..
@@ -165,7 +165,7 @@ show_dev_info() {
     echo -e "${CYAN}================================${NC}"
     echo -e "Backend API: ${GREEN}http://localhost:8000${NC}"
     echo -e "API Docs: ${GREEN}http://localhost:8000/docs${NC}"
-    echo -e "Frontend: ${GREEN}Running in desktop mode${NC}"
+    echo -e "Desktop App: ${GREEN}Starting Tauri desktop app${NC}"
     echo -e "${CYAN}================================${NC}"
     echo -e "Press ${YELLOW}Ctrl+C${NC} to stop"
     echo -e "${CYAN}================================${NC}"

@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { SliderInput, SubsectionTitle, UnitSelector } from '../../../components/ui';
 
 // Constants for angle calculations
+const MAX_ANGLE_DEGREES = 180;
 const ANGLE_CONSTANTS = {
-  DEGREES_TO_RADIANS: Math.PI / ANGLE_CONSTANTS.MAX_ANGLE_DEGREES,
-  MAX_ANGLE_DEGREES: ANGLE_CONSTANTS.MAX_ANGLE_DEGREES,
-  MIN_ANGLE_DEGREES: -ANGLE_CONSTANTS.MAX_ANGLE_DEGREES,
+  DEGREES_TO_RADIANS: Math.PI / MAX_ANGLE_DEGREES,
+  MAX_ANGLE_DEGREES,
+  MIN_ANGLE_DEGREES: -MAX_ANGLE_DEGREES,
 } as const;
 
 interface AngleControlPanelProps {
