@@ -19,6 +19,9 @@ const VISUALIZATION_CONSTANTS = {
   CAMERA_FAR: 50,
   LIGHT_INTENSITY: 15,
   LIGHT_DISTANCE: 200,
+  CAMERA_DISTANCE_MULTIPLIER: 1.5,
+  CAMERA_MIN_MULTIPLIER: 0.5,
+  CAMERA_MAX_MULTIPLIER: 4,
 } as const;
 
 type Visualizer3DProps = {
@@ -275,9 +278,9 @@ function Visualizer3D({
 
   const { cameraDistance, minDistance, maxDistance } = useMemo(() => {
     return {
-      cameraDistance: size * 1.5 || 200,
-      minDistance: size * 0.5 || 50,
-      maxDistance: size * 4 || 1000,
+      cameraDistance: size * VISUALIZATION_CONSTANTS.CAMERA_DISTANCE_MULTIPLIER || VISUALIZATION_CONSTANTS.CAMERA_DISTANCE,
+      minDistance: size * VISUALIZATION_CONSTANTS.CAMERA_MIN_MULTIPLIER || 50,
+      maxDistance: size * VISUALIZATION_CONSTANTS.CAMERA_MAX_MULTIPLIER || 1000,
     };
   }, [size]);
 

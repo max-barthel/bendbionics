@@ -36,30 +36,30 @@ Auto Attached Included when files matching a glob pattern are referenced
 Agent Requested Available to AI, which decides whether to include it. Must provide a description
 Manual Only included when explicitly mentioned using @ruleName
 
+```bash
 ---
-
 description: RPC Service boilerplate
 globs:
 alwaysApply: false
-
 ---
 
 - Use our internal RPC pattern when defining services
 - Always use snake_case for service names.
 
 @service-template.ts
+```
 
-## Nested rules
+### Nested rules
 
 Organize rules by placing them in .cursor/rules directories throughout your project. Nested rules automatically attach when files in their directory are referenced.
 
 project/
-.cursor/rules/ # Project-wide rules
-backend/
-server/
-.cursor/rules/ # Backend-specific rules
-frontend/
-.cursor/rules/ # Frontend-specific rules
+--.cursor/rules/ # Project-wide rules
+--backend/
+----server/
+------.cursor/rules/ # Backend-specific rules
+--frontend/
+----.cursor/rules/ # Frontend-specific rules
 
 ## Creating a rule
 

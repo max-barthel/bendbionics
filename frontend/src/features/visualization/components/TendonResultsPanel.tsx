@@ -9,6 +9,18 @@ const HEIGHT_CONSTANTS = {
   MAX_HEIGHT: 800,
 } as const;
 
+// Helper function to get tendon direction styles
+const getTendonDirectionStyles = (direction: string) => {
+  const lowerDirection = direction.toLowerCase();
+  if (lowerDirection === 'pull') {
+    return 'border-red-400/30 bg-gradient-to-br from-red-500/25 to-red-600/25 shadow-red-500/20';
+  }
+  if (lowerDirection === 'release') {
+    return 'border-green-400/30 bg-gradient-to-br from-green-500/25 to-green-600/25 shadow-green-500/20';
+  }
+  return 'border-white/20 bg-gradient-to-br from-white/15 to-white/5 shadow-black/10';
+};
+
 type TendonResultsPanelProps = {
   tendonAnalysis?: {
     actuation_commands: Record<
@@ -153,13 +165,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
               </div>
               <div className="flex-1 flex justify-center">
                 <div
-                  className={`px-3 py-1 rounded-full backdrop-blur-xl border shadow-lg relative ${
-                    firstTendonData.pull_direction.toLowerCase() === 'pull'
-                      ? 'border-red-400/30 bg-gradient-to-br from-red-500/25 to-red-600/25 shadow-red-500/20'
-                      : firstTendonData.pull_direction.toLowerCase() === 'release'
-                        ? 'border-green-400/30 bg-gradient-to-br from-green-500/25 to-green-600/25 shadow-green-500/20'
-                        : 'border-white/20 bg-gradient-to-br from-white/15 to-white/5 shadow-black/10'
-                  }`}
+                  className={`px-3 py-1 rounded-full backdrop-blur-xl border shadow-lg relative ${getTendonDirectionStyles(firstTendonData.pull_direction)}`}
                 >
                   <span className="text-sm font-medium text-gray-900">
                     {formatLengthChange(firstTendonData.length_change_m)}
