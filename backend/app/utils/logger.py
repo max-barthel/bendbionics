@@ -87,6 +87,10 @@ class LoggerConfig:
         remote_endpoint: Optional[str] = None,
         batch_size: int = 10,
         flush_interval: float = 5.0,
+        enable_performance_logging: bool = True,
+        enable_error_tracking: bool = True,
+        enable_user_tracking: bool = True,
+        enable_sql_logging: bool = False,
         **kwargs  # Additional options
     ):
         self.level = level
