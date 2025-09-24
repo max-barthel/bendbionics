@@ -48,7 +48,9 @@ const meta: Meta<typeof Button> = {
     },
   },
   args: {
-    onClick: () => console.log('Button clicked'),
+    onClick: () => {
+      // Button clicked - action handled by Storybook
+    },
   },
 };
 
@@ -141,7 +143,9 @@ export const LoadingWithText: Story = {
 export const Interactive: Story = {
   args: {
     children: 'Click me!',
-    onClick: () => console.log('Button clicked'),
+    onClick: () => {
+      // Button clicked - action handled by Storybook
+    },
   },
   parameters: {
     docs: {

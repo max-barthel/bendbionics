@@ -5,7 +5,7 @@ import { vi } from 'vitest';
 const global = globalThis as unknown as typeof globalThis & Record<string, unknown>;
 
 // Disable console.log during tests to prevent hanging
-console.log = vi.fn();
+// console.log = vi.fn();
 
 // Mock Tauri API
 global.__TAURI__ = {

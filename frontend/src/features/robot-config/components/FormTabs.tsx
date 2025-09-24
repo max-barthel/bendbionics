@@ -5,7 +5,7 @@ import {
   useImperativeHandle,
   useState,
 } from 'react';
-import { type PCCParams, robotAPI } from '../../../api/client';
+import { robotAPI, type PCCParams } from '../../../api/client';
 import { ControlIcon, RobotIcon } from '../../../components/icons';
 import { TabPanel, Tabs } from '../../../components/ui';
 import { type RobotConfiguration, type User } from '../../../types/robot';
@@ -16,6 +16,25 @@ import { useErrorHandler } from '../../shared/hooks/useErrorHandler';
 import { useRobotState } from '../hooks/useRobotState';
 import { ControlTab } from './tabs/ControlTab';
 import { RobotSetupTab } from './tabs/RobotSetupTab';
+
+// Type guard for API response with result
+const isApiResponseWithResult = (
+  response: unknown
+): response is {
+  data: { result: { robot_positions: number[][][]; segments?: number[][][] } };
+} => {
+  return (
+    response !== null &&
+    typeof response === 'object' &&
+    'data' in response &&
+    response.data !== null &&
+    typeof response.data === 'object' &&
+    'result' in response.data &&
+    response.data.result !== null &&
+    typeof response.data.result === 'object' &&
+    'robot_positions' in response.data.result
+  );
+};
 
 type FormTabsProps = {
   onResult: (segments: number[][][], configuration: RobotConfiguration) => void;
@@ -52,7 +71,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
     const [activeTab, setActiveTab] = useState('setup');
 
     const { error, showError, hideError } = useErrorHandler();
-    useConfigurationLoader(initialConfiguration);
+    void useConfigurationLoader(initialConfiguration);
 
     const handleSubmit = useCallback(async () => {
       hideError();
@@ -77,7 +96,9 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
         if (robotState.tendonConfig) {
           result = await robotAPI.computePCCWithTendons(params);
           // Extract segments from tendon result - fix nested data access
-          const segments = result.data.result.robot_positions;
+          const segments = isApiResponseWithResult(result)
+            ? result.data.result.robot_positions
+            : [];
 
           const configuration = {
             segments: robotState.segments,
@@ -87,7 +108,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
             couplingLengths: robotState.couplingLengths,
             discretizationSteps: robotState.discretizationSteps,
             tendonConfig: robotState.tendonConfig,
-            tendonAnalysis: result.data.result,
+            tendonAnalysis: isApiResponseWithResult(result) ? result.data.result : null,
           };
 
           onResult(segments, configuration);
@@ -103,13 +124,18 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
             discretizationSteps: robotState.discretizationSteps,
           };
 
-          onResult(result.data.segments, configuration);
+          onResult(
+            isApiResponseWithResult(result)
+              ? result.data.result.segments || result.data.result.robot_positions
+              : [],
+            configuration
+          );
         }
       } catch (error: unknown) {
-        console.error('Computation failed:', error);
+        // Error handled by error handler
         showError(
           'server',
-          error.response?.data?.detail || error.message || 'Computation failed'
+          error.response?.data?.detail ?? error.message ?? 'Computation failed'
         );
       } finally {
         setLoading(false);
@@ -124,7 +150,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
     // Handle external computation trigger
     useEffect(() => {
       if (triggerComputation && !loading) {
-        handleSubmit();
+        void handleSubmit();
         onComputationTriggered?.();
       }
     }, [triggerComputation, loading, onComputationTriggered, handleSubmit]);
@@ -147,7 +173,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
     ];
 
     return (
-      <div className="h-full flex flex-col">
+      <div className="h-full flex flex-col" data-testid="form-tabs">
         {error.visible && <ErrorDisplay message={error.message} onClose={hideError} />}
 
         <Tabs

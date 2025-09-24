@@ -91,6 +91,7 @@ class LoggerConfig:
         enable_error_tracking: bool = True,
         enable_user_tracking: bool = True,
         enable_sql_logging: bool = False,
+        **kwargs  # Additional options
     ):
         self.level = level
         self.enable_console = enable_console
@@ -162,6 +163,7 @@ class AsyncLogHandler:
                         headers={"Content-Type": "application/json"},
                     ) as response:
                         if response.status != 200:
+                            # Log failed remote send - will retry later
                             pass
             except Exception:
                 # Re-queue logs for retry
@@ -186,11 +188,11 @@ class Logger:
 
     def _setup_logger(self):
         """Setup the logger with handlers"""
-        self.logger = logging.getLogger(self.name)
-        self.logger.setLevel(self.config.level.value)
+        self._logger = logging.getLogger(self.name)
+        self._logger.setLevel(self.config.level.value)
 
         # Clear existing handlers
-        self.logger.handlers.clear()
+        self._logger.handlers.clear()
 
         # Console handler
         if self.config.enable_console:
@@ -200,7 +202,7 @@ class Logger:
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
             )
             console_handler.setFormatter(console_formatter)
-            self.logger.addHandler(console_handler)
+            self._logger.addHandler(console_handler)
 
         # File handler
         if self.config.enable_file:
@@ -218,7 +220,7 @@ class Logger:
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
             )
             file_handler.setFormatter(file_formatter)
-            self.logger.addHandler(file_handler)
+            self._logger.addHandler(file_handler)
 
     def _create_log_entry(
         self,
@@ -257,7 +259,7 @@ class Logger:
                 pass
 
         return LogEntry(
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(datetime.timezone.utc).isoformat(),
             level=level.name,
             context=context.value,
             message=message,
@@ -304,13 +306,17 @@ class Logger:
             log_message += f" | Data: {json.dumps(data, default=str)}"
 
         if exception:
-            self.logger.log(level.value, log_message, exc_info=exception)
+            self._logger.log(level.value, log_message, exc_info=exception)
         else:
-            self.logger.log(level.value, log_message)
+            self._logger.log(level.value, log_message)
 
         # Send to async handler for remote logging
         if self.config.enable_remote:
-            asyncio.create_task(self.async_handler.add_log(log_entry))
+            task = asyncio.create_task(self.async_handler.add_log(log_entry))
+            # Keep reference to prevent garbage collection
+            self._pending_tasks = getattr(self, "_pending_tasks", set())
+            self._pending_tasks.add(task)
+            task.add_done_callback(self._pending_tasks.discard)
 
     def debug(
         self,

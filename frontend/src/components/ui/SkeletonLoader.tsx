@@ -4,6 +4,17 @@ interface SkeletonLoaderProps {
   className?: string;
 }
 
+// Helper function to get width class based on index
+const getWidthClass = (index: number): string => {
+  if (index === 0) {
+    return 'w-4/5';
+  }
+  if (index === 1) {
+    return 'w-3/4';
+  }
+  return 'w-2/3';
+};
+
 function SkeletonLoader({
   type = 'text',
   lines = 1,
@@ -17,9 +28,7 @@ function SkeletonLoader({
             {Array.from({ length: lines }).map((_, index) => (
               <div
                 key={index}
-                className={`h-4 bg-gray-200 rounded animate-pulse ${
-                  index === 0 ? 'w-4/5' : index === 1 ? 'w-3/4' : 'w-2/3'
-                }`}
+                className={`h-4 bg-gray-200 rounded animate-pulse ${getWidthClass(index)}`}
               />
             ))}
           </div>
