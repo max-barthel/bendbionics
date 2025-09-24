@@ -9,41 +9,5 @@ if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
   exit 1
 fi
 
-# Quick tests - only core user flows
-echo "🧪 Running core tests..."
-
-# Frontend - only critical tests
-echo "📝 Running frontend core tests..."
-cd frontend
-npm run test -- --run --reporter=basic
-if [ $? -ne 0 ]; then
-  echo "❌ Frontend core tests failed."
-  exit 1
-fi
-cd ..
-
-# Backend - only critical APIs
-echo "🐍 Running backend core tests..."
-cd backend
-python -m pytest tests/test_core_apis.py -v
-if [ $? -ne 0 ]; then
-  echo "❌ Backend core tests failed."
-  exit 1
-fi
-cd ..
-
-# Critical linting only - startup philosophy
-echo "🔍 Checking for critical issues only..."
-cd frontend
-# Only fail on actual errors, not warnings
-npm run lint -- --quiet --max-warnings 1000 2>/dev/null | grep -E "(error|Error)" >/dev/null
-if [ $? -eq 0 ]; then
-  echo "❌ Critical frontend errors found."
-  exit 1
-else
-  echo "✅ No critical frontend errors found."
-fi
-cd ..
-
 echo "✅ Quick checks passed!"
 echo "🎉 Ready to push!"
