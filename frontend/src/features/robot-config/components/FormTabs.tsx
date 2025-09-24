@@ -5,7 +5,7 @@ import {
   useImperativeHandle,
   useState,
 } from 'react';
-import { type PCCParams, robotAPI } from '../../../api/client';
+import { robotAPI, type PCCParams } from '../../../api/client';
 import { ControlIcon, RobotIcon } from '../../../components/icons';
 import { TabPanel, Tabs } from '../../../components/ui';
 import { type RobotConfiguration, type User } from '../../../types/robot';
@@ -109,7 +109,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
         console.error('Computation failed:', error);
         showError(
           'server',
-          error.response?.data?.detail || error.message || 'Computation failed'
+          error.response?.data?.detail ?? error.message ?? 'Computation failed'
         );
       } finally {
         setLoading(false);

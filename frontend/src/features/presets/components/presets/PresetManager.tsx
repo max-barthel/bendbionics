@@ -203,11 +203,20 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       // Error details handled by error handler
 
       // Handle different error types
-      if (isErrorWithResponse(error) && error.response.status === HTTP_STATUS.FORBIDDEN) {
+      if (
+        isErrorWithResponse(error) &&
+        error.response.status === HTTP_STATUS.FORBIDDEN
+      ) {
         setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
-      } else if (isErrorWithResponse(error) && error.response.status === HTTP_STATUS.NOT_FOUND) {
+      } else if (
+        isErrorWithResponse(error) &&
+        error.response.status === HTTP_STATUS.NOT_FOUND
+      ) {
         setLoadError('Preset not found. It may have been deleted.');
-      } else if (isErrorWithResponse(error) && error.response.status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
+      } else if (
+        isErrorWithResponse(error) &&
+        error.response.status === HTTP_STATUS.INTERNAL_SERVER_ERROR
+      ) {
         setLoadError('Server error. Please try again later.');
       } else {
         setLoadError(`Failed to update preset: ${error.message || 'Unknown error'}`);
@@ -251,11 +260,20 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       // Error details handled by error handler
 
       // Handle different error types
-      if (isErrorWithResponse(error) && error.response.status === HTTP_STATUS.FORBIDDEN) {
+      if (
+        isErrorWithResponse(error) &&
+        error.response.status === HTTP_STATUS.FORBIDDEN
+      ) {
         setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
-      } else if (isErrorWithResponse(error) && error.response.status === HTTP_STATUS.NOT_FOUND) {
+      } else if (
+        isErrorWithResponse(error) &&
+        error.response.status === HTTP_STATUS.NOT_FOUND
+      ) {
         setLoadError('Preset not found. It may have already been deleted.');
-      } else if (isErrorWithResponse(error) && error.response.status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
+      } else if (
+        isErrorWithResponse(error) &&
+        error.response.status === HTTP_STATUS.INTERNAL_SERVER_ERROR
+      ) {
         setLoadError('Server error. Please try again later.');
       } else {
         setLoadError(`Failed to delete preset: ${error.message || 'Unknown error'}`);
