@@ -25,6 +25,16 @@ const HTTP_STATUS = {
   INTERNAL_SERVER_ERROR: 500,
 } as const;
 
+// Type guard for error with response
+const isErrorWithResponse = (error: unknown): error is { response: { status: number; data?: unknown } } => {
+  return error !== null && 
+         typeof error === 'object' && 
+         'response' in error && 
+         error.response !== null && 
+         typeof error.response === 'object' && 
+         'status' in error.response;
+};
+
 interface PresetManagerProps {
   currentConfiguration: Record<string, unknown>;
   onLoadPreset: (configuration: Record<string, unknown>) => void;
@@ -60,15 +70,11 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
     setIsLoading(true);
     try {
-      // Debug: Check if user and token exist
-      const token = localStorage.getItem('token');
-      // Loading presets for authenticated user
-
       // Test authentication first
       try {
-        const currentUser = await authAPI.getCurrentUser();
+        await authAPI.getCurrentUser();
         // Authentication successful
-      } catch (authError: unknown) {
+      } catch {
         // Authentication failed
         setLoadError('Authentication failed. Please sign in again.');
         return;
@@ -80,9 +86,8 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       setLoadError(''); // Clear any previous errors
     } catch (error: unknown) {
       // Error handled by error handler
-      // Error details are handled by the error handler
       // Handle 403 Forbidden - user might not be properly authenticated
-      if (error.response?.status === HTTP_STATUS.FORBIDDEN) {
+      if (isErrorWithResponse(error) && error.response.status === HTTP_STATUS.FORBIDDEN) {
         setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
         // Optionally redirect to login
         // navigate("/auth");
