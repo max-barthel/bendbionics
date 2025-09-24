@@ -1,0 +1,85 @@
+---
+description: Backend FastAPI Development Standards
+globs: ["backend/**/*.py"]
+alwaysApply: false
+---
+
+# Backend FastAPI Development Standards
+
+## API Development Pattern
+
+When creating FastAPI endpoints:
+
+```python
+from fastapi import APIRouter, Depends, HTTPException
+from app.models.pcc.types import PCCParams
+from app.api.responses import APIResponse
+from app.auth import get_current_user
+
+router = APIRouter(prefix="/api", tags=["feature"])
+
+@router.post("/endpoint", response_model=APIResponse)
+async def endpoint_name(
+    params: PCCParams,
+    current_user: User = Depends(get_current_user)
+) -> APIResponse:
+    """
+    Endpoint description with clear docstring.
+
+    Args:
+        params: Input parameters
+        current_user: Authenticated user
+
+    Returns:
+        APIResponse with standardized format
+    """
+    try:
+        # Business logic here
+        result = process_data(params)
+        return APIResponse(
+            success=True,
+            data=result,
+            message="Operation completed successfully"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+```
+
+## Response Format Standards
+
+All API responses must use the unified `APIResponse` format:
+
+- `success`: Boolean indicating operation success
+- `data`: Response payload
+- `message`: Human-readable message
+- `timestamp`: ISO timestamp
+- `request_id`: Unique request identifier
+
+## Error Handling
+
+- Use proper HTTP status codes
+- Implement comprehensive error handling middleware
+- Log all errors with request context
+- Return user-friendly error messages
+
+## Testing Requirements
+
+- Write unit tests for all endpoints
+- Test both success and error cases
+- Use pytest with async support
+- Maintain 80%+ test coverage
+- Test authentication and authorization
+
+## Database Operations
+
+- Use SQLAlchemy ORM for database operations
+- Implement proper transaction handling
+- Use database migrations for schema changes
+- Follow repository pattern for data access
+
+## Authentication & Security
+
+- Use JWT tokens for authentication
+- Implement proper CORS configuration
+- Validate all input data with Pydantic
+- Use dependency injection for auth checks

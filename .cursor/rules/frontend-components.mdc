@@ -1,0 +1,71 @@
+---
+description: Frontend React Component Standards
+globs: ["frontend/src/**/*.tsx", "frontend/src/**/*.ts"]
+alwaysApply: false
+---
+
+# Frontend Component Standards
+
+## React Component Structure
+
+When creating React components:
+
+```tsx
+// 1. Imports at top
+import React from "react";
+import { ComponentProps } from "./types";
+
+// 2. Interface definitions
+interface ComponentProps {
+  // Define props with proper typing
+}
+
+// 3. Component as named export
+export function ComponentName({ prop1, prop2 }: ComponentProps) {
+  // Component logic
+  return <div className="tahoe-glass-container">{/* Component JSX */}</div>;
+}
+```
+
+## Styling Guidelines
+
+- **ONLY use Tailwind CSS** - no direct CSS styles
+- Use Tahoe glass aesthetic with frosted glass styling
+- Apply consistent spacing and typography
+- Use semantic color classes for accessibility
+
+## Tahoe Glass Styling Pattern
+
+```tsx
+// Standard Tahoe glass container
+className =
+  "bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-lg";
+
+// Interactive elements
+className = "hover:bg-white/20 transition-all duration-200";
+
+// Form elements
+className =
+  "bg-white/5 border-white/10 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20";
+```
+
+## Component Organization
+
+- Place components in `frontend/src/components/`
+- Use feature-based organization in `frontend/src/features/`
+- Create reusable style components for common patterns
+- Export types from separate `.ts` files
+
+## State Management
+
+- Use React hooks for local state
+- Use context for global state
+- Implement proper error boundaries
+- Follow React best practices for performance
+
+## Testing Requirements
+
+- Write unit tests for all components
+- Use React Testing Library
+- Test user interactions and accessibility
+- Maintain high test coverage

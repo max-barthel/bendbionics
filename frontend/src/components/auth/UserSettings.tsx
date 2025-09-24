@@ -4,6 +4,59 @@ import { useAuth } from '../../providers/AuthProvider';
 import { ExclamationTriangleIcon, TrashIcon, UserIcon } from '../icons';
 import { Button, Typography } from '../ui';
 
+// Delete confirmation component
+interface DeleteConfirmationProps {
+  isDeleting: boolean;
+  deleteError: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
+  isDeleting,
+  deleteError,
+  onConfirm,
+  onCancel,
+}) => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+      <div className="flex items-center mb-4">
+        <ExclamationTriangleIcon className="h-6 w-6 text-red-500 mr-3" />
+        <Typography variant="h3" className="text-red-600">
+          Delete Account
+        </Typography>
+      </div>
+      <Typography className="text-gray-600 mb-6">
+        Are you sure you want to delete your account? This action cannot be undone.
+        All your data will be permanently removed.
+      </Typography>
+      {deleteError && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+          <Typography className="text-red-600 text-sm">{deleteError}</Typography>
+        </div>
+      )}
+      <div className="flex space-x-3">
+        <Button
+          variant="secondary"
+          onClick={onCancel}
+          disabled={isDeleting}
+          className="flex-1"
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="danger"
+          onClick={onConfirm}
+          disabled={isDeleting}
+          className="flex-1"
+        >
+          {isDeleting ? 'Deleting...' : 'Delete Account'}
+        </Button>
+      </div>
+    </div>
+  </div>
+);
+
 interface UserSettingsProps {
   onClose: () => void;
 }
@@ -105,83 +158,37 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
             </div>
           </div>
 
-          {!showDeleteConfirmation ? (
-            /* Normal Settings View */
-            <div className="space-y-4">
-              <Button
-                variant="outline"
-                onClick={handleLogout}
-                className="w-full border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
-              >
-                Sign Out
-              </Button>
+          <div className="space-y-4">
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="w-full border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
+            >
+              Sign Out
+            </Button>
 
-              <Button
-                variant="outline"
-                onClick={confirmDelete}
-                className="w-full border border-red-300 bg-red-50 hover:scale-105 text-red-600 hover:text-red-700 transition-all duration-300 rounded-full py-3"
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <TrashIcon className="w-4 h-4" />
-                  Delete Account
-                </div>
-              </Button>
-            </div>
-          ) : (
-            /* Delete Confirmation View */
-            <div className="space-y-4">
-              <div className="bg-red-50 rounded-xl p-4 border border-red-200">
-                <div className="flex items-center gap-3 mb-3">
-                  <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
-                  <Typography variant="h4" color="primary" className="text-red-700">
-                    Delete Account
-                  </Typography>
-                </div>
-                <Typography
-                  variant="body"
-                  color="gray"
-                  className="text-sm leading-relaxed text-gray-600"
-                >
-                  This action cannot be undone. This will permanently delete your
-                  account and remove all your presets and data from our servers.
-                </Typography>
+            <Button
+              variant="outline"
+              onClick={confirmDelete}
+              className="w-full border border-red-300 bg-red-50 hover:scale-105 text-red-600 hover:text-red-700 transition-all duration-300 rounded-full py-3"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <TrashIcon className="w-4 h-4" />
+                Delete Account
               </div>
-
-              {deleteError && (
-                <div className="bg-red-50 rounded-xl p-3 border border-red-200">
-                  <Typography
-                    variant="body"
-                    color="primary"
-                    className="text-red-600 text-sm"
-                  >
-                    {deleteError}
-                  </Typography>
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleDeleteAccount}
-                  disabled={isDeleting}
-                  className="flex-1 border border-red-300 bg-red-100 hover:scale-105 text-red-600 hover:text-red-700 transition-all duration-300 rounded-full py-3 disabled:opacity-50"
-                >
-                  {isDeleting ? 'Deleting...' : 'Yes, Delete'}
-                </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={cancelDelete}
-                  disabled={isDeleting}
-                  className="flex-1 border border-gray-300 bg-gray-50 hover:scale-105 transition-all duration-300 rounded-full py-3"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
+            </Button>
+          </div>
         </div>
       </div>
+      
+      {showDeleteConfirmation && (
+        <DeleteConfirmation
+          isDeleting={isDeleting}
+          deleteError={deleteError}
+          onConfirm={handleDeleteAccount}
+          onCancel={cancelDelete}
+        />
+      )}
     </div>
   );
 };
