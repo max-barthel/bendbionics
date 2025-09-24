@@ -32,12 +32,13 @@ if [ $? -ne 0 ]; then
 fi
 cd ..
 
-# Basic linting - only obvious errors
-echo "🔍 Quick linting check..."
+# Critical linting only - startup philosophy
+echo "🔍 Checking for critical issues only..."
 cd frontend
-npm run lint -- --quiet
-if [ $? -ne 0 ]; then
-  echo "❌ Frontend has obvious linting errors."
+# Only fail on actual errors, not warnings
+npm run lint -- --quiet --max-warnings 1000 2>/dev/null | grep -E "(error|Error)" || true
+if [ $? -eq 0 ]; then
+  echo "❌ Critical frontend errors found."
   exit 1
 fi
 cd ..

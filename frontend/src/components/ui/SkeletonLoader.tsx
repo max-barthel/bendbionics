@@ -6,8 +6,12 @@ interface SkeletonLoaderProps {
 
 // Helper function to get width class based on index
 const getWidthClass = (index: number): string => {
-  if (index === 0) return 'w-4/5';
-  if (index === 1) return 'w-3/4';
+  if (index === 0) {
+    return 'w-4/5';
+  }
+  if (index === 1) {
+    return 'w-3/4';
+  }
   return 'w-2/3';
 };
 

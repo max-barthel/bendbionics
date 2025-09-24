@@ -13,9 +13,9 @@ This is a modern desktop application for simulating soft robot kinematics using 
 ## Architecture
 
 - **Frontend**: React + TypeScript + Tailwind CSS + Tauri (desktop)
-- **Backend**: FastAPI + Python with comprehensive testing
+- **Backend**: FastAPI + Python with essential testing
 - **Design**: macOS Tahoe 26 aesthetic with liquid glass styling
-- **Testing**: 82+ test cases with full coverage
+- **Testing**: Focused on real user value and critical paths
 
 ## Key Features
 
