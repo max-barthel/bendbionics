@@ -26,13 +26,17 @@ const HTTP_STATUS = {
 } as const;
 
 // Type guard for error with response
-const isErrorWithResponse = (error: unknown): error is { response: { status: number; data?: unknown } } => {
-  return error !== null && 
-         typeof error === 'object' && 
-         'response' in error && 
-         error.response !== null && 
-         typeof error.response === 'object' && 
-         'status' in error.response;
+const isErrorWithResponse = (
+  error: unknown
+): error is { response: { status: number; data?: unknown } } => {
+  return (
+    error !== null &&
+    typeof error === 'object' &&
+    'response' in error &&
+    error.response !== null &&
+    typeof error.response === 'object' &&
+    'status' in error.response
+  );
 };
 
 interface PresetManagerProps {
@@ -87,7 +91,10 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
     } catch (error: unknown) {
       // Error handled by error handler
       // Handle 403 Forbidden - user might not be properly authenticated
-      if (isErrorWithResponse(error) && error.response.status === HTTP_STATUS.FORBIDDEN) {
+      if (
+        isErrorWithResponse(error) &&
+        error.response.status === HTTP_STATUS.FORBIDDEN
+      ) {
         setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
         // Optionally redirect to login
         // navigate("/auth");

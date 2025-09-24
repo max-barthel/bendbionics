@@ -27,15 +27,36 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
   return [storedValue, setValue] as const;
 }
 
+// Constants for default robot settings
+const DEFAULT_ROBOT_SETTINGS = {
+  SEGMENTS: 5,
+  DEFAULT_BACKBONE_LENGTH: 0.07,
+  DEFAULT_COUPLING_LENGTH: 0.03,
+  DISCRETIZATION_STEPS: 1000,
+} as const;
+
 // Hook for managing robot settings in local storage
 export function useRobotSettings() {
   const [settings, setSettings] = useLocalStorage('soft-robot-settings', {
-    segments: 5,
+    segments: DEFAULT_ROBOT_SETTINGS.SEGMENTS,
     bendingAngles: [0, 0, 0, 0, 0],
     rotationAngles: [0, 0, 0, 0, 0],
-    backboneLengths: [0.07, 0.07, 0.07, 0.07, 0.07],
-    couplingLengths: [0.03, 0.03, 0.03, 0.03, 0.03, 0.03],
-    discretizationSteps: 1000,
+    backboneLengths: [
+      DEFAULT_ROBOT_SETTINGS.DEFAULT_BACKBONE_LENGTH,
+      DEFAULT_ROBOT_SETTINGS.DEFAULT_BACKBONE_LENGTH,
+      DEFAULT_ROBOT_SETTINGS.DEFAULT_BACKBONE_LENGTH,
+      DEFAULT_ROBOT_SETTINGS.DEFAULT_BACKBONE_LENGTH,
+      DEFAULT_ROBOT_SETTINGS.DEFAULT_BACKBONE_LENGTH,
+    ],
+    couplingLengths: [
+      DEFAULT_ROBOT_SETTINGS.DEFAULT_COUPLING_LENGTH,
+      DEFAULT_ROBOT_SETTINGS.DEFAULT_COUPLING_LENGTH,
+      DEFAULT_ROBOT_SETTINGS.DEFAULT_COUPLING_LENGTH,
+      DEFAULT_ROBOT_SETTINGS.DEFAULT_COUPLING_LENGTH,
+      DEFAULT_ROBOT_SETTINGS.DEFAULT_COUPLING_LENGTH,
+      DEFAULT_ROBOT_SETTINGS.DEFAULT_COUPLING_LENGTH,
+    ],
+    discretizationSteps: DEFAULT_ROBOT_SETTINGS.DISCRETIZATION_STEPS,
   });
 
   return [settings, setSettings] as const;

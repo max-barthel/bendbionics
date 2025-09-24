@@ -56,11 +56,14 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
               <div className="text-gray-600 text-center text-xs leading-tight">
                 {useDegrees ? (
                   <>
-                    {((value * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) / Math.PI).toFixed(1)}° ({value.toFixed(3)} rad)
+                    {((value * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) / Math.PI).toFixed(1)}
+                    ° ({value.toFixed(3)} rad)
                   </>
                 ) : (
                   <>
-                    {value.toFixed(3)} rad ({((value * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) / Math.PI).toFixed(1)}°)
+                    {value.toFixed(3)} rad (
+                    {((value * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) / Math.PI).toFixed(1)}
+                    °)
                   </>
                 )}
               </div>
@@ -85,7 +88,8 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
           <SliderInput
             value={
               useDegrees
-                ? (values[selectedSegment] * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) / Math.PI
+                ? (values[selectedSegment] * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) /
+                  Math.PI
                 : values[selectedSegment]
             }
             onChange={(value: number) => {
