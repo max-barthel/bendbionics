@@ -5,17 +5,53 @@ import { Route, Routes, useNavigate } from 'react-router-dom';
 import { PresetManager } from './features/presets/components/presets/PresetManager';
 import FormTabs from './features/robot-config/components/FormTabs';
 import SubmitButton from './features/robot-config/components/SubmitButton';
-import { useRobotState } from './features/robot-config/hooks/useRobotState';
+import {
+  useRobotState,
+  type RobotState,
+} from './features/robot-config/hooks/useRobotState';
 import { ErrorBoundary } from './features/shared/components/ErrorBoundary';
 import Visualizer3D from './features/visualization/components/Visualizer3D';
 
 import { AuthPage } from './components/auth/AuthPage';
 import { UserSettings } from './components/auth/UserSettings';
 
+import { type User } from './api/auth';
 import { LoadingSpinner, Typography } from './components/ui';
 import TahoeGlass from './components/ui/TahoeGlass';
 import { AuthProvider, useAuth } from './providers';
 import { type RobotConfiguration } from './types/robot';
+import logger, { LogContext } from './utils/logger';
+
+// Define the app state interface
+interface AppState {
+  user: User | null;
+  isLoading: boolean;
+  logout: () => void;
+  navigate: (path: string) => void;
+  segments: number[][][];
+  setSegments: (segments: number[][][]) => void;
+  isInitializing: boolean;
+  setIsInitializing: (initializing: boolean) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+  triggerComputation: boolean;
+  setTriggerComputation: (trigger: boolean) => void;
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  currentConfiguration: RobotConfiguration;
+  setCurrentConfiguration: (config: RobotConfiguration) => void;
+  showPresetManager: boolean;
+  setShowPresetManager: (show: boolean) => void;
+  showTendonResults: boolean;
+  setShowTendonResults: (show: boolean) => void;
+  isLoadingPreset: boolean;
+  setIsLoadingPreset: (loading: boolean) => void;
+  presetLoadKey: number;
+  setPresetLoadKey: (fn: (prev: number) => number) => void;
+  showUserSettings: boolean;
+  setShowUserSettings: (show: boolean) => void;
+  setRobotState: (state: RobotState) => void;
+}
 
 // Constants
 const DEFAULT_SEGMENTS = 5;
@@ -100,13 +136,32 @@ function useAppInitialization(setIsInitializing: (value: boolean) => void) {
     const existingToken = localStorage.getItem('token');
 
     // Log localStorage status (only in development)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('=== App localStorage Test ===');
-      console.log('Test value stored:', testValue);
-      console.log('Test value retrieved:', retrievedValue);
-      console.log('Existing token:', existingToken ? 'EXISTS' : 'NULL');
-      console.log('localStorage working:', retrievedValue === testValue ? 'YES' : 'NO');
-      console.log('============================');
+    if (process.env['NODE_ENV'] === 'development') {
+      logger.debug({
+        context: LogContext.UI,
+        message: '=== App localStorage Test ===',
+      });
+      logger.debug({
+        context: LogContext.UI,
+        message: 'Test value stored:',
+        data: { testValue },
+      });
+      logger.debug({
+        context: LogContext.UI,
+        message: 'Test value retrieved:',
+        data: { retrievedValue },
+      });
+      logger.debug({
+        context: LogContext.UI,
+        message: 'Existing token:',
+        data: { hasToken: !!existingToken },
+      });
+      logger.debug({
+        context: LogContext.UI,
+        message: 'localStorage working:',
+        data: { working: retrievedValue === testValue },
+      });
+      logger.debug({ context: LogContext.UI, message: '============================' });
     }
   }, []);
 
@@ -121,8 +176,8 @@ function useAppInitialization(setIsInitializing: (value: boolean) => void) {
 }
 
 // Helper function to create array with default values
-function createArrayWithDefaults(length: number, defaultValue: number) {
-  return Array(length).fill(defaultValue);
+function createArrayWithDefaults(length: number, defaultValue: number): number[] {
+  return new Array(length).fill(defaultValue) as number[];
 }
 
 // Helper function to create tendon config
@@ -166,8 +221,12 @@ function handlePresetLoadingCompletion(
 ) {
   setCurrentConfiguration(configuration);
   setPresetLoadKey(prev => prev + 1); // Force FormTabs re-render
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Preset configuration loaded:', configuration);
+  if (process.env['NODE_ENV'] === 'development') {
+    logger.debug({
+      context: LogContext.UI,
+      message: 'Preset configuration loaded:',
+      data: { configuration },
+    });
   }
 
   // Reset the loading preset flag after a short delay
@@ -183,12 +242,16 @@ function usePresetLoading(setters: {
   setIsLoadingPreset: (loading: boolean) => void;
   setPresetLoadKey: (fn: (prev: number) => number) => void;
   setShowTendonResults: (show: boolean) => void;
-  setRobotState: (state: any) => void;
+  setRobotState: (state: RobotState) => void;
 }) {
   const handleLoadPreset = useCallback(
     (configuration: RobotConfiguration) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Loading preset configuration:', configuration);
+      if (process.env['NODE_ENV'] === 'development') {
+        logger.debug({
+          context: LogContext.UI,
+          message: 'Loading preset configuration:',
+          data: { configuration },
+        });
       }
 
       // Set loading preset flag to prevent circular updates
@@ -203,8 +266,12 @@ function usePresetLoading(setters: {
       // Create and set robot state
       const newRobotState = createRobotStateFromConfiguration(configuration);
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Directly setting robot state:', newRobotState);
+      if (process.env['NODE_ENV'] === 'development') {
+        logger.debug({
+          context: LogContext.UI,
+          message: 'Directly setting robot state:',
+          data: { newRobotState },
+        });
       }
       setters.setRobotState(newRobotState);
 
@@ -276,7 +343,7 @@ function UserAvatarIcon({ size = 'w-6 h-6' }: { size?: string }) {
 }
 
 // User dropdown menu component
-function UserDropdownMenu({ appState }: { appState: any }) {
+function UserDropdownMenu({ appState }: { appState: AppState }) {
   return (
     <TahoeGlass className="absolute top-full right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible">
       <div className="p-3 border-b border-white/20">
@@ -284,7 +351,7 @@ function UserDropdownMenu({ appState }: { appState: any }) {
           <UserAvatarIcon size="w-8 h-8" />
           <div>
             <p className="text-sm font-medium text-gray-800">
-              {appState.user.username}
+              {appState.user?.username}
             </p>
             <p className="text-xs text-gray-600">Signed in</p>
           </div>
@@ -312,13 +379,13 @@ function UserDropdownMenu({ appState }: { appState: any }) {
 }
 
 // Signed in user menu component
-function SignedInUserMenu({ appState }: { appState: any }) {
+function SignedInUserMenu({ appState }: { appState: AppState }) {
   return (
     <div className="group relative">
       <TahoeGlass as="button" className="flex items-center gap-2 hover:scale-105">
         <UserAvatarIcon />
         <span className="text-sm font-medium text-gray-800">
-          {appState.user.username}
+          {appState.user?.username}
         </span>
         <svg
           className="w-4 h-4 text-gray-600 transition-transform group-hover:rotate-180"
@@ -340,7 +407,7 @@ function SignedInUserMenu({ appState }: { appState: any }) {
 }
 
 // Sign in button component
-function SignInButton({ appState }: { appState: any }) {
+function SignInButton({ appState }: { appState: AppState }) {
   return (
     <button
       onClick={() => appState.navigate('/auth')}
@@ -366,7 +433,7 @@ function SignInButton({ appState }: { appState: any }) {
 }
 
 // User menu component
-function UserMenu({ appState }: { appState: any }) {
+function UserMenu({ appState }: { appState: AppState }) {
   return (
     <div className="fixed top-4 right-4 z-50">
       {appState.user ? (
@@ -386,7 +453,7 @@ function Sidebar({
   handleComputationTriggered,
   handleShowPresetManager,
 }: {
-  appState: any;
+  appState: AppState;
   handleFormResult: (result: number[][][], configuration: RobotConfiguration) => void;
   handleLoadPreset: (configuration: RobotConfiguration) => void;
   handleComputationTriggered: () => void;
@@ -424,7 +491,7 @@ function SidebarToggle({
   appState,
   toggleSidebar,
 }: {
-  appState: any;
+  appState: AppState;
   toggleSidebar: () => void;
 }) {
   return (
@@ -458,9 +525,11 @@ function SidebarToggle({
 function PresetManagerModal({
   appState,
   handleLoadPreset,
+  setShowPresetManager,
 }: {
-  appState: any;
+  appState: AppState;
   handleLoadPreset: (configuration: RobotConfiguration) => void;
+  setShowPresetManager: (show: boolean) => void;
 }) {
   if (!appState.showPresetManager) {
     return null;
@@ -470,7 +539,7 @@ function PresetManagerModal({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden relative">
         <button
-          onClick={() => appState.setShowPresetManager(false)}
+          onClick={() => setShowPresetManager(false)}
           className="absolute top-4 right-4 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out hover:scale-105 z-10"
           aria-label="Close preset manager"
         >
@@ -490,7 +559,9 @@ function PresetManagerModal({
         </button>
         <div className="p-6 overflow-y-auto max-h-[80vh]">
           <PresetManager
-            currentConfiguration={appState.currentConfiguration || {}}
+            currentConfiguration={
+              appState.currentConfiguration as Record<string, unknown>
+            }
             onLoadPreset={config => {
               handleLoadPreset(config);
               appState.setShowPresetManager(false);
@@ -506,22 +577,31 @@ function PresetManagerModal({
 function AppModals({
   appState,
   handleLoadPreset,
+  setters,
 }: {
-  appState: any;
+  appState: AppState;
   handleLoadPreset: (configuration: RobotConfiguration) => void;
+  setters: {
+    setShowPresetManager: (show: boolean) => void;
+    setShowUserSettings: (show: boolean) => void;
+  };
 }) {
   return (
     <>
-      <PresetManagerModal appState={appState} handleLoadPreset={handleLoadPreset} />
+      <PresetManagerModal
+        appState={appState}
+        handleLoadPreset={handleLoadPreset}
+        setShowPresetManager={setters.setShowPresetManager}
+      />
       {appState.showUserSettings && (
-        <UserSettings onClose={() => appState.setShowUserSettings(false)} />
+        <UserSettings onClose={() => setters.setShowUserSettings(false)} />
       )}
     </>
   );
 }
 
 // 3D Visualizer component
-function Visualizer3DWrapper({ appState }: { appState: any }) {
+function Visualizer3DWrapper({ appState }: { appState: AppState }) {
   return (
     <div className="w-full h-full bg-white/10 backdrop-blur-sm relative">
       <Suspense
@@ -541,8 +621,12 @@ function Visualizer3DWrapper({ appState }: { appState: any }) {
       >
         <LazyVisualizer3D
           segments={appState.segments}
-          tendonConfig={appState.currentConfiguration.tendonConfig}
-          tendonAnalysis={appState.currentConfiguration.tendonAnalysis}
+          {...(appState.currentConfiguration.tendonConfig && {
+            tendonConfig: appState.currentConfiguration.tendonConfig,
+          })}
+          {...(appState.currentConfiguration.tendonAnalysis && {
+            tendonAnalysis: appState.currentConfiguration.tendonAnalysis,
+          })}
           sidebarCollapsed={appState.sidebarCollapsed}
           showTendonResults={appState.showTendonResults}
           setShowTendonResults={appState.setShowTendonResults}
@@ -553,7 +637,7 @@ function Visualizer3DWrapper({ appState }: { appState: any }) {
 }
 
 // Floating compute button component
-function FloatingComputeButton({ appState }: { appState: any }) {
+function FloatingComputeButton({ appState }: { appState: AppState }) {
   return (
     <div
       className={`fixed bottom-6 z-50 transition-all duration-300 ease-in-out ${
@@ -580,7 +664,7 @@ function MainAppLayout({
   handleShowPresetManager,
   toggleSidebar,
 }: {
-  appState: any;
+  appState: AppState;
   handleFormResult: (result: number[][][], configuration: RobotConfiguration) => void;
   handleLoadPreset: (configuration: RobotConfiguration) => void;
   handleComputationTriggered: () => void;
@@ -602,41 +686,58 @@ function MainAppLayout({
         <UserMenu appState={appState} />
       </div>
       <FloatingComputeButton appState={appState} />
-      <AppModals appState={appState} handleLoadPreset={handleLoadPreset} />
+      <AppModals
+        appState={appState}
+        handleLoadPreset={handleLoadPreset}
+        setters={{
+          setShowPresetManager: appState.setShowPresetManager,
+          setShowUserSettings: appState.setShowUserSettings,
+        }}
+      />
     </div>
   );
 }
 
 // Custom hook for app handlers
-function useAppHandlers(appState: any) {
+function useAppHandlers(
+  appState: AppState,
+  setters: {
+    setSegments: (segments: number[][][]) => void;
+    setCurrentConfiguration: (config: RobotConfiguration) => void;
+    setShowTendonResults: (show: boolean) => void;
+    setTriggerComputation: (trigger: boolean) => void;
+    setShowPresetManager: (show: boolean) => void;
+    setSidebarCollapsed: (collapsed: boolean) => void;
+  }
+) {
   const handleFormResult = useCallback(
     (result: number[][][], configuration: RobotConfiguration) => {
-      appState.setSegments(result);
+      setters.setSegments(result);
 
       // Only update currentConfiguration if we're not loading a preset
       if (!appState.isLoadingPreset) {
-        appState.setCurrentConfiguration(configuration);
+        setters.setCurrentConfiguration(configuration);
       }
 
       // Auto-unfold tendon results panel if tendon analysis data is available
       if (configuration.tendonAnalysis?.actuation_commands) {
-        appState.setShowTendonResults(true);
+        setters.setShowTendonResults(true);
       }
     },
-    [appState]
+    [setters, appState.isLoadingPreset]
   );
 
   const handleComputationTriggered = useCallback(() => {
-    appState.setTriggerComputation(false);
-  }, [appState.setTriggerComputation]);
+    setters.setTriggerComputation(false);
+  }, [setters]);
 
   const handleShowPresetManager = useCallback(() => {
-    appState.setShowPresetManager(true);
-  }, [appState.setShowPresetManager]);
+    setters.setShowPresetManager(true);
+  }, [setters]);
 
   const toggleSidebar = useCallback(() => {
-    appState.setSidebarCollapsed(!appState.sidebarCollapsed);
-  }, [appState.setSidebarCollapsed]);
+    setters.setSidebarCollapsed(!appState.sidebarCollapsed);
+  }, [setters, appState.sidebarCollapsed]);
 
   return {
     handleFormResult,
@@ -659,7 +760,14 @@ function AppContent() {
     setRobotState: appState.setRobotState,
   });
 
-  const handlers = useAppHandlers(appState);
+  const handlers = useAppHandlers(appState, {
+    setSegments: appState.setSegments,
+    setCurrentConfiguration: appState.setCurrentConfiguration,
+    setShowTendonResults: appState.setShowTendonResults,
+    setTriggerComputation: appState.setTriggerComputation,
+    setShowPresetManager: appState.setShowPresetManager,
+    setSidebarCollapsed: appState.setSidebarCollapsed,
+  });
 
   if (appState.isLoading || appState.isInitializing) {
     return (

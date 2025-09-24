@@ -1,5 +1,10 @@
-import { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import logger, { LogContext } from '../utils/logger';
+
+// Constants for error ID generation
+const RADIX_BASE = 36;
+const RANDOM_STRING_START = 2;
+const RANDOM_STRING_LENGTH = 9;
 
 interface Props {
   children: ReactNode;
@@ -31,7 +36,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
-    const errorId = `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const errorId = `error_${Date.now()}_${Math.random().toString(RADIX_BASE).substr(RANDOM_STRING_START, RANDOM_STRING_LENGTH)}`;
 
     return {
       hasError: true,
@@ -40,15 +45,15 @@ class ErrorBoundary extends Component<Props, State> {
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const { onError, enableReporting = true } = this.props;
     const { errorId } = this.state;
 
     // Log the error
-    logger.error(
-      LogContext.ERROR,
-      'Error boundary caught an error',
-      {
+    logger.error({
+      context: LogContext.ERROR,
+      message: 'Error boundary caught an error',
+      data: {
         error: {
           name: error.name,
           message: error.message,
@@ -63,9 +68,9 @@ class ErrorBoundary extends Component<Props, State> {
         url: window.location.href,
         timestamp: new Date().toISOString(),
       },
-      'ErrorBoundary',
-      'componentDidCatch'
-    );
+      component: 'ErrorBoundary',
+      action: 'componentDidCatch',
+    });
 
     // Call custom error handler
     if (onError) {
@@ -73,7 +78,7 @@ class ErrorBoundary extends Component<Props, State> {
     }
 
     // Report to external service if enabled
-    if (enableReporting) {
+    if (enableReporting && errorId) {
       void this.reportError(error, errorInfo, errorId);
     }
 
@@ -109,13 +114,13 @@ class ErrorBoundary extends Component<Props, State> {
         body: JSON.stringify(errorReport),
       });
     } catch (reportingError) {
-      logger.error(
-        LogContext.ERROR,
-        'Failed to report error to external service',
-        { error: reportingError, originalErrorId: errorId },
-        'ErrorBoundary',
-        'reportError'
-      );
+      logger.error({
+        context: LogContext.ERROR,
+        message: 'Failed to report error to external service',
+        data: { error: reportingError, originalErrorId: errorId },
+        component: 'ErrorBoundary',
+        action: 'reportError',
+      });
     }
   }
 
@@ -129,24 +134,24 @@ class ErrorBoundary extends Component<Props, State> {
         errorId: null,
       });
 
-      logger.info(
-        LogContext.ERROR,
-        'Error boundary retry attempted',
-        { retryCount: this.retryCount },
-        'ErrorBoundary',
-        'handleRetry'
-      );
+      logger.info({
+        context: LogContext.ERROR,
+        message: 'Error boundary retry attempted',
+        data: { retryCount: this.retryCount },
+        component: 'ErrorBoundary',
+        action: 'handleRetry',
+      });
     }
   };
 
   private handleReload = () => {
-    logger.info(
-      LogContext.ERROR,
-      'Page reload requested due to error',
-      { errorId: this.state.errorId },
-      'ErrorBoundary',
-      'handleReload'
-    );
+    logger.info({
+      context: LogContext.ERROR,
+      message: 'Page reload requested due to error',
+      data: { errorId: this.state.errorId },
+      component: 'ErrorBoundary',
+      action: 'handleReload',
+    });
     window.location.reload();
   };
 
@@ -166,13 +171,13 @@ class ErrorBoundary extends Component<Props, State> {
     navigator.clipboard
       .writeText(JSON.stringify(bugReport, null, 2))
       .then(() => {
-        logger.info(
-          LogContext.ERROR,
-          'Bug report copied to clipboard',
-          { errorId },
-          'ErrorBoundary',
-          'handleReportBug'
-        );
+        logger.info({
+          context: LogContext.ERROR,
+          message: 'Bug report copied to clipboard',
+          data: { errorId },
+          component: 'ErrorBoundary',
+          action: 'handleReportBug',
+        });
         alert('Bug report copied to clipboard. Please paste it in your bug report.');
       })
       .catch(() => {
@@ -183,7 +188,92 @@ class ErrorBoundary extends Component<Props, State> {
       });
   };
 
-  render() {
+  private renderErrorHeader(errorId: string | null): ReactNode {
+    return (
+      <div className="text-center">
+        <div className="mx-auto h-12 w-12 text-red-500">
+          <svg
+            className="h-12 w-12"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
+          </svg>
+        </div>
+        <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+          Something went wrong
+        </h2>
+        <p className="mt-2 text-sm text-gray-600">
+          We're sorry, but something unexpected happened. Our team has been notified.
+        </p>
+        {errorId && <p className="mt-1 text-xs text-gray-500">Error ID: {errorId}</p>}
+      </div>
+    );
+  }
+
+  private renderErrorActions(): ReactNode {
+    return (
+      <div className="flex flex-col space-y-2">
+        {this.retryCount < this.maxRetries && (
+          <button
+            onClick={this.handleRetry}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Try Again ({this.maxRetries - this.retryCount} attempts left)
+          </button>
+        )}
+
+        <button
+          onClick={this.handleReload}
+          className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Reload Page
+        </button>
+
+        <button
+          onClick={this.handleReportBug}
+          className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Report Bug
+        </button>
+      </div>
+    );
+  }
+
+  private renderErrorDetails(error: Error, errorInfo: ErrorInfo | null): ReactNode {
+    return (
+      <details className="mt-4">
+        <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
+          Technical Details
+        </summary>
+        <div className="mt-2 p-4 bg-gray-100 rounded-md">
+          <div className="text-sm text-gray-600">
+            <p className="font-medium">Error: {error.name}</p>
+            <p className="mt-1">{error.message}</p>
+            {error.stack && (
+              <pre className="mt-2 text-xs overflow-auto">{error.stack}</pre>
+            )}
+            {errorInfo?.componentStack && (
+              <div className="mt-2">
+                <p className="font-medium">Component Stack:</p>
+                <pre className="mt-1 text-xs overflow-auto">
+                  {errorInfo.componentStack}
+                </pre>
+              </div>
+            )}
+          </div>
+        </div>
+      </details>
+    );
+  }
+
+  override render() {
     const { hasError, error, errorInfo, errorId } = this.state;
     const { children, fallback, showDetails = false } = this.props;
 
@@ -195,84 +285,12 @@ class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-md w-full space-y-8">
-            <div className="text-center">
-              <div className="mx-auto h-12 w-12 text-red-500">
-                <svg
-                  className="h-12 w-12"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-              </div>
-              <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-                Something went wrong
-              </h2>
-              <p className="mt-2 text-sm text-gray-600">
-                We're sorry, but something unexpected happened. Our team has been
-                notified.
-              </p>
-              {errorId && (
-                <p className="mt-1 text-xs text-gray-500">Error ID: {errorId}</p>
-              )}
-            </div>
+            {this.renderErrorHeader(errorId)}
 
             <div className="mt-8 space-y-4">
-              <div className="flex flex-col space-y-2">
-                {this.retryCount < this.maxRetries && (
-                  <button
-                    onClick={this.handleRetry}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Try Again ({this.maxRetries - this.retryCount} attempts left)
-                  </button>
-                )}
+              {this.renderErrorActions()}
 
-                <button
-                  onClick={this.handleReload}
-                  className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Reload Page
-                </button>
-
-                <button
-                  onClick={this.handleReportBug}
-                  className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Report Bug
-                </button>
-              </div>
-
-              {showDetails && error && (
-                <details className="mt-4">
-                  <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
-                    Technical Details
-                  </summary>
-                  <div className="mt-2 p-4 bg-gray-100 rounded-md">
-                    <div className="text-sm text-gray-600">
-                      <p className="font-medium">Error: {error.name}</p>
-                      <p className="mt-1">{error.message}</p>
-                      {error.stack && (
-                        <pre className="mt-2 text-xs overflow-auto">{error.stack}</pre>
-                      )}
-                      {errorInfo?.componentStack && (
-                        <div className="mt-2">
-                          <p className="font-medium">Component Stack:</p>
-                          <pre className="mt-1 text-xs overflow-auto">
-                            {errorInfo.componentStack}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </details>
-              )}
+              {showDetails && error && this.renderErrorDetails(error, errorInfo)}
             </div>
 
             <div className="mt-8 text-center">

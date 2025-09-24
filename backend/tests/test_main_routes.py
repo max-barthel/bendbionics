@@ -1,11 +1,9 @@
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import numpy as np
-import pytest
+from app.api.routes import router
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
-from app.api.routes import router
 
 
 class TestMainRoutes:

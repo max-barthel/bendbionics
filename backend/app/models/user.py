@@ -35,10 +35,7 @@ class UserLogin(SQLModel):
 class UserResponse(SQLModel):
     id: int
     username: str
-    email: Optional[str]
-    is_local: bool
     is_active: bool
-    is_verified: bool
     created_at: datetime
 
 
