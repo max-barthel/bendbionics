@@ -170,7 +170,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
     }
 
     // Validate password strength
-    if (password.length < 8) {
+    const MIN_PASSWORD_LENGTH = 8;
+    if (password.length < MIN_PASSWORD_LENGTH) {
       showError('validation', 'Password must be at least 8 characters long');
       return;
     }
