@@ -61,12 +61,6 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      void loadPresets();
-    }
-  }, [user, loadPresets]);
-
   const loadPresets = useCallback(async () => {
     if (!user) {
       return;
@@ -105,6 +99,12 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       setIsLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      void loadPresets();
+    }
+  }, [user, loadPresets]);
 
   const handleSavePreset = async () => {
     if (!user) {

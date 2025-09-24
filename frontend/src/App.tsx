@@ -136,32 +136,15 @@ function useAppInitialization(setIsInitializing: (value: boolean) => void) {
     const existingToken = localStorage.getItem('token');
 
     // Log localStorage status (only in development)
-    if (process.env['NODE_ENV'] === 'development') {
-      logger.debug({
-        context: LogContext.UI,
-        message: '=== App localStorage Test ===',
+    if (import.meta.env.DEV) {
+      logger.debug('=== App localStorage Test ===', LogContext.UI);
+      logger.debug('Test value stored:', LogContext.UI, { testValue });
+      logger.debug('Test value retrieved:', LogContext.UI, { retrievedValue });
+      logger.debug('Existing token:', LogContext.UI, { hasToken: !!existingToken });
+      logger.debug('localStorage working:', LogContext.UI, {
+        working: retrievedValue === testValue,
       });
-      logger.debug({
-        context: LogContext.UI,
-        message: 'Test value stored:',
-        data: { testValue },
-      });
-      logger.debug({
-        context: LogContext.UI,
-        message: 'Test value retrieved:',
-        data: { retrievedValue },
-      });
-      logger.debug({
-        context: LogContext.UI,
-        message: 'Existing token:',
-        data: { hasToken: !!existingToken },
-      });
-      logger.debug({
-        context: LogContext.UI,
-        message: 'localStorage working:',
-        data: { working: retrievedValue === testValue },
-      });
-      logger.debug({ context: LogContext.UI, message: '============================' });
+      logger.debug('============================', LogContext.UI);
     }
   }, []);
 
@@ -221,12 +204,8 @@ function handlePresetLoadingCompletion(
 ) {
   setCurrentConfiguration(configuration);
   setPresetLoadKey(prev => prev + 1); // Force FormTabs re-render
-  if (process.env['NODE_ENV'] === 'development') {
-    logger.debug({
-      context: LogContext.UI,
-      message: 'Preset configuration loaded:',
-      data: { configuration },
-    });
+  if (import.meta.env.DEV) {
+    logger.debug('Preset configuration loaded:', LogContext.UI, { configuration });
   }
 
   // Reset the loading preset flag after a short delay
@@ -246,12 +225,8 @@ function usePresetLoading(setters: {
 }) {
   const handleLoadPreset = useCallback(
     (configuration: RobotConfiguration) => {
-      if (process.env['NODE_ENV'] === 'development') {
-        logger.debug({
-          context: LogContext.UI,
-          message: 'Loading preset configuration:',
-          data: { configuration },
-        });
+      if (import.meta.env.DEV) {
+        logger.debug('Loading preset configuration:', LogContext.UI, { configuration });
       }
 
       // Set loading preset flag to prevent circular updates
@@ -266,12 +241,8 @@ function usePresetLoading(setters: {
       // Create and set robot state
       const newRobotState = createRobotStateFromConfiguration(configuration);
 
-      if (process.env['NODE_ENV'] === 'development') {
-        logger.debug({
-          context: LogContext.UI,
-          message: 'Directly setting robot state:',
-          data: { newRobotState },
-        });
+      if (import.meta.env.DEV) {
+        logger.debug('Directly setting robot state:', LogContext.UI, { newRobotState });
       }
       setters.setRobotState(newRobotState);
 

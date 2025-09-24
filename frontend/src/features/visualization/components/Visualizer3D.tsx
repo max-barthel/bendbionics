@@ -322,7 +322,7 @@ function Visualizer3D({
   }, [segments]);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col" data-testid="visualizer-3d">
       <div className="flex-1 relative">
         {!hasData ? (
           <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
