@@ -24,6 +24,7 @@ const VISUALIZATION_CONSTANTS = {
   CAMERA_MAX_MULTIPLIER: 4,
   CAMERA_MIN_DISTANCE: 50,
   CAMERA_MAX_DISTANCE: 1000,
+  CAMERA_FAR_MULTIPLIER: 15,
 } as const;
 
 type Visualizer3DProps = {
@@ -144,13 +145,20 @@ function Visualizer3D({
         // Get tendon analysis data for this tendon
         const tendonId = i.toString();
         const tendonData = tendonAnalysis.actuation_commands[tendonId];
-        const isActive = tendonData && Math.abs(tendonData.length_change_m) > VISUALIZATION_CONSTANTS.TENDON_ACTIVATION_THRESHOLD;
+        const isActive =
+          tendonData &&
+          Math.abs(tendonData.length_change_m) >
+            VISUALIZATION_CONSTANTS.TENDON_ACTIVATION_THRESHOLD;
 
         // Create eyelet sphere
         elements.push(
           <Sphere
             key={`tendon-${couplingIndex}-${i}`}
-            args={[VISUALIZATION_CONSTANTS.SPHERE_RADIUS, VISUALIZATION_CONSTANTS.SPHERE_SEGMENTS, VISUALIZATION_CONSTANTS.SPHERE_RINGS]}
+            args={[
+              VISUALIZATION_CONSTANTS.SPHERE_RADIUS,
+              VISUALIZATION_CONSTANTS.SPHERE_SEGMENTS,
+              VISUALIZATION_CONSTANTS.SPHERE_RINGS,
+            ]}
             position={[globalX, globalY, globalZ]}
           >
             <meshStandardMaterial
@@ -222,7 +230,10 @@ function Visualizer3D({
           // Backend uses 1-based indexing, so tendon 0 in frontend = tendon "1" in backend
           const tendonId = (tendonIndex + 1).toString();
           const tendonData = tendonAnalysis.actuation_commands[tendonId];
-          const isActive = tendonData && Math.abs(tendonData.length_change_m) > VISUALIZATION_CONSTANTS.TENDON_ACTIVATION_THRESHOLD;
+          const isActive =
+            tendonData &&
+            Math.abs(tendonData.length_change_m) >
+              VISUALIZATION_CONSTANTS.TENDON_ACTIVATION_THRESHOLD;
 
           // Get tendon-specific color - always use the tendon color
           const tendonColor = getTendonColor(tendonId);
@@ -280,9 +291,15 @@ function Visualizer3D({
 
   const { cameraDistance, minDistance, maxDistance } = useMemo(() => {
     return {
-      cameraDistance: size * VISUALIZATION_CONSTANTS.CAMERA_DISTANCE_MULTIPLIER || VISUALIZATION_CONSTANTS.CAMERA_DISTANCE,
-      minDistance: size * VISUALIZATION_CONSTANTS.CAMERA_MIN_MULTIPLIER || VISUALIZATION_CONSTANTS.CAMERA_MIN_DISTANCE,
-      maxDistance: size * VISUALIZATION_CONSTANTS.CAMERA_MAX_MULTIPLIER || VISUALIZATION_CONSTANTS.CAMERA_MAX_DISTANCE,
+      cameraDistance:
+        size * VISUALIZATION_CONSTANTS.CAMERA_DISTANCE_MULTIPLIER ||
+        VISUALIZATION_CONSTANTS.CAMERA_DISTANCE,
+      minDistance:
+        size * VISUALIZATION_CONSTANTS.CAMERA_MIN_MULTIPLIER ||
+        VISUALIZATION_CONSTANTS.CAMERA_MIN_DISTANCE,
+      maxDistance:
+        size * VISUALIZATION_CONSTANTS.CAMERA_MAX_MULTIPLIER ||
+        VISUALIZATION_CONSTANTS.CAMERA_MAX_DISTANCE,
     };
   }, [size]);
 
@@ -355,7 +372,7 @@ function Visualizer3D({
                 fov: 45,
                 up: [0, 0, 1],
                 near: 0.01,
-                far: size * 15,
+                far: size * VISUALIZATION_CONSTANTS.CAMERA_FAR_MULTIPLIER,
               }}
               className="bg-gray-50"
             >

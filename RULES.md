@@ -73,11 +73,11 @@ Generate rules directly in conversations using the /Generate Cursor Rules comman
 
 Good rules are focused, actionable, and scoped.
 
-Keep rules under 500 lines
-Split large rules into multiple, composable rules
-Provide concrete examples or referenced files
-Avoid vague guidance. Write rules like clear internal docs
-Reuse rules when repeating prompts in chat
+- Keep rules under 500 lines
+- Split large rules into multiple, composable rules
+- Provide concrete examples or referenced files
+- Avoid vague guidance. Write rules like clear internal docs
+- Reuse rules when repeating prompts in chat
 
 ## Examples
 
@@ -87,16 +87,17 @@ This rule provides standards for frontend components:
 
 When working in components directory:
 
-Always use Tailwind for styling
-Use Framer Motion for animations
-Follow component naming conventions
+- Always use Tailwind for styling
+- Use Framer Motion for animations
+- Follow component naming conventions
+
 This rule enforces validation for API endpoints:
 
 In API directory:
 
-Use zod for all validation
-Define return types with zod schemas
-Export types generated from schemas
+- Use zod for all validation
+- Define return types with zod schemas
+- Export types generated from schemas
 
 ### Templates for Express services and React components
 
@@ -104,18 +105,20 @@ This rule provides a template for Express services:
 
 Use this template when creating Express service:
 
-Follow RESTful principles
-Include error handling middleware
-Set up proper logging
+- Follow RESTful principles
+- Include error handling middleware
+- Set up proper logging
+
 @express-service-template.ts
 
 This rule defines React component structure:
 
 React components should follow this layout:
 
-Props interface at top
-Component as named export
-Styles at bottom
+- Props interface at top
+- Component as named export
+- Styles at bottom
+
 @component-template.tsx
 
 ### Automating development workflows and documentation generation
@@ -124,16 +127,17 @@ This rule automates app analysis:
 
 When asked to analyze the app:
 
-Run dev server with npm run dev
-Fetch logs from console
-Suggest performance improvements
+1. Run dev server with npm run dev
+2. Fetch logs from console
+3. Suggest performance improvements
+
 This rule helps generate documentation:
 
 Help draft documentation by:
 
-Extracting code comments
-Analyzing README.md
-Generating markdown documentation
+- Extracting code comments
+- Analyzing README.md
+- Generating markdown documentation
 
 ### Adding a new setting in Cursor
 
@@ -145,21 +149,25 @@ For beta features, add toggle in @settingsBetaTab.tsx, otherwise add in @setting
 
 ```tsx
 <SettingsSubSection
-label="Your feature name"
-description="Your feature description"
-value={
+  label="Your feature name"
+  description="Your feature description"
+  value={
     vsContext.reactiveStorageService.applicationUserPersistentStorage
-    .myNewProperty ?? false
-}
-onChange={(newVal) => {
+      .myNewProperty ?? false
+  }
+  onChange={(newVal) => {
     vsContext.reactiveStorageService.setApplicationUserPersistentStorage(
-    "myNewProperty",
-    newVal,
-);
-}}
+      "myNewProperty",
+      newVal
+    );
+  }}
 />
+```
+
 To use in the app, import reactiveStorageService and use the property:
+
+```tsx
 const flagIsEnabled =
-vsContext.reactiveStorageService.applicationUserPersistentStorage
-.myNewProperty;
+  vsContext.reactiveStorageService.applicationUserPersistentStorage
+    .myNewProperty;
 ```
