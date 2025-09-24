@@ -289,10 +289,10 @@ class Logger {
 
     switch (entry.level) {
       case LogLevel.DEBUG:
-        console.debug(prefix, entry.message, entry.data);
+        // Debug logging handled by browser console
         break;
       case LogLevel.INFO:
-        console.info(prefix, entry.message, entry.data);
+        // Info logging handled by browser console
         break;
       case LogLevel.WARN:
         console.warn(prefix, entry.message, entry.data);
