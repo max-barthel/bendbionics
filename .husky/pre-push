@@ -36,10 +36,12 @@ cd ..
 echo "🔍 Checking for critical issues only..."
 cd frontend
 # Only fail on actual errors, not warnings
-npm run lint -- --quiet --max-warnings 1000 2>/dev/null | grep -E "(error|Error)" || true
+npm run lint -- --quiet --max-warnings 1000 2>/dev/null | grep -E "(error|Error)" >/dev/null
 if [ $? -eq 0 ]; then
   echo "❌ Critical frontend errors found."
   exit 1
+else
+  echo "✅ No critical frontend errors found."
 fi
 cd ..
 
