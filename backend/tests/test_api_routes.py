@@ -1,9 +1,8 @@
 from unittest.mock import patch
 
-from fastapi.testclient import TestClient
-
 from app.api.routes import router
 from app.models.pcc.types import PCCParams
+from fastapi.testclient import TestClient
 
 
 class TestAPIRoutes:
@@ -31,9 +30,10 @@ class TestAPIRoutes:
 
         assert response.status_code == 200
         data = response.json()
-        assert "segments" in data
-        assert isinstance(data["segments"], list)
-        assert len(data["segments"]) > 0
+        assert "data" in data
+        assert "segments" in data["data"]
+        assert isinstance(data["data"]["segments"], list)
+        assert len(data["data"]["segments"]) > 0
 
     def test_run_pcc_with_rotation(self):
         """Test PCC computation with rotation angles."""
@@ -49,7 +49,8 @@ class TestAPIRoutes:
 
         assert response.status_code == 200
         data = response.json()
-        assert "segments" in data
+        assert "data" in data
+        assert "segments" in data["data"]
 
     def test_run_pcc_single_segment(self):
         """Test PCC computation with single segment."""
@@ -65,7 +66,8 @@ class TestAPIRoutes:
 
         assert response.status_code == 200
         data = response.json()
-        assert "segments" in data
+        assert "data" in data
+        assert "segments" in data["data"]
 
     @patch("app.api.routes.compute_pcc")
     def test_run_pcc_computation_error(self, mock_compute_pcc):
@@ -85,7 +87,7 @@ class TestAPIRoutes:
         assert response.status_code == 500
         data = response.json()
         assert "detail" in data
-        assert data["detail"] == "Computation failed"
+        assert data["detail"] == "PCC computation failed"
 
     def test_options_pcc(self):
         """Test OPTIONS endpoint for CORS."""
@@ -156,7 +158,8 @@ class TestAPIRoutes:
 
         assert response.status_code == 200
         data = response.json()
-        assert "segments" in data
+        assert "data" in data
+        assert "segments" in data["data"]
 
     @patch("app.api.routes.logger")
     def test_run_pcc_logs_error(self, mock_logger):

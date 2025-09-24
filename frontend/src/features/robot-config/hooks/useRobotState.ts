@@ -137,12 +137,7 @@ export function useRobotState() {
     setState(prevState => {
       const updatedState =
         typeof newState === 'function' ? newState(prevState) : newState;
-      console.log(
-        'useRobotState: Updating state from:',
-        prevState.segments,
-        'to:',
-        updatedState.segments
-      );
+      // State update in progress
 
       // Ensure all arrays exist before adjusting
       const completeState = {
@@ -159,18 +154,18 @@ export function useRobotState() {
 
       // If segments changed, adjust the arrays accordingly
       if (validatedSegments !== prevState.segments) {
-        console.log('useRobotState: Segments changed, adjusting arrays');
+        // Segments changed, adjusting arrays
         const arrayUpdates = adjustArraysForSegments(validatedSegments, completeState);
         const finalState = {
           ...completeState,
           segments: validatedSegments,
           ...arrayUpdates,
         };
-        console.log('useRobotState: Final state:', finalState);
+        // Final state prepared
         return finalState;
       }
 
-      console.log('useRobotState: No segment change, returning complete state');
+      // No segment change, returning complete state
       return completeState;
     });
   };

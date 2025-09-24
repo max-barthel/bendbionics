@@ -7,6 +7,27 @@ import TahoeGlass from '../../../components/ui/TahoeGlass';
 import { getTendonColor } from '../../../utils/tendonColors';
 import { TendonResultsPanel } from './TendonResultsPanel';
 
+// Constants for 3D visualization
+const VISUALIZATION_CONSTANTS = {
+  TENDON_ACTIVATION_THRESHOLD: 0.001,
+  SPHERE_RADIUS: 0.005,
+  SPHERE_SEGMENTS: 8,
+  SPHERE_RINGS: 6,
+  CAMERA_POSITION: 1.5,
+  CAMERA_DISTANCE: 200,
+  CAMERA_NEAR: 0.5,
+  CAMERA_FAR: 50,
+  LIGHT_INTENSITY: 15,
+  LIGHT_DISTANCE: 200,
+  CAMERA_DISTANCE_MULTIPLIER: 1.5,
+  CAMERA_MIN_MULTIPLIER: 0.5,
+  CAMERA_MAX_MULTIPLIER: 4,
+  CAMERA_MIN_DISTANCE: 50,
+  CAMERA_MAX_DISTANCE: 1000,
+  CAMERA_FAR_MULTIPLIER: 15,
+  LIGHT_POSITION_Z: 200,
+} as const;
+
 type Visualizer3DProps = {
   segments: number[][][];
   tendonConfig?: {
@@ -125,13 +146,20 @@ function Visualizer3D({
         // Get tendon analysis data for this tendon
         const tendonId = i.toString();
         const tendonData = tendonAnalysis.actuation_commands[tendonId];
-        const isActive = tendonData && Math.abs(tendonData.length_change_m) > 0.001;
+        const isActive =
+          tendonData &&
+          Math.abs(tendonData.length_change_m) >
+            VISUALIZATION_CONSTANTS.TENDON_ACTIVATION_THRESHOLD;
 
         // Create eyelet sphere
         elements.push(
           <Sphere
             key={`tendon-${couplingIndex}-${i}`}
-            args={[0.005, 8, 6]}
+            args={[
+              VISUALIZATION_CONSTANTS.SPHERE_RADIUS,
+              VISUALIZATION_CONSTANTS.SPHERE_SEGMENTS,
+              VISUALIZATION_CONSTANTS.SPHERE_RINGS,
+            ]}
             position={[globalX, globalY, globalZ]}
           >
             <meshStandardMaterial
@@ -203,7 +231,10 @@ function Visualizer3D({
           // Backend uses 1-based indexing, so tendon 0 in frontend = tendon "1" in backend
           const tendonId = (tendonIndex + 1).toString();
           const tendonData = tendonAnalysis.actuation_commands[tendonId];
-          const isActive = tendonData && Math.abs(tendonData.length_change_m) > 0.001;
+          const isActive =
+            tendonData &&
+            Math.abs(tendonData.length_change_m) >
+              VISUALIZATION_CONSTANTS.TENDON_ACTIVATION_THRESHOLD;
 
           // Get tendon-specific color - always use the tendon color
           const tendonColor = getTendonColor(tendonId);
@@ -261,9 +292,15 @@ function Visualizer3D({
 
   const { cameraDistance, minDistance, maxDistance } = useMemo(() => {
     return {
-      cameraDistance: size * 1.5 || 200,
-      minDistance: size * 0.5 || 50,
-      maxDistance: size * 4 || 1000,
+      cameraDistance:
+        size * VISUALIZATION_CONSTANTS.CAMERA_DISTANCE_MULTIPLIER ||
+        VISUALIZATION_CONSTANTS.CAMERA_DISTANCE,
+      minDistance:
+        size * VISUALIZATION_CONSTANTS.CAMERA_MIN_MULTIPLIER ||
+        VISUALIZATION_CONSTANTS.CAMERA_MIN_DISTANCE,
+      maxDistance:
+        size * VISUALIZATION_CONSTANTS.CAMERA_MAX_MULTIPLIER ||
+        VISUALIZATION_CONSTANTS.CAMERA_MAX_DISTANCE,
     };
   }, [size]);
 
@@ -285,7 +322,7 @@ function Visualizer3D({
   }, [segments]);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col" data-testid="visualizer-3d">
       <div className="flex-1 relative">
         {!hasData ? (
           <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
@@ -336,12 +373,15 @@ function Visualizer3D({
                 fov: 45,
                 up: [0, 0, 1],
                 near: 0.01,
-                far: size * 15,
+                far: size * VISUALIZATION_CONSTANTS.CAMERA_FAR_MULTIPLIER,
               }}
               className="bg-gray-50"
             >
               <ambientLight intensity={0.6} />
-              <pointLight position={[100, 100, 200]} intensity={0.8} />
+              <pointLight
+                position={[100, 100, VISUALIZATION_CONSTANTS.LIGHT_POSITION_Z]}
+                intensity={0.8}
+              />
               <axesHelper args={[size || 100]} />
               <OrbitControls
                 ref={controlsRef}

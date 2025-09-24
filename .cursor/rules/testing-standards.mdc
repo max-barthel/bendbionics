@@ -1,0 +1,95 @@
+---
+description: Testing Standards and Requirements
+globs: ["**/*.test.*", "**/*.spec.*", "**/tests/**/*"]
+alwaysApply: false
+---
+
+# Testing Standards
+
+## Frontend Testing (React + TypeScript)
+
+```tsx
+import { render, screen, fireEvent } from "@testing-library/react";
+import { ComponentName } from "./ComponentName";
+
+describe("ComponentName", () => {
+  it("renders correctly with props", () => {
+    render(<ComponentName prop1="value" />);
+    expect(screen.getByText("Expected Text")).toBeInTheDocument();
+  });
+
+  it("handles user interactions", () => {
+    const mockHandler = jest.fn();
+    render(<ComponentName onAction={mockHandler} />);
+
+    fireEvent.click(screen.getByRole("button"));
+    expect(mockHandler).toHaveBeenCalledWith(expectedValue);
+  });
+
+  it("is accessible", async () => {
+    render(<ComponentName />);
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+});
+```
+
+## Backend Testing (FastAPI + Python)
+
+```python
+import pytest
+from fastapi.testclient import TestClient
+from app.main import app
+from app.models.pcc.types import PCCParams
+
+client = TestClient(app)
+
+def test_endpoint_success():
+    """Test successful API response."""
+    response = client.post("/api/endpoint", json={
+        "bending_angles": [0.5, 0.3],
+        "rotation_angles": [0.0, 0.0]
+    })
+    assert response.status_code == 200
+    assert response.json()["success"] is True
+    assert "data" in response.json()
+
+def test_endpoint_validation_error():
+    """Test input validation."""
+    response = client.post("/api/endpoint", json={"invalid": "data"})
+    assert response.status_code == 422
+
+@pytest.mark.asyncio
+async def test_async_function():
+    """Test async functions properly."""
+    result = await async_function()
+    assert result is not None
+```
+
+## Testing Requirements
+
+- **Focus on Real Bugs**: Test what actually breaks, not theoretical edge cases
+- **Critical Path Only**: Test core user journeys, not every component
+- **Quick Tests**: Fast feedback loops, not comprehensive coverage
+- **User Value**: Test features users actually use
+
+## Test Organization
+
+```bash
+tests/
+├── unit/           # Unit tests
+├── integration/    # Integration tests
+├── e2e/           # End-to-end tests
+└── fixtures/      # Test data and fixtures
+```
+
+## Mocking Guidelines
+
+- **Minimal Mocking**: Only mock what you must (external APIs, databases)
+- **Real Dependencies**: Use real implementations when possible
+- **Quick Setup**: Avoid complex test fixtures
+
+## Performance Testing
+
+- **User-Reported Issues Only**: Don't optimize until users complain
+- **Real Performance**: Test with actual user data, not synthetic loads

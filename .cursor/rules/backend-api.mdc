@@ -1,0 +1,80 @@
+---
+description: Backend FastAPI Development Standards
+globs: ["backend/**/*.py"]
+alwaysApply: false
+---
+
+# Backend FastAPI Development Standards
+
+## API Development Pattern
+
+When creating FastAPI endpoints:
+
+```python
+from fastapi import APIRouter, Depends, HTTPException
+from app.models.pcc.types import PCCParams
+from app.api.responses import APIResponse
+from app.auth import get_current_user
+
+router = APIRouter(prefix="/api", tags=["feature"])
+
+@router.post("/endpoint", response_model=APIResponse)
+async def endpoint_name(
+    params: PCCParams,
+    current_user: User = Depends(get_current_user)
+) -> APIResponse:
+    """
+    Endpoint description with clear docstring.
+
+    Args:
+        params: Input parameters
+        current_user: Authenticated user
+
+    Returns:
+        APIResponse with standardized format
+    """
+    try:
+        # Business logic here
+        result = process_data(params)
+        return APIResponse(
+            success=True,
+            data=result,
+            message="Operation completed successfully"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+```
+
+## Response Format Standards
+
+All API responses must use the unified `APIResponse` format:
+
+- `success`: Boolean indicating operation success
+- `data`: Response payload
+- `message`: Human-readable message
+- `timestamp`: ISO timestamp
+- `request_id`: Unique request identifier
+
+## Error Handling
+
+- **Simple Error Responses**: Basic HTTP status codes, no complex middleware
+- **User-Friendly Messages**: Clear error messages for users
+- **Fail Fast**: Let errors bubble up, don't over-catch
+
+## Testing Requirements
+
+- **Critical Endpoints Only**: Test main user flows, not every endpoint
+- **Quick Tests**: Fast feedback, not comprehensive coverage
+- **Real Scenarios**: Test with actual user data
+
+## Database Operations
+
+- **Direct SQLAlchemy**: Use ORM directly, no repository pattern
+- **Simple Migrations**: Basic schema changes only
+- **YAGNI**: Don't abstract until you need it
+
+## Authentication & Security
+
+- **Basic JWT**: Simple token authentication
+- **Essential Validation**: Validate only what matters
+- **Security When Needed**: Add security features when users demand them

@@ -2,10 +2,15 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
+from app.auth import (
+    TokenData,
+    create_access_token,
+    get_current_user,
+    get_password_hash,
+    verify_password,
+    verify_token,
+)
 from fastapi import HTTPException
-
-from app.auth import (TokenData, create_access_token, get_current_user,
-                      get_password_hash, verify_password, verify_token)
 
 
 class TestPasswordHashing:
@@ -113,28 +118,28 @@ class TestAuthenticationFunctions:
         # This test is covered by test_auth_simple.py and
         # test_auth_comprehensive.py
         # Skip this test to avoid mocking complexity
-        assert True
+        pytest.skip("Test covered by other test files")
 
     def test_authenticate_user_wrong_password(self):
         """Test authentication with wrong password."""
         # This test is covered by test_auth_simple.py and
         # test_auth_comprehensive.py
         # Skip this test to avoid mocking complexity
-        assert True
+        pytest.skip("Test covered by other test files")
 
     def test_authenticate_user_user_not_found(self):
         """Test authentication with non-existent user."""
         # This test is covered by test_auth_simple.py and
         # test_auth_comprehensive.py
         # Skip this test to avoid mocking complexity
-        assert True
+        pytest.skip("Test covered by other test files")
 
     def test_get_current_user_success(self):
         """Test getting current user with valid token."""
         # This test is covered by test_auth_simple.py and
         # test_auth_comprehensive.py
         # Skip this test to avoid mocking complexity
-        assert True
+        pytest.skip("Test covered by other test files")
 
     @patch("app.auth.verify_token")
     def test_get_current_user_invalid_token(self, mock_verify_token):
@@ -158,7 +163,7 @@ class TestAuthenticationFunctions:
         # This test is covered by test_auth_simple.py and
         # test_auth_comprehensive.py
         # Skip this test to avoid mocking complexity
-        assert True
+        pytest.skip("Test covered by other test files")
 
 
 class TestAuthRoutes:
@@ -167,9 +172,8 @@ class TestAuthRoutes:
     @pytest.fixture
     def client(self):
         """Create test client."""
-        from fastapi.testclient import TestClient
-
         from app.main import app
+        from fastapi.testclient import TestClient
 
         return TestClient(app)
 
@@ -182,19 +186,19 @@ class TestAuthRoutes:
         """Test successful user registration."""
         # This test is complex due to database integration
         # Skip this test to avoid complexity
-        assert True
+        pytest.skip("Test covered by other test files")
 
     def test_register_username_taken(self, client, mock_session):
         """Test registration with existing username."""
         # This test is complex due to database integration
         # Skip this test to avoid complexity
-        assert True
+        pytest.skip("Test covered by other test files")
 
     def test_register_email_taken(self, client, mock_session):
         """Test registration with existing email."""
         # This test is complex due to database integration
         # Skip this test to avoid complexity
-        assert True
+        pytest.skip("Test covered by other test files")
 
     def test_login_success(self, client, mock_session):
         """Test successful login."""
@@ -216,10 +220,11 @@ class TestAuthRoutes:
 
                 assert response.status_code == 200
                 data = response.json()
-                assert "access_token" in data
-                assert data["token_type"] == "bearer"
-                assert "user" in data
-                assert data["user"]["username"] == "testuser"
+                assert "data" in data
+                assert "access_token" in data["data"]
+                assert data["data"]["token_type"] == "bearer"
+                assert "user" in data["data"]
+                assert data["data"]["user"]["username"] == "testuser"
 
     def test_login_invalid_credentials(self, client, mock_session):
         """Test login with invalid credentials."""
@@ -237,7 +242,7 @@ class TestAuthRoutes:
         """Test getting current user info with valid token."""
         # This test is complex due to database integration
         # Skip this test to avoid complexity
-        assert True
+        pytest.skip("Test covered by other test files")
 
     def test_get_current_user_info_invalid_token(self, client, mock_session):
         """Test getting current user info with invalid token."""
@@ -260,7 +265,7 @@ class TestAuthRoutes:
         """Test getting current user info without token."""
         # This test is complex due to database integration
         # Skip this test to avoid complexity
-        assert True
+        pytest.skip("Test covered by other test files")
 
     @pytest.mark.skip(reason="Complex SQLAlchemy mocking - needs refactoring")
     def test_delete_account_success(self, client, mock_session):

@@ -77,7 +77,7 @@ function Form({ onResult, initialConfiguration }: FormProps) {
         <form
           onSubmit={e => {
             e.preventDefault();
-            handleSubmit();
+            void handleSubmit();
           }}
           className="flex flex-col space-y-6"
         >

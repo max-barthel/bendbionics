@@ -123,7 +123,7 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
         );
       }
       // Validation errors
-      else if (err.response?.status === 400) {
+      else if (err.response?.status === HTTP_STATUS.BAD_REQUEST) {
         showError(
           'validation',
           err.response?.data?.detail ??
@@ -131,12 +131,12 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
         );
       }
       // Authentication errors
-      else if (err.response?.status === 401) {
+      else if (err.response?.status === HTTP_STATUS.UNAUTHORIZED) {
         showError(
           'auth',
           'Authentication failed. Please check your credentials and try again.'
         );
-      } else if (err.response?.status === 403) {
+      } else if (err.response?.status === HTTP_STATUS.FORBIDDEN) {
         showError(
           'auth',
           "Access denied. You don't have permission to perform this action."

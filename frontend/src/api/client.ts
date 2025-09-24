@@ -103,7 +103,7 @@ const defaultRetryConfig: RetryConfig = {
 
 // Check if an error should be retried
 function isRetryableError(
-  error: { response?: unknown; code?: string },
+  error: { response?: { status?: number }; code?: string },
   config: RetryConfig
 ): boolean {
   // Network errors
@@ -132,13 +132,13 @@ async function withRetry<T>(
   config: Partial<RetryConfig> = {}
 ): Promise<T> {
   const retryConfig = { ...defaultRetryConfig, ...config };
-  let lastError: unknown;
+  let lastError: { response?: { status?: number }; message?: string } | undefined;
 
   for (let attempt = 1; attempt <= retryConfig.maxRetries + 1; attempt++) {
     try {
       return await apiCall();
     } catch (error) {
-      lastError = error;
+      lastError = error as { response?: { status?: number }; message?: string };
 
       // Stop if max retries reached or error is not retryable
       if (
@@ -183,13 +183,14 @@ function getApiUrl(): string {
 
     // For web deployment, use the configured API URL
     if ((window as { APP_CONFIG?: { API_URL?: string } }).APP_CONFIG?.API_URL) {
-      return (window as { APP_CONFIG: { API_URL: string } }).APP_CONFIG.API_URL;
+      return (window as unknown as { APP_CONFIG: { API_URL: string } }).APP_CONFIG
+        .API_URL;
     }
   }
 
   // Fallback to environment variable
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+  if (import.meta.env['VITE_API_URL']) {
+    return import.meta.env['VITE_API_URL'] as string;
   }
 
   // Default fallback for desktop app
@@ -206,7 +207,16 @@ function createApiClient() {
   });
 
   // Add request interceptor for authentication
-  client.interceptors.request.use(addAuthToken, error => Promise.reject(error));
+  client.interceptors.request.use(
+    config => {
+      const token = localStorage.getItem('token');
+      if (token && config.headers) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+      return config;
+    },
+    error => Promise.reject(error)
+  );
 
   // Add response interceptor for error handling
   client.interceptors.response.use(response => response, handleResponseError);
@@ -217,15 +227,6 @@ function createApiClient() {
 // Create client dynamically for each request to ensure config is loaded
 function getApiClient() {
   return createApiClient();
-}
-
-// Helper function to add authentication token to requests
-function addAuthToken(config: { headers?: Record<string, string> }) {
-  const token = localStorage.getItem('token');
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
 }
 
 // Helper function to handle response errors
@@ -242,7 +243,7 @@ function handleResponseError(error: { response?: { status?: number } }) {
     import.meta.env.DEV &&
     error.response?.status === HTTP_STATUS.INTERNAL_SERVER_ERROR
   ) {
-    console.error('Server error:', error.response.data);
+    console.error('Server error:', (error.response as { data?: unknown }).data);
   }
   return Promise.reject(error);
 }

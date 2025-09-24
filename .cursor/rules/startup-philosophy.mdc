@@ -1,0 +1,55 @@
+---
+description: Startup Development Philosophy - Build What Matters
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Startup Development Philosophy
+
+## Core Principles
+
+Work like a true startup: **learn fast, focus relentlessly, and build what only we can build**.
+Think **steering a car with a compass**: quick course corrections guided by vision, not endless roadmaps.
+
+### Key Values
+
+- **Validated Learning > Output**: Progress is measured by learning from users, not lines of code
+- **Do the Hard Thing**: Aim for simplicity, but don’t confuse easy hacks with meaningful progress
+- **Default to Action**: Small steps forward beat perfect plans standing still
+- **Friction Kills**: Every barrier to iteration is a risk to survival
+
+## Development Approach
+
+- **Rapid Experimentation**: Ship small, test quickly, validate assumptions
+- **First, Nail It**: Achieve product–user fit before optimizing for scale
+- **Quick Wins, Long Vision**: Prioritize near-term value while keeping the long-term direction clear
+- **Pivot or Persevere**: Let data decide whether to double down or change course
+
+## Code Philosophy
+
+- **YAGNI**: Don’t build for a future that may never come
+- **KISS**: Prefer simple, maintainable solutions over clever ones
+- **DRY, But Realistic**: Reuse where it clarifies; avoid abstractions that slow learning
+- **Pragmatic Performance**: Optimize only when users feel the pain
+
+## Decision Making
+
+- **Bias for Action**: Ship, measure, learn — faster than competitors
+- **Good Enough to Learn**: Perfection delays insight; release when value is testable
+- **User-Centered Evidence**: Let real usage guide direction, not assumptions
+- **Leverage Constraints**: Treat limitations as forcing functions for creativity
+
+## Process Guidelines
+
+- **Lightweight Documentation**: Capture only what helps the team move faster
+- **Right-Sized Testing**: Automate what saves real pain; don’t gold-plate test suites
+- **Continuous Delivery**: Ship often to derisk deployments and accelerate feedback
+- **Talk to Users**: Every release should shorten the distance to real user feedback
+
+## Anti-Patterns to Avoid
+
+- **Over-Engineering**: Don’t build for hypothetical scale before validating demand
+- **Analysis Paralysis**: Planning is useful only if it accelerates building
+- **Perfect Code Fallacy**: Users care about value, not elegance
+- **Process Worship**: Process exists to serve the product, not the other way around
+- **False Optimizations**: Don’t polish what hasn’t proven to matter

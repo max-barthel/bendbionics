@@ -9,7 +9,10 @@ export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div
+      className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
+      data-testid="auth-page"
+    >
       <div className="w-full max-w-md space-y-8 relative z-10">
         <div className="text-center">
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
@@ -27,7 +30,7 @@ export const AuthPage: React.FC = () => {
 
             <Button
               variant="outline"
-              onClick={() => navigate('/')}
+              onClick={() => void navigate('/')}
               className="mb-4 border border-gray-300 shadow-sm transition-all duration-300 hover:scale-105 rounded-full bg-white hover:bg-gray-50"
             >
               ← Back to App (Continue as Guest)

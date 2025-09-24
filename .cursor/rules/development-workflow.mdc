@@ -1,0 +1,73 @@
+---
+description: Development Workflow and Best Practices
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Development Workflow
+
+## Project Scripts
+
+Use the provided scripts for consistent development:
+
+```bash
+# Development
+./dev.sh              # Start development servers
+./setup.sh            # First-time setup
+./build.sh            # Production build
+./health-check.sh     # System health check
+./toolkit.sh          # Development tools
+```
+
+## Code Quality Standards
+
+- **Essential Linting Only**: Basic linting to catch obvious errors
+- **TypeScript When Helpful**: Use types to prevent bugs, not for perfection
+- **Quick Testing**: Test what breaks, not everything
+- **Simple Commits**: Clear commit messages, no complex conventions
+
+## Git Workflow
+
+```bash
+# Feature development
+git checkout -b feature/description
+# Make changes
+npm run commit  # Use commitizen for conventional commits
+git push origin feature/description
+```
+
+## Development Tools
+
+- **Frontend**: Vite + React + TypeScript + Tailwind
+- **Backend**: FastAPI + SQLAlchemy + Pydantic
+- **Desktop**: Tauri for native performance
+- **Testing**: Playwright for E2E, Vitest for unit tests
+
+## Code Organization
+
+```bash
+frontend/src/
+├── components/     # Reusable UI components
+├── features/       # Feature-specific components
+├── hooks/         # Custom React hooks
+├── api/           # API client and types
+└── utils/         # Utility functions
+
+backend/app/
+├── api/           # API routes
+├── models/        # Data models and business logic
+├── utils/         # Utility functions
+└── tests/         # Test files
+```
+
+## Performance Optimization
+
+- **Optimize When Users Complain**: Don't optimize until there's a real problem
+- **Measure First**: Use real user data to identify bottlenecks
+- **Simple Solutions**: Choose simple optimizations over complex ones
+
+## Documentation
+
+- **Essential Docs Only**: Document what's actually needed
+- **User-Focused**: Write for users, not developers
+- **Living Docs**: Update docs when features change

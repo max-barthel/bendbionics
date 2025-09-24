@@ -22,10 +22,14 @@ function ArrayInputGroup({
   const angleUnits = ['deg', 'rad'] as const;
   const lengthUnits = ['mm', 'cm', 'm'] as const;
 
+  // Constants for angle conversions
+  const DEGREES_TO_RADIANS = Math.PI / 180;
+  const RADIANS_TO_DEGREES = 180 / Math.PI;
+
   const angleConversion = {
     deg: {
-      toSI: (v: number) => (v * Math.PI) / 180,
-      fromSI: (v: number) => (v * 180) / Math.PI,
+      toSI: (v: number) => v * DEGREES_TO_RADIANS,
+      fromSI: (v: number) => v * RADIANS_TO_DEGREES,
     },
     rad: {
       toSI: (v: number) => v,

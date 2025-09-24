@@ -1,0 +1,90 @@
+---
+description: Robot Simulation Domain Knowledge
+globs: ["backend/app/models/**/*", "frontend/src/features/**/*"]
+alwaysApply: false
+---
+
+# Robot Simulation Domain Knowledge
+
+## PCC Model (Piecewise Constant Curvature)
+
+The core robot simulation uses the PCC model for soft robot kinematics:
+
+### Key Concepts
+
+- **Bending Angles**: Control robot curvature in each segment
+- **Rotation Angles**: Control robot orientation
+- **Backbone Lengths**: Physical segment lengths
+- **Coupling Lengths**: Connection points between segments
+
+### Implementation Pattern
+
+```python
+from app.models.pcc.types import PCCParams, TendonConfig
+from app.models.pcc.pcc_model import compute_pcc_with_tendons
+
+# Create robot parameters
+params = PCCParams(
+    bending_angles=[0.5, 0.3],      # radians
+    rotation_angles=[0.0, 0.0],     # radians
+    backbone_lengths=[0.1, 0.1],    # meters
+    coupling_lengths=[0.02, 0.02, 0.02],  # meters
+    tendon_config=TendonConfig(count=6, radius=0.012)
+)
+
+# Calculate robot kinematics
+result = compute_pcc_with_tendons(params)
+```
+
+## Tendon System
+
+Modular tendon calculation system that works with any robot model:
+
+### Features
+
+- **Model-Agnostic**: Works with PCC or advanced physics models
+- **Configurable**: 3-12 tendons with custom positioning
+- **Actuation Commands**: Direct control commands for robot hardware
+- **Length Calculations**: Precise tendon length requirements
+
+### Usage Pattern
+
+```python
+# Tendon analysis
+tendon_result = analyze_tendon_configuration(params)
+actuation_commands = tendon_result['actuation_commands']
+tendon_lengths = tendon_result['tendon_lengths']
+```
+
+## 3D Visualization
+
+Frontend visualization using Three.js for real-time 3D rendering:
+
+### Coordinate System
+
+- **X-axis**: Forward direction
+- **Y-axis**: Up direction
+- **Z-axis**: Right direction
+- **Units**: Meters for all calculations
+
+### Visualization Requirements
+
+- Real-time parameter updates
+- Smooth animations between states
+- Proper lighting and materials
+- Responsive camera controls
+
+## Unit Conversions
+
+Support multiple unit systems:
+
+- **Angles**: Degrees ↔ Radians
+- **Lengths**: mm ↔ cm ↔ m
+- **Automatic conversion** in UI while maintaining precision in calculations
+
+## Performance Considerations
+
+- **Caching**: Intelligent caching for repeated calculations
+- **Async Processing**: Non-blocking computation for complex models
+- **Memory Management**: Efficient data structures for large datasets
+- **Real-time Updates**: Optimized for 60fps visualization
