@@ -11,6 +11,13 @@ const PROGRESS_CONFIG = {
   FINAL: 200,
 } as const;
 
+// HTTP status codes
+const HTTP_STATUS = {
+  BAD_REQUEST: 400,
+  NOT_FOUND: 404,
+  INTERNAL_SERVER_ERROR: 500,
+} as const;
+
 export interface FormSubmissionResult {
   segments: number[][][];
   configuration: Record<string, unknown>;
@@ -112,17 +119,17 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
           'network',
           'Request timed out. Please check your connection and try again.'
         );
-      } else if (err.response?.status === 500) {
+      } else if (err.response?.status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
         showError(
           'server',
           'Server error occurred. Please try again later or contact support.'
         );
-      } else if (err.response?.status === 400) {
+      } else if (err.response?.status === HTTP_STATUS.BAD_REQUEST) {
         showError(
           'validation',
           'Invalid parameters provided. Please check your input values.'
         );
-      } else if (err.response?.status === 404) {
+      } else if (err.response?.status === HTTP_STATUS.NOT_FOUND) {
         showError(
           'server',
           'Service not found. Please check if the backend is running.'

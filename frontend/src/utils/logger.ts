@@ -272,7 +272,7 @@ class Logger {
     if (this.config.enableRemote) {
       this.logQueue.push(entry);
       if (this.logQueue.length >= this.config.batchSize) {
-        this.flushLogs();
+        void this.flushLogs();
       }
     }
 
@@ -338,7 +338,7 @@ class Logger {
   private startFlushTimer(): void {
     if (this.config.enableRemote && this.config.flushInterval > 0) {
       this.flushTimer = setInterval(() => {
-        this.flushLogs();
+        void this.flushLogs();
       }, this.config.flushInterval);
     }
   }
@@ -492,7 +492,7 @@ class Logger {
       clearInterval(this.flushTimer);
       this.flushTimer = null;
     }
-    this.flushLogs();
+    void this.flushLogs();
   }
 }
 
