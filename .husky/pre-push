@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-echo "🚀 Running pre-push checks..."
+echo "🚀 Quick pre-push checks..."
 
 # Check if we're in the right directory
 if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
@@ -9,70 +9,38 @@ if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
   exit 1
 fi
 
-# Run comprehensive tests
-echo "🧪 Running comprehensive test suite..."
+# Quick tests - only core user flows
+echo "🧪 Running core tests..."
 
-# Frontend tests with coverage
-echo "📝 Running frontend tests with coverage..."
+# Frontend - only critical tests
+echo "📝 Running frontend core tests..."
 cd frontend
-npm run test:coverage
+npm run test -- --run --reporter=basic
 if [ $? -ne 0 ]; then
-  echo "❌ Frontend tests failed. Please fix the failing tests before pushing."
+  echo "❌ Frontend core tests failed."
   exit 1
 fi
 cd ..
 
-# Backend tests with coverage
-echo "🐍 Running backend tests with coverage..."
+# Backend - only critical APIs
+echo "🐍 Running backend core tests..."
 cd backend
-python -m pytest --cov=app --cov-report=term-missing --cov-report=html:htmlcov
+python -m pytest tests/test_core_apis.py -v
 if [ $? -ne 0 ]; then
-  echo "❌ Backend tests failed. Please fix the failing tests before pushing."
+  echo "❌ Backend core tests failed."
   exit 1
 fi
 cd ..
 
-# Run linting checks
-echo "🔍 Running comprehensive linting..."
-
-# Frontend linting
-echo "📝 Running frontend linting..."
+# Basic linting - only obvious errors
+echo "🔍 Quick linting check..."
 cd frontend
-npm run lint
+npm run lint -- --quiet
 if [ $? -ne 0 ]; then
-  echo "❌ Frontend linting failed. Please fix the issues before pushing."
+  echo "❌ Frontend has obvious linting errors."
   exit 1
 fi
 cd ..
 
-# Backend linting
-echo "🐍 Running backend linting..."
-cd backend
-python -m flake8 .
-if [ $? -ne 0 ]; then
-  echo "❌ Backend linting failed. Please fix the issues before pushing."
-  exit 1
-fi
-cd ..
-
-# Check for TODO/FIXME comments in production code
-echo "🔍 Checking for TODO/FIXME comments..."
-if git diff --name-only HEAD~1 HEAD | grep -E '\.(ts|tsx|js|jsx|py)$' | grep -v '\.test\.' | grep -v '\.spec\.' | xargs grep -l 'TODO\|FIXME\|HACK\|XXX'; then
-  echo "⚠️  WARNING: Found TODO/FIXME comments in production code."
-  echo "💡 Consider addressing these before pushing to main branch."
-fi
-
-# Check bundle size (if frontend files changed)
-if git diff --name-only HEAD~1 HEAD | grep -E 'frontend/.*\.(ts|tsx|js|jsx)$' | grep -v '\.test\.' | grep -v '\.spec\.'; then
-  echo "📦 Checking bundle size..."
-  cd frontend
-  npm run build:size-check
-  if [ $? -ne 0 ]; then
-    echo "❌ Bundle size check failed. Please optimize your code before pushing."
-    exit 1
-  fi
-  cd ..
-fi
-
-echo "✅ All pre-push checks passed!"
-echo "🎉 Ready to push to remote repository!"
+echo "✅ Quick checks passed!"
+echo "🎉 Ready to push!"

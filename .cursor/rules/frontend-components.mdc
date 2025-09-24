@@ -65,7 +65,6 @@ className =
 
 ## Testing Requirements
 
-- Write unit tests for all components
-- Use React Testing Library
-- Test user interactions and accessibility
-- Maintain high test coverage
+- **User-Critical Components Only**: Test components users actually interact with
+- **Quick Smoke Tests**: Basic rendering tests, not comprehensive coverage
+- **Real User Scenarios**: Test actual user workflows, not edge cases

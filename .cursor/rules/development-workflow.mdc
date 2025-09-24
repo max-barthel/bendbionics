@@ -21,10 +21,10 @@ Use the provided scripts for consistent development:
 
 ## Code Quality Standards
 
-- **Linting**: ESLint + Prettier for frontend, Ruff + Black for backend
-- **Type Checking**: TypeScript strict mode, MyPy for Python
-- **Testing**: Vitest for frontend, Pytest for backend
-- **Commits**: Conventional commits with commitizen
+- **Essential Linting Only**: Basic linting to catch obvious errors
+- **TypeScript When Helpful**: Use types to prevent bugs, not for perfection
+- **Quick Testing**: Test what breaks, not everything
+- **Simple Commits**: Clear commit messages, no complex conventions
 
 ## Git Workflow
 
@@ -45,7 +45,7 @@ git push origin feature/description
 
 ## Code Organization
 
-```
+```bash
 frontend/src/
 ├── components/     # Reusable UI components
 ├── features/       # Feature-specific components
@@ -62,14 +62,12 @@ backend/app/
 
 ## Performance Optimization
 
-- **Frontend**: Code splitting, lazy loading, memoization
-- **Backend**: Async operations, caching, database optimization
-- **Desktop**: Tauri's native performance benefits
-- **Bundle Size**: Monitor with bundle analyzer
+- **Optimize When Users Complain**: Don't optimize until there's a real problem
+- **Measure First**: Use real user data to identify bottlenecks
+- **Simple Solutions**: Choose simple optimizations over complex ones
 
 ## Documentation
 
-- **API Docs**: Auto-generated with FastAPI
-- **Component Docs**: Storybook for UI components
-- **Code Comments**: Clear, concise documentation
-- **README**: Comprehensive setup and usage guides
+- **Essential Docs Only**: Document what's actually needed
+- **User-Focused**: Write for users, not developers
+- **Living Docs**: Update docs when features change

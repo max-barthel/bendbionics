@@ -9,7 +9,6 @@ import {
 import { Button, Input, Typography } from '../../../../components/ui';
 import { useAuth } from '../../../../providers';
 
-
 // Constants for error messages
 const ERROR_MESSAGES = {
   AUTH_REQUIRED: 'Authentication required. Please sign in again.',

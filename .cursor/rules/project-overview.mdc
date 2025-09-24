@@ -35,8 +35,8 @@ This is a modern desktop application for simulating soft robot kinematics using 
 
 ## Code Quality Standards
 
-- Comprehensive testing required for all features
-- TypeScript strict mode enabled
-- ESLint + Prettier for code formatting
-- Conventional commits with commitizen
-- Full API documentation with FastAPI
+- **Essential Testing**: Test what actually breaks
+- **TypeScript When Helpful**: Use types to prevent bugs, not for perfection
+- **Basic Linting**: Catch obvious errors, not style perfection
+- **Simple Commits**: Clear messages, no complex conventions
+- **User-Focused Docs**: Document what users need, not everything

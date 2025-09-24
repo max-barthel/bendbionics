@@ -26,9 +26,13 @@ const createNewState = (config: Record<string, unknown>) => {
     segments,
     bendingAngles: config.bendingAngles ?? Array(segments).fill(0),
     rotationAngles: config.rotationAngles ?? Array(segments).fill(0),
-    backboneLengths: config.backboneLengths ?? Array(segments).fill(DEFAULT_VALUES.BACKBONE_LENGTH),
-    couplingLengths: config.couplingLengths ?? Array(segments + 1).fill(DEFAULT_VALUES.COUPLING_LENGTH),
-    discretizationSteps: config.discretizationSteps ?? DEFAULT_VALUES.DISCRETIZATION_STEPS,
+    backboneLengths:
+      config.backboneLengths ?? Array(segments).fill(DEFAULT_VALUES.BACKBONE_LENGTH),
+    couplingLengths:
+      config.couplingLengths ??
+      Array(segments + 1).fill(DEFAULT_VALUES.COUPLING_LENGTH),
+    discretizationSteps:
+      config.discretizationSteps ?? DEFAULT_VALUES.DISCRETIZATION_STEPS,
     tendonConfig: config.tendonConfig ?? {
       count: DEFAULT_VALUES.TENDON_COUNT,
       radius: DEFAULT_VALUES.TENDON_RADIUS,
@@ -45,7 +49,7 @@ export const useConfigurationLoader = (
   useEffect(() => {
     if (initialConfiguration && Object.keys(initialConfiguration).length > 0) {
       const config = initialConfiguration;
-      
+
       if (shouldLoadConfiguration(config)) {
         const newState = createNewState(config);
         setRobotState(newState);

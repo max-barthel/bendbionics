@@ -378,7 +378,10 @@ function Visualizer3D({
               className="bg-gray-50"
             >
               <ambientLight intensity={0.6} />
-              <pointLight position={[100, 100, VISUALIZATION_CONSTANTS.LIGHT_POSITION_Z]} intensity={0.8} />
+              <pointLight
+                position={[100, 100, VISUALIZATION_CONSTANTS.LIGHT_POSITION_Z]}
+                intensity={0.8}
+              />
               <axesHelper args={[size || 100]} />
               <OrbitControls
                 ref={controlsRef}
