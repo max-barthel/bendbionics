@@ -25,6 +25,7 @@ const VISUALIZATION_CONSTANTS = {
   CAMERA_MIN_DISTANCE: 50,
   CAMERA_MAX_DISTANCE: 1000,
   CAMERA_FAR_MULTIPLIER: 15,
+  LIGHT_POSITION_Z: 200,
 } as const;
 
 type Visualizer3DProps = {
@@ -377,7 +378,7 @@ function Visualizer3D({
               className="bg-gray-50"
             >
               <ambientLight intensity={0.6} />
-              <pointLight position={[100, 100, 200]} intensity={0.8} />
+              <pointLight position={[100, 100, VISUALIZATION_CONSTANTS.LIGHT_POSITION_Z]} intensity={0.8} />
               <axesHelper args={[size || 100]} />
               <OrbitControls
                 ref={controlsRef}

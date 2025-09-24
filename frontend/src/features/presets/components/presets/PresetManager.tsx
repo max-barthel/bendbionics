@@ -9,183 +9,6 @@ import {
 import { Button, Input, Typography } from '../../../../components/ui';
 import { useAuth } from '../../../../providers';
 
-// Save preset form component
-interface SavePresetFormProps {
-  presetName: string;
-  setPresetName: (name: string) => void;
-  presetDescription: string;
-  setPresetDescription: (description: string) => void;
-  onSave: () => void;
-  onCancel: () => void;
-  isLoading: boolean;
-}
-
-const SavePresetForm: React.FC<SavePresetFormProps> = ({
-  presetName,
-  setPresetName,
-  presetDescription,
-  setPresetDescription,
-  onSave,
-  onCancel,
-  isLoading,
-}) => (
-  <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
-    <Typography variant="h4" className="mb-4 text-gray-800">
-      Save New Preset
-    </Typography>
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Preset Name
-        </label>
-        <Input
-          value={presetName}
-          onChange={(e) => setPresetName(e.target.value)}
-          placeholder="Enter preset name"
-          className="w-full"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Description (Optional)
-        </label>
-        <Input
-          value={presetDescription}
-          onChange={(e) => setPresetDescription(e.target.value)}
-          placeholder="Enter description"
-          className="w-full"
-        />
-      </div>
-      <div className="flex gap-3">
-        <Button
-          variant="primary"
-          onClick={onSave}
-          disabled={!presetName.trim() || isLoading}
-          className="flex-1"
-        >
-          {isLoading ? 'Saving...' : 'Save Preset'}
-        </Button>
-        <Button variant="secondary" onClick={onCancel} className="flex-1">
-          Cancel
-        </Button>
-      </div>
-    </div>
-  </div>
-);
-
-// Preset list component
-interface PresetListProps {
-  presets: Preset[];
-  onLoadPreset: (preset: Preset) => void;
-  onEditPreset: (id: number) => void;
-  onDeletePreset: (id: number) => void;
-  editingPreset: number | null;
-  editName: string;
-  setEditName: (name: string) => void;
-  editDescription: string;
-  setEditDescription: (description: string) => void;
-  onSaveEdit: (id: number) => void;
-  onCancelEdit: () => void;
-  isLoading: boolean;
-}
-
-const PresetList: React.FC<PresetListProps> = ({
-  presets,
-  onLoadPreset,
-  onEditPreset,
-  onDeletePreset,
-  editingPreset,
-  editName,
-  setEditName,
-  editDescription,
-  setEditDescription,
-  onSaveEdit,
-  onCancelEdit,
-  isLoading,
-}) => (
-  <div className="space-y-4">
-    {presets.map((preset) => (
-      <div
-        key={preset.id}
-        className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow"
-      >
-        {editingPreset === preset.id ? (
-          <div className="space-y-3">
-            <Input
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              placeholder="Preset name"
-              className="w-full"
-            />
-            <Input
-              value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
-              placeholder="Description"
-              className="w-full"
-            />
-            <div className="flex gap-2">
-              <Button
-                variant="primary"
-                onClick={() => onSaveEdit(preset.id)}
-                disabled={!editName.trim() || isLoading}
-                size="sm"
-              >
-                Save
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={onCancelEdit}
-                disabled={isLoading}
-                size="sm"
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
-              <Typography variant="h5" className="font-medium text-gray-900">
-                {preset.name}
-              </Typography>
-              {preset.description && (
-                <Typography variant="body" className="text-gray-600 mt-1">
-                  {preset.description}
-                </Typography>
-              )}
-              <Typography variant="caption" className="text-gray-500 mt-2">
-                Created: {new Date(preset.created_at).toLocaleDateString()}
-              </Typography>
-            </div>
-            <div className="flex gap-2 ml-4">
-              <Button
-                variant="primary"
-                onClick={() => onLoadPreset(preset)}
-                size="sm"
-              >
-                Load
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => onEditPreset(preset.id)}
-                size="sm"
-              >
-                Edit
-              </Button>
-              <Button
-                variant="danger"
-                onClick={() => onDeletePreset(preset.id)}
-                size="sm"
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-    ))}
-  </div>
-);
 
 // Constants for error messages
 const ERROR_MESSAGES = {
@@ -241,7 +64,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
   useEffect(() => {
     if (user) {
-      loadPresets();
+      void loadPresets();
     }
   }, [user, loadPresets]);
 
@@ -316,7 +139,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       setPresetName('');
       setPresetDescription('');
       setShowSaveForm(false);
-      await loadPresets(); // Reload presets
+      void loadPresets(); // Reload presets
     } catch (error: unknown) {
       // Error logging removed
       // Handle 403 Forbidden - user might not be properly authenticated
@@ -373,7 +196,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       // Debug logging removed
 
       // Reload presets to update the list
-      await loadPresets();
+      void loadPresets();
       setEditingPreset(null);
       setEditName('');
       setEditDescription('');
@@ -432,7 +255,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       // Debug logging removed
 
       // Reload presets to update the list
-      await loadPresets();
+      void loadPresets();
       // Debug logging removed
     } catch (error: unknown) {
       // Error details handled by error handler

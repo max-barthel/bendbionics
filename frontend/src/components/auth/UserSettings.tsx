@@ -27,8 +27,8 @@ const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
         </Typography>
       </div>
       <Typography className="text-gray-600 mb-6">
-        Are you sure you want to delete your account? This action cannot be undone.
-        All your data will be permanently removed.
+        Are you sure you want to delete your account? This action cannot be undone. All
+        your data will be permanently removed.
       </Typography>
       {deleteError && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -180,7 +180,7 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
           </div>
         </div>
       </div>
-      
+
       {showDeleteConfirmation && (
         <DeleteConfirmation
           isDeleting={isDeleting}
