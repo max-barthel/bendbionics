@@ -1,6 +1,14 @@
 import { Typography } from '../../../components/ui';
 import { getTendonColorClasses } from '../../../utils/tendonColors';
 
+// Constants for dynamic height calculations
+const HEIGHT_CONSTANTS = {
+  TENDON_CARD_HEIGHT: 80,
+  PADDING: 100,
+  MIN_HEIGHT: 200,
+  MAX_HEIGHT: 800,
+} as const;
+
 type TendonResultsPanelProps = {
   tendonAnalysis?: {
     actuation_commands: Record<
@@ -102,7 +110,13 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
 
   // Calculate dynamic height based on number of tendons
   // Each tendon card is ~80px tall, plus padding and close button space
-  const dynamicHeight = Math.min(Math.max(totalTendons * 80 + 100, 200), 800);
+  const dynamicHeight = Math.min(
+    Math.max(
+      totalTendons * HEIGHT_CONSTANTS.TENDON_CARD_HEIGHT + HEIGHT_CONSTANTS.PADDING,
+      HEIGHT_CONSTANTS.MIN_HEIGHT
+    ),
+    HEIGHT_CONSTANTS.MAX_HEIGHT
+  );
   const dynamicHeightClass = `h-[${dynamicHeight}px] max-h-[${dynamicHeight}px]`;
 
   const firstTendonEntry = tendonEntries[0];

@@ -7,6 +7,20 @@ import TahoeGlass from '../../../components/ui/TahoeGlass';
 import { getTendonColor } from '../../../utils/tendonColors';
 import { TendonResultsPanel } from './TendonResultsPanel';
 
+// Constants for 3D visualization
+const VISUALIZATION_CONSTANTS = {
+  TENDON_ACTIVATION_THRESHOLD: 0.001,
+  SPHERE_RADIUS: 0.005,
+  SPHERE_SEGMENTS: 8,
+  SPHERE_RINGS: 6,
+  CAMERA_POSITION: 1.5,
+  CAMERA_DISTANCE: 200,
+  CAMERA_NEAR: 0.5,
+  CAMERA_FAR: 50,
+  LIGHT_INTENSITY: 15,
+  LIGHT_DISTANCE: 200,
+} as const;
+
 type Visualizer3DProps = {
   segments: number[][][];
   tendonConfig?: {
@@ -125,13 +139,13 @@ function Visualizer3D({
         // Get tendon analysis data for this tendon
         const tendonId = i.toString();
         const tendonData = tendonAnalysis.actuation_commands[tendonId];
-        const isActive = tendonData && Math.abs(tendonData.length_change_m) > 0.001;
+        const isActive = tendonData && Math.abs(tendonData.length_change_m) > VISUALIZATION_CONSTANTS.TENDON_ACTIVATION_THRESHOLD;
 
         // Create eyelet sphere
         elements.push(
           <Sphere
             key={`tendon-${couplingIndex}-${i}`}
-            args={[0.005, 8, 6]}
+            args={[VISUALIZATION_CONSTANTS.SPHERE_RADIUS, VISUALIZATION_CONSTANTS.SPHERE_SEGMENTS, VISUALIZATION_CONSTANTS.SPHERE_RINGS]}
             position={[globalX, globalY, globalZ]}
           >
             <meshStandardMaterial
@@ -203,7 +217,7 @@ function Visualizer3D({
           // Backend uses 1-based indexing, so tendon 0 in frontend = tendon "1" in backend
           const tendonId = (tendonIndex + 1).toString();
           const tendonData = tendonAnalysis.actuation_commands[tendonId];
-          const isActive = tendonData && Math.abs(tendonData.length_change_m) > 0.001;
+          const isActive = tendonData && Math.abs(tendonData.length_change_m) > VISUALIZATION_CONSTANTS.TENDON_ACTIVATION_THRESHOLD;
 
           // Get tendon-specific color - always use the tendon color
           const tendonColor = getTendonColor(tendonId);

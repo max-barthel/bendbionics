@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Card, SliderInput } from '../../../components/ui';
 import { useFormSubmission } from '../hooks/useFormSubmission';
-import { type RobotState, useRobotState } from '../hooks/useRobotState';
+import { useRobotState, type RobotState } from '../hooks/useRobotState';
 import ArrayInputGroup from './ArrayInputGroup';
 import { FormActions, FormErrorDisplay, FormHeader, RobotStructureInfo } from './forms';
 
@@ -77,7 +77,7 @@ function Form({ onResult, initialConfiguration }: FormProps) {
         <form
           onSubmit={e => {
             e.preventDefault();
-            handleSubmit();
+            void handleSubmit();
           }}
           className="flex flex-col space-y-6"
         >

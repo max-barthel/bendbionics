@@ -71,9 +71,15 @@ const meta: Meta<typeof Input> = {
     },
   },
   args: {
-    onChange: () => console.log('Input changed'),
-    onFocus: () => console.log('Input focused'),
-    onBlur: () => console.log('Input blurred'),
+    onChange: () => {
+      // Input changed - action handled by Storybook
+    },
+    onFocus: () => {
+      // Input focused - action handled by Storybook
+    },
+    onBlur: () => {
+      // Input blurred - action handled by Storybook
+    },
   },
 };
 
