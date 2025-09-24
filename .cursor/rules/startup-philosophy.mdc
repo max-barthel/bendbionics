@@ -1,0 +1,53 @@
+---
+description: Startup Development Philosophy - Agile and Friction-Free
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Startup Development Philosophy
+
+## Core Principles
+
+Work startup-style: **quick and agile with lots of iterations like steering a car, not a rocket**.
+
+### Key Values
+
+- **Optimization by Reduction**: Remove complexity, not add it
+- **Simple but Not Easy**: Achieve simplicity through thoughtful design, not shortcuts
+- **Minimum Bureaucracy**: Eliminate processes that create friction
+- **Friction = Failure**: Everything that slows down iteration leads to startup failure
+
+## Development Approach
+
+- **Rapid Iteration**: Make small, frequent changes rather than large, infrequent ones
+- **Quick Wins**: Prioritize features that deliver immediate value
+- **Fail Fast**: Identify problems early and pivot quickly
+- **Reduce Friction**: Remove barriers to development and deployment
+
+## Code Philosophy
+
+- **YAGNI (You Aren't Gonna Need It)**: Don't build for hypothetical future needs
+- **KISS (Keep It Simple, Stupid)**: Choose simple solutions over complex ones
+- **DRY with Purpose**: Don't repeat yourself, but don't over-abstract either
+- **Premature Optimization**: Avoid it - optimize when you have real performance problems
+
+## Decision Making
+
+- **Bias for Action**: Make decisions quickly, iterate based on results
+- **Good Enough**: Ship when it's good enough, not perfect
+- **Measure and Learn**: Use data to guide decisions, not assumptions
+- **Embrace Constraints**: Use limitations as creative catalysts
+
+## Process Guidelines
+
+- **Minimal Documentation**: Document only what's essential for team understanding
+- **Automated Testing**: Focus on tests that prevent real bugs, not theoretical ones
+- **Continuous Deployment**: Deploy frequently to reduce risk
+- **User Feedback**: Get feedback early and often from real users
+
+## Anti-Patterns to Avoid
+
+- **Over-Engineering**: Building for scale you don't have yet
+- **Analysis Paralysis**: Spending too much time planning instead of building
+- **Perfect Code**: Writing code for other developers instead of users
+- **Process Over Product**: Letting process become more important than outcomes

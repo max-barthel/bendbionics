@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const userData = await authAPI.getCurrentUser();
             setUser(userData);
           } catch (error) {
-            console.log('Token validation failed, clearing token:', error);
+            // Token validation failed, clearing token
             // Token is invalid, clear it
             localStorage.removeItem('token');
             setToken(null);
@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Add a timeout to ensure we always set loading to false
     const timeoutId = setTimeout(() => {
       if (isLoading) {
-        console.log('Auth check timeout, setting loading to false');
+        // Auth check timeout, setting loading to false
         setIsLoading(false);
       }
     }, 5000);

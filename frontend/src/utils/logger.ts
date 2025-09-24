@@ -72,7 +72,7 @@ class Logger {
       enableLocalStorage: true,
       maxLocalStorageEntries: 1000,
       batchSize: 10,
-      flushInterval: 5000,
+      flushInterval: 5000, // 5 seconds
       enablePerformanceLogging: true,
       enableErrorTracking: true,
       enableUserTracking: true,

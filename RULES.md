@@ -1,5 +1,7 @@
 # Rules
 
+This file is a direct copy from the cursor documentation about rules from 24.09.2025
+
 Rules provide system-level instructions to Agent and Inline Edit. They are persistent context, preferences, or workflows for your projects.
 
 Cursor supports four types of rules:
