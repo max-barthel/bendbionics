@@ -77,9 +77,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies
         run: |
@@ -117,11 +115,11 @@ jobs:
           name: Release ${{ github.ref_name }}
           body: |
             ## 🚀 Release ${{ github.ref_name }}
-            
+
             ### 📦 Installation
-            
+
             Download the appropriate build for your platform from the assets below.
-            
+
             ### 🔗 Links
             - [Documentation](https://github.com/${{ github.repository }}/blob/main/README.md)
             - [Issues](https://github.com/${{ github.repository }}/issues)
