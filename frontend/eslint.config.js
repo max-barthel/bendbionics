@@ -47,7 +47,7 @@ export default [
         },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
-      'no-console': 'warn',
+      'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
       'no-debugger': 'error',
       'no-var': 'error',
       'prefer-const': 'error',
