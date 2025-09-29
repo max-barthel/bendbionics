@@ -92,7 +92,7 @@
     "globals": "^16.3.0",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
-    "lint-staged": "^16.1.5",
+    "lint-staged": "^16.2.3",
     "markdown-to-jsx": "^7.7.13",
     "playwright": "^1.55.0",
     "postcss": "^8.5.6",
