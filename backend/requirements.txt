@@ -46,7 +46,7 @@ gunicorn==21.2.0
 # Monitoring and logging
 aiofiles==23.2.1
 aiohttp==3.12.15
-psutil==5.9.6
+psutil==5.9.8
 
 # Code quality and linting
 ruff==0.13.1
