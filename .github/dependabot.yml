@@ -114,6 +114,7 @@ updates:
           - "fastapi*"
           - "uvicorn*"
           - "pydantic*"
+          - "pydantic-core*"
         update-types:
           - "minor"
           - "patch"
