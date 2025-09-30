@@ -62,9 +62,7 @@ class TendonCalculator:
         """
         if len(coupling_positions) != len(coupling_orientations):
             msg = "Positions and orientations must have same length"
-            raise ValueError(
-                msg
-            )
+            raise ValueError(msg)
 
         num_elements = len(coupling_positions)
         num_tendons = self.config.count
@@ -96,9 +94,7 @@ class TendonCalculator:
         total_lengths[:, 0] = 0  # Base position
 
         for i in range(1, num_elements):
-            total_lengths[:, i] = (
-                total_lengths[:, i - 1] + segment_lengths[:, i - 1]
-            )
+            total_lengths[:, i] = total_lengths[:, i - 1] + segment_lengths[:, i - 1]
 
         # Calculate length changes (how much each tendon needs to be pulled)
         # Reference is the straight configuration

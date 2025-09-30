@@ -1,5 +1,5 @@
 # FastAPI entry
-import os
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -78,7 +78,7 @@ async def startup_event():
 
 # Mount static files for frontend
 static_dir = "/app/static"
-if os.path.exists(static_dir):
+if Path(static_dir).exists():
     app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
 
 

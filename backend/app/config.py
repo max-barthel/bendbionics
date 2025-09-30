@@ -53,9 +53,7 @@ class Settings(BaseSettings):
                 msg = "CORS origin cannot be empty string"
                 raise ValueError(msg)
             # Basic URL format validation
-            if not (
-                origin.startswith(("http://", "https://"))
-            ):
+            if not (origin.startswith(("http://", "https://"))):
                 msg = f"Invalid CORS origin format: {origin}"
                 raise ValueError(msg)
 

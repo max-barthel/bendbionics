@@ -91,7 +91,7 @@ class LoggerConfig:
         enable_error_tracking: bool = True,
         enable_user_tracking: bool = True,
         enable_sql_logging: bool = False,
-        **kwargs  # Additional options
+        **kwargs,  # Additional options
     ):
         self.level = level
         self.enable_console = enable_console

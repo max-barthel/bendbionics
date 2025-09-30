@@ -89,11 +89,7 @@ def _convert_result_to_serializable(result: dict) -> dict:
                     ]
                 elif sub_key == "orientations":
                     coupling_data[sub_key] = [
-                        (
-                            orient.tolist()
-                            if hasattr(orient, "tolist")
-                            else orient
-                        )
+                        (orient.tolist() if hasattr(orient, "tolist") else orient)
                         for orient in sub_value
                     ]
                 else:
@@ -109,11 +105,7 @@ def _convert_result_to_serializable(result: dict) -> dict:
                     # Convert routing points (nested structure)
                     tendon_data[sub_key] = [
                         [
-                            (
-                                point.tolist()
-                                if hasattr(point, "tolist")
-                                else point
-                            )
+                            (point.tolist() if hasattr(point, "tolist") else point)
                             for point in element
                         ]
                         for element in sub_value

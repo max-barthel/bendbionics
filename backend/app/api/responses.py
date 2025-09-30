@@ -31,9 +31,7 @@ class APIResponse(BaseModel, Generic[T]):
 
     success: bool = Field(description="Whether the request was successful")
     data: Optional[T] = Field(default=None, description="Response data")
-    message: Optional[str] = Field(
-        default=None, description="Human-readable message"
-    )
+    message: Optional[str] = Field(default=None, description="Human-readable message")
     timestamp: datetime = Field(
         default_factory=datetime.utcnow, description="Response timestamp"
     )
@@ -67,9 +65,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
     )
     data: List[T] = Field(description="List of items")
     pagination: Dict[str, Any] = Field(description="Pagination information")
-    message: Optional[str] = Field(
-        default=None, description="Human-readable message"
-    )
+    message: Optional[str] = Field(default=None, description="Human-readable message")
     timestamp: datetime = Field(
         default_factory=datetime.utcnow, description="Response timestamp"
     )
@@ -90,9 +86,7 @@ def success_response(
         success=True, data=data, message=message, request_id=request_id
     )
 
-    return JSONResponse(
-        status_code=200, content=response.model_dump(mode="json")
-    )
+    return JSONResponse(status_code=200, content=response.model_dump(mode="json"))
 
 
 def created_response(
@@ -106,9 +100,7 @@ def created_response(
         success=True, data=data, message=message, request_id=request_id
     )
 
-    return JSONResponse(
-        status_code=201, content=response.model_dump(mode="json")
-    )
+    return JSONResponse(status_code=201, content=response.model_dump(mode="json"))
 
 
 def error_response(
@@ -128,9 +120,7 @@ def error_response(
     )
 
     # Convert to dict with proper datetime serialization
-    content = response.model_dump(
-        by_alias=True, exclude_none=True, mode="json"
-    )
+    content = response.model_dump(by_alias=True, exclude_none=True, mode="json")
     return JSONResponse(
         status_code=status_code, content=content, media_type="application/json"
     )
@@ -165,9 +155,7 @@ def paginated_response(
         request_id=request_id,
     )
 
-    return JSONResponse(
-        status_code=200, content=response.model_dump(mode="json")
-    )
+    return JSONResponse(status_code=200, content=response.model_dump(mode="json"))
 
 
 # Exception classes for consistent error handling
@@ -220,9 +208,7 @@ class NotFoundError(APIException):
     """Resource not found error exception."""
 
     def __init__(self, message: str = "Resource not found"):
-        super().__init__(
-            error_type="not_found_error", message=message, status_code=404
-        )
+        super().__init__(error_type="not_found_error", message=message, status_code=404)
 
 
 class ServerError(APIException):
