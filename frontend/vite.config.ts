@@ -45,6 +45,10 @@ export default defineConfig(({ mode }) => {
         '@tauri-apps/api',
       ],
       exclude: ['@vitest/browser', '@vitest/ui', 'vitest'],
+      force: true,
+    },
+    define: {
+      global: 'globalThis',
     },
     server: {
       watch: {
