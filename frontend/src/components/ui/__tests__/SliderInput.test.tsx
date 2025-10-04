@@ -100,7 +100,7 @@ describe('SliderInput', () => {
     fireEvent.change(slider, { target: { value: '55' } });
 
     // The component should call onChange with the new value
-    expect(defaultProps.onChange).toHaveBeenCalledWith(56);
+    expect(defaultProps.onChange).toHaveBeenCalledWith(55);
   });
 
   it('generates unique IDs for accessibility', () => {
