@@ -76,6 +76,7 @@ class LogEntry:
 @dataclass
 class FileConfig:
     """File logging configuration"""
+
     log_file_path: str = "logs/app.log"
     max_file_size: int = 10 * 1024 * 1024  # 10MB
     backup_count: int = 5
@@ -84,6 +85,7 @@ class FileConfig:
 @dataclass
 class RemoteConfig:
     """Remote logging configuration"""
+
     remote_endpoint: Optional[str] = None
     batch_size: int = 10
     flush_interval: float = 5.0
@@ -92,6 +94,7 @@ class RemoteConfig:
 @dataclass
 class FeatureConfig:
     """Feature toggles configuration"""
+
     enable_console: bool = True
     enable_file: bool = True
     enable_remote: bool = False

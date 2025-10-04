@@ -39,9 +39,7 @@ class APIResponse(BaseModel, Generic[T]):
         default_factory=lambda: datetime.now(UTC),
         description="Response timestamp",
     )
-    request_id: Optional[str] = Field(
-        default=None, description=REQUEST_ID_DESCRIPTION
-    )
+    request_id: Optional[str] = Field(default=None, description=REQUEST_ID_DESCRIPTION)
 
 
 class ErrorResponse(BaseModel):
@@ -56,9 +54,7 @@ class ErrorResponse(BaseModel):
     timestamp: datetime = Field(
         default_factory=datetime.utcnow, description="Error timestamp"
     )
-    request_id: Optional[str] = Field(
-        default=None, description=REQUEST_ID_DESCRIPTION
-    )
+    request_id: Optional[str] = Field(default=None, description=REQUEST_ID_DESCRIPTION)
 
 
 class PaginatedResponse(BaseModel, Generic[T]):
@@ -74,9 +70,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
         default_factory=lambda: datetime.now(UTC),
         description="Response timestamp",
     )
-    request_id: Optional[str] = Field(
-        default=None, description=REQUEST_ID_DESCRIPTION
-    )
+    request_id: Optional[str] = Field(default=None, description=REQUEST_ID_DESCRIPTION)
 
 
 # Response helper functions

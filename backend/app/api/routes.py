@@ -84,10 +84,7 @@ def _convert_result_to_serializable(result: dict) -> dict:
 def _convert_robot_positions(value):
     """Convert robot positions to serializable format."""
     return [
-        [
-            point.tolist() if hasattr(point, "tolist") else point
-            for point in segment
-        ]
+        [point.tolist() if hasattr(point, "tolist") else point for point in segment]
         for segment in value
     ]
 
@@ -107,10 +104,7 @@ def _convert_coupling_data(value):
 
 def _convert_positions(positions):
     """Convert positions to serializable format."""
-    return [
-        pos.tolist() if hasattr(pos, "tolist") else pos
-        for pos in positions
-    ]
+    return [pos.tolist() if hasattr(pos, "tolist") else pos for pos in positions]
 
 
 def _convert_orientations(orientations):
@@ -137,9 +131,6 @@ def _convert_tendon_analysis(value):
 def _convert_routing_points(routing_points):
     """Convert routing points to serializable format."""
     return [
-        [
-            point.tolist() if hasattr(point, "tolist") else point
-            for point in element
-        ]
+        [point.tolist() if hasattr(point, "tolist") else point for point in element]
         for element in routing_points
     ]

@@ -1,6 +1,5 @@
 """Simple tests for tendon engine to increase coverage."""
 
-
 from app.models.tendon.engine import TendonAnalysisEngine
 from app.models.tendon.types import TendonConfig
 

@@ -224,6 +224,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             if len(body) <= self.max_body_size:
                 try:
                     import json
+
                     response_data["body"] = json.loads(body.decode())
                 except (json.JSONDecodeError, UnicodeDecodeError):
                     response_data["body"] = body.decode(errors="replace")

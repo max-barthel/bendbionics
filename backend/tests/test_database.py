@@ -46,6 +46,7 @@ class TestDatabaseOperations:
         try:
             # Create a test user with unique username
             import time
+
             unique_username = f"testuser_db_{int(time.time())}"
             user = User(
                 username=unique_username,
