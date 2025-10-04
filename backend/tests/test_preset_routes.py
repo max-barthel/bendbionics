@@ -1,14 +1,11 @@
-import json
 from unittest.mock import Mock, patch
 
 import pytest
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-
 from app.api.preset_routes import router
 from app.auth import get_current_user
 from app.database import get_session
-from app.models.preset import Preset
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 
 class TestPresetRoutes:

@@ -91,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { access_token, user: userData } = response;
 
       // Clean the token before storing - remove any quotes
-      const cleanToken = access_token.replace(/^"|"$/g, '');
+      const cleanToken = access_token.replace(/(?:^")|(?:"$)/g, '');
 
       // Store token in localStorage
       localStorage.setItem('token', cleanToken);
@@ -115,7 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userData = await authAPI.register(data);
         setUser(userData);
         // Auto-login after registration for local users
-        if (userData.is_local) {
+        if ('is_local' in userData && userData.is_local) {
           const loginData = {
             username: data.username,
             password: data.password,
@@ -134,7 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('token');
     sessionStorage.removeItem('token');
     if (typeof window !== 'undefined') {
-      (window as Window & { authToken?: string }).authToken = undefined;
+      delete (window as Window & { authToken?: string }).authToken;
     }
     setToken(null);
     setUser(null);

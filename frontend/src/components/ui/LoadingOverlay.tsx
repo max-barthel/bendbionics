@@ -1,9 +1,9 @@
 import LoadingSpinner from './LoadingSpinner';
 
 interface LoadingOverlayProps {
-  isVisible: boolean;
-  message?: string;
-  backdrop?: boolean;
+  readonly isVisible: boolean;
+  readonly message?: string;
+  readonly backdrop?: boolean;
 }
 
 function LoadingOverlay({

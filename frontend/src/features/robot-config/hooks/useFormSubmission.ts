@@ -76,7 +76,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
         backbone_lengths: robotState.backboneLengths,
         coupling_lengths: robotState.couplingLengths,
         discretization_steps: robotState.discretizationSteps,
-        tendon_config: robotState.tendonConfig,
+        ...(robotState.tendonConfig && { tendon_config: robotState.tendonConfig }),
       };
 
       // Use tendon endpoint if tendon configuration is provided
@@ -84,10 +84,10 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
       let segments;
       if (robotState.tendonConfig) {
         result = await robotAPI.computePCCWithTendons(params);
-        segments = result.data.result.robot_positions;
+        segments = result.result.robot_positions;
       } else {
         result = await robotAPI.computePCC(params);
-        segments = result.data.segments;
+        segments = result.segments;
       }
 
       setComputationProgress(100);
@@ -114,27 +114,32 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
       console.error('Failed to submit:', err);
 
       // Determine error type and show appropriate message
-      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+      const error = err as {
+        code?: string;
+        message?: string;
+        response?: { status: number };
+      };
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
         showError(
           'network',
           'Request timed out. Please check your connection and try again.'
         );
-      } else if (err.response?.status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
+      } else if (error.response?.status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
         showError(
           'server',
           'Server error occurred. Please try again later or contact support.'
         );
-      } else if (err.response?.status === HTTP_STATUS.BAD_REQUEST) {
+      } else if (error.response?.status === HTTP_STATUS.BAD_REQUEST) {
         showError(
           'validation',
           'Invalid parameters provided. Please check your input values.'
         );
-      } else if (err.response?.status === HTTP_STATUS.NOT_FOUND) {
+      } else if (error.response?.status === HTTP_STATUS.NOT_FOUND) {
         showError(
           'server',
           'Service not found. Please check if the backend is running.'
         );
-      } else if (!err.response) {
+      } else if (!error.response) {
         showError(
           'network',
           'Unable to connect to server. Please check your connection.'

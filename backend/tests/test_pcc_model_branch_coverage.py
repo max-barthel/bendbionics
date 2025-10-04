@@ -1,8 +1,6 @@
 """Additional tests for PCC model to improve branch coverage."""
 
 import numpy as np
-import pytest
-
 from app.models.pcc.pcc_model import PCCRobotModel
 from app.models.pcc.types import PCCParams
 from app.models.tendon.types import TendonConfig

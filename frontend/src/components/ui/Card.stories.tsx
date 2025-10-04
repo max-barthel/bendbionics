@@ -81,16 +81,22 @@ export const WithForm: Story = {
       <form className="space-y-4">
         <h3 className="text-lg font-semibold">Contact Form</h3>
         <div>
-          <label className="block text-sm font-medium mb-1">Name</label>
+          <label htmlFor="name-input" className="block text-sm font-medium mb-1">
+            Name
+          </label>
           <input
+            id="name-input"
             type="text"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter your name"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
+          <label htmlFor="email-input" className="block text-sm font-medium mb-1">
+            Email
+          </label>
           <input
+            id="email-input"
             type="email"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter your email"

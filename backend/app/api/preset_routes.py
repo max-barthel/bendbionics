@@ -11,6 +11,9 @@ from app.models import Preset, PresetCreate, PresetResponse, PresetUpdate
 
 router = APIRouter(prefix="/presets", tags=["presets"])
 
+# Constants
+PRESET_NOT_FOUND_MSG = "Preset not found"
+
 
 @router.post("/")
 async def create_preset(
@@ -122,8 +125,7 @@ async def get_preset(
     ).first()
 
     if not preset:
-        msg = "Preset not found"
-        raise NotFoundError(msg)
+        raise NotFoundError(PRESET_NOT_FOUND_MSG)
 
     preset_response = PresetResponse(
         id=preset.id,
@@ -159,8 +161,7 @@ async def update_preset(
     ).first()
 
     if not preset:
-        msg = "Preset not found"
-        raise NotFoundError(msg)
+        raise NotFoundError(PRESET_NOT_FOUND_MSG)
 
     # Update fields if provided
     if preset_data.name is not None:
@@ -209,8 +210,7 @@ async def delete_preset(
     ).first()
 
     if not preset:
-        msg = "Preset not found"
-        raise NotFoundError(msg)
+        raise NotFoundError(PRESET_NOT_FOUND_MSG)
 
     session.delete(preset)
     session.commit()

@@ -32,7 +32,7 @@ type TendonResultsPanelProps = {
       }
     >;
     coupling_data?: {
-      positions: number[][][];
+      positions: number[][];
       orientations: number[][][];
     };
     tendon_analysis?: {
@@ -165,18 +165,18 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
               </div>
               <div className="flex-1 flex justify-center">
                 <div
-                  className={`px-3 py-1 rounded-full backdrop-blur-xl border shadow-lg relative ${getTendonDirectionStyles(firstTendonData.pull_direction)}`}
+                  className={`px-3 py-1 rounded-full backdrop-blur-xl border shadow-lg relative ${getTendonDirectionStyles(firstTendonData?.pull_direction ?? '')}`}
                 >
                   <span className="text-sm font-medium text-gray-900">
-                    {formatLengthChange(firstTendonData.length_change_m)}
+                    {formatLengthChange(firstTendonData?.length_change_m ?? 0)}
                   </span>
                   <div className="absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                {getPullDirectionIcon(firstTendonData.length_change_m)}
+                {getPullDirectionIcon(firstTendonData?.length_change_m ?? 0)}
                 <Typography variant="body" color="gray" className="text-sm">
-                  {firstTendonData.pull_direction}
+                  {firstTendonData?.pull_direction ?? ''}
                 </Typography>
               </div>
             </div>
@@ -245,13 +245,9 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                           </div>
                           <div className="flex-1 flex justify-center">
                             <div
-                              className={`px-3 py-1 rounded-full backdrop-blur-xl border shadow-lg relative ${
-                                data.length_change_m < 0
-                                  ? 'border-red-400/30 bg-gradient-to-br from-red-500/25 to-red-600/25 shadow-red-500/20'
-                                  : data.length_change_m > 0
-                                    ? 'border-green-400/30 bg-gradient-to-br from-green-500/25 to-green-600/25 shadow-green-500/20'
-                                    : 'border-yellow-400/30 bg-gradient-to-br from-yellow-500/25 to-yellow-600/25 shadow-yellow-500/20'
-                              }`}
+                              className={`px-3 py-1 rounded-full backdrop-blur-xl border shadow-lg relative ${getTendonDirectionStyles(
+                                data.pull_direction
+                              )}`}
                             >
                               <span className="text-sm font-medium text-gray-900">
                                 {formatLengthChange(data.length_change_m)}

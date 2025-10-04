@@ -1,6 +1,5 @@
 """Simple tests for PCC model to increase coverage."""
 
-import pytest
 
 from app.models.pcc.pcc_model import PCCRobotModel
 from app.models.pcc.types import PCCParams
@@ -25,6 +24,7 @@ class TestPCCModelSimple:
         )
         model = PCCRobotModel()
         assert model is not None
+        assert params is not None  # Verify params were created successfully
 
     def test_pcc_model_attributes(self):
         """Test PCC model has expected attributes."""

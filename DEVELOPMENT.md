@@ -54,8 +54,8 @@ cd soft-robot-app
 
 ### Development URLs
 
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+- Backend API: <http://localhost:8000>
+- API Docs: <http://localhost:8000/docs>
 - Frontend: Running in desktop mode
 
 ## 🧪 Testing Strategy
@@ -91,7 +91,7 @@ cd soft-robot-app
 
 ### Test Structure
 
-```
+```text
 frontend/
 ├── src/
 │   ├── components/
@@ -187,7 +187,7 @@ backend/
 
 ### Documentation Structure
 
-```
+```text
 docs/
 ├── components/          # Component stories
 ├── api/                # API documentation

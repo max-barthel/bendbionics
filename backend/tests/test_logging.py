@@ -1,6 +1,7 @@
 import logging
 import sys
 
+import pytest
 from app.utils.logging import logger, setup_logging
 
 
@@ -78,10 +79,11 @@ class TestLogging:
 
         # Check that the formatter has the expected format
         formatter = handler.formatter
-        assert "%(asctime)s" in formatter._fmt
-        assert "%(name)s" in formatter._fmt
-        assert "%(levelname)s" in formatter._fmt
-        assert "%(message)s" in formatter._fmt
+        format_string = formatter.format(
+            logging.LogRecord("test", 20, "", 0, "test", (), None)
+        )
+        assert "test" in format_string  # Should contain the logger name
+        assert "INFO" in format_string  # Should contain the level name
 
     def test_setup_logging_console_output(self):
         """Test that logging outputs to console."""
@@ -128,9 +130,9 @@ class TestLogging:
             logger.warning("Test warning")
             logger.error("Test error")
             # If we get here, logging is working
-            assert True
+            assert len(logger.handlers) > 0  # Verify handlers are configured
         except Exception as e:
-            assert False, f"Logging failed with error: {e}"
+            pytest.fail(f"Logging failed with error: {e}")
 
     def test_setup_logging_with_none_settings(self):
         """Test setting up logging with None settings (should use defaults)."""

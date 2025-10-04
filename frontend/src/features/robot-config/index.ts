@@ -18,8 +18,8 @@ export { FormHeader } from './components/forms/FormHeader';
 export { RobotStructureInfo } from './components/forms/RobotStructureInfo';
 
 // Tab Components
-export { default as ControlTab } from './components/tabs/ControlTab';
-export { default as RobotSetupTab } from './components/tabs/RobotSetupTab';
+export { ControlTab } from './components/tabs/ControlTab';
+export { RobotSetupTab } from './components/tabs/RobotSetupTab';
 
 // Hooks
 export { useFormSubmission } from './hooks/useFormSubmission';

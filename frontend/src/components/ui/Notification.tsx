@@ -99,7 +99,7 @@ function InfoIcon() {
 }
 
 // Helper function to get the appropriate icon
-function getNotificationIcon(type: NotificationType) {
+function getNotificationIcon(type: NotificationType): React.ReactElement {
   switch (type) {
     case 'success':
       return <SuccessIcon />;
@@ -119,8 +119,8 @@ function CloseButton({
   onClose,
   closeButtonClass,
 }: {
-  onClose: () => void;
-  closeButtonClass: string;
+  readonly onClose: () => void;
+  readonly closeButtonClass: string;
 }) {
   return (
     <button
@@ -148,12 +148,13 @@ function Notification({
   onClose,
   autoHide = true,
   duration = DEFAULT_NOTIFICATION_DURATION,
-}: NotificationProps) {
+}: Readonly<NotificationProps>) {
   React.useEffect(() => {
     if (isVisible && autoHide) {
       const timer = setTimeout(() => onClose(), duration);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [isVisible, autoHide, duration, onClose]);
 
   if (!isVisible) {

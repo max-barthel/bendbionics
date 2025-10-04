@@ -1,11 +1,9 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from app.api.tendon_routes import router
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-
-from app.api.tendon_routes import router
-from app.models.pcc.types import PCCParams
 
 
 class TestTendonRoutes:

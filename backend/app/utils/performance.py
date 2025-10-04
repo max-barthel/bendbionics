@@ -10,9 +10,13 @@ from datetime import datetime
 from functools import wraps
 from typing import Any, Callable, Dict, Optional
 
-import psutil
+try:
+    import psutil  # type: ignore[import-untyped]
+except ImportError:
+    psutil = None
 
 from app.utils.logger import LogContext, default_logger
+from app.utils.timezone import now_utc
 
 
 @dataclass
@@ -42,7 +46,7 @@ class PerformanceMonitor:
         self.last_network_stats = None
         self.start_time = None
 
-    async def start_monitoring(self):
+    def start_monitoring(self):
         """Start performance monitoring"""
         if self.is_monitoring:
             return
@@ -84,11 +88,11 @@ class PerformanceMonitor:
         """Main monitoring loop"""
         while self.is_monitoring:
             try:
-                metrics = await self._collect_metrics()
+                metrics = self._collect_metrics()
                 self._log_metrics(metrics)
 
                 # Check for performance alerts
-                await self._check_alerts(metrics)
+                self._check_alerts(metrics)
 
                 await asyncio.sleep(self.log_interval)
             except Exception as e:
@@ -102,7 +106,7 @@ class PerformanceMonitor:
                 )
                 await asyncio.sleep(self.log_interval)
 
-    async def _collect_metrics(self) -> PerformanceMetrics:
+    def _collect_metrics(self) -> PerformanceMetrics:
         """Collect system performance metrics"""
 
         # CPU metrics
@@ -148,7 +152,7 @@ class PerformanceMonitor:
             load_average = (0, 0, 0)
 
         return PerformanceMetrics(
-            timestamp=datetime.utcnow(),
+            timestamp=now_utc(),
             cpu_percent=cpu_percent,
             memory_percent=memory_percent,
             memory_used_mb=memory_used_mb,
@@ -182,7 +186,7 @@ class PerformanceMonitor:
             "log_metrics",
         )
 
-    async def _check_alerts(self, metrics: PerformanceMetrics):
+    def _check_alerts(self, metrics: PerformanceMetrics):
         """Check for performance alerts"""
 
         # CPU alert

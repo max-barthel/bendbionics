@@ -96,12 +96,18 @@ function analyzeFrontend(frontendReport) {
       files: eslintResults.length,
     };
 
+    let eslintColor = "green";
+    if (totalErrors > 0) {
+      eslintColor = "red";
+    } else if (totalWarnings > 0) {
+      eslintColor = "yellow";
+    }
     log(
       `✅ ESLint: ${totalErrors} errors, ${totalWarnings} warnings`,
-      totalErrors > 0 ? "red" : totalWarnings > 0 ? "yellow" : "green"
+      eslintColor
     );
   } catch (error) {
-    log("⚠️ ESLint analysis failed", "yellow");
+    log(`⚠️ ESLint analysis failed: ${error.message}`, "yellow");
     frontendReport.eslint = { errors: 0, warnings: 0, files: 0 };
   }
 
@@ -163,7 +169,7 @@ function analyzeBackend(backendReport) {
       log("✅ Ruff: No errors", "green");
     }
   } catch (error) {
-    log("⚠️ Ruff analysis failed", "yellow");
+    log(`⚠️ Ruff analysis failed: ${error.message}`, "yellow");
     backendReport.ruff = { errors: 0 };
   }
 
@@ -182,10 +188,13 @@ function analyzeBackend(backendReport) {
     const warningCount = (mypyOutput.match(/warning:/g) || []).length;
 
     backendReport.mypy = { errors: errorCount, warnings: warningCount };
-    log(
-      `✅ MyPy: ${errorCount} errors, ${warningCount} warnings`,
-      errorCount > 0 ? "red" : warningCount > 0 ? "yellow" : "green"
-    );
+    let mypyColor = "green";
+    if (errorCount > 0) {
+      mypyColor = "red";
+    } else if (warningCount > 0) {
+      mypyColor = "yellow";
+    }
+    log(`✅ MyPy: ${errorCount} errors, ${warningCount} warnings`, mypyColor);
   } catch (error) {
     const errorOutput = error.stdout || error.stderr || "";
     const errorCount = (errorOutput.match(/error:/g) || []).length;
@@ -264,71 +273,85 @@ function calculateOverallMetrics(report) {
     report.overall.totalWarnings / report.overall.totalFiles;
 }
 
-function generateReport(report) {
-  log("\n📊 Code Quality Report", "bold");
-  log("=".repeat(50), "cyan");
-
-  // Overall metrics
+function logOverallMetrics(report) {
   log("\n📈 Overall Metrics:", "bold");
   log(`Total Files: ${formatNumber(report.overall.totalFiles)}`, "blue");
   log(`Total Lines: ${formatNumber(report.overall.totalLines)}`, "blue");
   log(`Avg Lines/File: ${report.overall.avgLinesPerFile}`, "blue");
-  log(
-    `Total Errors: ${formatNumber(report.overall.totalErrors)}`,
-    report.overall.totalErrors > 0 ? "red" : "green"
-  );
+
+  const errorColor = report.overall.totalErrors > 0 ? "red" : "green";
+  log(`Total Errors: ${formatNumber(report.overall.totalErrors)}`, errorColor);
+
+  const warningColor = report.overall.totalWarnings > 0 ? "yellow" : "green";
   log(
     `Total Warnings: ${formatNumber(report.overall.totalWarnings)}`,
-    report.overall.totalWarnings > 0 ? "yellow" : "green"
+    warningColor
   );
+
+  let errorRateColor = "green";
+  if (report.overall.errorRate > 0.1) {
+    errorRateColor = "red";
+  } else if (report.overall.errorRate > 0.05) {
+    errorRateColor = "yellow";
+  }
   log(
     `Error Rate: ${formatPercentage(report.overall.errorRate)}`,
-    report.overall.errorRate > 0.1
-      ? "red"
-      : report.overall.errorRate > 0.05
-      ? "yellow"
-      : "green"
+    errorRateColor
+  );
+}
+
+function logFrontendMetrics(report) {
+  if (!report.frontend.files) return;
+
+  log("\n📱 Frontend Metrics:", "bold");
+  log(`Files: ${formatNumber(report.frontend.files)}`, "blue");
+  log(`Lines: ${formatNumber(report.frontend.lines)}`, "blue");
+
+  const eslintErrors = report.frontend.eslint?.errors || 0;
+  log(
+    `ESLint Errors: ${formatNumber(eslintErrors)}`,
+    eslintErrors > 0 ? "red" : "green"
   );
 
-  // Frontend metrics
-  if (report.frontend.files) {
-    log("\n📱 Frontend Metrics:", "bold");
-    log(`Files: ${formatNumber(report.frontend.files)}`, "blue");
-    log(`Lines: ${formatNumber(report.frontend.lines)}`, "blue");
-    log(
-      `ESLint Errors: ${formatNumber(report.frontend.eslint?.errors || 0)}`,
-      (report.frontend.eslint?.errors || 0) > 0 ? "red" : "green"
-    );
-    log(
-      `TypeScript Errors: ${formatNumber(
-        report.frontend.typescript?.errors || 0
-      )}`,
-      (report.frontend.typescript?.errors || 0) > 0 ? "red" : "green"
-    );
-  }
+  const tsErrors = report.frontend.typescript?.errors || 0;
+  log(
+    `TypeScript Errors: ${formatNumber(tsErrors)}`,
+    tsErrors > 0 ? "red" : "green"
+  );
+}
 
-  // Backend metrics
-  if (report.backend.files) {
-    log("\n🐍 Backend Metrics:", "bold");
-    log(`Files: ${formatNumber(report.backend.files)}`, "blue");
-    log(`Lines: ${formatNumber(report.backend.lines)}`, "blue");
-    log(
-      `Ruff Errors: ${formatNumber(report.backend.ruff?.errors || 0)}`,
-      (report.backend.ruff?.errors || 0) > 0 ? "red" : "green"
-    );
-    log(
-      `MyPy Errors: ${formatNumber(report.backend.mypy?.errors || 0)}`,
-      (report.backend.mypy?.errors || 0) > 0 ? "red" : "green"
-    );
-  }
+function logBackendMetrics(report) {
+  if (!report.backend.files) return;
 
-  // Quality assessment
+  log("\n🐍 Backend Metrics:", "bold");
+  log(`Files: ${formatNumber(report.backend.files)}`, "blue");
+  log(`Lines: ${formatNumber(report.backend.lines)}`, "blue");
+
+  const ruffErrors = report.backend.ruff?.errors || 0;
+  log(
+    `Ruff Errors: ${formatNumber(ruffErrors)}`,
+    ruffErrors > 0 ? "red" : "green"
+  );
+
+  const mypyErrors = report.backend.mypy?.errors || 0;
+  log(
+    `MyPy Errors: ${formatNumber(mypyErrors)}`,
+    mypyErrors > 0 ? "red" : "green"
+  );
+}
+
+function logQualityAssessment(report) {
   log("\n🎯 Quality Assessment:", "bold");
   const qualityScore = calculateQualityScore(report);
-  log(
-    `Overall Quality Score: ${qualityScore}/100`,
-    qualityScore >= 90 ? "green" : qualityScore >= 70 ? "yellow" : "red"
-  );
+
+  let scoreColor = "red";
+  if (qualityScore >= 90) {
+    scoreColor = "green";
+  } else if (qualityScore >= 70) {
+    scoreColor = "yellow";
+  }
+
+  log(`Overall Quality Score: ${qualityScore}/100`, scoreColor);
 
   if (qualityScore >= 90) {
     log("🌟 Excellent code quality!", "green");
@@ -337,13 +360,25 @@ function generateReport(report) {
   } else {
     log("⚠️ Code quality needs attention", "red");
   }
+}
 
-  log("=".repeat(50), "cyan");
-
-  // Save report to file
+function saveReport(report) {
   const reportPath = path.join(__dirname, "../code-quality-report.json");
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
   log(`\n📋 Detailed report saved to: ${reportPath}`, "blue");
+}
+
+function generateReport(report) {
+  log("\n📊 Code Quality Report", "bold");
+  log("=".repeat(50), "cyan");
+
+  logOverallMetrics(report);
+  logFrontendMetrics(report);
+  logBackendMetrics(report);
+  logQualityAssessment(report);
+
+  log("=".repeat(50), "cyan");
+  saveReport(report);
 }
 
 function calculateQualityScore(report) {

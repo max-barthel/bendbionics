@@ -2,9 +2,9 @@ import os
 from unittest.mock import patch
 
 import pytest
-from pydantic import ValidationError
-
 from app.config import LogLevel, Settings
+from pydantic import ValidationError
+from pydantic_settings.exceptions import SettingsError
 
 
 class TestLogLevel:
@@ -106,7 +106,7 @@ class TestSettings:
     def test_invalid_log_level_environment_variable(self):
         """Test that invalid log level raises an error."""
         with patch.dict(os.environ, {"LOG_LEVEL": "INVALID"}):
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match="INVALID"):
                 Settings()
 
     def test_cors_origins_validation_empty_list(self):
@@ -267,14 +267,12 @@ class TestSettings:
     def test_settings_validation_error_messages(self):
         """Test that validation errors provide meaningful messages."""
         # Test invalid log level
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="INVALID_LEVEL"):
             Settings(log_level="INVALID_LEVEL")
-        assert "INVALID_LEVEL" in str(exc_info.value)
 
         # Test empty CORS origins
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(ValueError, match="CORS origins cannot be empty"):
             Settings(cors_origins=[])
-        assert "CORS origins cannot be empty" in str(exc_info.value)
 
     def test_settings_edge_cases(self):
         """Test Settings with edge case values."""
@@ -376,11 +374,11 @@ class TestSettings:
     def test_settings_with_invalid_json_in_environment(self):
         """Test that invalid JSON in environment variables raises an error."""
         with patch.dict(os.environ, {"CORS_ORIGINS": "invalid json"}):
-            with pytest.raises(Exception):  # Should raise some kind of error
+            with pytest.raises(SettingsError):
                 Settings()
 
     def test_settings_with_malformed_json_array(self):
         """Test that malformed JSON array raises an error."""
         with patch.dict(os.environ, {"CORS_ORIGINS": '["incomplete'}):
-            with pytest.raises(Exception):  # Should raise some kind of error
+            with pytest.raises(SettingsError):
                 Settings()

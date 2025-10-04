@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Button from '../Button';
 
@@ -329,7 +330,7 @@ describe('Button', () => {
     });
 
     it('handles empty children', () => {
-      render(<Button></Button>);
+      render(<Button>{null}</Button>);
 
       const button = screen.getByRole('button');
       expect(button).toBeInTheDocument();

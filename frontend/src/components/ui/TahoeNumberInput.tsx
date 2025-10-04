@@ -5,22 +5,24 @@ import { combineStyles, getTahoeGlassStyles } from '../../styles/tahoe-utils';
 const DEFAULT_PRECISION = 3;
 const FLOATING_POINT_TOLERANCE = 1e-10;
 
+// Types
+type Size = 'sm' | 'md' | 'lg';
+
 interface TahoeNumberInputProps {
   value: number;
   onChange: (value: number) => void;
   min?: number;
   max?: number;
-  step?: number;
   precision?: number;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  size?: Size;
   'data-testid'?: string;
 }
 
 // Helper function to get size classes
-function getSizeClasses(size: 'sm' | 'md' | 'lg') {
+function getSizeClasses(size: Size) {
   return {
     sm: 'px-4 py-2 text-xs',
     md: 'px-5 py-2.5 text-sm',
@@ -68,7 +70,7 @@ function processInputValue(
 }
 
 // Floating label component
-function FloatingLabel({ placeholder }: { placeholder: string }) {
+function FloatingLabel({ placeholder }: { readonly placeholder: string }) {
   return (
     <div
       className={combineStyles(
@@ -109,8 +111,8 @@ function useInputHandlers(params: {
   setIsFocused: React.Dispatch<React.SetStateAction<boolean>>;
   value: number;
   onChange: (value: number) => void;
-  min?: number;
-  max?: number;
+  min: number | undefined;
+  max: number | undefined;
   precision: number;
 }) {
   const { setInputValue, setIsFocused, value, onChange, min, max, precision } = params;
@@ -155,16 +157,16 @@ function InputField({
   size,
   isFocused,
 }: {
-  inputValue: string;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleBlur: (value: string) => void;
-  handleFocus: () => void;
-  handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  placeholder?: string;
-  disabled: boolean;
-  dataTestId?: string;
-  size: 'sm' | 'md' | 'lg';
-  isFocused: boolean;
+  readonly inputValue: string;
+  readonly handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  readonly handleBlur: (value: string) => void;
+  readonly handleFocus: () => void;
+  readonly handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  readonly placeholder: string | undefined;
+  readonly disabled: boolean;
+  readonly dataTestId: string | undefined;
+  readonly size: Size;
+  readonly isFocused: boolean;
 }) {
   return (
     <input
@@ -253,18 +255,30 @@ function useTahoeNumberInputStateAndStyling(
 }
 
 // Custom hook for TahoeNumberInput rendering
-function useTahoeNumberInputRendering(
-  inputValue: string,
-  isFocused: boolean,
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-  handleBlur: (value: string) => void,
-  handleFocus: () => void,
-  handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void,
-  disabled: boolean,
-  size: 'sm' | 'md' | 'lg',
-  placeholder?: string,
-  dataTestId?: string
-) {
+function useTahoeNumberInputRendering(params: {
+  readonly inputValue: string;
+  readonly isFocused: boolean;
+  readonly handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  readonly handleBlur: (value: string) => void;
+  readonly handleFocus: () => void;
+  readonly handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  readonly disabled: boolean;
+  readonly size: Size;
+  readonly placeholder: string | undefined;
+  readonly dataTestId: string | undefined;
+}) {
+  const {
+    inputValue,
+    isFocused,
+    handleInputChange,
+    handleBlur,
+    handleFocus,
+    handleKeyDown,
+    disabled,
+    size,
+    placeholder,
+    dataTestId,
+  } = params;
   return {
     inputValue,
     isFocused,
@@ -280,17 +294,28 @@ function useTahoeNumberInputRendering(
 }
 
 // Custom hook for TahoeNumberInput component
-function useTahoeNumberInputComponent(
-  value: number,
-  onChange: (value: number) => void,
-  disabled: boolean,
-  size: 'sm' | 'md' | 'lg',
-  min?: number,
-  max?: number,
-  precision: number = DEFAULT_PRECISION,
-  placeholder?: string,
-  dataTestId?: string
-) {
+function useTahoeNumberInputComponent(params: {
+  readonly value: number;
+  readonly onChange: (value: number) => void;
+  readonly disabled: boolean;
+  readonly size: Size;
+  readonly min: number | undefined;
+  readonly max: number | undefined;
+  readonly precision: number;
+  readonly placeholder: string | undefined;
+  readonly dataTestId: string | undefined;
+}) {
+  const {
+    value,
+    onChange,
+    disabled,
+    size,
+    min,
+    max,
+    precision,
+    placeholder,
+    dataTestId,
+  } = params;
   const {
     inputValue,
     isFocused,
@@ -311,7 +336,7 @@ function useTahoeNumberInputComponent(
     disabled: renderDisabled,
     dataTestId: renderDataTestId,
     size: renderSize,
-  } = useTahoeNumberInputRendering(
+  } = useTahoeNumberInputRendering({
     inputValue,
     isFocused,
     handleInputChange,
@@ -321,8 +346,8 @@ function useTahoeNumberInputComponent(
     disabled,
     size,
     placeholder,
-    dataTestId
-  );
+    dataTestId,
+  });
   return {
     inputValue: renderInputValue,
     isFocused: renderIsFocused,
@@ -349,7 +374,7 @@ export function TahoeNumberInput({
   disabled = false,
   size = 'md',
   'data-testid': dataTestId,
-}: TahoeNumberInputProps) {
+}: Readonly<TahoeNumberInputProps>) {
   const {
     inputValue,
     isFocused,
@@ -363,7 +388,7 @@ export function TahoeNumberInput({
     size: renderSize,
     tahoeGlassClasses,
     isFocused: renderIsFocused,
-  } = useTahoeNumberInputComponent(
+  } = useTahoeNumberInputComponent({
     value,
     onChange,
     disabled,
@@ -372,8 +397,8 @@ export function TahoeNumberInput({
     max,
     precision,
     placeholder,
-    dataTestId
-  );
+    dataTestId,
+  });
 
   return (
     <div className={combineStyles('relative group', className)}>

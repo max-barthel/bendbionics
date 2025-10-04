@@ -29,32 +29,32 @@ const VISUALIZATION_CONSTANTS = {
 } as const;
 
 type Visualizer3DProps = {
-  segments: number[][][];
-  tendonConfig?: {
-    count: number;
-    radius: number;
-    coupling_offset: number;
+  readonly segments: number[][][];
+  readonly tendonConfig?: {
+    readonly count: number;
+    readonly radius: number;
+    readonly coupling_offset: number;
   };
-  tendonAnalysis?: {
-    actuation_commands: Record<
+  readonly tendonAnalysis?: {
+    readonly actuation_commands: Record<
       string,
       {
-        length_change_m: number;
-        pull_direction: string;
-        magnitude: number;
+        readonly length_change_m: number;
+        readonly pull_direction: string;
+        readonly magnitude: number;
       }
     >;
-    coupling_data?: {
-      positions: number[][][];
-      orientations: number[][][];
+    readonly coupling_data?: {
+      readonly positions: number[][];
+      readonly orientations: number[][][];
     };
-    tendon_analysis?: {
-      routing_points: number[][][];
+    readonly tendon_analysis?: {
+      readonly routing_points: number[][][];
     };
   };
-  sidebarCollapsed: boolean;
-  showTendonResults: boolean;
-  setShowTendonResults: (show: boolean) => void;
+  readonly sidebarCollapsed: boolean;
+  readonly showTendonResults: boolean;
+  readonly setShowTendonResults: (show: boolean) => void;
 };
 
 function Visualizer3D({
@@ -80,7 +80,7 @@ function Visualizer3D({
 
         return (
           <Line
-            key={index}
+            key={`segment-${index}-${points.length}`}
             points={points}
             color={index % 2 === 0 ? '#3b82f6' : '#22c55e'}
             lineWidth={2}
@@ -90,170 +90,206 @@ function Visualizer3D({
       .filter(Boolean);
   }, [segments]);
 
+  // Helper function to extract rotation matrix components
+  const extractRotationMatrix = (orientation: number[][]) => {
+    return {
+      r11: Number(orientation[0]?.[0]) || 1,
+      r12: Number(orientation[0]?.[1]) || 0,
+      r13: Number(orientation[0]?.[2]) || 0,
+      r21: Number(orientation[1]?.[0]) || 0,
+      r22: Number(orientation[1]?.[1]) || 1,
+      r23: Number(orientation[1]?.[2]) || 0,
+      r31: Number(orientation[2]?.[0]) || 0,
+      r32: Number(orientation[2]?.[1]) || 0,
+      r33: Number(orientation[2]?.[2]) || 1,
+    };
+  };
+
+  // Helper function to transform local coordinates to global
+  const transformToGlobal = (
+    localX: number,
+    localY: number,
+    localZ: number,
+    x: number,
+    y: number,
+    z: number,
+    matrix: ReturnType<typeof extractRotationMatrix>
+  ) => {
+    return {
+      globalX: x + matrix.r11 * localX + matrix.r12 * localY + matrix.r13 * localZ,
+      globalY: y + matrix.r21 * localX + matrix.r22 * localY + matrix.r23 * localZ,
+      globalZ: z + matrix.r31 * localX + matrix.r32 * localY + matrix.r33 * localZ,
+    };
+  };
+
+  // Helper function to check if tendon is active
+  const isTendonActive = (
+    tendonId: string,
+    tendonAnalysis: NonNullable<Visualizer3DProps['tendonAnalysis']>
+  ) => {
+    const tendonData = tendonAnalysis.actuation_commands[tendonId];
+    return (
+      tendonData &&
+      Math.abs(tendonData.length_change_m) >
+        VISUALIZATION_CONSTANTS.TENDON_ACTIVATION_THRESHOLD
+    );
+  };
+
+  // Helper function to create tendon eyelets for a coupling point
+  const createTendonEyelets = (
+    couplingPos: number[],
+    couplingIndex: number,
+    orientation: number[][],
+    tendonCount: number,
+    radius: number,
+    offset: number
+  ) => {
+    const elements: React.ReactElement[] = [];
+    const x = Number(couplingPos[0]) || 0;
+    const y = Number(couplingPos[1]) || 0;
+    const z = Number(couplingPos[2]) || 0;
+    const matrix = extractRotationMatrix(orientation);
+
+    for (let i = 0; i < tendonCount; i++) {
+      const angle = (2 * Math.PI * i) / tendonCount;
+      const localX = radius * Math.cos(angle);
+      const localY = radius * Math.sin(angle);
+      const localZ = offset;
+      const { globalX, globalY, globalZ } = transformToGlobal(
+        localX,
+        localY,
+        localZ,
+        x,
+        y,
+        z,
+        matrix
+      );
+
+      // Create eyelet sphere
+      elements.push(
+        <Sphere
+          key={`tendon-${couplingIndex}-${i}`}
+          args={[
+            VISUALIZATION_CONSTANTS.SPHERE_RADIUS,
+            VISUALIZATION_CONSTANTS.SPHERE_SEGMENTS,
+            VISUALIZATION_CONSTANTS.SPHERE_RINGS,
+          ]}
+          position={[globalX, globalY, globalZ]}
+        >
+          <meshBasicMaterial color="#000000" />
+        </Sphere>
+      );
+
+      // Add tendon connection line
+      elements.push(
+        <Line
+          key={`tendon-line-${couplingIndex}-${i}`}
+          points={[
+            [globalX, globalY, globalZ],
+            [x, y, z + offset],
+          ]}
+          color="#9ca3af"
+          lineWidth={1}
+        />
+      );
+    }
+
+    return elements;
+  };
+
+  // Helper function to create tendon routing lines
+  const createTendonRouting = (
+    couplingPositions: number[][][],
+    tendonCount: number,
+    tendonAnalysis: NonNullable<Visualizer3DProps['tendonAnalysis']>
+  ) => {
+    const elements: React.ReactElement[] = [];
+
+    for (
+      let couplingIndex = 0;
+      couplingIndex < couplingPositions.length - 1;
+      couplingIndex++
+    ) {
+      for (let tendonIndex = 0; tendonIndex < tendonCount; tendonIndex++) {
+        const currentEyelet =
+          tendonAnalysis.tendon_analysis?.routing_points?.[couplingIndex]?.[
+            tendonIndex
+          ];
+        const nextEyelet =
+          tendonAnalysis.tendon_analysis?.routing_points?.[couplingIndex + 1]?.[
+            tendonIndex
+          ];
+
+        if (
+          !currentEyelet ||
+          !nextEyelet ||
+          currentEyelet.length < 3 ||
+          nextEyelet.length < 3
+        ) {
+          continue;
+        }
+
+        const tendonId = (tendonIndex + 1).toString();
+        const isActive = isTendonActive(tendonId, tendonAnalysis);
+        const tendonColor = getTendonColor(tendonId);
+
+        elements.push(
+          <Line
+            key={`tendon-routing-${couplingIndex}-${tendonIndex}`}
+            points={[
+              [currentEyelet[0] || 0, currentEyelet[1] || 0, currentEyelet[2] || 0],
+              [nextEyelet[0] || 0, nextEyelet[1] || 0, nextEyelet[2] || 0],
+            ]}
+            color={tendonColor}
+            lineWidth={isActive ? 3 : 2}
+            dashed={!isActive}
+          />
+        );
+      }
+    }
+
+    return elements;
+  };
+
   // Generate tendon eyelets and connections with proper transformations
   const tendonElements = useMemo(() => {
     if (!tendonConfig || !tendonAnalysis?.coupling_data) {
       return [];
     }
+
     const elements: React.ReactElement[] = [];
-    const tendonCount = tendonConfig.count;
-    const radius = tendonConfig.radius;
-    const offset = tendonConfig.coupling_offset;
-    const couplingPositions = tendonAnalysis.coupling_data.positions;
-    const couplingOrientations = tendonAnalysis.coupling_data.orientations;
+    const { count: tendonCount, radius, coupling_offset: offset } = tendonConfig;
+    const { positions: couplingPositions, orientations: couplingOrientations } =
+      tendonAnalysis.coupling_data;
 
-    // For each coupling point, create tendon eyelets with proper orientation
+    // Create tendon eyelets for each coupling point
     couplingPositions.forEach((couplingPos, couplingIndex) => {
-      if (couplingPos.length < 3) {
-        return;
-      }
+      if (couplingPos.length < 3) return;
 
-      // Extract x, y, z coordinates as numbers
-      const x = Number(couplingPos[0]) || 0;
-      const y = Number(couplingPos[1]) || 0;
-      const z = Number(couplingPos[2]) || 0;
       const orientation = couplingOrientations[couplingIndex];
+      if (!orientation || orientation.length < 3) return;
 
-      if (!orientation || orientation.length < 3) {
-        return;
-      }
-
-      // Extract rotation matrix components as numbers
-      const r11 = Number(orientation[0]?.[0]) || 1;
-      const r12 = Number(orientation[0]?.[1]) || 0;
-      const r13 = Number(orientation[0]?.[2]) || 0;
-      const r21 = Number(orientation[1]?.[0]) || 0;
-      const r22 = Number(orientation[1]?.[1]) || 1;
-      const r23 = Number(orientation[1]?.[2]) || 0;
-      const r31 = Number(orientation[2]?.[0]) || 0;
-      const r32 = Number(orientation[2]?.[1]) || 0;
-      const r33 = Number(orientation[2]?.[2]) || 1;
-
-      // Create tendon eyelets around the coupling point with proper orientation
-      for (let i = 0; i < tendonCount; i++) {
-        const angle = (2 * Math.PI * i) / tendonCount;
-
-        // Base eyelet position in local coordinate system
-        const localX = radius * Math.cos(angle);
-        const localY = radius * Math.sin(angle);
-        const localZ = offset;
-
-        // Transform local coordinates to global coordinates using rotation matrix
-        const globalX = x + r11 * localX + r12 * localY + r13 * localZ;
-        const globalY = y + r21 * localX + r22 * localY + r23 * localZ;
-        const globalZ = z + r31 * localX + r32 * localY + r33 * localZ;
-
-        // Get tendon analysis data for this tendon
-        const tendonId = i.toString();
-        const tendonData = tendonAnalysis.actuation_commands[tendonId];
-        const isActive =
-          tendonData &&
-          Math.abs(tendonData.length_change_m) >
-            VISUALIZATION_CONSTANTS.TENDON_ACTIVATION_THRESHOLD;
-
-        // Create eyelet sphere
-        elements.push(
-          <Sphere
-            key={`tendon-${couplingIndex}-${i}`}
-            args={[
-              VISUALIZATION_CONSTANTS.SPHERE_RADIUS,
-              VISUALIZATION_CONSTANTS.SPHERE_SEGMENTS,
-              VISUALIZATION_CONSTANTS.SPHERE_RINGS,
-            ]}
-            position={[globalX, globalY, globalZ]}
-          >
-            <meshStandardMaterial
-              color={isActive ? '#ef4444' : '#6b7280'}
-              metalness={0.8}
-              roughness={0.2}
-            />
-          </Sphere>
-        );
-
-        // Add tendon connection line to the coupling center
-        elements.push(
-          <Line
-            key={`tendon-line-${couplingIndex}-${i}`}
-            points={[
-              [globalX, globalY, globalZ],
-              [x, y, z + offset],
-            ]}
-            color={isActive ? '#dc2626' : '#9ca3af'}
-            lineWidth={1}
-            dashed={!isActive}
-          />
-        );
-      }
-    });
-
-    // Debug: Log the tendon analysis data structure
-    console.log('Tendon analysis debug:', {
-      hasTendonAnalysis: !!tendonAnalysis,
-      tendonAnalysisKeys: tendonAnalysis ? Object.keys(tendonAnalysis) : [],
-      routingPoints: tendonAnalysis?.tendon_analysis?.routing_points,
-      couplingPositionsLength: couplingPositions.length,
+      elements.push(
+        ...createTendonEyelets(
+          couplingPos,
+          couplingIndex,
+          orientation,
+          tendonCount,
+          radius,
+          offset
+        )
+      );
     });
 
     // Add tendon routing lines between consecutive coupling elements
     if (couplingPositions.length > 1) {
-      for (
-        let couplingIndex = 0;
-        couplingIndex < couplingPositions.length - 1;
-        couplingIndex++
-      ) {
-        for (let tendonIndex = 0; tendonIndex < tendonCount; tendonIndex++) {
-          const currentCouplingPos = couplingPositions[couplingIndex];
-          const nextCouplingPos = couplingPositions[couplingIndex + 1];
-
-          if (currentCouplingPos.length < 3 || nextCouplingPos.length < 3) {
-            continue;
-          }
-
-          // Get current eyelet position
-          const currentEyelet =
-            tendonAnalysis.tendon_analysis?.routing_points?.[couplingIndex]?.[
-              tendonIndex
-            ];
-          if (!currentEyelet || currentEyelet.length < 3) {
-            continue;
-          }
-
-          // Get next eyelet position
-          const nextEyelet =
-            tendonAnalysis.tendon_analysis?.routing_points?.[couplingIndex + 1]?.[
-              tendonIndex
-            ];
-          if (!nextEyelet || nextEyelet.length < 3) {
-            continue;
-          }
-
-          // Check if this tendon is active (has significant length change)
-          // Backend uses 1-based indexing, so tendon 0 in frontend = tendon "1" in backend
-          const tendonId = (tendonIndex + 1).toString();
-          const tendonData = tendonAnalysis.actuation_commands[tendonId];
-          const isActive =
-            tendonData &&
-            Math.abs(tendonData.length_change_m) >
-              VISUALIZATION_CONSTANTS.TENDON_ACTIVATION_THRESHOLD;
-
-          // Get tendon-specific color - always use the tendon color
-          const tendonColor = getTendonColor(tendonId);
-
-          // Add tendon routing line between eyelets
-          elements.push(
-            <Line
-              key={`tendon-routing-${couplingIndex}-${tendonIndex}`}
-              points={[
-                [currentEyelet[0], currentEyelet[1], currentEyelet[2]],
-                [nextEyelet[0], nextEyelet[1], nextEyelet[2]],
-              ]}
-              color={tendonColor}
-              lineWidth={isActive ? 3 : 2}
-              dashed={!isActive}
-            />
-          );
-        }
-      }
+      elements.push(
+        ...createTendonRouting(
+          tendonAnalysis.tendon_analysis?.routing_points || [],
+          tendonCount,
+          tendonAnalysis
+        )
+      );
     }
 
     return elements;
@@ -268,9 +304,13 @@ function Visualizer3D({
       return { center: [0, 0, 0] as [number, number, number], size: 100 };
     }
 
-    const xs = allPoints.map(([x]) => x);
-    const ys = allPoints.map(([, y]) => y);
-    const zs = allPoints.map(([, , z]) => z);
+    const xs = allPoints.map(([x]) => x ?? 0).filter(Number.isFinite);
+    const ys = allPoints.map(([, y]) => y ?? 0).filter(Number.isFinite);
+    const zs = allPoints.map(([, , z]) => z ?? 0).filter(Number.isFinite);
+
+    if (xs.length === 0 || ys.length === 0 || zs.length === 0) {
+      return { center: [0, 0, 0] as [number, number, number], size: 100 };
+    }
 
     const minX = Math.min(...xs);
     const maxX = Math.max(...xs);
@@ -377,12 +417,9 @@ function Visualizer3D({
               }}
               className="bg-gray-50"
             >
-              <ambientLight intensity={0.6} />
-              <pointLight
-                position={[100, 100, VISUALIZATION_CONSTANTS.LIGHT_POSITION_Z]}
-                intensity={0.8}
-              />
-              <axesHelper args={[size || 100]} />
+              <ambientLight />
+              <pointLight />
+              <axesHelper />
               <OrbitControls
                 ref={controlsRef}
                 enableDamping={false}
@@ -425,11 +462,13 @@ function Visualizer3D({
             </button>
 
             {/* Tendon Results Panel */}
-            <TendonResultsPanel
-              tendonAnalysis={tendonAnalysis}
-              isVisible={showTendonResults}
-              onToggle={() => setShowTendonResults(!showTendonResults)}
-            />
+            {tendonAnalysis && (
+              <TendonResultsPanel
+                tendonAnalysis={tendonAnalysis}
+                isVisible={showTendonResults}
+                onToggle={() => setShowTendonResults(!showTendonResults)}
+              />
+            )}
           </>
         )}
       </div>

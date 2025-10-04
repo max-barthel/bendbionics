@@ -23,7 +23,6 @@ const NumberInput: React.FC<NumberInputProps> = ({
   onChange,
   min,
   max,
-  step = 1,
   precision = DEFAULT_PRECISION,
   placeholder,
   className = '',
@@ -35,15 +34,14 @@ const NumberInput: React.FC<NumberInputProps> = ({
     <TahoeNumberInput
       value={value}
       onChange={onChange}
-      min={min}
-      max={max}
-      step={step}
+      {...(min !== undefined && { min })}
+      {...(max !== undefined && { max })}
       precision={precision}
-      placeholder={placeholder}
+      {...(placeholder && { placeholder })}
       className={className}
       disabled={disabled}
       size={size}
-      data-testid={dataTestId}
+      {...(dataTestId && { 'data-testid': dataTestId })}
     />
   );
 };

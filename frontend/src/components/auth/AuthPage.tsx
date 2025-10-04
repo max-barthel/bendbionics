@@ -30,7 +30,7 @@ export const AuthPage: React.FC = () => {
 
             <Button
               variant="outline"
-              onClick={() => void navigate('/')}
+              onClick={() => navigate('/')}
               className="mb-4 border border-gray-300 shadow-sm transition-all duration-300 hover:scale-105 rounded-full bg-white hover:bg-gray-50"
             >
               ← Back to App (Continue as Guest)

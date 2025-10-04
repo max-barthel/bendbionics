@@ -132,19 +132,12 @@ function useAppInitialization(setIsInitializing: (value: boolean) => void) {
     localStorage.setItem(testKey, testValue);
     const retrievedValue = localStorage.getItem(testKey);
 
-    // Check if token exists
-    const existingToken = localStorage.getItem('token');
-
-    // Log localStorage status (only in development)
-    if (import.meta.env.DEV) {
-      logger.debug('=== App localStorage Test ===', LogContext.UI);
-      logger.debug('Test value stored:', LogContext.UI, { testValue });
-      logger.debug('Test value retrieved:', LogContext.UI, { retrievedValue });
-      logger.debug('Existing token:', LogContext.UI, { hasToken: !!existingToken });
-      logger.debug('localStorage working:', LogContext.UI, {
-        working: retrievedValue === testValue,
+    // Only log if localStorage test fails
+    if (import.meta.env.DEV && retrievedValue !== testValue) {
+      logger.debug('localStorage test failed:', LogContext.UI, {
+        expected: testValue,
+        actual: retrievedValue,
       });
-      logger.debug('============================', LogContext.UI);
     }
   }, []);
 
@@ -272,8 +265,8 @@ function LoadingScreen({
   isLoading,
   isInitializing: _isInitializing,
 }: {
-  isLoading: boolean;
-  isInitializing: boolean;
+  readonly isLoading: boolean;
+  readonly isInitializing: boolean;
 }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -291,7 +284,7 @@ function LoadingScreen({
 }
 
 // User avatar icon component
-function UserAvatarIcon({ size = 'w-6 h-6' }: { size?: string }) {
+function UserAvatarIcon({ size = 'w-6 h-6' }: { readonly size?: string }) {
   return (
     <div
       className={`${size} bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center`}
@@ -314,7 +307,7 @@ function UserAvatarIcon({ size = 'w-6 h-6' }: { size?: string }) {
 }
 
 // User dropdown menu component
-function UserDropdownMenu({ appState }: { appState: AppState }) {
+function UserDropdownMenu({ appState }: { readonly appState: AppState }) {
   return (
     <TahoeGlass className="absolute top-full right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible">
       <div className="p-3 border-b border-white/20">
@@ -337,7 +330,7 @@ function UserDropdownMenu({ appState }: { appState: AppState }) {
         </button>
         <button
           onClick={() => {
-            void appState.logout();
+            appState.logout();
             appState.navigate('/');
           }}
           className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white/30 rounded-lg transition-colors"
@@ -350,7 +343,7 @@ function UserDropdownMenu({ appState }: { appState: AppState }) {
 }
 
 // Signed in user menu component
-function SignedInUserMenu({ appState }: { appState: AppState }) {
+function SignedInUserMenu({ appState }: { readonly appState: AppState }) {
   return (
     <div className="group relative">
       <TahoeGlass as="button" className="flex items-center gap-2 hover:scale-105">
@@ -378,7 +371,7 @@ function SignedInUserMenu({ appState }: { appState: AppState }) {
 }
 
 // Sign in button component
-function SignInButton({ appState }: { appState: AppState }) {
+function SignInButton({ appState }: { readonly appState: AppState }) {
   return (
     <button
       onClick={() => appState.navigate('/auth')}
@@ -404,7 +397,7 @@ function SignInButton({ appState }: { appState: AppState }) {
 }
 
 // User menu component
-function UserMenu({ appState }: { appState: AppState }) {
+function UserMenu({ appState }: { readonly appState: AppState }) {
   return (
     <div className="fixed top-4 right-4 z-50">
       {appState.user ? (
@@ -424,11 +417,14 @@ function Sidebar({
   handleComputationTriggered,
   handleShowPresetManager,
 }: {
-  appState: AppState;
-  handleFormResult: (result: number[][][], configuration: RobotConfiguration) => void;
-  handleLoadPreset: (configuration: RobotConfiguration) => void;
-  handleComputationTriggered: () => void;
-  handleShowPresetManager: () => void;
+  readonly appState: AppState;
+  readonly handleFormResult: (
+    result: number[][][],
+    configuration: RobotConfiguration
+  ) => void;
+  readonly handleLoadPreset: (configuration: RobotConfiguration) => void;
+  readonly handleComputationTriggered: () => void;
+  readonly handleShowPresetManager: () => void;
 }) {
   return (
     <div
@@ -462,8 +458,8 @@ function SidebarToggle({
   appState,
   toggleSidebar,
 }: {
-  appState: AppState;
-  toggleSidebar: () => void;
+  readonly appState: AppState;
+  readonly toggleSidebar: () => void;
 }) {
   return (
     <button
@@ -498,9 +494,9 @@ function PresetManagerModal({
   handleLoadPreset,
   setShowPresetManager,
 }: {
-  appState: AppState;
-  handleLoadPreset: (configuration: RobotConfiguration) => void;
-  setShowPresetManager: (show: boolean) => void;
+  readonly appState: AppState;
+  readonly handleLoadPreset: (configuration: RobotConfiguration) => void;
+  readonly setShowPresetManager: (show: boolean) => void;
 }) {
   if (!appState.showPresetManager) {
     return null;
@@ -550,9 +546,9 @@ function AppModals({
   handleLoadPreset,
   setters,
 }: {
-  appState: AppState;
-  handleLoadPreset: (configuration: RobotConfiguration) => void;
-  setters: {
+  readonly appState: AppState;
+  readonly handleLoadPreset: (configuration: RobotConfiguration) => void;
+  readonly setters: {
     setShowPresetManager: (show: boolean) => void;
     setShowUserSettings: (show: boolean) => void;
   };
@@ -572,7 +568,7 @@ function AppModals({
 }
 
 // 3D Visualizer component
-function Visualizer3DWrapper({ appState }: { appState: AppState }) {
+function Visualizer3DWrapper({ appState }: { readonly appState: AppState }) {
   return (
     <div className="w-full h-full bg-white/10 backdrop-blur-sm relative">
       <Suspense
@@ -608,7 +604,7 @@ function Visualizer3DWrapper({ appState }: { appState: AppState }) {
 }
 
 // Floating compute button component
-function FloatingComputeButton({ appState }: { appState: AppState }) {
+function FloatingComputeButton({ appState }: { readonly appState: AppState }) {
   return (
     <div
       className={`fixed bottom-6 z-50 transition-all duration-300 ease-in-out ${
@@ -635,12 +631,15 @@ function MainAppLayout({
   handleShowPresetManager,
   toggleSidebar,
 }: {
-  appState: AppState;
-  handleFormResult: (result: number[][][], configuration: RobotConfiguration) => void;
-  handleLoadPreset: (configuration: RobotConfiguration) => void;
-  handleComputationTriggered: () => void;
-  handleShowPresetManager: () => void;
-  toggleSidebar: () => void;
+  readonly appState: AppState;
+  readonly handleFormResult: (
+    result: number[][][],
+    configuration: RobotConfiguration
+  ) => void;
+  readonly handleLoadPreset: (configuration: RobotConfiguration) => void;
+  readonly handleComputationTriggered: () => void;
+  readonly handleShowPresetManager: () => void;
+  readonly toggleSidebar: () => void;
 }) {
   return (
     <div className="h-screen flex flex-col">
