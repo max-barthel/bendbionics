@@ -304,11 +304,14 @@ class ErrorTracker:
     async def _report_error_remote(self, error_report: ErrorReport):
         """Report error to remote endpoint"""
         try:
-            async with aiohttp.ClientSession() as session, session.post(
-                self.remote_endpoint,
-                json=asdict(error_report),
-                headers={"Content-Type": "application/json"},
-            ) as response:
+            async with (
+                aiohttp.ClientSession() as session,
+                session.post(
+                    self.remote_endpoint,
+                    json=asdict(error_report),
+                    headers={"Content-Type": "application/json"},
+                ) as response,
+            ):
                 if response.status != 200:
                     default_logger.warning(
                         LogContext.ERROR,
@@ -359,7 +362,6 @@ class ErrorTracker:
             error_report.severity == ErrorSeverity.CRITICAL
             and len(self.error_counts[error_key]) >= self.critical_error_threshold
         ):
-
             self._send_alert(error_report, len(self.error_counts[error_key]))
 
     def _send_alert(self, error_report: ErrorReport, count: int):

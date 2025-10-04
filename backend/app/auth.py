@@ -1,6 +1,7 @@
 from datetime import timedelta
 from typing import Optional
 
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
@@ -12,14 +13,14 @@ from app.database import get_session
 from app.models import TokenData, User
 from app.utils.timezone import now_utc
 
-# Password hashing - use pbkdf2_sha256 for testing to avoid bcrypt issues
-# This is more reliable for testing environments
+# Password hashing - support both bcrypt and pbkdf2_sha256 for compatibility
+# bcrypt is used for existing users, pbkdf2_sha256 for new users
 pwd_context = CryptContext(
-    schemes=["pbkdf2_sha256"],
+    schemes=["bcrypt", "pbkdf2_sha256"],
     deprecated="auto",
     pbkdf2_sha256__default_rounds=100000,  # Standard rounds for testing
     pbkdf2_sha256__min_rounds=100000,
-    pbkdf2_sha256__max_rounds=100000
+    pbkdf2_sha256__max_rounds=100000,
 )
 
 # JWT token security
@@ -27,34 +28,29 @@ security = HTTPBearer()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash with bcrypt 72-byte limit handling"""
-    # bcrypt has a 72-byte limit, so we truncate if necessary
-    if len(plain_password.encode("utf-8")) > 72:
-        # Truncate to 72 bytes, but be careful with UTF-8 encoding
-        password_bytes = plain_password.encode("utf-8")[:72]
-        # Decode back to string, handling potential incomplete UTF-8 sequences
-        plain_password = password_bytes.decode("utf-8", errors="ignore")
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify a password against its hash"""
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception:
+        # Fallback to direct bcrypt verification for bcrypt hashes
+        if hashed_password.startswith("$2b$"):
+            try:
+                return bcrypt.checkpw(
+                    plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+                )
+            except Exception:
+                return False
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    """Hash a password with bcrypt 72-byte limit handling"""
-    # bcrypt has a 72-byte limit, so we truncate if necessary
-    if len(password.encode("utf-8")) > 72:
-        # Truncate to 72 bytes, but be careful with UTF-8 encoding
-        password_bytes = password.encode("utf-8")[:72]
-        # Decode back to string, handling potential incomplete UTF-8 sequences
-        password = password_bytes.decode("utf-8", errors="ignore")
-
-    # Use a more robust approach to avoid bcrypt initialization issues
+    """Hash a password using bcrypt"""
     try:
         return pwd_context.hash(password)
-    except ValueError as e:
-        if "password cannot be longer than 72 bytes" in str(e):
-            # If still too long, truncate more aggressively
-            password = password[:50]  # Safe truncation
-            return pwd_context.hash(password)
-        raise
+    except Exception:
+        # Fallback to direct bcrypt hashing
+        salt = bcrypt.gensalt()
+        return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -63,9 +59,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     if expires_delta:
         expire = now_utc() + expires_delta
     else:
-        expire = now_utc() + timedelta(
-            minutes=settings.access_token_expire_minutes
-        )
+        expire = now_utc() + timedelta(minutes=settings.access_token_expire_minutes)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
 

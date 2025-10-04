@@ -20,13 +20,13 @@ export default defineConfig(({ mode }) => {
         gzipSize: true,
         brotliSize: true,
         template: 'treemap', // 'treemap', 'sunburst', 'network'
-      }) as any
+      })
     );
     plugins.push(
       analyzer({
         analyzerMode: 'static',
         openAnalyzer: true,
-      }) as any
+      })
     );
   }
 
