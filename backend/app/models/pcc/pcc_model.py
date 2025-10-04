@@ -136,8 +136,9 @@ class PCCRobotModel(RobotModelInterface):
         # Normalize the z-axis (direction)
         z_axis = z_axis / np.linalg.norm(z_axis)
 
-        # If the z-axis is close to the global z-axis, use global coordinates
-        if abs(z_axis[2]) > 0.9:
+        # If the z-axis is close to the global z-axis (pointing up),
+        # use global coordinates
+        if z_axis[2] > 0.9:
             return np.eye(3)
 
         # Calculate the bending angle (theta) and direction (phi)
@@ -151,6 +152,27 @@ class PCCRobotModel(RobotModelInterface):
 
         # Calculate phi from the x and y components
         phi = np.arctan2(z_axis[1], z_axis[0])
+
+        # Handle the 180-degree case properly
+        # When theta is close to π (180 degrees), we need to ensure proper rotation
+        if abs(theta - np.pi) < 1e-6:
+            # For 180-degree bending, we need to rotate by π around the y-axis
+            # and then apply the phi rotation
+            cos_phi = np.cos(phi)
+            sin_phi = np.sin(phi)
+
+            # Create rotation matrix for 180-degree case
+            # Rz(phi) * Ry(π) * Rz(-phi)
+            rz_phi = np.array([
+                [cos_phi, -sin_phi, 0],
+                [sin_phi, cos_phi, 0],
+                [0, 0, 1]
+            ])
+            # 180-degree rotation around y
+            ry_pi = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, -1]])
+            rz_neg_phi = rz_phi.T
+
+            return rz_phi @ ry_pi @ rz_neg_phi
 
         # Create rotation matrices following the MATLAB approach
         # Rz(phi) * Ry(theta) * Rz(-phi)
