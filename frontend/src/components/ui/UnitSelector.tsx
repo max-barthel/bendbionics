@@ -1,9 +1,9 @@
 interface UnitSelectorProps<T extends string> {
-  units: readonly T[];
-  selectedUnit: T;
-  onUnitChange: (unit: T) => void;
-  className?: string;
-  ariaLabel?: string;
+  readonly units: readonly T[];
+  readonly selectedUnit: T;
+  readonly onUnitChange: (unit: T) => void;
+  readonly className?: string;
+  readonly ariaLabel?: string;
 }
 
 export function UnitSelector<T extends string>({

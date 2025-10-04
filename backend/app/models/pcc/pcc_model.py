@@ -158,20 +158,20 @@ class PCCRobotModel(RobotModelInterface):
         # Rotation around z-axis by phi
         cos_phi = np.cos(phi)
         sin_phi = np.sin(phi)
-        Rz_phi = np.array([[cos_phi, -sin_phi, 0], [sin_phi, cos_phi, 0], [0, 0, 1]])
+        rz_phi = np.array([[cos_phi, -sin_phi, 0], [sin_phi, cos_phi, 0], [0, 0, 1]])
 
         # Rotation around y-axis by theta
         cos_theta = np.cos(theta)
         sin_theta = np.sin(theta)
-        Ry_theta = np.array(
+        ry_theta = np.array(
             [[cos_theta, 0, sin_theta], [0, 1, 0], [-sin_theta, 0, cos_theta]]
         )
 
-        # Rotation around z-axis by -phi (transpose of Rz_phi)
-        Rz_neg_phi = Rz_phi.T
+        # Rotation around z-axis by -phi (transpose of rz_phi)
+        rz_neg_phi = rz_phi.T
 
         # Combine rotations: Rz(phi) * Ry(theta) * Rz(-phi)
-        return Rz_phi @ Ry_theta @ Rz_neg_phi
+        return rz_phi @ ry_theta @ rz_neg_phi
 
 
 # Convenience function for backward compatibility

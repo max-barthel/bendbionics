@@ -207,57 +207,50 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         if user_id:
             response_data["user_id"] = user_id
 
-        # Log response body if enabled and size is within limit
-        if self.log_response_body and hasattr(response, "body"):
-            try:
-                body = response.body
-                if len(body) <= self.max_body_size:
-                    try:
-                        import json
+        # Add response body if enabled
+        if self.log_response_body:
+            self._add_response_body(response, response_data)
 
-                        response_data["body"] = json.loads(body.decode())
-                    except (json.JSONDecodeError, UnicodeDecodeError):
-                        response_data["body"] = body.decode(errors="replace")
-                else:
-                    response_data["body"] = f"<body too large: {len(body)} bytes>"
-            except Exception as e:
-                response_data["body_error"] = str(e)
+        # Log using appropriate level
+        self._log_response_by_status(request, response, response_data)
 
-        # Determine log level based on status code
+    def _add_response_body(self, response: Response, response_data: dict):
+        """Add response body to log data"""
+        if not hasattr(response, "body"):
+            return
+
+        try:
+            body = response.body
+            if len(body) <= self.max_body_size:
+                try:
+                    import json
+                    response_data["body"] = json.loads(body.decode())
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    response_data["body"] = body.decode(errors="replace")
+            else:
+                response_data["body"] = f"<body too large: {len(body)} bytes>"
+        except Exception as e:
+            response_data["body_error"] = str(e)
+
+    def _log_response_by_status(
+        self, request: Request, response: Response, response_data: dict
+    ):
+        """Log response using appropriate level based on status code"""
+        message = (
+            f"Response: {request.method} {request.url.path} - {response.status_code}"
+        )
+
         if response.status_code >= 500:
-            log_level = "error"
-        elif response.status_code >= 400:
-            log_level = "warning"
-        else:
-            log_level = "info"
-
-        # Log using the appropriate level
-        if log_level == "error":
             default_logger.error(
-                LogContext.API,
-                f"Response: {request.method} {request.url.path} - "
-                f"{response.status_code}",
-                response_data,
-                "API",
-                "response",
+                LogContext.API, message, response_data, "API", "response"
             )
-        elif log_level == "warning":
+        elif response.status_code >= 400:
             default_logger.warning(
-                LogContext.API,
-                f"Response: {request.method} {request.url.path} - "
-                f"{response.status_code}",
-                response_data,
-                "API",
-                "response",
+                LogContext.API, message, response_data, "API", "response"
             )
         else:
             default_logger.info(
-                LogContext.API,
-                f"Response: {request.method} {request.url.path} - "
-                f"{response.status_code}",
-                response_data,
-                "API",
-                "response",
+                LogContext.API, message, response_data, "API", "response"
             )
 
 

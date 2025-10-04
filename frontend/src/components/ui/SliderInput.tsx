@@ -20,7 +20,7 @@ type SliderInputProps = {
 };
 
 // Range display component
-function RangeDisplay({ min, max }: { min: number; max: number }) {
+function RangeDisplay({ min, max }: { readonly min: number; readonly max: number }) {
   const rangeDisplayClasses = getTahoeGlassStyles(
     'subtle',
     'glass',
@@ -53,14 +53,14 @@ function Slider({
   disabled,
   label,
 }: {
-  id: string;
-  min: number;
-  max: number;
-  step: number;
-  value: number;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  disabled: boolean;
-  label?: string;
+  readonly id: string;
+  readonly min: number;
+  readonly max: number;
+  readonly step: number;
+  readonly value: number;
+  readonly onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  readonly disabled: boolean;
+  readonly label: string | undefined;
 }) {
   return (
     <input
@@ -88,7 +88,7 @@ function SliderInput({
   placeholder,
   disabled = false,
   className = '',
-}: SliderInputProps) {
+}: Readonly<SliderInputProps>) {
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = Number(e.target.value);
     onChange(newValue);
@@ -123,7 +123,7 @@ function SliderInput({
           <NumberInput
             value={value}
             onChange={onChange}
-            placeholder={placeholder}
+            {...(placeholder && { placeholder })}
             disabled={disabled}
           />
         </div>

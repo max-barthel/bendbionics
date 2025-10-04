@@ -5,10 +5,10 @@ import NumberInput from '../../shared/components/NumberInput';
 type UnitMode = 'angle' | 'length';
 
 type ArrayInputGroupProps = {
-  label: string;
-  values: number[]; // Always in SI units internally
-  onChange: (values: number[]) => void;
-  mode?: UnitMode;
+  readonly label: string;
+  readonly values: number[]; // Always in SI units internally
+  readonly onChange: (values: number[]) => void;
+  readonly mode?: UnitMode;
 };
 
 function ArrayInputGroup({
@@ -18,7 +18,7 @@ function ArrayInputGroup({
   mode = 'angle',
 }: ArrayInputGroupProps) {
   const [isUpdating, setIsUpdating] = useState(false);
-  const timeoutRef = useRef<number | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const angleUnits = ['deg', 'rad'] as const;
   const lengthUnits = ['mm', 'cm', 'm'] as const;
 
@@ -121,7 +121,7 @@ function ArrayInputGroup({
       <div className="grid gap-3 gap-y-4 ml-2 grid-cols-3">
         {values.map((val, idx) => (
           <NumberInput
-            key={idx}
+            key={`${label}-${idx}-${val}`}
             value={Number(convertFromSI(val).toFixed(4))} // Rounded for UI
             onChange={value => handleValueChange(idx, value)}
             placeholder={`#${idx + 1}`}

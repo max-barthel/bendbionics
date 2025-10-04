@@ -42,7 +42,7 @@
     },
     {
       "name": "Debug Backend (FastAPI)",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/backend/main.py",
       "cwd": "${workspaceFolder}/backend",
@@ -55,7 +55,7 @@
     },
     {
       "name": "Debug Backend Tests (pytest)",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "pytest",
       "args": ["-v", "--tb=short", "${workspaceFolder}/backend/tests"],
@@ -68,7 +68,7 @@
     },
     {
       "name": "Debug Backend Tests (Single File)",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "pytest",
       "args": ["-v", "--tb=short", "${file}"],
@@ -133,7 +133,7 @@
     },
     {
       "name": "Debug Current File",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${file}",
       "cwd": "${workspaceFolder}",

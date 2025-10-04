@@ -84,7 +84,7 @@ export const authAPI = {
         throw new Error(response.error ?? 'Login failed');
       }
 
-      return (response.data as { data: User }).data as AuthResponse;
+      return (response.data as { data: AuthResponse }).data;
     }
     const response = await client().post<{ data: AuthResponse }>('/auth/login', data);
     return response.data.data;
@@ -133,7 +133,7 @@ export const presetAPI = {
       if (!response.success) {
         throw new Error(response.error ?? 'Failed to get presets');
       }
-      return (response.data as { data: User }).data as Preset[];
+      return (response.data as { data: Preset[] }).data;
     }
     const response = await client().get<{ data: Preset[] }>('/presets/');
     return response.data.data;
@@ -149,7 +149,7 @@ export const presetAPI = {
       if (!response.success) {
         throw new Error(response.error ?? 'Failed to get public presets');
       }
-      return (response.data as { data: User }).data as Preset[];
+      return (response.data as { data: Preset[] }).data;
     }
     const response = await client().get<{ data: Preset[] }>('/presets/public');
     return response.data.data;
@@ -165,7 +165,7 @@ export const presetAPI = {
       if (!response.success) {
         throw new Error(response.error ?? 'Failed to get preset');
       }
-      return (response.data as { data: User }).data as Preset;
+      return (response.data as { data: Preset }).data;
     }
     const response = await client().get<{ data: Preset }>(`/presets/${id}`);
     return response.data.data;
@@ -181,7 +181,7 @@ export const presetAPI = {
       if (!response.success) {
         throw new Error(response.error ?? 'Failed to create preset');
       }
-      return (response.data as { data: User }).data as Preset;
+      return (response.data as { data: Preset }).data;
     }
     const response = await client().post<{ data: Preset }>('/presets/', data);
     return response.data.data;
@@ -197,7 +197,7 @@ export const presetAPI = {
       if (!response.success) {
         throw new Error(response.error ?? 'Failed to update preset');
       }
-      return (response.data as { data: User }).data as Preset;
+      return (response.data as { data: Preset }).data;
     }
     const response = await client().put<{ data: Preset }>(`/presets/${id}`, data);
     return response.data.data;
@@ -215,7 +215,7 @@ export const presetAPI = {
       if (!response.success) {
         throw new Error(response.error ?? 'Failed to delete preset');
       }
-      return (response.data as { data: User }).data as { message: string };
+      return (response.data as { data: { message: string } }).data;
     }
     const response = await client().delete<{ data: { message: string } }>(
       `/presets/${id}`

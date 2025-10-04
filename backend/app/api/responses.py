@@ -6,7 +6,7 @@ It standardizes success responses, error handling, and data serialization.
 """
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 from fastapi import HTTPException
@@ -15,6 +15,9 @@ from pydantic import BaseModel, Field
 
 # Generic type for response data
 T = TypeVar("T")
+
+# Constants
+REQUEST_ID_DESCRIPTION = "Unique request identifier"
 
 
 class DateTimeEncoder(json.JSONEncoder):
@@ -33,10 +36,11 @@ class APIResponse(BaseModel, Generic[T]):
     data: Optional[T] = Field(default=None, description="Response data")
     message: Optional[str] = Field(default=None, description="Human-readable message")
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow, description="Response timestamp"
+        default_factory=lambda: datetime.now(UTC),
+        description="Response timestamp",
     )
     request_id: Optional[str] = Field(
-        default=None, description="Unique request identifier"
+        default=None, description=REQUEST_ID_DESCRIPTION
     )
 
 
@@ -53,7 +57,7 @@ class ErrorResponse(BaseModel):
         default_factory=datetime.utcnow, description="Error timestamp"
     )
     request_id: Optional[str] = Field(
-        default=None, description="Unique request identifier"
+        default=None, description=REQUEST_ID_DESCRIPTION
     )
 
 
@@ -67,10 +71,11 @@ class PaginatedResponse(BaseModel, Generic[T]):
     pagination: Dict[str, Any] = Field(description="Pagination information")
     message: Optional[str] = Field(default=None, description="Human-readable message")
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow, description="Response timestamp"
+        default_factory=lambda: datetime.now(UTC),
+        description="Response timestamp",
     )
     request_id: Optional[str] = Field(
-        default=None, description="Unique request identifier"
+        default=None, description=REQUEST_ID_DESCRIPTION
     )
 
 

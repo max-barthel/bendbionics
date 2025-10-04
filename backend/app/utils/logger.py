@@ -10,10 +10,11 @@ import sys
 import traceback
 from contextvars import ContextVar
 from dataclasses import asdict, dataclass
-from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+from app.utils.timezone import now_utc
 
 # Context variables for request tracking
 request_id_var: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
@@ -72,41 +73,63 @@ class LogEntry:
         return json.dumps(self.to_dict(), default=str)
 
 
+@dataclass
+class FileConfig:
+    """File logging configuration"""
+    log_file_path: str = "logs/app.log"
+    max_file_size: int = 10 * 1024 * 1024  # 10MB
+    backup_count: int = 5
+
+
+@dataclass
+class RemoteConfig:
+    """Remote logging configuration"""
+    remote_endpoint: Optional[str] = None
+    batch_size: int = 10
+    flush_interval: float = 5.0
+
+
+@dataclass
+class FeatureConfig:
+    """Feature toggles configuration"""
+    enable_console: bool = True
+    enable_file: bool = True
+    enable_remote: bool = False
+    enable_performance_logging: bool = True
+    enable_error_tracking: bool = True
+    enable_user_tracking: bool = True
+    enable_sql_logging: bool = False
+
+
 class LoggerConfig:
     """Logger configuration"""
 
     def __init__(
         self,
         level: LogLevel = LogLevel.INFO,
-        enable_console: bool = True,
-        enable_file: bool = True,
-        enable_remote: bool = False,
-        log_file_path: str = "logs/app.log",
-        max_file_size: int = 10 * 1024 * 1024,  # 10MB
-        backup_count: int = 5,
-        remote_endpoint: Optional[str] = None,
-        batch_size: int = 10,
-        flush_interval: float = 5.0,
-        enable_performance_logging: bool = True,
-        enable_error_tracking: bool = True,
-        enable_user_tracking: bool = True,
-        enable_sql_logging: bool = False,
-        **kwargs,  # Additional options
+        file_config: Optional[FileConfig] = None,
+        remote_config: Optional[RemoteConfig] = None,
+        feature_config: Optional[FeatureConfig] = None,
     ):
         self.level = level
-        self.enable_console = enable_console
-        self.enable_file = enable_file
-        self.enable_remote = enable_remote
-        self.log_file_path = log_file_path
-        self.max_file_size = max_file_size
-        self.backup_count = backup_count
-        self.remote_endpoint = remote_endpoint
-        self.batch_size = batch_size
-        self.flush_interval = flush_interval
-        self.enable_performance_logging = enable_performance_logging
-        self.enable_error_tracking = enable_error_tracking
-        self.enable_user_tracking = enable_user_tracking
-        self.enable_sql_logging = enable_sql_logging
+        self.file_config = file_config or FileConfig()
+        self.remote_config = remote_config or RemoteConfig()
+        self.feature_config = feature_config or FeatureConfig()
+
+        # Backward compatibility properties
+        self.enable_console = self.feature_config.enable_console
+        self.enable_file = self.feature_config.enable_file
+        self.enable_remote = self.feature_config.enable_remote
+        self.log_file_path = self.file_config.log_file_path
+        self.max_file_size = self.file_config.max_file_size
+        self.backup_count = self.file_config.backup_count
+        self.remote_endpoint = self.remote_config.remote_endpoint
+        self.batch_size = self.remote_config.batch_size
+        self.flush_interval = self.remote_config.flush_interval
+        self.enable_performance_logging = self.feature_config.enable_performance_logging
+        self.enable_error_tracking = self.feature_config.enable_error_tracking
+        self.enable_user_tracking = self.feature_config.enable_user_tracking
+        self.enable_sql_logging = self.feature_config.enable_sql_logging
 
 
 class AsyncLogHandler:
@@ -154,7 +177,7 @@ class AsyncLogHandler:
 
         if logs_to_send:
             try:
-                import aiohttp
+                import aiohttp  # type: ignore[import-untyped]
 
                 async with aiohttp.ClientSession() as session:
                     async with session.post(
@@ -250,7 +273,7 @@ class Logger:
         cpu_usage = None
         if self.config.enable_performance_logging:
             try:
-                import psutil
+                import psutil  # type: ignore[import-untyped]
 
                 process = psutil.Process()
                 memory_usage = process.memory_info().rss / 1024 / 1024  # MB
@@ -259,7 +282,7 @@ class Logger:
                 pass
 
         return LogEntry(
-            timestamp=datetime.now(datetime.timezone.utc).isoformat(),
+            timestamp=now_utc().isoformat(),
             level=level.name,
             context=context.value,
             message=message,

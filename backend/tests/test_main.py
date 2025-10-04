@@ -63,7 +63,7 @@ class TestMainApp:
         """Test static files mounting placeholder."""
         # This test is a placeholder since static files mounting
         # is complex to test without affecting the actual app
-        assert True
+        # No assertion needed - this is a placeholder test
 
     def test_static_files_path_exists(self):
         """Test that static files path is defined."""
@@ -93,7 +93,7 @@ class TestMainApp:
         """Test static files mounting when directory exists - simple version."""
         # This test covers the static files mounting logic
         # without actually mounting files
-        assert True
+        # No assertion needed - this is a placeholder test
 
     def test_cors_middleware_configured(self):
         """Test that CORS middleware is configured."""

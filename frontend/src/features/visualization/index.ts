@@ -6,8 +6,8 @@
  */
 
 // Components
-export { default as TendonConfigPanel } from './components/TendonConfigPanel';
-export { default as TendonResultsPanel } from './components/TendonResultsPanel';
+export { TendonConfigPanel } from './components/TendonConfigPanel';
+export { TendonResultsPanel } from './components/TendonResultsPanel';
 export { default as Visualizer3D } from './components/Visualizer3D';
 
 // Re-export types from components (if they exist)

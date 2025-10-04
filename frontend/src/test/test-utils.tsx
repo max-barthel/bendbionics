@@ -1,7 +1,7 @@
-import { render, RenderOptions } from '@testing-library/react';
-import React, { ReactElement } from 'react';
+import { render, type RenderOptions } from '@testing-library/react';
+import React, { type ReactElement } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { vi } from 'vitest';
+import { expect, vi } from 'vitest';
 
 // Mock providers for testing
 const MockAuthProvider = ({ children }: { children: React.ReactNode }) => (

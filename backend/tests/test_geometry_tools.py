@@ -1,5 +1,4 @@
 import numpy as np
-
 from app.utils.geometry_tools import extract_xyz_coordinates
 
 
@@ -9,7 +8,7 @@ class TestGeometryTools:
     def test_extract_xyz_coordinates_single_segment(self):
         """Test extracting XYZ coordinates from a single segment."""
         # Create a single segment with 2 transformation matrices
-        T_all = [
+        t_all = [
             [
                 np.array(
                     [
@@ -30,7 +29,7 @@ class TestGeometryTools:
             ]
         ]
 
-        result = extract_xyz_coordinates(T_all)
+        result = extract_xyz_coordinates(t_all)
 
         assert len(result) == 1  # One segment
         assert len(result[0]) == 2  # Two points in the segment
@@ -44,7 +43,7 @@ class TestGeometryTools:
     def test_extract_xyz_coordinates_multiple_segments(self):
         """Test extracting XYZ coordinates from multiple segments."""
         # Create two segments
-        T_all = [
+        t_all = [
             [  # First segment
                 np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]),
                 np.array([[1, 0, 0, 1], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]),
@@ -55,7 +54,7 @@ class TestGeometryTools:
             ],
         ]
 
-        result = extract_xyz_coordinates(T_all)
+        result = extract_xyz_coordinates(t_all)
 
         assert len(result) == 2  # Two segments
 
@@ -71,9 +70,9 @@ class TestGeometryTools:
 
     def test_extract_xyz_coordinates_empty_segment(self):
         """Test extracting XYZ coordinates from empty segment."""
-        T_all = [[]]  # Empty segment
+        t_all = [[]]  # Empty segment
 
-        result = extract_xyz_coordinates(T_all)
+        result = extract_xyz_coordinates(t_all)
 
         assert len(result) == 1
         assert len(result[0]) == 0
@@ -85,7 +84,7 @@ class TestGeometryTools:
         cos_a = np.cos(angle)
         sin_a = np.sin(angle)
 
-        T_all = [
+        t_all = [
             [
                 np.array(
                     [
@@ -98,7 +97,7 @@ class TestGeometryTools:
             ]
         ]
 
-        result = extract_xyz_coordinates(T_all)
+        result = extract_xyz_coordinates(t_all)
 
         assert len(result) == 1
         assert len(result[0]) == 1
@@ -115,7 +114,7 @@ class TestGeometryTools:
     def test_extract_xyz_coordinates_complex_transformation(self):
         """Test extracting XYZ coordinates from complex transformation."""
         # Create a more complex transformation matrix
-        T_all = [
+        t_all = [
             [
                 np.array(
                     [
@@ -136,7 +135,7 @@ class TestGeometryTools:
             ]
         ]
 
-        result = extract_xyz_coordinates(T_all)
+        result = extract_xyz_coordinates(t_all)
 
         assert len(result) == 1
         assert len(result[0]) == 2
@@ -149,11 +148,11 @@ class TestGeometryTools:
 
     def test_extract_xyz_coordinates_data_types(self):
         """Test that the function returns correct data types."""
-        T_all = [
+        t_all = [
             [np.array([[1, 0, 0, 1.5], [0, 1, 0, 2.7], [0, 0, 1, 3.9], [0, 0, 0, 1]])]
         ]
 
-        result = extract_xyz_coordinates(T_all)
+        result = extract_xyz_coordinates(t_all)
 
         # Check that result is a list of lists of lists
         assert isinstance(result, list)
@@ -167,6 +166,6 @@ class TestGeometryTools:
         assert isinstance(z, float)
 
         # Check values
-        assert x == 1.5
-        assert y == 2.7
-        assert z == 3.9
+        assert np.allclose(x, 1.5)
+        assert np.allclose(y, 2.7)
+        assert np.allclose(z, 3.9)

@@ -14,14 +14,18 @@ const DEFAULT_CONFIG = {
   DISCRETIZATION_STEPS: 1000,
 } as const;
 
-type FormProps = {
-  onResult: (segments: number[][][], configuration: Record<string, unknown>) => void;
-  initialConfiguration?: Record<string, unknown>;
-};
-
 // Error types are now handled by the useFormSubmission hook
 
-function Form({ onResult, initialConfiguration }: FormProps) {
+function Form({
+  onResult,
+  initialConfiguration,
+}: {
+  readonly onResult: (
+    segments: number[][][],
+    configuration: Record<string, unknown>
+  ) => void;
+  readonly initialConfiguration?: Record<string, unknown>;
+}) {
   const [robotState, setRobotState] = useRobotState();
 
   // Use the unified form submission hook
@@ -34,23 +38,23 @@ function Form({ onResult, initialConfiguration }: FormProps) {
     if (initialConfiguration) {
       const config = initialConfiguration;
       setRobotState({
-        segments: config.segments ?? DEFAULT_CONFIG.SEGMENTS,
-        bendingAngles: config.bendingAngles ?? [
+        segments: (config['segments'] as number) ?? DEFAULT_CONFIG.SEGMENTS,
+        bendingAngles: (config['bendingAngles'] as number[]) ?? [
           DEFAULT_CONFIG.BENDING_ANGLE,
           DEFAULT_CONFIG.BENDING_ANGLE,
           DEFAULT_CONFIG.BENDING_ANGLE,
           DEFAULT_CONFIG.BENDING_ANGLE,
           DEFAULT_CONFIG.BENDING_ANGLE,
         ],
-        rotationAngles: config.rotationAngles ?? [0, 0, 0, 0, 0],
-        backboneLengths: config.backboneLengths ?? [
+        rotationAngles: (config['rotationAngles'] as number[]) ?? [0, 0, 0, 0, 0],
+        backboneLengths: (config['backboneLengths'] as number[]) ?? [
           DEFAULT_CONFIG.BACKBONE_LENGTH,
           DEFAULT_CONFIG.BACKBONE_LENGTH,
           DEFAULT_CONFIG.BACKBONE_LENGTH,
           DEFAULT_CONFIG.BACKBONE_LENGTH,
           DEFAULT_CONFIG.BACKBONE_LENGTH,
         ],
-        couplingLengths: config.couplingLengths ?? [
+        couplingLengths: (config['couplingLengths'] as number[]) ?? [
           DEFAULT_CONFIG.COUPLING_LENGTH,
           DEFAULT_CONFIG.COUPLING_LENGTH,
           DEFAULT_CONFIG.COUPLING_LENGTH,
@@ -59,7 +63,8 @@ function Form({ onResult, initialConfiguration }: FormProps) {
           DEFAULT_CONFIG.COUPLING_LENGTH,
         ],
         discretizationSteps:
-          config.discretizationSteps ?? DEFAULT_CONFIG.DISCRETIZATION_STEPS,
+          (config['discretizationSteps'] as number) ??
+          DEFAULT_CONFIG.DISCRETIZATION_STEPS,
       });
     }
     // If no initialConfiguration is provided, the useRobotState hook will use its own defaults
@@ -72,76 +77,74 @@ function Form({ onResult, initialConfiguration }: FormProps) {
   // The handleSubmit function is now provided by the useFormSubmission hook
 
   return (
-    <>
-      <Card>
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            void handleSubmit();
-          }}
-          className="flex flex-col space-y-6"
-        >
-          <FormHeader title="Soft Robot Parameters" isValidating={validating} />
+    <Card>
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          void handleSubmit();
+        }}
+        className="flex flex-col space-y-6"
+      >
+        <FormHeader title="Soft Robot Parameters" isValidating={validating} />
 
-          <FormErrorDisplay error={error} onClose={hideError} />
+        <FormErrorDisplay error={error} onClose={hideError} />
 
-          <div className="space-y-2">
-            <SliderInput
-              label="Segments"
-              value={robotState.segments}
-              onChange={(segments: number) => updateRobotState({ segments })}
-              min={1}
-              max={10}
-              step={1}
-              placeholder="Segments"
-            />
-            <RobotStructureInfo segments={robotState.segments} />
-          </div>
-
-          <ArrayInputGroup
-            label="Bending Angles"
-            values={robotState.bendingAngles}
-            onChange={bendingAngles => updateRobotState({ bendingAngles })}
-            mode="angle"
-          />
-
-          <ArrayInputGroup
-            label="Rotation Angles"
-            values={robotState.rotationAngles}
-            onChange={rotationAngles => updateRobotState({ rotationAngles })}
-            mode="angle"
-          />
-
-          <ArrayInputGroup
-            label="Backbone Lengths"
-            values={robotState.backboneLengths}
-            onChange={backboneLengths => updateRobotState({ backboneLengths })}
-            mode="length"
-          />
-
-          <ArrayInputGroup
-            label="Coupling Lengths"
-            values={robotState.couplingLengths}
-            onChange={couplingLengths => updateRobotState({ couplingLengths })}
-            mode="length"
-          />
-
+        <div className="space-y-2">
           <SliderInput
-            label="Discretization Steps"
-            value={robotState.discretizationSteps}
-            onChange={(discretizationSteps: number) =>
-              updateRobotState({ discretizationSteps })
-            }
-            min={100}
-            max={5000}
-            step={100}
-            placeholder="Steps"
+            label="Segments"
+            value={robotState.segments}
+            onChange={(segments: number) => updateRobotState({ segments })}
+            min={1}
+            max={10}
+            step={1}
+            placeholder="Segments"
           />
+          <RobotStructureInfo segments={robotState.segments} />
+        </div>
 
-          <FormActions onSubmit={handleSubmit} loading={loading} />
-        </form>
-      </Card>
-    </>
+        <ArrayInputGroup
+          label="Bending Angles"
+          values={robotState.bendingAngles}
+          onChange={bendingAngles => updateRobotState({ bendingAngles })}
+          mode="angle"
+        />
+
+        <ArrayInputGroup
+          label="Rotation Angles"
+          values={robotState.rotationAngles}
+          onChange={rotationAngles => updateRobotState({ rotationAngles })}
+          mode="angle"
+        />
+
+        <ArrayInputGroup
+          label="Backbone Lengths"
+          values={robotState.backboneLengths}
+          onChange={backboneLengths => updateRobotState({ backboneLengths })}
+          mode="length"
+        />
+
+        <ArrayInputGroup
+          label="Coupling Lengths"
+          values={robotState.couplingLengths}
+          onChange={couplingLengths => updateRobotState({ couplingLengths })}
+          mode="length"
+        />
+
+        <SliderInput
+          label="Discretization Steps"
+          value={robotState.discretizationSteps}
+          onChange={(discretizationSteps: number) =>
+            updateRobotState({ discretizationSteps })
+          }
+          min={100}
+          max={5000}
+          step={100}
+          placeholder="Steps"
+        />
+
+        <FormActions onSubmit={handleSubmit} loading={loading} />
+      </form>
+    </Card>
   );
 }
 

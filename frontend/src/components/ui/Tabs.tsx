@@ -7,10 +7,10 @@ interface Tab {
 }
 
 interface TabsProps {
-  tabs: Tab[];
-  activeTab: string;
-  onTabChange: (tabId: string) => void;
-  className?: string;
+  readonly tabs: Tab[];
+  readonly activeTab: string;
+  readonly onTabChange: (tabId: string) => void;
+  readonly className?: string;
 }
 
 export function Tabs({ tabs, activeTab, onTabChange, className = '' }: TabsProps) {
@@ -43,10 +43,10 @@ export function Tabs({ tabs, activeTab, onTabChange, className = '' }: TabsProps
 }
 
 interface TabPanelProps {
-  id: string;
-  activeTab: string;
-  children: React.ReactNode;
-  className?: string;
+  readonly id: string;
+  readonly activeTab: string;
+  readonly children: React.ReactNode;
+  readonly className?: string;
 }
 
 export function TabPanel({ id, activeTab, children, className = '' }: TabPanelProps) {

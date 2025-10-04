@@ -12,7 +12,7 @@ export interface RobotConfiguration extends Partial<RobotState> {
       }
     >;
     coupling_data?: {
-      positions: number[][][];
+      positions: number[][];
       orientations: number[][][];
     };
     tendon_analysis?: {

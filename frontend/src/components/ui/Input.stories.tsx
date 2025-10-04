@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-// import { fn } from '@storybook/test';
 import { useState } from 'react';
 import Input from './Input';
 
@@ -88,14 +87,16 @@ type Story = StoryObj<typeof meta>;
 
 // Interactive wrapper for controlled inputs
 const InteractiveInput = (args: Record<string, unknown>) => {
-  const [value, setValue] = useState((args.value as string) ?? '');
+  const [value, setValue] = useState((args['value'] as string) ?? '');
   return (
     <Input
       {...args}
       value={value}
-      onChange={(newValue: string) => {
-        setValue(newValue);
-        (args.onChange as ((value: string) => void) | undefined)?.(newValue);
+      onChange={(newValue: string | number) => {
+        setValue(String(newValue));
+        (args['onChange'] as ((value: string | number) => void) | undefined)?.(
+          newValue
+        );
       }}
     />
   );
@@ -182,7 +183,6 @@ export const Disabled: Story = {
     value: 'Disabled input',
     label: 'Disabled Input',
     disabled: true,
-    'aria-label': 'Disabled Input',
   },
 };
 
@@ -199,7 +199,6 @@ export const WithValue: Story = {
   args: {
     value: 'john.doe@example.com',
     label: 'Email Address',
-    'aria-label': 'Email Address',
   },
 };
 
@@ -215,14 +214,14 @@ const LoginFormComponent = () => {
         type="text"
         label="Email"
         value={email}
-        onChange={setEmail}
+        onChange={value => setEmail(String(value))}
         placeholder={PLACEHOLDERS.EMAIL}
       />
       <Input
         type="password"
         label="Password"
         value={password}
-        onChange={setPassword}
+        onChange={value => setPassword(String(value))}
         placeholder={PLACEHOLDERS.PASSWORD}
       />
       <button className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors">
@@ -255,26 +254,29 @@ const ContactFormComponent = () => {
       <Input
         label="Full Name"
         value={name}
-        onChange={setName}
+        onChange={value => setName(String(value))}
         placeholder={PLACEHOLDERS.FULL_NAME}
       />
       <Input
         type="text"
         label="Email"
         value={email}
-        onChange={setEmail}
+        onChange={value => setEmail(String(value))}
         placeholder={PLACEHOLDERS.EMAIL}
       />
       <Input
         type="text"
         label="Phone Number"
         value={phone}
-        onChange={setPhone}
+        onChange={value => setPhone(String(value))}
         placeholder={PLACEHOLDERS.PHONE}
       />
       <div>
-        <label className="block text-sm font-medium mb-1">Message</label>
+        <label htmlFor="message-textarea" className="block text-sm font-medium mb-1">
+          Message
+        </label>
         <textarea
+          id="message-textarea"
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           rows={4}
           placeholder={PLACEHOLDERS.MESSAGE}

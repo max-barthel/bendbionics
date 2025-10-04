@@ -6,17 +6,18 @@ type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  children: React.ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-  loading?: boolean;
-  type?: 'button' | 'submit' | 'reset';
-  className?: string;
+  readonly variant?: ButtonVariant;
+  readonly size?: ButtonSize;
+  readonly children: React.ReactNode;
+  readonly onClick?: () => void;
+  readonly disabled?: boolean;
+  readonly loading?: boolean;
+  readonly type?: 'button' | 'submit' | 'reset';
+  readonly className?: string;
 }
 
 function Button({
+  variant: _variant = 'primary',
   size = 'md',
   children,
   onClick,

@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { Input } from '../../../components/ui';
 
 type NumberInputProps = {
-  value: number;
-  onChange: (value: number) => void;
-  placeholder?: string;
-  label?: string;
-  id?: string;
-  disabled?: boolean;
+  readonly value: number;
+  readonly onChange: (value: number) => void;
+  readonly placeholder?: string;
+  readonly label?: string;
+  readonly id?: string;
+  readonly disabled?: boolean;
 };
 
 function NumberInput({
@@ -44,13 +44,13 @@ function NumberInput({
 
   return (
     <Input
-      id={id}
+      {...(id && { id })}
       type="text"
       size="sm"
       value={internalValue}
       onChange={handleChange}
-      placeholder={placeholder}
-      label={label}
+      {...(placeholder && { placeholder })}
+      {...(label && { label })}
       disabled={disabled}
     />
   );

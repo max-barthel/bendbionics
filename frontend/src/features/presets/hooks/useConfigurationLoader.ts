@@ -14,26 +14,31 @@ const DEFAULT_VALUES = {
 
 // Helper function to check if configuration should be loaded
 const shouldLoadConfiguration = (config: Record<string, unknown>): boolean => {
-  const isPreset = config.segments && !config.tendonAnalysis;
+  const isPreset = Boolean(config['segments']) && !config['tendonAnalysis'];
   const isReset = Object.keys(config).length === 0;
   return isPreset || isReset;
 };
 
 // Helper function to create new state from configuration
 const createNewState = (config: Record<string, unknown>) => {
-  const segments = config.segments ?? DEFAULT_VALUES.SEGMENTS;
+  const segments = (config['segments'] as number) ?? DEFAULT_VALUES.SEGMENTS;
   return {
     segments,
-    bendingAngles: config.bendingAngles ?? Array(segments).fill(0),
-    rotationAngles: config.rotationAngles ?? Array(segments).fill(0),
+    bendingAngles: (config['bendingAngles'] as number[]) ?? Array(segments).fill(0),
+    rotationAngles: (config['rotationAngles'] as number[]) ?? Array(segments).fill(0),
     backboneLengths:
-      config.backboneLengths ?? Array(segments).fill(DEFAULT_VALUES.BACKBONE_LENGTH),
+      (config['backboneLengths'] as number[]) ??
+      Array(segments).fill(DEFAULT_VALUES.BACKBONE_LENGTH),
     couplingLengths:
-      config.couplingLengths ??
+      (config['couplingLengths'] as number[]) ??
       Array(segments + 1).fill(DEFAULT_VALUES.COUPLING_LENGTH),
     discretizationSteps:
-      config.discretizationSteps ?? DEFAULT_VALUES.DISCRETIZATION_STEPS,
-    tendonConfig: config.tendonConfig ?? {
+      (config['discretizationSteps'] as number) ?? DEFAULT_VALUES.DISCRETIZATION_STEPS,
+    tendonConfig: (config['tendonConfig'] as {
+      count: number;
+      radius: number;
+      coupling_offset: number;
+    }) ?? {
       count: DEFAULT_VALUES.TENDON_COUNT,
       radius: DEFAULT_VALUES.TENDON_RADIUS,
       coupling_offset: DEFAULT_VALUES.TENDON_OFFSET,
@@ -55,5 +60,5 @@ export const useConfigurationLoader = (
         setRobotState(newState);
       }
     }
-  }, [initialConfiguration, setRobotState]);
+  }, [initialConfiguration]);
 };

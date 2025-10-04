@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 // Default configuration constants
 const DEFAULT_VALUES = {
@@ -53,122 +53,91 @@ export function useRobotState() {
         };
   });
 
+  // Helper function to adjust a single array
+  const adjustArray = <T>(
+    currentArray: T[],
+    targetLength: number,
+    defaultValue: T
+  ): T[] => {
+    if (currentArray.length === targetLength) return currentArray;
+
+    if (currentArray.length < targetLength) {
+      const newElements = Array(targetLength - currentArray.length).fill(defaultValue);
+      return [...currentArray, ...newElements];
+    }
+
+    return currentArray.slice(0, targetLength);
+  };
+
   // Function to adjust arrays based on segment count
-  // This ensures the robot parameters match the selected number of segments
   const adjustArraysForSegments = (
     segments: number,
     currentState: RobotState
   ): Partial<RobotState> => {
-    // Each segment consists of one backbone and one coupling
-    // The base coupling is always present, so we have segments + 1 couplings total
-    const backboneCount = segments; // Each segment has one backbone
-    const couplingCount = segments + 1; // Couplings are one more than backbones (includes base coupling)
-
-    // Default values for new elements
-    const defaultBendingAngle = 0; // in radians
-    const defaultRotationAngle = 0; // in radians
-    const defaultBackboneLength = 0.07; // in meters
-    const defaultCouplingLength = 0.03; // in meters
+    const backboneCount = segments;
+    const couplingCount = segments + 1;
 
     const updates: Partial<RobotState> = {};
 
-    // Adjust bending angles
-    if (currentState.bendingAngles.length !== backboneCount) {
-      if (currentState.bendingAngles.length < backboneCount) {
-        // Add new elements
-        const newElements = Array(
-          backboneCount - currentState.bendingAngles.length
-        ).fill(defaultBendingAngle);
-        updates.bendingAngles = [...currentState.bendingAngles, ...newElements];
-      } else {
-        // Remove excess elements
-        updates.bendingAngles = currentState.bendingAngles.slice(0, backboneCount);
-      }
-    }
-
-    // Adjust rotation angles
-    if (currentState.rotationAngles.length !== backboneCount) {
-      if (currentState.rotationAngles.length < backboneCount) {
-        // Add new elements
-        const newElements = Array(
-          backboneCount - currentState.rotationAngles.length
-        ).fill(defaultRotationAngle);
-        updates.rotationAngles = [...currentState.rotationAngles, ...newElements];
-      } else {
-        // Remove excess elements
-        updates.rotationAngles = currentState.rotationAngles.slice(0, backboneCount);
-      }
-    }
-
-    // Adjust backbone lengths
-    if (currentState.backboneLengths.length !== backboneCount) {
-      if (currentState.backboneLengths.length < backboneCount) {
-        // Add new elements
-        const newElements = Array(
-          backboneCount - currentState.backboneLengths.length
-        ).fill(defaultBackboneLength);
-        updates.backboneLengths = [...currentState.backboneLengths, ...newElements];
-      } else {
-        // Remove excess elements
-        updates.backboneLengths = currentState.backboneLengths.slice(0, backboneCount);
-      }
-    }
-
-    // Adjust coupling lengths
-    if (currentState.couplingLengths.length !== couplingCount) {
-      if (currentState.couplingLengths.length < couplingCount) {
-        // Add new elements
-        const newElements = Array(
-          couplingCount - currentState.couplingLengths.length
-        ).fill(defaultCouplingLength);
-        updates.couplingLengths = [...currentState.couplingLengths, ...newElements];
-      } else {
-        // Remove excess elements
-        updates.couplingLengths = currentState.couplingLengths.slice(0, couplingCount);
-      }
-    }
+    // Adjust all arrays using the helper function
+    updates.bendingAngles = adjustArray(currentState.bendingAngles, backboneCount, 0);
+    updates.rotationAngles = adjustArray(currentState.rotationAngles, backboneCount, 0);
+    updates.backboneLengths = adjustArray(
+      currentState.backboneLengths,
+      backboneCount,
+      0.07
+    );
+    updates.couplingLengths = adjustArray(
+      currentState.couplingLengths,
+      couplingCount,
+      0.03
+    );
 
     return updates;
   };
 
-  const setStateWithValidation = (
-    newState: RobotState | ((prev: RobotState) => RobotState)
-  ) => {
-    setState(prevState => {
-      const updatedState =
-        typeof newState === 'function' ? newState(prevState) : newState;
-      // State update in progress
+  const setStateWithValidation = useCallback(
+    (newState: RobotState | ((prev: RobotState) => RobotState)) => {
+      setState(prevState => {
+        const updatedState =
+          typeof newState === 'function' ? newState(prevState) : newState;
+        // State update in progress
 
-      // Ensure all arrays exist before adjusting
-      const completeState = {
-        ...prevState,
-        ...updatedState,
-        bendingAngles: updatedState.bendingAngles || prevState.bendingAngles,
-        rotationAngles: updatedState.rotationAngles || prevState.rotationAngles,
-        backboneLengths: updatedState.backboneLengths || prevState.backboneLengths,
-        couplingLengths: updatedState.couplingLengths || prevState.couplingLengths,
-      };
-
-      // Validate segments range
-      const validatedSegments = Math.max(1, Math.min(10, completeState.segments));
-
-      // If segments changed, adjust the arrays accordingly
-      if (validatedSegments !== prevState.segments) {
-        // Segments changed, adjusting arrays
-        const arrayUpdates = adjustArraysForSegments(validatedSegments, completeState);
-        const finalState = {
-          ...completeState,
-          segments: validatedSegments,
-          ...arrayUpdates,
+        // Ensure all arrays exist before adjusting
+        const completeState = {
+          ...prevState,
+          ...updatedState,
+          bendingAngles: updatedState.bendingAngles || prevState.bendingAngles,
+          rotationAngles: updatedState.rotationAngles || prevState.rotationAngles,
+          backboneLengths: updatedState.backboneLengths || prevState.backboneLengths,
+          couplingLengths: updatedState.couplingLengths || prevState.couplingLengths,
         };
-        // Final state prepared
-        return finalState;
-      }
 
-      // No segment change, returning complete state
-      return completeState;
-    });
-  };
+        // Validate segments range
+        const validatedSegments = Math.max(1, Math.min(10, completeState.segments));
+
+        // If segments changed, adjust the arrays accordingly
+        if (validatedSegments !== prevState.segments) {
+          // Segments changed, adjusting arrays
+          const arrayUpdates = adjustArraysForSegments(
+            validatedSegments,
+            completeState
+          );
+          const finalState = {
+            ...completeState,
+            segments: validatedSegments,
+            ...arrayUpdates,
+          };
+          // Final state prepared
+          return finalState;
+        }
+
+        // No segment change, returning complete state
+        return completeState;
+      });
+    },
+    []
+  );
 
   useEffect(() => {
     localStorage.setItem('robotState', JSON.stringify(state));

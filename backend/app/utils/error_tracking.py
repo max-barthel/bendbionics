@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-import aiohttp
+import aiohttp  # type: ignore[import-untyped]
 from fastapi import HTTPException
 
 from app.utils.logger import (
@@ -20,6 +20,7 @@ from app.utils.logger import (
     session_id_var,
     user_id_var,
 )
+from app.utils.timezone import now_utc
 
 
 class ErrorSeverity(Enum):
@@ -204,7 +205,7 @@ class ErrorTracker:
 
         return ErrorCategory.INTERNAL
 
-    async def track_error(
+    def track_error(
         self,
         error: Exception,
         context: Optional[Dict[str, Any]] = None,
@@ -233,7 +234,7 @@ class ErrorTracker:
             "request_id": request_id_var.get(),
             "user_id": user_id_var.get(),
             "session_id": session_id_var.get(),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": now_utc().isoformat(),
             "environment": "development",  # In production, get from environment
             "version": "1.0.0",  # In production, get from version file
         }
@@ -247,7 +248,7 @@ class ErrorTracker:
         # Create error report
         error_report = ErrorReport(
             error_id=error_id,
-            timestamp=datetime.utcnow(),
+            timestamp=now_utc(),
             severity=severity,
             category=category,
             error_type=type(error).__name__,
@@ -289,10 +290,14 @@ class ErrorTracker:
 
         # Report remotely
         if self.enable_remote_reporting and self.remote_endpoint:
-            asyncio.create_task(self._report_error_remote(error_report))
+            task = asyncio.create_task(self._report_error_remote(error_report))
+            # Keep reference to prevent garbage collection
+            self._pending_tasks = getattr(self, "_pending_tasks", set())
+            self._pending_tasks.add(task)
+            task.add_done_callback(self._pending_tasks.discard)
 
         # Check for alerting
-        await self._check_alerts(error_report)
+        self._check_alerts(error_report)
 
         return error_id
 
@@ -329,11 +334,11 @@ class ErrorTracker:
                 exception=e,
             )
 
-    async def _check_alerts(self, error_report: ErrorReport):
+    def _check_alerts(self, error_report: ErrorReport):
         """Check if alerts should be sent"""
 
         # Track error counts
-        current_time = datetime.utcnow()
+        current_time = now_utc()
         error_key = f"{error_report.category.value}:{error_report.severity.value}"
 
         if error_key not in self.error_counts:
@@ -355,9 +360,9 @@ class ErrorTracker:
             and len(self.error_counts[error_key]) >= self.critical_error_threshold
         ):
 
-            await self._send_alert(error_report, len(self.error_counts[error_key]))
+            self._send_alert(error_report, len(self.error_counts[error_key]))
 
-    async def _send_alert(self, error_report: ErrorReport, count: int):
+    def _send_alert(self, error_report: ErrorReport, count: int):
         """Send alert for critical errors"""
 
         alert_message = (
@@ -382,9 +387,9 @@ class ErrorTracker:
 
         # Send email alert if enabled
         if self.enable_email_alerts and self.email_recipients:
-            await self._send_email_alert(error_report, count)
+            self._send_email_alert(error_report, count)
 
-    async def _send_email_alert(self, error_report: ErrorReport, count: int):
+    def _send_email_alert(self, error_report: ErrorReport, count: int):
         """Send email alert for critical errors"""
         try:
             # In a real implementation, this would send an email
@@ -447,7 +452,7 @@ class ErrorTracker:
         for error in self.local_errors:
             if error.error_id == error_id:
                 error.resolved = True
-                error.resolved_at = datetime.utcnow()
+                error.resolved_at = now_utc()
                 error.resolved_by = resolved_by
                 error.notes = notes
                 break
@@ -488,7 +493,7 @@ class ErrorTracker:
             )
 
         # Recent errors (last 24 hours)
-        recent_cutoff = datetime.utcnow() - timedelta(hours=24)
+        recent_cutoff = now_utc() - timedelta(hours=24)
         recent_errors = len(
             [e for e in self.local_errors if e.timestamp > recent_cutoff]
         )

@@ -4,10 +4,10 @@ type BadgeVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 
 type BadgeSize = 'sm' | 'md' | 'lg';
 
 interface BadgeProps {
-  variant?: BadgeVariant;
-  size?: BadgeSize;
-  children: React.ReactNode;
-  className?: string;
+  readonly variant?: BadgeVariant;
+  readonly size?: BadgeSize;
+  readonly children: React.ReactNode;
+  readonly className?: string;
 }
 
 function Badge({

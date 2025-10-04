@@ -23,7 +23,7 @@ interface State {
 
 class ErrorBoundary extends Component<Props, State> {
   private retryCount = 0;
-  private maxRetries = 3;
+  readonly maxRetries = 3;
 
   constructor(props: Props) {
     super(props);
@@ -36,7 +36,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
-    const errorId = `error_${Date.now()}_${Math.random().toString(RADIX_BASE).substr(RANDOM_STRING_START, RANDOM_STRING_LENGTH)}`;
+    const errorId = `error_${Date.now()}_${Math.random().toString(RADIX_BASE).substring(RANDOM_STRING_START, RANDOM_STRING_LENGTH)}`;
 
     return {
       hasError: true,
@@ -50,24 +50,20 @@ class ErrorBoundary extends Component<Props, State> {
     const { errorId } = this.state;
 
     // Log the error
-    logger.error({
-      context: LogContext.ERROR,
-      message: 'Error boundary caught an error',
-      data: {
-        error: {
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
-        },
-        errorInfo: {
-          componentStack: errorInfo.componentStack,
-        },
-        errorId,
-        retryCount: this.retryCount,
-        userAgent: navigator.userAgent,
-        url: window.location.href,
-        timestamp: new Date().toISOString(),
+    logger.error('Error boundary caught an error', LogContext.GENERAL, {
+      error: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
       },
+      errorInfo: {
+        componentStack: errorInfo.componentStack,
+      },
+      errorId,
+      retryCount: this.retryCount,
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      timestamp: new Date().toISOString(),
       component: 'ErrorBoundary',
       action: 'componentDidCatch',
     });
@@ -114,17 +110,16 @@ class ErrorBoundary extends Component<Props, State> {
         body: JSON.stringify(errorReport),
       });
     } catch (reportingError) {
-      logger.error({
-        context: LogContext.ERROR,
-        message: 'Failed to report error to external service',
-        data: { error: reportingError, originalErrorId: errorId },
+      logger.error('Failed to report error to external service', LogContext.GENERAL, {
+        error: reportingError,
+        originalErrorId: errorId,
         component: 'ErrorBoundary',
         action: 'reportError',
       });
     }
   }
 
-  private handleRetry = () => {
+  readonly handleRetry = () => {
     if (this.retryCount < this.maxRetries) {
       this.retryCount++;
       this.setState({
@@ -134,28 +129,24 @@ class ErrorBoundary extends Component<Props, State> {
         errorId: null,
       });
 
-      logger.info({
-        context: LogContext.ERROR,
-        message: 'Error boundary retry attempted',
-        data: { retryCount: this.retryCount },
+      logger.info('Error boundary retry attempted', LogContext.GENERAL, {
+        retryCount: this.retryCount,
         component: 'ErrorBoundary',
         action: 'handleRetry',
       });
     }
   };
 
-  private handleReload = () => {
-    logger.info({
-      context: LogContext.ERROR,
-      message: 'Page reload requested due to error',
-      data: { errorId: this.state.errorId },
+  readonly handleReload = () => {
+    logger.info('Page reload requested due to error', LogContext.GENERAL, {
+      errorId: this.state.errorId,
       component: 'ErrorBoundary',
       action: 'handleReload',
     });
     window.location.reload();
   };
 
-  private handleReportBug = () => {
+  readonly handleReportBug = () => {
     const { error, errorInfo, errorId } = this.state;
     const bugReport = {
       errorId,
@@ -171,10 +162,8 @@ class ErrorBoundary extends Component<Props, State> {
     navigator.clipboard
       .writeText(JSON.stringify(bugReport, null, 2))
       .then(() => {
-        logger.info({
-          context: LogContext.ERROR,
-          message: 'Bug report copied to clipboard',
-          data: { errorId },
+        logger.info('Bug report copied to clipboard', LogContext.GENERAL, {
+          errorId,
           component: 'ErrorBoundary',
           action: 'handleReportBug',
         });

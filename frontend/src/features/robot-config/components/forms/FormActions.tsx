@@ -1,9 +1,9 @@
 import SubmitButton from '../SubmitButton';
 
 interface FormActionsProps {
-  onSubmit: () => void;
-  loading?: boolean;
-  disabled?: boolean;
+  readonly onSubmit: () => void;
+  readonly loading?: boolean;
+  readonly disabled?: boolean;
 }
 
 /**

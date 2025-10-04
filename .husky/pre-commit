@@ -6,6 +6,11 @@ if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
   exit 1
 fi
 
+# Run smart cleanup before commit
+echo "🧹 Running smart cleanup..."
+./cleanup.sh --auto > /dev/null 2>&1 || true
+echo "✅ Cleanup completed"
+
 # Only check for critical issues
 echo "⚡ Checking for critical errors only..."
 

@@ -1,10 +1,11 @@
 from unittest.mock import patch
 
 import numpy as np
-
 from app.models.pcc.model import compute_pcc
-from app.models.pcc.transformations import (transformation_matrix_backbone,
-                                            transformation_matrix_coupling)
+from app.models.pcc.transformations import (
+    transformation_matrix_backbone,
+    transformation_matrix_coupling,
+)
 from app.models.pcc.types import PCCParams
 
 
@@ -185,6 +186,24 @@ class TestPCCModel:
             else:
                 assert seg1 == seg2
 
+    def _elements_differ(self, elem1, elem2):
+        """Helper to check if two elements are different."""
+        if isinstance(elem1, np.ndarray) and isinstance(elem2, np.ndarray):
+            return not np.array_equal(elem1, elem2)
+        return elem1 != elem2
+
+    def _segments_differ(self, seg1, seg2):
+        """Helper to check if two segments are different."""
+        if isinstance(seg1, np.ndarray) and isinstance(seg2, np.ndarray):
+            return not np.array_equal(seg1, seg2)
+        if isinstance(seg1, list) and isinstance(seg2, list):
+            if len(seg1) != len(seg2):
+                return True
+            return any(
+                self._elements_differ(elem1, elem2) for elem1, elem2 in zip(seg1, seg2)
+            )
+        return False
+
     def test_compute_pcc_different_parameters(self):
         """Test that different parameters produce different results."""
         params1 = PCCParams(
@@ -209,28 +228,9 @@ class TestPCCModel:
         # Results should be different
         assert len(result1) == len(result2)
         # At least some segments should be different
-        differences_found = False
-        for seg1, seg2 in zip(result1, result2):
-            if isinstance(seg1, np.ndarray) and isinstance(seg2, np.ndarray):
-                if not np.array_equal(seg1, seg2):
-                    differences_found = True
-                    break
-            elif isinstance(seg1, list) and isinstance(seg2, list):
-                # Compare lists element by element
-                if len(seg1) != len(seg2):
-                    differences_found = True
-                    break
-                for elem1, elem2 in zip(seg1, seg2):
-                    if isinstance(elem1, np.ndarray) and isinstance(elem2, np.ndarray):
-                        if not np.array_equal(elem1, elem2):
-                            differences_found = True
-                            break
-                    elif elem1 != elem2:
-                        differences_found = True
-                        break
-                if differences_found:
-                    break
-
+        differences_found = any(
+            self._segments_differ(seg1, seg2) for seg1, seg2 in zip(result1, result2)
+        )
         assert differences_found
 
     def test_compute_pcc_zero_angles(self):

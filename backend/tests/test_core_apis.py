@@ -24,7 +24,7 @@ def test_pcc_computation():
 def test_tendon_calculation():
     """Test tendon calculation that users need."""
     # Use the non-authenticated endpoint for testing
-    response = client.post("/pcc-with-tendons", 
+    response = client.post("/pcc-with-tendons",
         json={
             "bending_angles": [0.5, 0.3],
             "rotation_angles": [0.0, 0.0],

@@ -69,6 +69,16 @@ check_prerequisites() {
     print_success "Prerequisites ready"
 }
 
+# Function to run smart cleanup before development
+smart_cleanup() {
+    print_status "Running smart cleanup..."
+
+    # Only clean old test data, preserve recent work
+    ./cleanup.sh --auto > /dev/null 2>&1 || true
+
+    print_success "Smart cleanup completed"
+}
+
 # Function to wait for service (startup style - quick check)
 wait_for_service() {
     local url=$1
@@ -181,6 +191,9 @@ main() {
     # Run checks
     check_directory
     check_prerequisites
+
+    # Smart cleanup before starting development
+    smart_cleanup
 
     # Start services
     start_backend

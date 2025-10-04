@@ -25,9 +25,9 @@ function SkeletonLoader({
       case 'text':
         return (
           <div className={`space-y-2 ${className}`}>
-            {Array.from({ length: lines }).map((_, index) => (
+            {Array.from({ length: lines }, (_, index) => (
               <div
-                key={index}
+                key={`skeleton-line-${index}-${lines}`}
                 className={`h-4 bg-gray-200 rounded animate-pulse ${getWidthClass(index)}`}
               />
             ))}
@@ -55,8 +55,8 @@ function SkeletonLoader({
             <div className="space-y-4">
               <div className="h-6 bg-gray-200 rounded w-1/2 animate-pulse" />
               <div className="space-y-3">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="space-y-2">
+                {Array.from({ length: 3 }, (_, index) => (
+                  <div key={`skeleton-card-${index}-3`} className="space-y-2">
                     <div className="h-4 bg-gray-200 rounded w-1/3 animate-pulse" />
                     <div className="h-10 bg-gray-200 rounded animate-pulse" />
                   </div>

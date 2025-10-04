@@ -44,8 +44,9 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
         <SubsectionTitle title="Select Segment to Adjust" />
         <div className="flex flex-wrap gap-2 text-xs bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-2 shadow-2xl shadow-black/5">
           {values.map((value, index) => (
-            <div
-              key={index}
+            <button
+              key={`segment-${index}-${value}`}
+              type="button"
               className={`w-[calc(50%-4px)] h-16 flex flex-col justify-center flex-shrink-0 p-3 rounded-xl cursor-pointer ${
                 selectedSegment === index
                   ? 'bg-gradient-to-br from-blue-500/25 to-indigo-500/25 text-gray-900 shadow-lg border border-blue-400/30 shadow-blue-500/10'
@@ -68,7 +69,7 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
                   </>
                 )}
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -89,9 +90,9 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
           <SliderInput
             value={
               useDegrees
-                ? (values[selectedSegment] * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) /
+                ? ((values[selectedSegment] ?? 0) * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) /
                   Math.PI
-                : values[selectedSegment]
+                : (values[selectedSegment] ?? 0)
             }
             onChange={(value: number) => {
               if (useDegrees) {
