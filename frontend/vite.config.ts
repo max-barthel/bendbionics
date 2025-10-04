@@ -46,9 +46,13 @@ export default defineConfig(({ mode }) => {
       ],
       exclude: ['@vitest/browser', '@vitest/ui', 'vitest'],
       force: true,
+      disabled: process.env.CI === 'true',
     },
     define: {
       global: 'globalThis',
+    },
+    esbuild: {
+      target: 'node14',
     },
     server: {
       watch: {

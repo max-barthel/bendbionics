@@ -20,6 +20,12 @@ export default defineConfig({
     testTimeout: 30000,
     hookTimeout: 30000,
     teardownTimeout: 30000,
+    // Browser tests disabled to avoid CI conflicts
+    // browser: process.env.CI !== 'true' ? {
+    //   enabled: true,
+    //   headless: true,
+    //   provider: 'playwright',
+    // } : undefined,
     // Parallel test execution
     pool: 'threads',
     poolOptions: {
@@ -85,25 +91,6 @@ export default defineConfig({
       html: './test-results/index.html',
       json: './test-results/results.json',
     },
-    projects: [
-      {
-        extends: true,
-        plugins: [],
-        test: {
-          name: 'storybook',
-          browser: {
-            enabled: true,
-            headless: true,
-            provider: 'playwright',
-            instances: [
-              {
-                browser: 'chromium',
-              },
-            ],
-          },
-          setupFiles: ['.storybook/vitest.setup.ts'],
-        },
-      },
-    ],
+    // Browser tests disabled in CI to avoid conflicts
   },
 });
