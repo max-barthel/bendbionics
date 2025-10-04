@@ -75,3 +75,4 @@ This application is available as a **native desktop app**:
 2. **Adjust parameters** and see real-time 3D visualization
 3. **Save your work**: Use the Preset Manager to save configurations
 test change
+test cleanup
