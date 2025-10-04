@@ -163,11 +163,9 @@ class PCCRobotModel(RobotModelInterface):
 
             # Create rotation matrix for 180-degree case
             # Rz(phi) * Ry(π) * Rz(-phi)
-            rz_phi = np.array([
-                [cos_phi, -sin_phi, 0],
-                [sin_phi, cos_phi, 0],
-                [0, 0, 1]
-            ])
+            rz_phi = np.array(
+                [[cos_phi, -sin_phi, 0], [sin_phi, cos_phi, 0], [0, 0, 1]]
+            )
             # 180-degree rotation around y
             ry_pi = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, -1]])
             rz_neg_phi = rz_phi.T
