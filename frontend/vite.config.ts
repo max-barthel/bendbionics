@@ -32,22 +32,27 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins,
-    optimizeDeps: {
-      include: [
-        'three',
-        'three-stdlib',
-        '@react-three/fiber',
-        '@react-three/drei',
-        'react',
-        'react-dom',
-        'react-router-dom',
-        'axios',
-        '@tauri-apps/api',
-      ],
-      exclude: ['@vitest/browser', '@vitest/ui', 'vitest'],
-      force: true,
-      disabled: process.env.CI === 'true',
-    },
+    optimizeDeps:
+      process.env.CI === 'true'
+        ? {
+            noDiscovery: true,
+            include: undefined,
+          }
+        : {
+            include: [
+              'three',
+              'three-stdlib',
+              '@react-three/fiber',
+              '@react-three/drei',
+              'react',
+              'react-dom',
+              'react-router-dom',
+              'axios',
+              '@tauri-apps/api',
+            ],
+            exclude: ['@vitest/browser', '@vitest/ui', 'vitest'],
+            force: true,
+          },
     define: {
       global: 'globalThis',
     },
