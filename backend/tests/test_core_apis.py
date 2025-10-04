@@ -3,8 +3,12 @@ Core API Tests - Startup Style
 Test only what users actually use, not theoretical edge cases.
 """
 
+from app.database import create_db_and_tables
 from app.main import app
 from fastapi.testclient import TestClient
+
+# Initialize database before running tests
+create_db_and_tables()
 
 client = TestClient(app)
 
