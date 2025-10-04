@@ -74,3 +74,4 @@ This application is available as a **native desktop app**:
 1. **Start the app** and begin using it immediately
 2. **Adjust parameters** and see real-time 3D visualization
 3. **Save your work**: Use the Preset Manager to save configurations
+test change
