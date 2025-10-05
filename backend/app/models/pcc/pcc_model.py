@@ -27,9 +27,7 @@ class PCCRobotModel(RobotModelInterface):
         """Initialize the PCC robot model."""
         self.model_type = "pcc"
 
-    def compute_robot_position(
-        self, params: PCCParams
-    ) -> List[List[np.ndarray]]:
+    def compute_robot_position(self, params: PCCParams) -> List[List[np.ndarray]]:
         """
         Compute robot position using the PCC model.
 
@@ -88,10 +86,8 @@ class PCCRobotModel(RobotModelInterface):
                 if np.linalg.norm(direction) > 1e-6:
                     # Calculate orientation based on direction
                     z_axis = direction / np.linalg.norm(direction)
-                    current_orientation = (
-                        self._create_orientation_from_direction(
-                            z_axis, segment_index
-                        )
+                    current_orientation = self._create_orientation_from_direction(
+                        z_axis, segment_index
                     )
 
                 current_position = coupling_middle
@@ -106,13 +102,9 @@ class PCCRobotModel(RobotModelInterface):
                     # Calculate average direction of the curved segment
                     segment_direction = segment[-1] - segment[0]
                     if np.linalg.norm(segment_direction) > 1e-6:
-                        z_axis = segment_direction / np.linalg.norm(
-                            segment_direction
-                        )
-                        current_orientation = (
-                            self._create_orientation_from_direction(
-                                z_axis, segment_index
-                            )
+                        z_axis = segment_direction / np.linalg.norm(segment_direction)
+                        current_orientation = self._create_orientation_from_direction(
+                            z_axis, segment_index
                         )
 
         return {
@@ -144,8 +136,9 @@ class PCCRobotModel(RobotModelInterface):
         # Normalize the z-axis (direction)
         z_axis = z_axis / np.linalg.norm(z_axis)
 
-        # If the z-axis is close to the global z-axis, use global coordinates
-        if abs(z_axis[2]) > 0.9:
+        # If the z-axis is close to the global z-axis (pointing up),
+        # use global coordinates
+        if z_axis[2] > 0.9:
             return np.eye(3)
 
         # Calculate the bending angle (theta) and direction (phi)
@@ -160,29 +153,45 @@ class PCCRobotModel(RobotModelInterface):
         # Calculate phi from the x and y components
         phi = np.arctan2(z_axis[1], z_axis[0])
 
+        # Handle the 180-degree case properly
+        # When theta is close to π (180 degrees), we need to ensure proper rotation
+        if abs(theta - np.pi) < 1e-6:
+            # For 180-degree bending, we need to rotate by π around the y-axis
+            # and then apply the phi rotation
+            cos_phi = np.cos(phi)
+            sin_phi = np.sin(phi)
+
+            # Create rotation matrix for 180-degree case
+            # Rz(phi) * Ry(π) * Rz(-phi)
+            rz_phi = np.array(
+                [[cos_phi, -sin_phi, 0], [sin_phi, cos_phi, 0], [0, 0, 1]]
+            )
+            # 180-degree rotation around y
+            ry_pi = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, -1]])
+            rz_neg_phi = rz_phi.T
+
+            return rz_phi @ ry_pi @ rz_neg_phi
+
         # Create rotation matrices following the MATLAB approach
         # Rz(phi) * Ry(theta) * Rz(-phi)
 
         # Rotation around z-axis by phi
         cos_phi = np.cos(phi)
         sin_phi = np.sin(phi)
-        Rz_phi = np.array(
-            [[cos_phi, -sin_phi, 0], [sin_phi, cos_phi, 0], [0, 0, 1]]
-        )
+        rz_phi = np.array([[cos_phi, -sin_phi, 0], [sin_phi, cos_phi, 0], [0, 0, 1]])
 
         # Rotation around y-axis by theta
         cos_theta = np.cos(theta)
         sin_theta = np.sin(theta)
-        Ry_theta = np.array(
+        ry_theta = np.array(
             [[cos_theta, 0, sin_theta], [0, 1, 0], [-sin_theta, 0, cos_theta]]
         )
 
-        # Rotation around z-axis by -phi (transpose of Rz_phi)
-        Rz_neg_phi = Rz_phi.T
+        # Rotation around z-axis by -phi (transpose of rz_phi)
+        rz_neg_phi = rz_phi.T
 
         # Combine rotations: Rz(phi) * Ry(theta) * Rz(-phi)
-        return Rz_phi @ Ry_theta @ Rz_neg_phi
-
+        return rz_phi @ ry_theta @ rz_neg_phi
 
 
 # Convenience function for backward compatibility

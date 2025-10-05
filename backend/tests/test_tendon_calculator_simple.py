@@ -1,7 +1,5 @@
 """Simple tests for tendon calculator to increase coverage."""
 
-import pytest
-
 from app.models.tendon.calculator import TendonCalculator
 from app.models.tendon.types import TendonConfig
 

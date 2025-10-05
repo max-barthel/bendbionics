@@ -425,6 +425,13 @@ case "${1:-help}" in
             *) print_error "Unknown quality command: $2" ;;
         esac
         ;;
+    "cleanup")
+        case "${2:-cleanup}" in
+            "cleanup") ./cleanup.sh "${@:3}" ;;
+            "status") ./cleanup.sh status ;;
+            *) print_error "Unknown cleanup command: $2" ;;
+        esac
+        ;;
     "docs")
         case "${2:-storybook}" in
             "storybook") docs_storybook ;;
@@ -512,6 +519,10 @@ case "${1:-help}" in
         echo "  report    - Generate comprehensive code quality report"
         echo "  frontend  - Run frontend code quality checks"
         echo "  backend   - Run backend code quality checks"
+        echo ""
+        echo "Cleanup commands:"
+        echo "  cleanup   - Clean test data and build artifacts"
+        echo "  status    - Show current test data status"
         echo ""
         echo "Documentation commands:"
         echo "  storybook - Start Storybook development server"

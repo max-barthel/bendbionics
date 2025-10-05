@@ -6,9 +6,6 @@ const ERROR_MESSAGES = {
   UNKNOWN_ERROR: 'Unknown error',
 } as const;
 
-// Constants for token display
-const TOKEN_DISPLAY_LENGTH = 20;
-
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -22,12 +19,10 @@ export class TauriApiClient {
     const testValue = 'test_value';
     localStorage.setItem(testKey, testValue);
     const retrievedValue = localStorage.getItem(testKey);
-    if (import.meta.env.DEV) {
+    // Only log if localStorage test fails
+    if (import.meta.env.DEV && retrievedValue !== testValue) {
       logger.debug(
-        'TauriApiClient: localStorage test - stored:',
-        testValue,
-        'retrieved:',
-        retrievedValue
+        `TauriApiClient: localStorage test failed - stored: ${testValue}, retrieved: ${retrievedValue}`
       );
     }
   }
@@ -52,44 +47,18 @@ export class TauriApiClient {
     try {
       return JSON.parse(token) as string;
     } catch {
-      return token.replace(/^"|"$/g, ''); // Remove leading and trailing quotes
+      return token.replace(/(^"|"$)/g, ''); // Remove leading and trailing quotes
     }
   }
 
   private logTokenDebug(token: string | null): void {
-    if (!import.meta.env.DEV) {
-      return;
+    // Only log token debug info if there's an issue
+    if (import.meta.env.DEV && token && token.length > 0) {
+      // Only log if token has unexpected format
+      if (token.startsWith('"') || token.endsWith('"')) {
+        logger.debug(`Token format issue detected: ${token.substring(0, 20)}...`);
+      }
     }
-
-    logger.debug('=== getAuthToken Debug ===');
-    logger.debug(
-      'localStorage token:',
-      localStorage.getItem('token') ? 'EXISTS' : 'NULL'
-    );
-    logger.debug(
-      'sessionStorage token:',
-      sessionStorage.getItem('token') ? 'EXISTS' : 'NULL'
-    );
-    logger.debug(
-      'window.authToken:',
-      (window as { authToken?: string }).authToken ? 'EXISTS' : 'NULL'
-    );
-    logger.debug(
-      'Final token:',
-      token ? `"${token.substring(0, TOKEN_DISPLAY_LENGTH)}..."` : 'NULL'
-    );
-    logger.debug('Token length:', token ? token.length : 0);
-    logger.debug('Token starts with quote:', token ? token.startsWith('"') : false);
-    logger.debug('Token ends with quote:', token ? token.endsWith('"') : false);
-    logger.debug(
-      'Token first 20 chars:',
-      token ? token.substring(0, TOKEN_DISPLAY_LENGTH) : 'NULL'
-    );
-    logger.debug(
-      'Token last 20 chars:',
-      token ? token.substring(token.length - TOKEN_DISPLAY_LENGTH) : 'NULL'
-    );
-    logger.debug('========================');
   }
 
   private getAuthToken(): string | null {
@@ -113,24 +82,6 @@ export class TauriApiClient {
   async get<T>(endpoint: string): Promise<ApiResponse<T>> {
     try {
       const authToken = this.getAuthToken();
-      if (import.meta.env.DEV) {
-        logger.debug(
-          `Tauri GET ${endpoint} - Auth token:`,
-          authToken
-            ? `Bearer ${authToken.substring(0, TOKEN_DISPLAY_LENGTH)}...`
-            : 'None'
-        );
-        logger.debug(
-          `Tauri GET ${endpoint} - Auth token passed to Rust:`,
-          authToken ? 'YES' : 'NO'
-        );
-        logger.debug(`Tauri GET ${endpoint} - Auth token type:`, typeof authToken);
-        logger.debug(`Tauri GET ${endpoint} - Auth token is null:`, authToken === null);
-        logger.debug(
-          `Tauri GET ${endpoint} - Auth token is undefined:`,
-          authToken === undefined
-        );
-      }
 
       return await invoke<ApiResponse<T>>('call_backend_api', {
         endpoint,
@@ -151,31 +102,10 @@ export class TauriApiClient {
   async post<T>(endpoint: string, data: unknown): Promise<ApiResponse<T>> {
     try {
       const authToken = this.getAuthToken();
-      if (import.meta.env.DEV) {
-        logger.debug(
-          `Tauri POST ${endpoint} - Auth token:`,
-          authToken
-            ? `Bearer ${authToken.substring(0, TOKEN_DISPLAY_LENGTH)}...`
-            : 'None'
-        );
-        logger.debug(
-          `Tauri POST ${endpoint} - Auth token passed to Rust:`,
-          authToken ? 'YES' : 'NO'
-        );
-        logger.debug(`Tauri POST ${endpoint} - Auth token type:`, typeof authToken);
-        logger.debug(
-          `Tauri POST ${endpoint} - Auth token is null:`,
-          authToken === null
-        );
-        logger.debug(
-          `Tauri POST ${endpoint} - Auth token is undefined:`,
-          authToken === undefined
-        );
-      }
 
       return await invoke<ApiResponse<T>>('call_backend_api', {
         endpoint,
-        data,
+        data: data,
         auth_token: authToken ?? null,
         token: authToken ?? null, // Try alternative parameter name
       });
@@ -189,21 +119,16 @@ export class TauriApiClient {
     }
   }
 
-  async put<T>(endpoint: string, data: unknown): Promise<ApiResponse<T>> {
-    return this.post<T>(endpoint, { ...data, _method: 'PUT' });
+  async put<T>(endpoint: string, _data: unknown): Promise<ApiResponse<T>> {
+    return this.post<T>(endpoint, {
+      ...(_data as Record<string, unknown>),
+      _method: 'PUT',
+    });
   }
 
   async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
     try {
       const authToken = this.getAuthToken();
-      if (import.meta.env.DEV) {
-        logger.debug(
-          `Tauri DELETE ${endpoint} - Auth token:`,
-          authToken
-            ? `Bearer ${authToken.substring(0, TOKEN_DISPLAY_LENGTH)}...`
-            : 'None'
-        );
-      }
 
       return await invoke<ApiResponse<T>>('call_backend_api', {
         endpoint,

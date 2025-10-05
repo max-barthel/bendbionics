@@ -6,8 +6,8 @@
  */
 
 // Components
-export { default as AngleControlPanel } from './components/AngleControlPanel';
-export { default as CollapsibleSection } from './components/CollapsibleSection';
+export { AngleControlPanel } from './components/AngleControlPanel';
+export { CollapsibleSection } from './components/CollapsibleSection';
 export { ErrorBoundary } from './components/ErrorBoundary';
 export { ErrorDisplay } from './components/ErrorDisplay';
 export { default as NumberInput } from './components/NumberInput';
@@ -23,7 +23,6 @@ export { useRetryAPI } from './hooks/useRetryAPI';
 export { useUnifiedErrorHandler } from './hooks/useUnifiedErrorHandler';
 
 // Re-export types from hooks
-export type { RetryOptions } from './hooks/useRetryAPI';
 export type {
   ErrorState,
   ErrorType,

@@ -73,9 +73,9 @@ function FloatingLabel({
   id,
   shouldFloat,
 }: {
-  label: string;
-  id?: string;
-  shouldFloat: boolean;
+  readonly label: string;
+  readonly id?: string;
+  readonly shouldFloat: boolean;
 }) {
   return (
     <label
@@ -148,7 +148,7 @@ function Input({
   min,
   max,
   step,
-}: InputProps) {
+}: Readonly<InputProps>) {
   // Ensure label is correctly associated even if no id is passed in
   const reactGeneratedId = useId();
   const inputId = id ?? `input-${reactGeneratedId}`;

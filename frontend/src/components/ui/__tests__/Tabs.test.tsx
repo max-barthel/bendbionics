@@ -1,4 +1,6 @@
+import '@testing-library/jest-dom';
 import { fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TabPanel, Tabs } from '../Tabs';
 
@@ -184,10 +186,13 @@ describe('Tabs', () => {
       const tabsContainer = screen.getByText('Tab 1').closest('div')
         ?.parentElement?.parentElement;
       expect(tabsContainer).toHaveClass(
-        'bg-white/10',
+        'bg-gradient-to-br',
+        'from-white/15',
+        'to-white/5',
         'backdrop-blur-xl',
         'border',
-        'border-white/20'
+        'border-white/20',
+        'rounded-full'
       );
     });
 
@@ -197,7 +202,13 @@ describe('Tabs', () => {
       // The flex layout classes are applied to the container div
       const flexContainer = screen.getByText('Tab 1').closest('div')
         ?.parentElement?.parentElement;
-      expect(flexContainer).toHaveClass('flex', 'bg-white/10', 'backdrop-blur-xl');
+      expect(flexContainer).toHaveClass(
+        'flex',
+        'bg-gradient-to-br',
+        'from-white/15',
+        'to-white/5',
+        'backdrop-blur-xl'
+      );
     });
 
     it('applies base button classes', () => {
@@ -207,13 +218,18 @@ describe('Tabs', () => {
       const tabButton = screen.getByText('Tab 1').closest('button');
       expect(tabButton).toHaveClass(
         'relative',
-        'px-4',
-        'py-2',
+        'w-24',
+        'h-8',
+        'flex',
+        'items-center',
+        'justify-center',
+        'flex-1',
         'text-xs',
         'font-medium',
         'rounded-full',
-        'transition-all',
-        'duration-300'
+        'transition-colors',
+        'duration-200',
+        'border-2'
       );
     });
   });
@@ -296,15 +312,16 @@ describe('TabPanel', () => {
       expect(screen.getByText('Tab 1 Content')).toBeInTheDocument();
     });
 
-    it('does not render content when tab is not active', () => {
+    it('hides content when tab is not active', () => {
       render(
         <TabPanel id="tab1" activeTab="tab2">
           <div data-testid="tab-content">Tab 1 Content</div>
         </TabPanel>
       );
 
-      expect(screen.queryByTestId('tab-content')).not.toBeInTheDocument();
-      expect(screen.queryByText('Tab 1 Content')).not.toBeInTheDocument();
+      const content = screen.getByTestId('tab-content');
+      expect(content).toBeInTheDocument();
+      expect(content.parentElement).toHaveClass('hidden');
     });
 
     it('renders with custom className', () => {
@@ -342,7 +359,9 @@ describe('TabPanel', () => {
         </TabPanel>
       );
 
-      expect(screen.queryByTestId('tab1-content')).not.toBeInTheDocument();
+      const content = screen.getByTestId('tab1-content');
+      expect(content).toBeInTheDocument();
+      expect(content.parentElement).toHaveClass('hidden');
 
       rerender(
         <TabPanel id="tab1" activeTab="tab1">
@@ -351,6 +370,7 @@ describe('TabPanel', () => {
       );
 
       expect(screen.getByTestId('tab1-content')).toBeInTheDocument();
+      expect(content.parentElement).not.toHaveClass('hidden');
     });
 
     it('hides content when tab becomes inactive', () => {
@@ -360,7 +380,9 @@ describe('TabPanel', () => {
         </TabPanel>
       );
 
-      expect(screen.getByTestId('tab1-content')).toBeInTheDocument();
+      const content = screen.getByTestId('tab1-content');
+      expect(content).toBeInTheDocument();
+      expect(content.parentElement).not.toHaveClass('hidden');
 
       rerender(
         <TabPanel id="tab1" activeTab="tab2">
@@ -368,13 +390,18 @@ describe('TabPanel', () => {
         </TabPanel>
       );
 
-      expect(screen.queryByTestId('tab1-content')).not.toBeInTheDocument();
+      expect(screen.getByTestId('tab1-content')).toBeInTheDocument();
+      expect(content.parentElement).toHaveClass('hidden');
     });
   });
 
   describe('Edge Cases', () => {
     it('handles empty content', () => {
-      render(<TabPanel id="tab1" activeTab="tab1"></TabPanel>);
+      render(
+        <TabPanel id="tab1" activeTab="tab1">
+          {null}
+        </TabPanel>
+      );
 
       const panel = screen.getAllByRole('generic')[0];
       expect(panel).toBeInTheDocument();

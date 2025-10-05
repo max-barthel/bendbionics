@@ -82,7 +82,7 @@ export function useLocalPresets() {
   const updatePreset = (id: number, updates: Record<string, unknown>) => {
     setPresets(prev =>
       prev.map(preset =>
-        preset.id === id
+        preset['id'] === id
           ? { ...preset, ...updates, updated_at: new Date().toISOString() }
           : preset
       )
@@ -90,7 +90,7 @@ export function useLocalPresets() {
   };
 
   const deletePreset = (id: number) => {
-    setPresets(prev => prev.filter(preset => preset.id !== id));
+    setPresets(prev => prev.filter(preset => preset['id'] !== id));
   };
 
   return {

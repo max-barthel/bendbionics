@@ -21,9 +21,7 @@ class TendonConfig(BaseModel):
             raise ValueError(msg)
         if v > 12:
             msg = "Tendon count cannot exceed 12 for practical reasons"
-            raise ValueError(
-                msg
-            )
+            raise ValueError(msg)
         return v
 
     @field_validator("radius")

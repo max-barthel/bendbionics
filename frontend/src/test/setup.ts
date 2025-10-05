@@ -8,7 +8,7 @@ const global = globalThis as unknown as typeof globalThis & Record<string, unkno
 // console.log = vi.fn();
 
 // Mock Tauri API
-global.__TAURI__ = {
+global['__TAURI__'] = {
   invoke: vi.fn(),
   event: {
     listen: vi.fn(),

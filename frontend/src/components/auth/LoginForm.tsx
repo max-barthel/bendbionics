@@ -123,7 +123,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     try {
       await login({ username, password });
       // Redirect to main app after successful login
-      void navigate('/');
+      navigate('/');
     } catch (err: unknown) {
       // Use unified error handler for consistent error handling
       handleAuthError(err);

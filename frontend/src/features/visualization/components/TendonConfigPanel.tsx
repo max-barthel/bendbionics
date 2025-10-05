@@ -3,6 +3,8 @@ import type { TendonConfig } from '../../../api/client';
 import { SliderInput, SubsectionTitle, UnitSelector } from '../../../components/ui';
 import NumberInput from '../../shared/components/NumberInput';
 
+type LengthUnit = 'mm' | 'cm' | 'm';
+
 interface TendonConfigPanelProps {
   tendonConfig: TendonConfig;
   onConfigChange: (config: TendonConfig) => void;
@@ -15,9 +17,9 @@ export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
   className = '',
 }) => {
   const [localConfig, setLocalConfig] = useState<TendonConfig>(tendonConfig);
-  const [radiusUnit, setRadiusUnit] = useState<'mm' | 'cm' | 'm'>('mm');
-  const [offsetUnit, setOffsetUnit] = useState<'mm' | 'cm' | 'm'>('mm');
-  const lengthUnits = ['mm', 'cm', 'm'] as const;
+  const [radiusUnit, setRadiusUnit] = useState<LengthUnit>('mm');
+  const [offsetUnit, setOffsetUnit] = useState<LengthUnit>('mm');
+  const lengthUnits: readonly LengthUnit[] = ['mm', 'cm', 'm'];
 
   // Update local config when prop changes
   useEffect(() => {
@@ -31,7 +33,7 @@ export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
   };
 
   // Unit conversion functions
-  const convertToSI = (value: number, unit: 'mm' | 'cm' | 'm') => {
+  const convertToSI = (value: number, unit: LengthUnit) => {
     switch (unit) {
       case 'mm':
         return value / 1000;
@@ -44,7 +46,7 @@ export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
     }
   };
 
-  const convertFromSI = (value: number, unit: 'mm' | 'cm' | 'm') => {
+  const convertFromSI = (value: number, unit: LengthUnit) => {
     switch (unit) {
       case 'mm':
         return value * 1000;

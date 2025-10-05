@@ -21,7 +21,15 @@ import { RobotSetupTab } from './tabs/RobotSetupTab';
 const isApiResponseWithResult = (
   response: unknown
 ): response is {
-  data: { result: { robot_positions: number[][][]; segments?: number[][][] } };
+  data: {
+    result: {
+      robot_positions: number[][][];
+      segments?: number[][][];
+      actuation_commands?: Record<string, unknown>;
+      coupling_data?: unknown;
+      tendon_analysis?: unknown;
+    };
+  };
 } => {
   return (
     response !== null &&
@@ -71,7 +79,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
     const [activeTab, setActiveTab] = useState('setup');
 
     const { error, showError, hideError } = useErrorHandler();
-    void useConfigurationLoader(initialConfiguration);
+    useConfigurationLoader(initialConfiguration as Record<string, unknown> | undefined);
 
     const handleSubmit = useCallback(async () => {
       hideError();
@@ -88,7 +96,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
           backbone_lengths: robotState.backboneLengths,
           coupling_lengths: robotState.couplingLengths,
           discretization_steps: robotState.discretizationSteps,
-          tendon_config: robotState.tendonConfig,
+          ...(robotState.tendonConfig && { tendon_config: robotState.tendonConfig }),
         };
 
         // Use tendon endpoint if tendon configuration is provided
@@ -100,7 +108,32 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
             ? result.data.result.robot_positions
             : [];
 
-          const configuration = {
+          // Extract tendon analysis data from the response
+          const tendonAnalysis =
+            isApiResponseWithResult(result) &&
+            result.data.result.actuation_commands &&
+            result.data.result.coupling_data &&
+            result.data.result.tendon_analysis
+              ? {
+                  actuation_commands: result.data.result.actuation_commands as Record<
+                    string,
+                    {
+                      length_change_m: number;
+                      pull_direction: string;
+                      magnitude: number;
+                    }
+                  >,
+                  coupling_data: result.data.result.coupling_data as {
+                    positions: number[][];
+                    orientations: number[][][];
+                  },
+                  tendon_analysis: result.data.result.tendon_analysis as {
+                    routing_points: number[][][];
+                  },
+                }
+              : undefined;
+
+          const configuration: RobotConfiguration = {
             segments: robotState.segments,
             bendingAngles: robotState.bendingAngles,
             rotationAngles: robotState.rotationAngles,
@@ -108,14 +141,14 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
             couplingLengths: robotState.couplingLengths,
             discretizationSteps: robotState.discretizationSteps,
             tendonConfig: robotState.tendonConfig,
-            tendonAnalysis: isApiResponseWithResult(result) ? result.data.result : null,
+            ...(tendonAnalysis && { tendonAnalysis }),
           };
 
           onResult(segments, configuration);
         } else {
           result = await robotAPI.computePCC(params);
 
-          const configuration = {
+          const configuration: RobotConfiguration = {
             segments: robotState.segments,
             bendingAngles: robotState.bendingAngles,
             rotationAngles: robotState.rotationAngles,
@@ -131,8 +164,12 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
             configuration
           );
         }
-      } catch (error: unknown) {
+      } catch (err: unknown) {
         // Error handled by error handler
+        const error = err as {
+          response?: { data?: { detail?: string } };
+          message?: string;
+        };
         showError(
           'server',
           error.response?.data?.detail ?? error.message ?? 'Computation failed'
@@ -186,7 +223,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
         <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-white/10 to-white/5 min-h-0 scrollbar-hide relative">
           <TabPanel id="setup" activeTab={activeTab}>
             <RobotSetupTab
-              onShowPresetManager={onShowPresetManager}
+              {...(onShowPresetManager && { onShowPresetManager })}
               robotState={robotState}
               setRobotState={setRobotState}
             />
@@ -194,8 +231,8 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
 
           <TabPanel id="control" activeTab={activeTab}>
             <ControlTab
-              user={user}
-              onShowPresetManager={onShowPresetManager}
+              {...(user && { user })}
+              {...(onShowPresetManager && { onShowPresetManager })}
               robotState={robotState}
               setRobotState={setRobotState}
             />

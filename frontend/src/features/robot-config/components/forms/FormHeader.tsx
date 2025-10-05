@@ -1,8 +1,8 @@
 import { LoadingSpinner, Typography } from '../../../../components/ui';
 
 interface FormHeaderProps {
-  title: string;
-  isValidating?: boolean;
+  readonly title: string;
+  readonly isValidating?: boolean;
 }
 
 /**

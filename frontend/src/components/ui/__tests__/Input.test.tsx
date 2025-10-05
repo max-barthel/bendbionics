@@ -1,4 +1,6 @@
+import '@testing-library/jest-dom';
 import { fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Input from '../Input';
 
@@ -292,7 +294,7 @@ describe('Input', () => {
       render(<Input value="" onChange={mockOnChange} />);
 
       const input = screen.getByRole('textbox');
-      expect(input).toHaveClass('border', 'rounded-full', 'bg-gray-50');
+      expect(input).toHaveClass('border', 'rounded-full', 'bg-white/20');
     });
 
     it('applies focus classes', () => {
@@ -317,7 +319,7 @@ describe('Input', () => {
       render(<Input value="" onChange={mockOnChange} />);
 
       const input = screen.getByRole('textbox');
-      expect(input).toHaveClass('border-gray-300');
+      expect(input).toHaveClass('border-white/30');
     });
 
     it('applies custom className', () => {
@@ -365,14 +367,14 @@ describe('Input', () => {
 
   describe('Edge Cases', () => {
     it('handles undefined value', () => {
-      render(<Input value={undefined as string} onChange={mockOnChange} />);
+      render(<Input value={undefined as unknown as string} onChange={mockOnChange} />);
 
       const input = screen.getByRole('textbox');
       expect(input).toHaveValue('');
     });
 
     it('handles null value', () => {
-      render(<Input value={null as string} onChange={mockOnChange} />);
+      render(<Input value={null as unknown as string} onChange={mockOnChange} />);
 
       const input = screen.getByRole('textbox');
       expect(input).toHaveValue('');

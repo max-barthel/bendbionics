@@ -7,21 +7,21 @@
 
 import {
   borderRadius,
-  type BorderRadiusVariant,
   borders,
   boxShadows,
   disabledStates,
   focusStates,
-  type FocusStateVariant,
   gradients,
   hoverStates,
-  type HoverStateVariant,
   shadows,
-  type ShadowVariant,
   styleCombinations,
   tahoeGlass,
-  type TahoeGlassVariant,
   transitions,
+  type BorderRadiusVariant,
+  type FocusStateVariant,
+  type HoverStateVariant,
+  type ShadowVariant,
+  type TahoeGlassVariant,
   type TransitionVariant,
 } from './design-tokens';
 
@@ -170,7 +170,8 @@ export function getResponsiveStyles(
       if (!styles) {
         return '';
       }
-      return `${breakpoint === 'sm' ? '' : `${breakpoint}:`}${styles}`;
+      const prefix = breakpoint === 'sm' ? '' : `${breakpoint}:`;
+      return `${prefix}${styles}`;
     })
     .filter(Boolean)
     .join(' ');

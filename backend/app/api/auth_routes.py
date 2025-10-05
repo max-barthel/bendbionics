@@ -25,9 +25,7 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
 @router.post("/register")
-async def register(
-    user_data: UserCreate, session: Session = Depends(get_session)
-):
+async def register(user_data: UserCreate, session: Session = Depends(get_session)):
     """Register a new user"""
     # Check if username already exists
     existing_user = session.exec(
@@ -71,9 +69,7 @@ async def login(user_data: UserLogin, session: Session = Depends(get_session)):
         msg = "Incorrect username or password"
         raise AuthenticationError(msg)
 
-    access_token_expires = timedelta(
-        minutes=settings.access_token_expire_minutes
-    )
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )

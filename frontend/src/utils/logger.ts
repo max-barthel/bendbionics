@@ -28,7 +28,7 @@ export interface LoggerConfig {
 }
 
 class Logger {
-  private config: LoggerConfig;
+  readonly config: LoggerConfig;
 
   constructor(config: Partial<LoggerConfig> = {}) {
     this.config = {

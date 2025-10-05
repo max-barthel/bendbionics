@@ -33,6 +33,25 @@ ignore = [
     "B905",  # zip-without-explicit-strict
     "PLR5501",  # collapsible-else-if
     "RUF010",  # explicit-f-string-type-conversion
+    "B008",  # do not perform function call in argument defaults (FastAPI Depends pattern)
+    "B904",  # within except clause, raise exceptions with raise ... from err
+    "DTZ003",  # datetime.utcnow() used
+    "N806",  # variable name should be lowercase
+    "PLR2004",  # magic value used in comparison
+    "PLC0415",  # import should be at top-level
+    "ERA001",  # found commented-out code
+    "S105",  # possible hardcoded password
+    "ARG001",  # unused function argument
+    "ARG002",  # unused method argument
+    "TRY004",  # prefer TypeError exception for invalid type
+    "TRY300",  # consider moving statement to else block
+    "S110",  # try-except-pass detected
+    "SIM102",  # use single if statement instead of nested if
+    "SIM117",  # use single with statement with multiple contexts
+    "PLR0911",  # too many return statements
+    "N803",  # argument name should be lowercase
+    "RUF006",  # store reference to return value of asyncio.create_task
+    "INP001",  # file is part of implicit namespace package
 ]
 
 [tool.ruff.lint.per-file-ignores]

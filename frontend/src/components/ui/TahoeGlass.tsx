@@ -5,13 +5,13 @@ type TahoeGlassVariant = 'base' | 'enhanced' | 'subtle' | 'strong';
 type TahoeGlassSize = 'sm' | 'md' | 'lg' | 'xl';
 
 interface TahoeGlassProps {
-  variant?: TahoeGlassVariant;
-  size?: TahoeGlassSize;
-  children: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
-  onClick?: () => void;
-  as?: keyof React.JSX.IntrinsicElements;
+  readonly variant?: TahoeGlassVariant;
+  readonly size?: TahoeGlassSize;
+  readonly children: React.ReactNode;
+  readonly className?: string;
+  readonly style?: React.CSSProperties;
+  readonly onClick?: () => void;
+  readonly as?: keyof React.JSX.IntrinsicElements;
 }
 
 /**
@@ -54,10 +54,10 @@ function TahoeGlass({
     className
   );
 
-  return (
-    <Component className={classes} style={style} onClick={onClick}>
-      {children}
-    </Component>
+  return React.createElement(
+    Component,
+    { className: classes, style, onClick },
+    children
   );
 }
 

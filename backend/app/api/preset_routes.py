@@ -11,6 +11,9 @@ from app.models import Preset, PresetCreate, PresetResponse, PresetUpdate
 
 router = APIRouter(prefix="/presets", tags=["presets"])
 
+# Constants
+PRESET_NOT_FOUND_MSG = "Preset not found"
+
 
 @router.post("/")
 async def create_preset(
@@ -84,9 +87,7 @@ async def get_user_presets(
 @router.get("/public")
 async def get_public_presets(session: Session = Depends(get_session)):
     """Get all public presets"""
-    presets = session.exec(
-        select(Preset).where(Preset.is_public.is_(True))
-    ).all()
+    presets = session.exec(select(Preset).where(Preset.is_public.is_(True))).all()
 
     preset_responses = [
         PresetResponse(
@@ -119,16 +120,12 @@ async def get_preset(
     preset = session.exec(
         select(Preset).where(
             (Preset.id == preset_id)
-            & (
-                (Preset.user_id == current_user.id)
-                | Preset.is_public.is_(True)
-            )
+            & ((Preset.user_id == current_user.id) | Preset.is_public.is_(True))
         )
     ).first()
 
     if not preset:
-        msg = "Preset not found"
-        raise NotFoundError(msg)
+        raise NotFoundError(PRESET_NOT_FOUND_MSG)
 
     preset_response = PresetResponse(
         id=preset.id,
@@ -164,8 +161,7 @@ async def update_preset(
     ).first()
 
     if not preset:
-        msg = "Preset not found"
-        raise NotFoundError(msg)
+        raise NotFoundError(PRESET_NOT_FOUND_MSG)
 
     # Update fields if provided
     if preset_data.name is not None:
@@ -214,8 +210,7 @@ async def delete_preset(
     ).first()
 
     if not preset:
-        msg = "Preset not found"
-        raise NotFoundError(msg)
+        raise NotFoundError(PRESET_NOT_FOUND_MSG)
 
     session.delete(preset)
     session.commit()

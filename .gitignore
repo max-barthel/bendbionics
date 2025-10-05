@@ -8,6 +8,9 @@ env/
 venv/
 .venv/
 .env
+**/.venv/
+**/venv/
+**/env/
 
 # Coverage reports
 htmlcov/
@@ -193,3 +196,32 @@ test-results/
 frontend/playwright-report/
 frontend/test-results/
 frontend/e2e/*.spec.ts-snapshots/
+
+# Screenshot test artifacts
+**/__screenshots__/
+**/*.spec.ts-snapshots/
+
+# Database files (should not be committed)
+*.db
+*.sqlite
+*.sqlite3
+soft_robot.db
+backend/soft_robot.db
+
+# IDE and editor files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

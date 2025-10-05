@@ -1,7 +1,7 @@
 interface ProgressIndicatorProps {
-  progress: number; // 0-100
-  message?: string;
-  className?: string;
+  readonly progress: number; // 0-100
+  readonly message?: string;
+  readonly className?: string;
 }
 
 function ProgressIndicator({

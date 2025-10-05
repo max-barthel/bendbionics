@@ -30,7 +30,13 @@
     "toolkit:lint": "./toolkit.sh all lint",
     "toolkit:fix": "./toolkit.sh all fix",
     "toolkit:quality": "./toolkit.sh quality report",
-    "toolkit:docs": "./toolkit.sh docs storybook"
+    "toolkit:docs": "./toolkit.sh docs storybook",
+    "cleanup": "./cleanup.sh",
+    "cleanup:smart": "./cleanup.sh --smart",
+    "cleanup:force": "./cleanup.sh --force",
+    "cleanup:status": "./cleanup.sh status",
+    "cleanup:check": "./cleanup.sh check",
+    "cleanup:schedule": "./cleanup.sh schedule"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",

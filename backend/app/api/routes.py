@@ -70,60 +70,67 @@ def _convert_result_to_serializable(result: dict) -> dict:
 
     for key, value in result.items():
         if key == "robot_positions":
-            # Convert robot positions (list of numpy arrays)
-            serializable_result[key] = [
-                [
-                    point.tolist() if hasattr(point, "tolist") else point
-                    for point in segment
-                ]
-                for segment in value
-            ]
+            serializable_result[key] = _convert_robot_positions(value)
         elif key == "coupling_data":
-            # Convert coupling data
-            coupling_data = {}
-            for sub_key, sub_value in value.items():
-                if sub_key == "positions":
-                    coupling_data[sub_key] = [
-                        pos.tolist() if hasattr(pos, "tolist") else pos
-                        for pos in sub_value
-                    ]
-                elif sub_key == "orientations":
-                    coupling_data[sub_key] = [
-                        (
-                            orient.tolist()
-                            if hasattr(orient, "tolist")
-                            else orient
-                        )
-                        for orient in sub_value
-                    ]
-                else:
-                    coupling_data[sub_key] = sub_value
-            serializable_result[key] = coupling_data
+            serializable_result[key] = _convert_coupling_data(value)
         elif key == "tendon_analysis":
-            # Convert tendon analysis data
-            tendon_data = {}
-            for sub_key, sub_value in value.items():
-                if isinstance(sub_value, np.ndarray):
-                    tendon_data[sub_key] = sub_value.tolist()
-                elif sub_key == "routing_points":
-                    # Convert routing points (nested structure)
-                    tendon_data[sub_key] = [
-                        [
-                            (
-                                point.tolist()
-                                if hasattr(point, "tolist")
-                                else point
-                            )
-                            for point in element
-                        ]
-                        for element in sub_value
-                    ]
-                else:
-                    tendon_data[sub_key] = sub_value
-            serializable_result[key] = tendon_data
-        elif key == "actuation_commands":
-            serializable_result[key] = value
+            serializable_result[key] = _convert_tendon_analysis(value)
         else:
             serializable_result[key] = value
 
     return serializable_result
+
+
+def _convert_robot_positions(value):
+    """Convert robot positions to serializable format."""
+    return [
+        [point.tolist() if hasattr(point, "tolist") else point for point in segment]
+        for segment in value
+    ]
+
+
+def _convert_coupling_data(value):
+    """Convert coupling data to serializable format."""
+    coupling_data = {}
+    for sub_key, sub_value in value.items():
+        if sub_key == "positions":
+            coupling_data[sub_key] = _convert_positions(sub_value)
+        elif sub_key == "orientations":
+            coupling_data[sub_key] = _convert_orientations(sub_value)
+        else:
+            coupling_data[sub_key] = sub_value
+    return coupling_data
+
+
+def _convert_positions(positions):
+    """Convert positions to serializable format."""
+    return [pos.tolist() if hasattr(pos, "tolist") else pos for pos in positions]
+
+
+def _convert_orientations(orientations):
+    """Convert orientations to serializable format."""
+    return [
+        orient.tolist() if hasattr(orient, "tolist") else orient
+        for orient in orientations
+    ]
+
+
+def _convert_tendon_analysis(value):
+    """Convert tendon analysis data to serializable format."""
+    tendon_data = {}
+    for sub_key, sub_value in value.items():
+        if isinstance(sub_value, np.ndarray):
+            tendon_data[sub_key] = sub_value.tolist()
+        elif sub_key == "routing_points":
+            tendon_data[sub_key] = _convert_routing_points(sub_value)
+        else:
+            tendon_data[sub_key] = sub_value
+    return tendon_data
+
+
+def _convert_routing_points(routing_points):
+    """Convert routing points to serializable format."""
+    return [
+        [point.tolist() if hasattr(point, "tolist") else point for point in element]
+        for element in routing_points
+    ]

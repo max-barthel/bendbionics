@@ -5,7 +5,7 @@ import numpy as np
 
 
 def extract_xyz_coordinates(
-    T_all: List[np.ndarray],
+    t_all: List[np.ndarray],
 ) -> List[List[List[float]]]:
     """
     Extract XYZ coordinates from a list of transformation matrix arrays.
@@ -15,7 +15,7 @@ def extract_xyz_coordinates(
     """
     xyz_all = []
 
-    for segment in T_all:
+    for segment in t_all:
         xyz_segment = []
         for T in segment:
             x, y, z = T[:3, 3]

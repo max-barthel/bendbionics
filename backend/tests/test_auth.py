@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest.mock import Mock, patch
 
 import pytest
@@ -10,6 +10,7 @@ from app.auth import (
     verify_password,
     verify_token,
 )
+from app.utils.timezone import now_utc
 from fastapi import HTTPException
 
 
@@ -209,7 +210,7 @@ class TestAuthRoutes:
             mock_user.username = "testuser"
             mock_user.email = "test@example.com"
             mock_user.is_local = False
-            mock_user.created_at = datetime.now()
+            mock_user.created_at = now_utc()
             mock_user.hashed_password = get_password_hash("testpassword")
 
             # Mock authenticate_user to return the user
@@ -277,21 +278,15 @@ class TestAuthRoutes:
             mock_user.username = "testuser"
             mock_user.email = "test@example.com"
             mock_user.is_local = False
-            # Add SQLAlchemy instance state
-            mock_user._sa_instance_state = Mock()
-            mock_user._sa_instance_state.key = Mock()
-            mock_user._sa_instance_state.key = (Mock(), (1,))
+            # Mock SQLAlchemy instance state without accessing private members
+            mock_user.id = 1
 
-            # Mock presets with proper SQLAlchemy attributes
+            # Mock presets without accessing private members
             mock_preset1 = Mock()
-            mock_preset1._sa_instance_state = Mock()
-            mock_preset1._sa_instance_state.key = Mock()
-            mock_preset1._sa_instance_state.key = (Mock(), (1,))
+            mock_preset1.id = 1
 
             mock_preset2 = Mock()
-            mock_preset2._sa_instance_state = Mock()
-            mock_preset2._sa_instance_state.key = Mock()
-            mock_preset2._sa_instance_state.key = (Mock(), (2,))
+            mock_preset2.id = 2
 
             mock_presets = [mock_preset1, mock_preset2]
 

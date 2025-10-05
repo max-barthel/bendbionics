@@ -34,7 +34,7 @@ export const validateRobotConfiguration = async (
     return false;
   }
 
-  const backboneLength = backboneLengths[0];
+  const backboneLength = backboneLengths[0] ?? 0;
   if (couplingLength !== backboneLength + 1) {
     showError(
       'validation',
