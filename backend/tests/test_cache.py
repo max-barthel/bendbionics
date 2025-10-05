@@ -1,8 +1,11 @@
 import numpy as np
-
 from app.models.pcc.types import PCCParams
-from app.utils.cache import (cache_result, clear_cache, create_params_hash,
-                             get_cached_result)
+from app.utils.cache import (
+    cache_result,
+    clear_cache,
+    create_params_hash,
+    get_cached_result,
+)
 
 
 class TestCacheFunctions:
@@ -167,7 +170,7 @@ class TestCacheFunctions:
         )
 
         late_params = PCCParams(
-            bending_angles=[1.1, 0.2, 0.3],  # i=100
+            bending_angles=[1.1, 0.2, 0.3],
             rotation_angles=[0, 0, 0],
             backbone_lengths=[0.07, 0.07, 0.07],
             coupling_lengths=[0.03, 0.03, 0.03, 0.015],
@@ -176,3 +179,5 @@ class TestCacheFunctions:
 
         # The late entry should be cached (it was added last)
         assert get_cached_result(late_params) is not None
+        # The early entry should not be cached (it was evicted due to size limit)
+        assert get_cached_result(early_params) is None

@@ -215,7 +215,7 @@ function createApiClient() {
       }
       return config;
     },
-    error => Promise.reject(error)
+    error => Promise.reject(error instanceof Error ? error : new Error(String(error)))
   );
 
   // Add response interceptor for error handling
@@ -245,7 +245,9 @@ function handleResponseError(error: { response?: { status?: number } }) {
   ) {
     console.error('Server error:', (error.response as { data?: unknown }).data);
   }
-  return Promise.reject(error);
+  return Promise.reject(
+    error instanceof Error ? error : new Error('API request failed')
+  );
 }
 
 // API methods with retry support

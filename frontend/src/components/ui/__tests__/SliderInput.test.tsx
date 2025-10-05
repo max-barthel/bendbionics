@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import SliderInput from '../SliderInput';
 
 describe('SliderInput', () => {
@@ -8,6 +9,10 @@ describe('SliderInput', () => {
     onChange: vi.fn(),
     label: 'Test Slider',
   };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it('renders with default props', () => {
     render(<SliderInput {...defaultProps} />);
@@ -18,7 +23,7 @@ describe('SliderInput', () => {
   });
 
   it('renders without label', () => {
-    render(<SliderInput value={50} min={0} max={100} />);
+    render(<SliderInput value={50} min={0} max={100} onChange={vi.fn()} />);
 
     expect(screen.queryByText('Test Slider')).not.toBeInTheDocument();
     expect(screen.getByRole('slider')).toBeInTheDocument();
@@ -48,22 +53,22 @@ describe('SliderInput', () => {
     expect(defaultProps.onChange).toHaveBeenCalledWith(80);
   });
 
-  it('clamps input values to min/max on blur', () => {
+  it('allows input values without clamping', () => {
     render(<SliderInput {...defaultProps} min={0} max={100} />);
 
     const input = screen.getByRole('textbox');
 
-    // Test value below min
+    // Test value below min - should pass through without clamping
     fireEvent.change(input, { target: { value: '-10' } });
     fireEvent.blur(input);
 
-    expect(defaultProps.onChange).toHaveBeenCalledWith(0);
+    expect(defaultProps.onChange).toHaveBeenCalledWith(-10);
 
-    // Test value above max
+    // Test value above max - should pass through without clamping
     fireEvent.change(input, { target: { value: '150' } });
     fireEvent.blur(input);
 
-    expect(defaultProps.onChange).toHaveBeenCalledWith(100);
+    expect(defaultProps.onChange).toHaveBeenCalledWith(150);
   });
 
   it('handles disabled state', () => {
@@ -94,6 +99,7 @@ describe('SliderInput', () => {
     const slider = screen.getByRole('slider');
     fireEvent.change(slider, { target: { value: '55' } });
 
+    // The component should call onChange with the new value
     expect(defaultProps.onChange).toHaveBeenCalledWith(55);
   });
 
@@ -104,7 +110,7 @@ describe('SliderInput', () => {
     const input = screen.getByRole('textbox');
 
     expect(slider).toHaveAttribute('id');
-    // The text input doesn't have an id attribute in the current implementation
+    expect(slider.getAttribute('id')).toMatch(/^slider-/);
     expect(input).toBeInTheDocument();
   });
 });

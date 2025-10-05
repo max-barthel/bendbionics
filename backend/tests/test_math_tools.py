@@ -1,7 +1,9 @@
 import numpy as np
-
-from app.utils.math_tools import (homogeneous_matrix, rotation_matrix_y,
-                                  rotation_matrix_z)
+from app.utils.math_tools import (
+    homogeneous_matrix,
+    rotation_matrix_y,
+    rotation_matrix_z,
+)
 
 
 class TestMathTools:
@@ -121,14 +123,14 @@ class TestMathTools:
 
         for angle in angles:
             # Test Z-axis rotation
-            R_z = rotation_matrix_z(angle)
-            assert np.allclose(R_z @ R_z.T, np.eye(3))
-            assert np.allclose(np.linalg.det(R_z), 1.0)
+            r_z = rotation_matrix_z(angle)
+            assert np.allclose(r_z @ r_z.T, np.eye(3))
+            assert np.allclose(np.linalg.det(r_z), 1.0)
 
             # Test Y-axis rotation
-            R_y = rotation_matrix_y(angle)
-            assert np.allclose(R_y @ R_y.T, np.eye(3))
-            assert np.allclose(np.linalg.det(R_y), 1.0)
+            r_y = rotation_matrix_y(angle)
+            assert np.allclose(r_y @ r_y.T, np.eye(3))
+            assert np.allclose(np.linalg.det(r_y), 1.0)
 
     def test_homogeneous_matrix_combined_rotation(self):
         """Test homogeneous matrix with combined rotation and translation."""

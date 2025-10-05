@@ -28,18 +28,16 @@ def compute_pcc(params: PCCParams) -> List[np.ndarray]:
     coupling_lengths = params.coupling_lengths
     steps = params.discretization_steps
 
-    T_all = []
+    t_all = []
 
     # Start with identity matrix
     T = np.eye(4)
-    T_start = T.copy()
+    t_start = T.copy()
 
     # Initial coupling
-    T_coupling = transformation_matrix_coupling(coupling_lengths[0])
-    T = T @ T_coupling
-    T_all.append(
-        np.array([T_start[:3, 3], T[:3, 3]])
-    )  # first coupling segment
+    t_coupling = transformation_matrix_coupling(coupling_lengths[0])
+    T = T @ t_coupling
+    t_all.append(np.array([t_start[:3, 3], T[:3, 3]]))  # first coupling segment
 
     for _i, (theta, phi, l_bb, l_coup) in enumerate(
         zip(
@@ -50,21 +48,21 @@ def compute_pcc(params: PCCParams) -> List[np.ndarray]:
         )
     ):
         # Backbone segment
-        T_bb = transformation_matrix_backbone(theta, phi, l_bb, steps)
-        T_bb_global = np.zeros_like(T_bb)
+        t_bb = transformation_matrix_backbone(theta, phi, l_bb, steps)
+        t_bb_global = np.zeros_like(t_bb)
 
         for j in range(steps):
-            T = T @ T_bb[j]
-            T_bb_global[j] = T.copy()
+            T = T @ t_bb[j]
+            t_bb_global[j] = T.copy()
 
-        T_all.append([T_bb_global[k][:3, 3] for k in range(steps)])
+        t_all.append([t_bb_global[k][:3, 3] for k in range(steps)])
 
         # Coupling segment
-        T_start = T.copy()
-        T_coupling = transformation_matrix_coupling(l_coup)
-        T = T @ T_coupling
-        T_all.append(np.array([T_start[:3, 3], T[:3, 3]]))
+        t_start = T.copy()
+        t_coupling = transformation_matrix_coupling(l_coup)
+        T = T @ t_coupling
+        t_all.append(np.array([t_start[:3, 3], T[:3, 3]]))
 
     # Cache the result before returning
-    cache_result(params, T_all)
-    return T_all
+    cache_result(params, t_all)
+    return t_all

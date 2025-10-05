@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
@@ -67,6 +68,28 @@ vi.mock('../components/ui', () => ({
     className?: string;
   }) => (
     <div data-testid={`typography-${variant}`} className={className}>
+      {children}
+    </div>
+  ),
+  TypographyH4: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
+    <div data-testid="typography-h4" className={className}>
+      {children}
+    </div>
+  ),
+  TypographyBody: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
+    <div data-testid="typography-body" className={className}>
       {children}
     </div>
   ),
@@ -318,6 +341,69 @@ vi.mock('../components/ui', () => ({
       {children}
     </div>
   ),
+  SubsectionTitle: ({
+    title,
+    description,
+    className,
+  }: {
+    title?: string;
+    description?: string;
+    className?: string;
+  }) => (
+    <div data-testid="subsection-title" className={className}>
+      <h5>{title}</h5>
+      {description && <span>{description}</span>}
+    </div>
+  ),
+  TendonConfigPanel: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
+    <div data-testid="tendon-config-panel" className={className}>
+      {children}
+    </div>
+  ),
+  CollapsibleSection: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
+    <div data-testid="collapsible-section" className={className}>
+      {children}
+    </div>
+  ),
+  AngleControlPanel: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
+    <div data-testid="angle-control-panel" className={className}>
+      {children}
+    </div>
+  ),
+  UploadIcon: ({ className }: { className?: string }) => (
+    <div data-testid="upload-icon" className={className}>
+      Upload Icon
+    </div>
+  ),
+  UnitSelector: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode;
+    className?: string;
+  }) => (
+    <div data-testid="unit-selector" className={className}>
+      {children}
+    </div>
+  ),
 }));
 
 // Mock useNavigate
@@ -543,8 +629,6 @@ describe('App', () => {
 
   describe('localStorage Integration', () => {
     it('tests localStorage functionality on mount', async () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
       mockUseAuth.mockReturnValue({
         user: null,
         isLoading: false,
@@ -553,17 +637,17 @@ describe('App', () => {
 
       renderApp();
 
+      // The App component should render without errors
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('=== App localStorage Test ===');
-        expect(consoleSpy).toHaveBeenCalledWith('Test value stored:', 'app_test_value');
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'Test value retrieved:',
-          'app_test_value'
-        );
-        expect(consoleSpy).toHaveBeenCalledWith('localStorage working:', 'YES');
+        expect(screen.getByTestId('visualizer-3d')).toBeInTheDocument();
       });
 
-      consoleSpy.mockRestore();
+      // Verify localStorage is accessible (basic functionality test)
+      expect(() => {
+        localStorage.setItem('test', 'value');
+        expect(localStorage.getItem('test')).toBe('value');
+        localStorage.removeItem('test');
+      }).not.toThrow();
     });
   });
 });

@@ -66,8 +66,8 @@ This guide explains the purpose and usage of each script in the Soft Robot App p
 
 **URLs**:
 
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+- Backend API: <http://localhost:8000>
+- API Docs: <http://localhost:8000/docs>
 - Frontend: Running in desktop mode
 
 ---

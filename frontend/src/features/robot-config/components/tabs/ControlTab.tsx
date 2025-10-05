@@ -6,7 +6,6 @@ import { CollapsibleSection } from '../../../shared/components/CollapsibleSectio
 import { type RobotState } from '../../hooks/useRobotState';
 
 interface ControlTabProps {
-  user?: { username: string };
   onShowPresetManager?: () => void;
   robotState: RobotState;
   setRobotState: (state: RobotState | ((prev: RobotState) => RobotState)) => void;
@@ -59,11 +58,6 @@ export const ControlTab: React.FC<ControlTabProps> = ({
         <AngleControlPanel
           values={robotState.bendingAngles}
           onChange={bendingAngles => updateRobotState({ bendingAngles })}
-          label="Bending Angles"
-          mode="bending"
-          icon={<BendingIcon className="w-4 h-4 text-white" />}
-          iconBg="bg-gradient-to-r from-orange-500 to-red-600"
-          description="How much each segment bends"
         />
       </CollapsibleSection>
 
@@ -78,11 +72,6 @@ export const ControlTab: React.FC<ControlTabProps> = ({
         <AngleControlPanel
           values={robotState.rotationAngles}
           onChange={rotationAngles => updateRobotState({ rotationAngles })}
-          label="Rotation Angles"
-          mode="rotation"
-          icon={<RotationIcon className="w-4 h-4 text-white" />}
-          iconBg="bg-gradient-to-r from-yellow-500 to-amber-600"
-          description="Rotation around each segment's axis"
         />
       </CollapsibleSection>
     </div>

@@ -6,7 +6,7 @@ It standardizes success responses, error handling, and data serialization.
 """
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 from fastapi import HTTPException
@@ -15,6 +15,9 @@ from pydantic import BaseModel, Field
 
 # Generic type for response data
 T = TypeVar("T")
+
+# Constants
+REQUEST_ID_DESCRIPTION = "Unique request identifier"
 
 
 class DateTimeEncoder(json.JSONEncoder):
@@ -31,15 +34,12 @@ class APIResponse(BaseModel, Generic[T]):
 
     success: bool = Field(description="Whether the request was successful")
     data: Optional[T] = Field(default=None, description="Response data")
-    message: Optional[str] = Field(
-        default=None, description="Human-readable message"
-    )
+    message: Optional[str] = Field(default=None, description="Human-readable message")
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow, description="Response timestamp"
+        default_factory=lambda: datetime.now(UTC),
+        description="Response timestamp",
     )
-    request_id: Optional[str] = Field(
-        default=None, description="Unique request identifier"
-    )
+    request_id: Optional[str] = Field(default=None, description=REQUEST_ID_DESCRIPTION)
 
 
 class ErrorResponse(BaseModel):
@@ -54,9 +54,7 @@ class ErrorResponse(BaseModel):
     timestamp: datetime = Field(
         default_factory=datetime.utcnow, description="Error timestamp"
     )
-    request_id: Optional[str] = Field(
-        default=None, description="Unique request identifier"
-    )
+    request_id: Optional[str] = Field(default=None, description=REQUEST_ID_DESCRIPTION)
 
 
 class PaginatedResponse(BaseModel, Generic[T]):
@@ -67,15 +65,12 @@ class PaginatedResponse(BaseModel, Generic[T]):
     )
     data: List[T] = Field(description="List of items")
     pagination: Dict[str, Any] = Field(description="Pagination information")
-    message: Optional[str] = Field(
-        default=None, description="Human-readable message"
-    )
+    message: Optional[str] = Field(default=None, description="Human-readable message")
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow, description="Response timestamp"
+        default_factory=lambda: datetime.now(UTC),
+        description="Response timestamp",
     )
-    request_id: Optional[str] = Field(
-        default=None, description="Unique request identifier"
-    )
+    request_id: Optional[str] = Field(default=None, description=REQUEST_ID_DESCRIPTION)
 
 
 # Response helper functions
@@ -90,9 +85,7 @@ def success_response(
         success=True, data=data, message=message, request_id=request_id
     )
 
-    return JSONResponse(
-        status_code=200, content=response.model_dump(mode="json")
-    )
+    return JSONResponse(status_code=200, content=response.model_dump(mode="json"))
 
 
 def created_response(
@@ -106,9 +99,7 @@ def created_response(
         success=True, data=data, message=message, request_id=request_id
     )
 
-    return JSONResponse(
-        status_code=201, content=response.model_dump(mode="json")
-    )
+    return JSONResponse(status_code=201, content=response.model_dump(mode="json"))
 
 
 def error_response(
@@ -128,9 +119,7 @@ def error_response(
     )
 
     # Convert to dict with proper datetime serialization
-    content = response.model_dump(
-        by_alias=True, exclude_none=True, mode="json"
-    )
+    content = response.model_dump(by_alias=True, exclude_none=True, mode="json")
     return JSONResponse(
         status_code=status_code, content=content, media_type="application/json"
     )
@@ -165,9 +154,7 @@ def paginated_response(
         request_id=request_id,
     )
 
-    return JSONResponse(
-        status_code=200, content=response.model_dump(mode="json")
-    )
+    return JSONResponse(status_code=200, content=response.model_dump(mode="json"))
 
 
 # Exception classes for consistent error handling
@@ -220,9 +207,7 @@ class NotFoundError(APIException):
     """Resource not found error exception."""
 
     def __init__(self, message: str = "Resource not found"):
-        super().__init__(
-            error_type="not_found_error", message=message, status_code=404
-        )
+        super().__init__(error_type="not_found_error", message=message, status_code=404)
 
 
 class ServerError(APIException):

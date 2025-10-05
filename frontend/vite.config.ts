@@ -20,19 +20,45 @@ export default defineConfig(({ mode }) => {
         gzipSize: true,
         brotliSize: true,
         template: 'treemap', // 'treemap', 'sunburst', 'network'
-      }),
+      })
+    );
+    plugins.push(
       analyzer({
         analyzerMode: 'static',
         openAnalyzer: true,
-        generateStatsFile: true,
-        statsFilename: 'bundle-stats.json',
-        reportFilename: 'bundle-report.html',
       })
     );
   }
 
   return {
     plugins,
+    optimizeDeps:
+      process.env.CI === 'true'
+        ? {
+            noDiscovery: true,
+            include: undefined,
+          }
+        : {
+            include: [
+              'three',
+              'three-stdlib',
+              '@react-three/fiber',
+              '@react-three/drei',
+              'react',
+              'react-dom',
+              'react-router-dom',
+              'axios',
+              '@tauri-apps/api',
+            ],
+            exclude: ['@vitest/browser', '@vitest/ui', 'vitest'],
+            force: true,
+          },
+    define: {
+      global: 'globalThis',
+    },
+    esbuild: {
+      target: 'node14',
+    },
     server: {
       watch: {
         ignored: [
@@ -46,6 +72,12 @@ export default defineConfig(({ mode }) => {
           '**/.DS_Store',
           '**/Thumbs.db',
         ],
+      },
+      // Disable caching in development to prevent stale code issues
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
       },
     },
     build: {
@@ -101,12 +133,13 @@ export default defineConfig(({ mode }) => {
           },
           entryFileNames: 'js/[name]-[hash].js',
           assetFileNames: assetInfo => {
-            const info = assetInfo.name?.split('.') || [];
+            const fileName = assetInfo.names?.[0] || 'asset';
+            const info = fileName.split('.');
             const ext = info[info.length - 1];
-            if (/\.(css)$/.test(assetInfo.name || '')) {
+            if (/\.(css)$/.test(fileName)) {
               return `css/[name]-[hash].${ext}`;
             }
-            if (/\.(png|jpe?g|svg|gif|tiff|bmp|ico)$/i.test(assetInfo.name || '')) {
+            if (/\.(png|jpe?g|svg|gif|tiff|bmp|ico)$/i.test(fileName)) {
               return `images/[name]-[hash].${ext}`;
             }
             return `assets/[name]-[hash].${ext}`;

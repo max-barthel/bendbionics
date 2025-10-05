@@ -14,7 +14,7 @@ class TestDatabaseFunctions:
         # This should not raise any exceptions
         try:
             create_db_and_tables()
-            assert True  # If we get here, no exception was raised
+            # If we get here, no exception was raised - test passes
         except Exception as e:
             pytest.fail(f"create_db_and_tables raised an exception: {e}")
 
@@ -46,6 +46,7 @@ class TestDatabaseOperations:
         try:
             # Create a test user with unique username
             import time
+
             unique_username = f"testuser_db_{int(time.time())}"
             user = User(
                 username=unique_username,

@@ -171,8 +171,19 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
 
     // Validate password strength
     const MIN_PASSWORD_LENGTH = 8;
+    const MAX_PASSWORD_BYTES = 72; // bcrypt limit
+
     if (password.length < MIN_PASSWORD_LENGTH) {
       showError('validation', 'Password must be at least 8 characters long');
+      return;
+    }
+
+    // Check for bcrypt 72-byte limit
+    if (new TextEncoder().encode(password).length > MAX_PASSWORD_BYTES) {
+      showError(
+        'validation',
+        'Password is too long. Please use a password with 72 characters or less.'
+      );
       return;
     }
 
@@ -203,10 +214,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
         <RegisterFormError error={error} />
 
         {success && (
-          <RegisterFormSuccess
-            success={success}
-            onContinue={() => void navigate('/')}
-          />
+          <RegisterFormSuccess success={success} onContinue={() => navigate('/')} />
         )}
 
         <RegisterFormFields

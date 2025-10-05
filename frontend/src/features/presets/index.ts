@@ -10,6 +10,3 @@ export { PresetManager } from './components/presets/PresetManager';
 
 // Hooks
 export { useConfigurationLoader } from './hooks/useConfigurationLoader';
-
-// Re-export types from hooks
-export type { ConfigurationLoaderOptions } from './hooks/useConfigurationLoader';

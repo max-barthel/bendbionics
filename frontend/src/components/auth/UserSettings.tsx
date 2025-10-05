@@ -26,13 +26,15 @@ const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
           Delete Account
         </Typography>
       </div>
-      <Typography className="text-gray-600 mb-6">
+      <Typography variant="body" className="text-gray-600 mb-6">
         Are you sure you want to delete your account? This action cannot be undone. All
         your data will be permanently removed.
       </Typography>
       {deleteError && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <Typography className="text-red-600 text-sm">{deleteError}</Typography>
+          <Typography variant="body" className="text-red-600 text-sm">
+            {deleteError}
+          </Typography>
         </div>
       )}
       <div className="flex space-x-3">
@@ -45,10 +47,10 @@ const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
           Cancel
         </Button>
         <Button
-          variant="danger"
+          variant="primary"
           onClick={onConfirm}
           disabled={isDeleting}
-          className="flex-1"
+          className="flex-1 bg-red-600 hover:bg-red-700 text-white"
         >
           {isDeleting ? 'Deleting...' : 'Delete Account'}
         </Button>
@@ -68,8 +70,8 @@ export const UserSettings: React.FC<UserSettingsProps> = ({ onClose }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = () => {
+    logout();
     navigate('/');
     onClose();
   };

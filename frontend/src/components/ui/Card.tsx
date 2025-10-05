@@ -1,8 +1,8 @@
 import React from 'react';
 
 type CardProps = {
-  children: React.ReactNode;
-  className?: string; // allows to override styles
+  readonly children: React.ReactNode;
+  readonly className?: string; // allows to override styles
 };
 
 function Card({ children, className = '' }: CardProps) {

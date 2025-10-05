@@ -1,7 +1,7 @@
 type SubmitButtonProps = {
-  onClick: () => void;
-  disabled?: boolean;
-  loading?: boolean;
+  readonly onClick: () => void;
+  readonly disabled?: boolean;
+  readonly loading?: boolean;
 };
 
 function SubmitButton({

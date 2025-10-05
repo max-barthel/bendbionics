@@ -50,7 +50,7 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
         type,
         message,
         visible: true,
-        details,
+        ...(details && { details }),
       };
 
       setError(errorState);
@@ -81,7 +81,8 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
   // Helper function to handle API errors consistently
   const handleApiError = useCallback(
     (err: unknown, context?: string) => {
-      console.error(`API Error${context ? ` in ${context}` : ''}:`, err);
+      const contextSuffix = context ? ` in ${context}` : '';
+      console.error(`API Error${contextSuffix}:`, err);
 
       // Type guard for error objects
       const isError = (

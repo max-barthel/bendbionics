@@ -24,13 +24,13 @@ def transformation_matrix_backbone(
     """
     delta_theta = theta / discretization_steps
     delta_length = length / discretization_steps
-    T_steps = []
+    t_steps = []
 
     for _ in range(discretization_steps):
-        Rz = rotation_matrix_z(phi)
-        Ry = rotation_matrix_y(delta_theta)
-        Rz_inv = rotation_matrix_z(-phi)
-        R = Rz @ Ry @ Rz_inv
+        rz = rotation_matrix_z(phi)
+        ry = rotation_matrix_y(delta_theta)
+        rz_inv = rotation_matrix_z(-phi)
+        R = rz @ ry @ rz_inv
 
         if delta_theta == 0:
             t = [0, 0, delta_length]
@@ -47,6 +47,6 @@ def transformation_matrix_backbone(
                 )
             )
 
-        T_steps.append(homogeneous_matrix(R, t))
+        t_steps.append(homogeneous_matrix(R, t))
 
-    return T_steps
+    return t_steps

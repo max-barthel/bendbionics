@@ -1,5 +1,5 @@
 interface RobotStructureInfoProps {
-  segments: number;
+  readonly segments: number;
 }
 
 /**

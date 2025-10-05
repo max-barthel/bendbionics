@@ -1,14 +1,9 @@
-type ErrorType = 'network' | 'validation' | 'server' | 'unknown';
+type ErrorType = 'network' | 'validation' | 'server' | 'auth' | 'unknown';
 
 interface ErrorState {
   type: ErrorType;
   message: string;
   visible: boolean;
-}
-
-interface FormErrorDisplayProps {
-  error: ErrorState;
-  onClose: () => void;
 }
 
 /**
@@ -19,7 +14,13 @@ interface FormErrorDisplayProps {
  * - Appropriate icons for each error type
  * - Dismissible error messages
  */
-export function FormErrorDisplay({ error, onClose }: FormErrorDisplayProps) {
+export function FormErrorDisplay({
+  error,
+  onClose,
+}: {
+  readonly error: ErrorState;
+  readonly onClose: () => void;
+}) {
   if (!error.visible) {
     return null;
   }

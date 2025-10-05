@@ -54,7 +54,11 @@ export function useRetryAPI<T = PCCResponse>(
         return result as T;
       } catch (error: unknown) {
         const errorMessage =
-          error.response?.data?.detail ?? error.message ?? 'An error occurred';
+          (error as { response?: { data?: { detail?: string } }; message?: string })
+            ?.response?.data?.detail ??
+          (error as { response?: { data?: { detail?: string } }; message?: string })
+            ?.message ??
+          'An error occurred';
         setState(prev => ({
           ...prev,
           loading: false,

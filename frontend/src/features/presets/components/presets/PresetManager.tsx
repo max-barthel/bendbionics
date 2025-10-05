@@ -126,7 +126,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
       const newPreset: CreatePresetRequest = {
         name: presetName.trim(),
-        description: presetDescription.trim() || undefined,
+        ...(presetDescription.trim() && { description: presetDescription.trim() }),
         is_public: false,
         configuration: currentConfiguration,
       };
@@ -136,8 +136,11 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       setPresetDescription('');
       setShowSaveForm(false);
       void loadPresets(); // Reload presets
-    } catch (error: unknown) {
+    } catch (err: unknown) {
       // Error logging removed
+      const error = err as {
+        response?: { status: number; data?: { detail?: string } };
+      };
       // Handle 403 Forbidden - user might not be properly authenticated
       if (error.response?.status === HTTP_STATUS.FORBIDDEN) {
         setError(ERROR_MESSAGES.AUTH_REQUIRED);
@@ -153,7 +156,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
 
   const handleLoadPreset = async (preset: Preset) => {
     try {
-      onLoadPreset(preset.configuration);
+      onLoadPreset(preset.configuration as Record<string, unknown>);
     } catch {
       // Error logging removed
     }
@@ -185,7 +188,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       // Debug logging removed
       const updateData = {
         name: editName.trim(),
-        description: editDescription.trim() || undefined,
+        ...(editDescription.trim() && { description: editDescription.trim() }),
       };
 
       await presetAPI.updatePreset(presetId, updateData);
@@ -196,8 +199,12 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       setEditingPreset(null);
       setEditName('');
       setEditDescription('');
-    } catch (error: unknown) {
+    } catch (err: unknown) {
       // Error details handled by error handler
+      const error = err as {
+        response?: { status: number };
+        message?: string;
+      };
 
       // Handle different error types
       if (
@@ -216,7 +223,9 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       ) {
         setLoadError('Server error. Please try again later.');
       } else {
-        setLoadError(`Failed to update preset: ${error.message || 'Unknown error'}`);
+        setLoadError(
+          `Failed to update preset: ${(error as { message?: string }).message || 'Unknown error'}`
+        );
       }
     } finally {
       setIsLoading(false);
@@ -233,7 +242,7 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
     }
 
     // Debug logging removed
-    const confirmed = await confirm('Are you sure you want to delete this preset?');
+    const confirmed = confirm('Are you sure you want to delete this preset?');
     // Debug logging removed
 
     if (!confirmed) {
@@ -253,8 +262,12 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       // Reload presets to update the list
       void loadPresets();
       // Debug logging removed
-    } catch (error: unknown) {
+    } catch (err: unknown) {
       // Error details handled by error handler
+      const error = err as {
+        response?: { status: number };
+        message?: string;
+      };
 
       // Handle different error types
       if (
@@ -273,7 +286,9 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       ) {
         setLoadError('Server error. Please try again later.');
       } else {
-        setLoadError(`Failed to delete preset: ${error.message || 'Unknown error'}`);
+        setLoadError(
+          `Failed to delete preset: ${(error as { message?: string }).message || 'Unknown error'}`
+        );
       }
     } finally {
       setIsLoading(false);
@@ -341,10 +356,14 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
           </div>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="preset-name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Preset Name *
               </label>
               <Input
+                id="preset-name"
                 type="text"
                 value={presetName}
                 onChange={(value: string | number) => setPresetName(String(value))}
@@ -353,10 +372,14 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="preset-description"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Description (optional)
               </label>
               <Input
+                id="preset-description"
                 type="text"
                 value={presetDescription}
                 onChange={(value: string | number) =>
@@ -411,133 +434,151 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
             </div>
           </div>
         )}
-        {isLoading ? (
-          <div className="text-center py-12">
-            <Typography variant="body" color="gray" className="text-gray-600">
-              Loading presets...
-            </Typography>
-          </div>
-        ) : presets.length === 0 ? (
-          <div className="text-center py-12">
-            <Typography variant="body" color="gray" className="text-gray-600">
-              No presets saved yet. Create your first preset above!
-            </Typography>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {presets.map(preset => (
-              <div
-                key={preset.id}
-                className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm"
-              >
-                {editingPreset === preset.id ? (
-                  // Edit form
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Preset Name *
-                      </label>
-                      <Input
-                        type="text"
-                        value={editName}
-                        onChange={(value: string | number) =>
-                          setEditName(String(value))
-                        }
-                        placeholder="Enter preset name"
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Description (optional)
-                      </label>
-                      <Input
-                        type="text"
-                        value={editDescription}
-                        onChange={(value: string | number) =>
-                          setEditDescription(String(value))
-                        }
-                        placeholder="Enter description"
-                        className="w-full"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleSaveEdit(preset.id)}
-                        disabled={isLoading}
-                        className="backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
-                      >
-                        {isLoading ? 'Saving...' : 'Save'}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleCancelEdit}
-                        disabled={isLoading}
-                        className="backdrop-blur-xl border border-white/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-white/18 to-white/8 shadow-black/10"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  // Normal view
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Typography variant="h5" color="primary">
-                          {preset.name}
-                        </Typography>
+        {(() => {
+          if (isLoading) {
+            return (
+              <div className="text-center py-12">
+                <Typography variant="body" color="gray" className="text-gray-600">
+                  Loading presets...
+                </Typography>
+              </div>
+            );
+          }
+
+          if (presets.length === 0) {
+            return (
+              <div className="text-center py-12">
+                <Typography variant="body" color="gray" className="text-gray-600">
+                  No presets saved yet. Create your first preset above!
+                </Typography>
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              {presets.map(preset => (
+                <div
+                  key={preset.id}
+                  className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm"
+                >
+                  {editingPreset === preset.id ? (
+                    // Edit form
+                    <div className="space-y-4">
+                      <div>
+                        <label
+                          htmlFor="edit-preset-name"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          Preset Name *
+                        </label>
+                        <Input
+                          id="edit-preset-name"
+                          type="text"
+                          value={editName}
+                          onChange={(value: string | number) =>
+                            setEditName(String(value))
+                          }
+                          placeholder="Enter preset name"
+                          className="w-full"
+                        />
                       </div>
-                      {preset.description && (
-                        <Typography variant="body" color="gray" className="mb-2">
-                          {preset.description}
-                        </Typography>
-                      )}
-                    </div>
-                    <div className="flex flex-col items-end gap-2 ml-4">
-                      <Typography
-                        variant="body"
-                        color="gray"
-                        className="text-sm opacity-75"
-                      >
-                        Created: {new Date(preset.created_at).toLocaleDateString()}
-                      </Typography>
+                      <div>
+                        <label
+                          htmlFor="edit-preset-description"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          Description (optional)
+                        </label>
+                        <Input
+                          id="edit-preset-description"
+                          type="text"
+                          value={editDescription}
+                          onChange={(value: string | number) =>
+                            setEditDescription(String(value))
+                          }
+                          placeholder="Enter description"
+                          className="w-full"
+                        />
+                      </div>
                       <div className="flex gap-2">
                         <Button
                           variant="primary"
                           size="sm"
-                          onClick={() => handleLoadPreset(preset)}
-                          className="backdrop-blur-xl border border-green-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-green-500/25 to-green-600/25 shadow-green-500/20"
+                          onClick={() => handleSaveEdit(preset.id)}
+                          disabled={isLoading}
+                          className="backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
                         >
-                          Load
+                          {isLoading ? 'Saving...' : 'Save'}
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleEditPreset(preset)}
-                          className="backdrop-blur-xl border border-yellow-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-yellow-500/25 to-yellow-600/25 shadow-yellow-500/20"
+                          onClick={handleCancelEdit}
+                          disabled={isLoading}
+                          className="backdrop-blur-xl border border-white/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-white/18 to-white/8 shadow-black/10"
                         >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeletePreset(preset.id)}
-                          className="backdrop-blur-xl border border-red-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-red-500/25 to-red-600/25 shadow-red-500/20"
-                        >
-                          Delete
+                          Cancel
                         </Button>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+                  ) : (
+                    // Normal view
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Typography variant="h5" color="primary">
+                            {preset.name}
+                          </Typography>
+                        </div>
+                        {preset.description && (
+                          <Typography variant="body" color="gray" className="mb-2">
+                            {preset.description}
+                          </Typography>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end gap-2 ml-4">
+                        <Typography
+                          variant="body"
+                          color="gray"
+                          className="text-sm opacity-75"
+                        >
+                          Created: {new Date(preset.created_at).toLocaleDateString()}
+                        </Typography>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleLoadPreset(preset)}
+                            className="backdrop-blur-xl border border-green-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-green-500/25 to-green-600/25 shadow-green-500/20"
+                          >
+                            Load
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditPreset(preset)}
+                            className="backdrop-blur-xl border border-yellow-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-yellow-500/25 to-yellow-600/25 shadow-yellow-500/20"
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeletePreset(preset.id)}
+                            className="backdrop-blur-xl border border-red-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-red-500/25 to-red-600/25 shadow-red-500/20"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

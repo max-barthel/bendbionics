@@ -74,6 +74,10 @@ check_prerequisites() {
 pre_build_checks() {
     print_status "Running pre-build checks..."
 
+    # Clean up old test data before build
+    print_status "Cleaning up old test data..."
+    ./cleanup.sh --force > /dev/null 2>&1 || true
+
     # Run linting
     print_status "Running linting checks..."
     ./toolkit.sh all quick
