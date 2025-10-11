@@ -186,9 +186,9 @@ class TestFullAPIWorkflow:
 
         for test_case in invalid_payloads:
             response = self.client.post("/pcc", json=test_case["payload"])
-            assert response.status_code == test_case["expected_status"], (
-                f"Failed for {test_case['name']}"
-            )
+            assert (
+                response.status_code == test_case["expected_status"]
+            ), f"Failed for {test_case['name']}"
 
     def test_workflow_with_cors(self):
         """Test CORS handling in the workflow."""
@@ -255,9 +255,9 @@ class TestFullAPIWorkflow:
             execution_time = time.time() - start_time
 
             assert response.status_code == 200, f"Failed for {test_case['name']}"
-            assert execution_time < test_case["max_time"], (
-                f"Failed for {test_case['name']}"
-            )
+            assert (
+                execution_time < test_case["max_time"]
+            ), f"Failed for {test_case['name']}"
 
     def test_workflow_concurrent_requests(self):
         """Test handling of concurrent requests."""

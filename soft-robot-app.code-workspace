@@ -2,16 +2,20 @@
   "folders": [
     {
       "name": "Root",
-      "path": "."
+      "path": ".",
     },
     {
       "name": "Frontend",
-      "path": "./frontend"
+      "path": "./frontend",
     },
     {
       "name": "Backend",
-      "path": "./backend"
-    }
+      "path": "./backend",
+    },
+    {
+      "name": "Tauri",
+      "path": "./frontend/src-tauri",
+    },
   ],
   "settings": {
     "workbench.colorTheme": "Default Dark+",
@@ -23,7 +27,7 @@
       "**/dist": true,
       "**/coverage": true,
       "**/.pytest_cache": true,
-      "**/htmlcov": true
+      "**/htmlcov": true,
     },
     "search.exclude": {
       "**/node_modules": true,
@@ -32,12 +36,18 @@
       "**/dist": true,
       "**/coverage": true,
       "**/.pytest_cache": true,
-      "**/htmlcov": true
+      "**/htmlcov": true,
     },
     "typescript.preferences.includePackageJsonAutoImports": "auto",
     "python.defaultInterpreterPath": "./backend/venv/bin/python",
     "python.terminal.activateEnvironment": true,
-    "terminal.integrated.defaultProfile.osx": "zsh"
+    "terminal.integrated.defaultProfile.osx": "zsh",
+    "rust-analyzer.linkedProjects": [
+      "/Users/maxbarthel/code/soft-robot-app/frontend/src-tauri/Cargo.toml",
+    ],
+    "rust-analyzer.cargo.root": "/Users/maxbarthel/code/soft-robot-app/frontend/src-tauri",
+    "rust-analyzer.cargo.buildScripts.enable": true,
+    "rust-analyzer.procMacro.enable": true,
   },
   "extensions": {
     "recommendations": [
@@ -48,8 +58,8 @@
       "esbenp.prettier-vscode",
       "ms-vscode.vscode-typescript-next",
       "rust-lang.rust-analyzer",
-      "tauri-apps.tauri-vscode"
-    ]
+      "tauri-apps.tauri-vscode",
+    ],
   },
   "tasks": {
     "version": "2.0.0",
@@ -63,23 +73,23 @@
           "echo": true,
           "reveal": "always",
           "focus": false,
-          "panel": "new"
-        }
+          "panel": "new",
+        },
       },
       {
         "label": "Run Tests",
         "type": "shell",
         "command": "./lint_check.sh",
         "args": ["all", "test"],
-        "group": "test"
+        "group": "test",
       },
       {
         "label": "Lint Code",
         "type": "shell",
         "command": "./lint_check.sh",
         "args": ["all", "lint"],
-        "group": "build"
-      }
-    ]
-  }
+        "group": "build",
+      },
+    ],
+  },
 }
