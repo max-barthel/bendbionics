@@ -48,4 +48,4 @@ aiohttp==3.12.15
 psutil==5.9.8
 
 # Code quality and linting
-ruff==0.13.2
+ruff==0.13.3
