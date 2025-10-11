@@ -63,7 +63,7 @@
     "@storybook/addon-controls": "^9.0.8",
     "@storybook/addon-docs": "^9.1.10",
     "@storybook/addon-measure": "^9.0.8",
-    "@storybook/addon-onboarding": "^9.1.7",
+    "@storybook/addon-onboarding": "^9.1.10",
     "@storybook/addon-outline": "^9.0.8",
     "@storybook/addon-toolbars": "^9.0.8",
     "@storybook/addon-viewport": "^9.0.8",
