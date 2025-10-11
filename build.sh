@@ -157,6 +157,20 @@ build_tauri() {
     cd ..
 }
 
+# Function to bundle backend with desktop app
+bundle_backend() {
+    print_status "Bundling Python backend with desktop app..."
+
+    # Run the backend bundling script
+    ./scripts/bundle-backend.sh
+    if [ $? -ne 0 ]; then
+        print_error "Backend bundling failed"
+        exit 1
+    fi
+
+    print_success "Backend bundled successfully"
+}
+
 # Function to show build results
 show_build_results() {
     echo -e "${CYAN}================================${NC}"
@@ -206,6 +220,7 @@ main() {
     pre_build_checks
     build_frontend
     build_tauri
+    bundle_backend
     show_build_results
 }
 

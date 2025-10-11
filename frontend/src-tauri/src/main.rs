@@ -2,6 +2,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::{Deserialize, Serialize};
+use std::process::{Command, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::Duration;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ApiResponse {
@@ -10,8 +15,118 @@ struct ApiResponse {
     error: Option<String>,
 }
 
+// Global state for backend process
+static BACKEND_STARTED: AtomicBool = AtomicBool::new(false);
+static mut BACKEND_PROCESS: Option<std::process::Child> = None;
+
+// Function to start the Python backend
+async fn start_backend() -> Result<(), String> {
+    if BACKEND_STARTED.load(Ordering::Relaxed) {
+        return Ok(());
+    }
+
+    // First, check if backend is already running
+    let client = reqwest::Client::new();
+    match client.get("http://127.0.0.1:8000/pcc").timeout(Duration::from_secs(2)).send().await {
+        Ok(_) => {
+            println!("Backend is already running - using existing backend");
+            BACKEND_STARTED.store(true, Ordering::Relaxed);
+            return Ok(());
+        }
+        Err(e) => {
+            println!("Backend not running ({}), starting Python backend server...", e);
+        }
+    }
+
+    // Get the backend directory path - try multiple possible locations
+    let possible_paths = vec![
+        // Bundled backend path (in app bundle)
+        std::env::current_dir()
+            .unwrap()
+            .join("Contents/Resources/backend"),
+        // Development path
+        std::env::current_dir()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("backend"),
+        // Built app path
+        std::env::current_dir().unwrap().join("backend"),
+        // Alternative built app path
+        std::env::current_dir().unwrap().join("../backend"),
+    ];
+
+    let backend_path = possible_paths
+        .iter()
+        .find(|path| path.exists())
+        .ok_or("Backend directory not found. Please ensure the backend folder exists.")?;
+
+    println!("Using backend path: {:?}", backend_path);
+
+    // Determine Python command
+    let python_cmd = if cfg!(target_os = "windows") {
+        "python"
+    } else {
+        "python3"
+    };
+
+    // Start the backend server
+    let child = Command::new(python_cmd)
+        .arg("-m")
+        .arg("uvicorn")
+        .arg("app.main:app")
+        .arg("--host")
+        .arg("127.0.0.1")
+        .arg("--port")
+        .arg("8000")
+        .current_dir(&backend_path)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| {
+            format!(
+                "Failed to start backend: {}. Make sure Python and uvicorn are installed.",
+                e
+            )
+        })?;
+
+    unsafe {
+        BACKEND_PROCESS = Some(child);
+    }
+
+    BACKEND_STARTED.store(true, Ordering::Relaxed);
+
+    // Wait for server to start and check if it's actually running
+    thread::sleep(Duration::from_secs(3));
+
+    // Test if the backend is actually running
+    let client = reqwest::Client::new();
+    let test_url = "http://127.0.0.1:8000/pcc";
+
+    match client
+        .get(test_url)
+        .timeout(Duration::from_secs(5))
+        .send()
+        .await
+    {
+        Ok(_) => {
+            println!("Backend server started successfully and is responding");
+            Ok(())
+        }
+        Err(e) => {
+            println!("Backend server failed to start or is not responding: {}", e);
+            Err(format!("Backend server is not responding: {}", e))
+        }
+    }
+}
+
 #[tauri::command]
-async fn call_backend_api(endpoint: String, data: Option<serde_json::Value>, auth_token: Option<String>, token: Option<String>) -> Result<ApiResponse, String> {
+async fn call_backend_api(
+    endpoint: String,
+    data: Option<serde_json::Value>,
+    auth_token: Option<String>,
+    token: Option<String>,
+) -> Result<ApiResponse, String> {
     println!("=== Rust API Call Debug ===");
     println!("Endpoint: {}", endpoint);
     println!("Data provided: {}", data.is_some());
@@ -21,17 +136,41 @@ async fn call_backend_api(endpoint: String, data: Option<serde_json::Value>, aut
     println!("Token value: {:?}", token);
     println!("==========================");
 
-    let client = reqwest::Client::new();
-    let url = format!("http://localhost:8000{}", endpoint);
+    // Start the backend if it's not running
+    match start_backend().await {
+        Ok(_) => {
+            println!("Backend is ready");
+        }
+        Err(e) => {
+            println!("Failed to start backend: {}", e);
+            return Ok(ApiResponse {
+                success: false,
+                data: None,
+                error: Some(format!("Backend server is not available. Error: {}", e)),
+            });
+        }
+    }
+
+    // Make HTTP request to the backend
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(30))
+        .build()
+        .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
+    let url = format!("http://127.0.0.1:8000{}", endpoint);
 
     // Determine request method and prepare data
     let (request_builder, method, clean_data) = if let Some(request_data) = data {
         // Check if this is a DELETE or PUT request
-        let method = request_data.get("_method").and_then(|v| v.as_str()).map(|s| s.to_string());
+        let method = request_data
+            .get("_method")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
 
         // Remove _method from the data before sending
         let mut clean_data = request_data.clone();
-        clean_data.as_object_mut().and_then(|obj| obj.remove("_method"));
+        clean_data
+            .as_object_mut()
+            .and_then(|obj| obj.remove("_method"));
 
         let builder = match method.as_deref() {
             Some("DELETE") => client.delete(&url),
@@ -84,7 +223,10 @@ async fn call_backend_api(endpoint: String, data: Option<serde_json::Value>, aut
         Ok(resp) => {
             let status = resp.status();
             if status.is_success() {
-                let data = resp.json::<serde_json::Value>().await.map_err(|e| e.to_string())?;
+                let data = resp
+                    .json::<serde_json::Value>()
+                    .await
+                    .map_err(|e| e.to_string())?;
                 Ok(ApiResponse {
                     success: true,
                     data: Some(data),
@@ -99,17 +241,13 @@ async fn call_backend_api(endpoint: String, data: Option<serde_json::Value>, aut
                 })
             }
         }
-        Err(e) => {
-            Ok(ApiResponse {
-                success: false,
-                data: None,
-                error: Some(e.to_string()),
-            })
-        },
+        Err(e) => Ok(ApiResponse {
+            success: false,
+            data: None,
+            error: Some(e.to_string()),
+        }),
     }
 }
-
-
 
 fn main() {
     tauri::Builder::default()
