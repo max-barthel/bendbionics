@@ -1,76 +1,46 @@
-name: Test Suite
+name: Test Build
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
-
-env:
-  CI: "true"
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+    test:
+        runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [20.x]
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-    steps:
-      - uses: actions/checkout@v5
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "18"
+                  cache: "npm"
+                  cache-dependency-path: frontend/package-lock.json
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v5
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
+            - name: Setup Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.11"
 
-      - name: Install dependencies
-        run: |
-          cd frontend
-          npm ci
-          npx playwright install --with-deps
+            - name: Install frontend dependencies
+              working-directory: ./frontend
+              run: npm ci
 
-      - name: Run linting
-        run: |
-          cd frontend
-          npm run lint
+            - name: Install backend dependencies
+              working-directory: ./backend
+              run: pip install -r requirements.txt
 
-      - name: Run tests with coverage
-        run: |
-          cd frontend
-          npm run test:ci
+            - name: Run frontend tests
+              working-directory: ./frontend
+              run: npm test
 
-      # - name: Upload coverage reports to Codecov
-      #   uses: codecov/codecov-action@v5
-      #   with:
-      #     files: ./frontend/coverage/lcov.info
-      #     flags: unittests
-      #     name: codecov-umbrella
-      #     fail_ci_if_error: true
+            - name: Run backend tests
+              working-directory: ./backend
+              run: python -m pytest
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results-${{ matrix.node-version }}
-          path: frontend/test-results.xml
-          retention-days: 30
-
-  test-report:
-    needs: test
-    runs-on: ubuntu-latest
-    if: always()
-
-    steps:
-      - name: Download test results
-        uses: actions/download-artifact@v5
-        with:
-          path: test-results
-
-      # - name: Publish Test Results
-      #   uses: EnricoMi/publish-unit-test-result-action@v2
-      #   if: always()
-      #   with:
-      #     files: "test-results/**/*.xml"
+            - name: Run linting
+              run: ./toolkit.sh all quick
