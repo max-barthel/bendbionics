@@ -160,7 +160,7 @@ For beta features, add toggle in @settingsBetaTab.tsx, otherwise add in @setting
   onChange={(newVal) => {
     vsContext.reactiveStorageService.setApplicationUserPersistentStorage(
       "myNewProperty",
-      newVal
+      newVal,
     );
   }}
 />
