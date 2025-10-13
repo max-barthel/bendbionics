@@ -55,11 +55,27 @@ check_prerequisites() {
         exit 1
     fi
 
+    # Check Node.js version
+    NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+    if [ "$NODE_VERSION" -lt 18 ]; then
+        print_error "Node.js 18+ required. Current: $(node --version)"
+        exit 1
+    fi
+    print_status "Node.js version: $(node --version) ✓"
+
     # Check Rust (for Tauri)
     if ! command -v cargo &> /dev/null; then
         print_error "Rust/Cargo is required for Tauri builds. Install from https://rustup.rs/"
         exit 1
     fi
+
+    # Check Rust version
+    RUST_VERSION=$(cargo --version | cut -d' ' -f2 | cut -d'.' -f1)
+    if [ "$RUST_VERSION" -lt 1 ]; then
+        print_error "Rust 1.70+ recommended for Tauri. Current: $(cargo --version)"
+        print_warning "Continuing with build, but you may encounter issues..."
+    fi
+    print_status "Rust version: $(cargo --version) ✓"
 
     # Check if dependencies are installed
     if [ ! -d "frontend/node_modules" ]; then
@@ -157,11 +173,28 @@ build_tauri() {
     cd ..
 }
 
+# Function to bundle backend with desktop app
+bundle_backend() {
+    print_status "Bundling Python backend with desktop app..."
+
+    # Run the backend bundling script
+    ./scripts/bundle-backend.sh
+    if [ $? -ne 0 ]; then
+        print_error "Backend bundling failed"
+        exit 1
+    fi
+
+    print_success "Backend bundled successfully"
+}
+
 # Function to show build results
 show_build_results() {
     echo -e "${CYAN}================================${NC}"
     echo -e "${CYAN}📦 Build Results${NC}"
     echo -e "${CYAN}================================${NC}"
+
+    # Show build timestamp
+    echo -e "Build Time: ${GREEN}$(date)${NC}"
 
     # Check for built files
     if [ -d "frontend/src-tauri/target/release" ]; then
@@ -206,6 +239,7 @@ main() {
     pre_build_checks
     build_frontend
     build_tauri
+    bundle_backend
     show_build_results
 }
 
