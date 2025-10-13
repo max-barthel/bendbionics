@@ -4,7 +4,7 @@
 use serde::{Deserialize, Serialize};
 use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
 
@@ -17,7 +17,7 @@ struct ApiResponse {
 
 // Global state for backend process
 static BACKEND_STARTED: AtomicBool = AtomicBool::new(false);
-static mut BACKEND_PROCESS: Option<std::process::Child> = None;
+static BACKEND_PROCESS: Mutex<Option<std::process::Child>> = Mutex::new(None);
 
 // Function to start the Python backend
 async fn start_backend() -> Result<(), String> {
@@ -90,8 +90,9 @@ async fn start_backend() -> Result<(), String> {
             )
         })?;
 
-    unsafe {
-        BACKEND_PROCESS = Some(child);
+    {
+        let mut process_guard = BACKEND_PROCESS.lock().unwrap();
+        *process_guard = Some(child);
     }
 
     BACKEND_STARTED.store(true, Ordering::Relaxed);
@@ -118,6 +119,20 @@ async fn start_backend() -> Result<(), String> {
             Err(format!("Backend server is not responding: {}", e))
         }
     }
+}
+
+// Function to cleanup backend process
+fn cleanup_backend() {
+    println!("Cleaning up backend process...");
+    {
+        let mut process_guard = BACKEND_PROCESS.lock().unwrap();
+        if let Some(mut child) = process_guard.take() {
+            let _ = child.kill();
+            let _ = child.wait();
+            println!("Backend process terminated");
+        }
+    }
+    BACKEND_STARTED.store(false, Ordering::Relaxed);
 }
 
 #[tauri::command]
@@ -250,8 +265,28 @@ async fn call_backend_api(
 }
 
 fn main() {
+    // Set up signal handlers for cleanup
+    ctrlc::set_handler(|| {
+        cleanup_backend();
+        std::process::exit(0);
+    }).expect("Error setting Ctrl+C handler");
+
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![call_backend_api])
+        .setup(|_app| {
+            // Start the backend when the app launches
+            tauri::async_runtime::spawn(async {
+                if let Err(e) = start_backend().await {
+                    eprintln!("Failed to start backend: {}", e);
+                }
+            });
+            Ok(())
+        })
+        .on_window_event(|event| {
+            if let tauri::WindowEvent::CloseRequested { .. } = event.event() {
+                cleanup_backend();
+            }
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
