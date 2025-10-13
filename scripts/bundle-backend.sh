@@ -24,6 +24,7 @@ sqlmodel==0.0.14
 python-multipart==0.0.6
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
 python-dotenv==1.0.0
 numpy==1.24.3
 scipy==1.11.4
