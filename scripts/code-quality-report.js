@@ -77,17 +77,17 @@ function analyzeFrontend(frontendReport) {
       {
         encoding: "utf8",
         stdio: "pipe",
-      }
+      },
     );
 
     const eslintResults = JSON.parse(eslintOutput);
     const totalErrors = eslintResults.reduce(
       (sum, file) => sum + file.errorCount,
-      0
+      0,
     );
     const totalWarnings = eslintResults.reduce(
       (sum, file) => sum + file.warningCount,
-      0
+      0,
     );
 
     frontendReport.eslint = {
@@ -104,7 +104,7 @@ function analyzeFrontend(frontendReport) {
     }
     log(
       `✅ ESLint: ${totalErrors} errors, ${totalWarnings} warnings`,
-      eslintColor
+      eslintColor,
     );
   } catch (error) {
     log(`⚠️ ESLint analysis failed: ${error.message}`, "yellow");
@@ -181,7 +181,7 @@ function analyzeBackend(backendReport) {
       {
         encoding: "utf8",
         stdio: "pipe",
-      }
+      },
     );
 
     const errorCount = (mypyOutput.match(/error:/g) || []).length;
@@ -265,7 +265,7 @@ function calculateOverallMetrics(report) {
   };
 
   report.overall.avgLinesPerFile = Math.round(
-    report.overall.totalLines / report.overall.totalFiles
+    report.overall.totalLines / report.overall.totalFiles,
   );
   report.overall.errorRate =
     report.overall.totalErrors / report.overall.totalFiles;
@@ -285,7 +285,7 @@ function logOverallMetrics(report) {
   const warningColor = report.overall.totalWarnings > 0 ? "yellow" : "green";
   log(
     `Total Warnings: ${formatNumber(report.overall.totalWarnings)}`,
-    warningColor
+    warningColor,
   );
 
   let errorRateColor = "green";
@@ -296,7 +296,7 @@ function logOverallMetrics(report) {
   }
   log(
     `Error Rate: ${formatPercentage(report.overall.errorRate)}`,
-    errorRateColor
+    errorRateColor,
   );
 }
 
@@ -310,13 +310,13 @@ function logFrontendMetrics(report) {
   const eslintErrors = report.frontend.eslint?.errors || 0;
   log(
     `ESLint Errors: ${formatNumber(eslintErrors)}`,
-    eslintErrors > 0 ? "red" : "green"
+    eslintErrors > 0 ? "red" : "green",
   );
 
   const tsErrors = report.frontend.typescript?.errors || 0;
   log(
     `TypeScript Errors: ${formatNumber(tsErrors)}`,
-    tsErrors > 0 ? "red" : "green"
+    tsErrors > 0 ? "red" : "green",
   );
 }
 
@@ -330,13 +330,13 @@ function logBackendMetrics(report) {
   const ruffErrors = report.backend.ruff?.errors || 0;
   log(
     `Ruff Errors: ${formatNumber(ruffErrors)}`,
-    ruffErrors > 0 ? "red" : "green"
+    ruffErrors > 0 ? "red" : "green",
   );
 
   const mypyErrors = report.backend.mypy?.errors || 0;
   log(
     `MyPy Errors: ${formatNumber(mypyErrors)}`,
-    mypyErrors > 0 ? "red" : "green"
+    mypyErrors > 0 ? "red" : "green",
   );
 }
 
