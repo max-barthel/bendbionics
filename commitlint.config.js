@@ -16,17 +16,18 @@ module.exports = {
         "ci", // CI/CD changes
         "chore", // Maintenance tasks
         "revert", // Reverting previous commits
+        "auto", // Auto-generated commit messages
       ],
     ],
-    "type-case": [2, "always", "lower-case"],
+    "type-case": [1, "always", "lower-case"], // Warning instead of error
     "type-empty": [2, "never"],
-    "scope-case": [2, "always", "lower-case"],
-    "subject-case": [1, "always", "lower-case"],
+    "scope-case": [1, "always", "lower-case"], // Warning instead of error
+    "subject-case": [0], // Disabled - too strict for auto-generated messages
     "subject-empty": [2, "never"],
-    "subject-full-stop": [2, "never", "."],
-    "header-max-length": [2, "always", 100],
-    "body-leading-blank": [1, "always"],
-    "footer-leading-blank": [1, "always"],
+    "subject-full-stop": [1, "never", "."], // Warning instead of error
+    "header-max-length": [1, "always", 100], // Warning instead of error
+    "body-leading-blank": [0], // Disabled for auto-generated messages
+    "footer-leading-blank": [0], // Disabled for auto-generated messages
   },
   prompt: {
     questions: {
