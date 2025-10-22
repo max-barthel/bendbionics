@@ -11,22 +11,20 @@ export default defineConfig(({ mode }) => {
 
   const plugins = [react(), tailwindcss()];
 
-  // Add bundle analysis plugins in production or when analyzing
-  if (isProduction || isAnalyze) {
+  // Add bundle analysis plugins only when explicitly analyzing
+  if (isAnalyze) {
     plugins.push(
       visualizer({
         filename: 'dist/stats.html',
-        open: true,
+        open: false,
         gzipSize: true,
         brotliSize: true,
         template: 'treemap', // 'treemap', 'sunburst', 'network'
-      })
-    );
-    plugins.push(
+      }) as any,
       analyzer({
         analyzerMode: 'static',
-        openAnalyzer: true,
-      })
+        openAnalyzer: false,
+      }) as any
     );
   }
 
@@ -135,7 +133,7 @@ export default defineConfig(({ mode }) => {
           assetFileNames: assetInfo => {
             const fileName = assetInfo.names?.[0] || 'asset';
             const info = fileName.split('.');
-            const ext = info[info.length - 1];
+            const ext = info.at(-1);
             if (/\.(css)$/.test(fileName)) {
               return `css/[name]-[hash].${ext}`;
             }

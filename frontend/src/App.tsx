@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 
 // Feature imports - using direct imports to avoid export conflicts
+import ErrorBoundary from './components/ErrorBoundary';
 import { PresetManager } from './features/presets/components/presets/PresetManager';
 import FormTabs from './features/robot-config/components/FormTabs';
 import SubmitButton from './features/robot-config/components/SubmitButton';
@@ -9,7 +10,6 @@ import {
   useRobotState,
   type RobotState,
 } from './features/robot-config/hooks/useRobotState';
-import { ErrorBoundary } from './features/shared/components/ErrorBoundary';
 import Visualizer3D from './features/visualization/components/Visualizer3D';
 
 import { AuthPage } from './components/auth/AuthPage';
@@ -60,7 +60,7 @@ const DEFAULT_COUPLING_LENGTH = 0.03;
 const DEFAULT_DISCRETIZATION_STEPS = 1000;
 const DEFAULT_TENDON_COUNT = 3;
 const DEFAULT_TENDON_RADIUS = 0.01;
-const DEFAULT_TENDON_OFFSET = 0.0;
+const DEFAULT_TENDON_OFFSET = 0;
 const DEFAULT_TIMEOUT = 100;
 
 // Timing constants

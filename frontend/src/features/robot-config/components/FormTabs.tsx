@@ -157,12 +157,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
             discretizationSteps: robotState.discretizationSteps,
           };
 
-          onResult(
-            isApiResponseWithResult(result)
-              ? result.data.result.segments || result.data.result.robot_positions
-              : [],
-            configuration
-          );
+          onResult(result.data.segments || [], configuration);
         }
       } catch (err: unknown) {
         // Error handled by error handler
