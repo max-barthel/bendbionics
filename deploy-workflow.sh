@@ -58,6 +58,11 @@ show_usage() {
     echo "  Make sure you have SSH keys set up:"
     echo "    ssh-copy-id $SERVER_USER@$SERVER_HOST"
     echo ""
+    echo "Sudo Configuration:"
+    echo "  The deployment script requires sudo privileges on the server."
+    echo "  Set up passwordless sudo for deployment:"
+    echo "    ./setup-sudo.sh"
+    echo ""
     echo "This script handles the complete deployment workflow:"
     echo "1. Build the application"
     echo "2. Upload to server"
@@ -98,6 +103,17 @@ check_prerequisites() {
         print_warning "SSH connection test failed, but continuing..."
         print_status "If deployment fails, make sure SSH keys are set up:"
         print_status "Run: ssh-copy-id $SERVER_USER@$SERVER_HOST"
+    fi
+
+    # Test sudo configuration
+    print_status "Testing sudo configuration..."
+    if ssh -o ConnectTimeout=5 -o BatchMode=yes "$SERVER_USER@$SERVER_HOST" "sudo -n echo 'Sudo access working'" >/dev/null 2>&1; then
+        print_success "Sudo configuration working"
+    else
+        print_warning "Sudo configuration test failed"
+        print_status "If deployment fails, set up sudo configuration:"
+        print_status "Run: ./setup-sudo.sh"
+        print_status "This will configure passwordless sudo for deployment"
     fi
 
     print_success "Prerequisites check completed"
