@@ -1,153 +1,144 @@
-name: CI Pipeline
+name: Web Application CI/CD
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+    push:
+        branches: [main, develop, web-app-deployment]
+    pull_request:
+        branches: [main, develop, web-app-deployment]
 
 env:
-  NODE_VERSION: "20"
-  PYTHON_VERSION: "3.11"
-  CI: "true"
+    NODE_VERSION: "20"
+    PYTHON_VERSION: "3.11"
+    CI: "true"
 
 jobs:
-  # Frontend Tests
-  frontend:
-    name: Frontend Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+    # Code Quality & Testing
+    quality:
+        name: Code Quality & Tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: "npm"
+                  cache-dependency-path: frontend/package-lock.json
 
-      - name: Install dependencies
-        run: |
-          cd frontend
-          npm ci
-          npx playwright install --with-deps
+            - name: Setup Python
+              uses: actions/setup-python@v6
+              with:
+                  python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Run linting
-        run: |
-          cd frontend
-          npm run lint
+            - name: Install frontend dependencies
+              run: |
+                  cd frontend
+                  npm ci
+                  npx playwright install --with-deps
 
-      # - name: Run type checking
-      #   run: |
-      #     cd frontend
-      #     npx tsc --noEmit
+            - name: Install backend dependencies
+              run: |
+                  cd backend
+                  python -m pip install --upgrade pip
+                  pip install -r requirements.txt
 
-      - name: Run tests
-        run: |
-          cd frontend
-          npm run test:run
+            - name: Run frontend linting
+              run: |
+                  cd frontend
+                  npm run lint
 
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm run build
+            - name: Run backend linting
+              run: |
+                  cd backend
+                  ruff check app/
+                  ruff format --check app/
 
-  # Backend Tests
-  backend:
-    name: Backend Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+            - name: Run frontend tests
+              run: |
+                  cd frontend
+                  npm run test:run
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+            - name: Run backend tests
+              run: |
+                  cd backend
+                  python -m pytest tests/ -v
 
-      - name: Install dependencies
-        run: |
-          cd backend
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install black ruff mypy
+            - name: Run integration tests
+              run: |
+                  cd frontend
+                  npm run test:integration
 
-      - name: Run linting
-        run: |
-          cd backend
-          python -m black --check app/
-          ruff check app/
+    # Web Build & Performance
+    build:
+        name: Web Build & Performance
+        runs-on: ubuntu-latest
+        needs: quality
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v5
 
-      # - name: Run type checking
-      #   run: |
-      #     cd backend
-      #     python -m mypy app/ --ignore-missing-imports
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: "npm"
+                  cache-dependency-path: frontend/package-lock.json
 
-      - name: Run tests
-        run: |
-          cd backend
-          python -m pytest tests/ -v
+            - name: Install dependencies
+              run: |
+                  cd frontend
+                  npm ci
 
-  # Build Check
-  build:
-    name: Build Check
-    runs-on: ubuntu-latest
-    needs: [frontend, backend]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+            - name: Build web application
+              run: |
+                  cd frontend
+                  npm run build
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+            - name: Build size analysis
+              run: |
+                  cd frontend
+                  npm run build:size-check
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+            - name: Lighthouse performance audit
+              run: |
+                  cd frontend
+                  npm run lighthouse:ci
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libglib2.0-dev libsoup2.4-dev libjavascriptcoregtk-4.1-dev imagemagick
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: web-build
+                  path: frontend/dist/
+                  retention-days: 7
 
-      - name: Create symbolic links for compatibility
-        run: |
-          # Create symbolic links to make 4.1 libraries available as 4.0 for compatibility
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/pkgconfig/javascriptcoregtk-4.1.pc /usr/lib/x86_64-linux-gnu/pkgconfig/javascriptcoregtk-4.0.pc
+    # Backend Build Check
+    backend-build:
+        name: Backend Build Check
+        runs-on: ubuntu-latest
+        needs: quality
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v5
 
-          # Create symbolic links for WebKit2GTK 4.1 -> 4.0 compatibility
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/pkgconfig/webkit2gtk-4.1.pc /usr/lib/x86_64-linux-gnu/pkgconfig/webkit2gtk-4.0.pc
+            - name: Setup Python
+              uses: actions/setup-python@v6
+              with:
+                  python-version: ${{ env.PYTHON_VERSION }}
 
-          # Create library symlinks for linker compatibility
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so
-          sudo ln -sf /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so
+            - name: Install backend dependencies
+              run: |
+                  cd backend
+                  python -m pip install --upgrade pip
+                  pip install -r requirements.txt
 
-      - name: Convert icons to RGBA format
-        run: |
-          cd frontend/src-tauri/icons
-          # Convert all PNG icons to RGBA format for Tauri compatibility
-          for icon in *.png; do
-              if [ -f "$icon" ]; then
-                  convert "$icon" -background transparent -alpha set "$icon"
-              fi
-          done
+            - name: Verify backend imports
+              run: |
+                  cd backend
+                  python -c "import app.main; print('Backend imports successful')"
 
-      - name: Install dependencies
-        run: |
-          cd frontend
-          npm ci
-
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm run build
-
-      - name: Build Tauri app
-        run: |
-          cd frontend
-          npm run tauri build
+            - name: Check backend configuration
+              run: |
+                  cd backend
+                  python -c "from app.config import settings; print('Configuration loaded successfully')"
