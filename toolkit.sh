@@ -40,7 +40,8 @@ run_backend() {
     local cmd="$1"
     print_status "Running backend: $cmd"
     cd backend
-    python -m "$cmd"
+    export PYTHONPATH="${PWD}:${PYTHONPATH}"
+    eval "$cmd"
     cd ..
     print_success "Backend $cmd completed"
 }
@@ -107,6 +108,11 @@ git_commit_check() {
 
 # Main script logic
 check_directory
+
+# Normalize legacy arg order (e.g., "./toolkit.sh all test")
+if [ "${1:-}" = "all" ] && [ -n "${2:-}" ]; then
+    set -- "${2}" "${1}" "${3}" "${4}"
+fi
 
 case "${1:-help}" in
     "lint")

@@ -42,8 +42,8 @@ function processInputValue(
     return null;
   }
 
-  const numValue = parseFloat(newValue);
-  if (isNaN(numValue)) {
+  const numValue = Number.parseFloat(newValue);
+  if (Number.isNaN(numValue)) {
     return null;
   }
 

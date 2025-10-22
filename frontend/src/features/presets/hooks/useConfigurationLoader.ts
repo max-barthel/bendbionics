@@ -9,7 +9,7 @@ const DEFAULT_VALUES = {
   DISCRETIZATION_STEPS: 1000,
   TENDON_COUNT: 3,
   TENDON_RADIUS: 0.01,
-  TENDON_OFFSET: 0.0,
+  TENDON_OFFSET: 0,
 } as const;
 
 // Helper function to check if configuration should be loaded
@@ -24,14 +24,15 @@ const createNewState = (config: Record<string, unknown>) => {
   const segments = (config['segments'] as number) ?? DEFAULT_VALUES.SEGMENTS;
   return {
     segments,
-    bendingAngles: (config['bendingAngles'] as number[]) ?? Array(segments).fill(0),
-    rotationAngles: (config['rotationAngles'] as number[]) ?? Array(segments).fill(0),
+    bendingAngles: (config['bendingAngles'] as number[]) ?? new Array(segments).fill(0),
+    rotationAngles:
+      (config['rotationAngles'] as number[]) ?? new Array(segments).fill(0),
     backboneLengths:
       (config['backboneLengths'] as number[]) ??
-      Array(segments).fill(DEFAULT_VALUES.BACKBONE_LENGTH),
+      new Array(segments).fill(DEFAULT_VALUES.BACKBONE_LENGTH),
     couplingLengths:
       (config['couplingLengths'] as number[]) ??
-      Array(segments + 1).fill(DEFAULT_VALUES.COUPLING_LENGTH),
+      new Array(segments + 1).fill(DEFAULT_VALUES.COUPLING_LENGTH),
     discretizationSteps:
       (config['discretizationSteps'] as number) ?? DEFAULT_VALUES.DISCRETIZATION_STEPS,
     tendonConfig: (config['tendonConfig'] as {

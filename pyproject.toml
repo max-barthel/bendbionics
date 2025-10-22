@@ -1,23 +1,12 @@
 [tool.black]
 line-length = 88
 
-[tool.pylsp-mypy]
-enabled = true
-live_mode = true
-strict = false
-
-[tool.pylsp-rope]
-ropeFolder = "backend"
-
-[tool.pylsp-ruff]
-enabled = true
-
 [tool.ruff]
 line-length = 88
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "COM", "C4", "DTZ", "T10", "EM", "EXE", "FA", "ISC", "ICN", "G", "INP", "PIE", "T20", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "TCH", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "NPY", "AIR", "PERF", "FURB", "LOG", "RUF"]
+select = ["E", "F", "W", "I", "UP", "S", "B", "A", "COM", "C4", "DTZ", "T10", "EM", "EXE", "FA", "ISC", "ICN", "G", "INP", "PIE", "T20", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "TCH", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "NPY", "AIR", "PERF", "FURB", "LOG", "RUF"]
 ignore = [
     "E203",  # whitespace before ':'
     "S101",  # use of assert
@@ -58,10 +47,6 @@ ignore = [
 "__init__.py" = ["F401"]
 "tests/**/*.py" = ["S101", "PLR2004", "S106", "S108"]
 
-[tool.pylsp-pylint]
-enabled = true
-args = ["--disable=C0114,C0115,C0116"]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
@@ -73,7 +58,6 @@ addopts = [
     "--cov=app",
     "--cov-report=term-missing",
     "--cov-report=html:htmlcov",
-    "--cov-report=xml:coverage.xml",
     "--cov-fail-under=40"
 ]
 
@@ -83,7 +67,6 @@ omit = [
     "*/tests/*",
     "*/test_*",
     "*/__pycache__/*",
-    "*/migrations/*",
     "*/venv/*",
     "*/env/*",
     "*/.venv/*",

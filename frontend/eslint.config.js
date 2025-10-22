@@ -14,6 +14,7 @@ export default [
       '**/*.d.ts',
       '**/generated/**/*',
       '**/vendor/**/*',
+      'vite.config.ts',
     ],
   },
   // Basic configuration for source files only
