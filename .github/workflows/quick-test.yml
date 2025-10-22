@@ -1,0 +1,63 @@
+name: Quick Test
+
+on:
+    workflow_dispatch:
+    push:
+        branches: [main, develop, web-app-deployment]
+
+env:
+    NODE_VERSION: "20"
+    PYTHON_VERSION: "3.11"
+
+jobs:
+    quick-check:
+        name: Quick Health Check
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v5
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: "npm"
+                  cache-dependency-path: frontend/package-lock.json
+
+            - name: Setup Python
+              uses: actions/setup-python@v6
+              with:
+                  python-version: ${{ env.PYTHON_VERSION }}
+
+            - name: Install frontend dependencies
+              run: |
+                  cd frontend
+                  npm ci
+
+            - name: Install backend dependencies
+              run: |
+                  cd backend
+                  python -m pip install --upgrade pip
+                  pip install -r requirements.txt
+
+            - name: Quick linting check
+              run: |
+                  cd frontend && npm run lint:check
+                  cd ../backend && ruff check app/ --quiet
+
+            - name: Quick build test
+              run: |
+                  cd frontend
+                  npm run build
+
+            - name: Backend import test
+              run: |
+                  cd backend
+                  python -c "import app.main; print('✅ Backend imports successful')"
+
+            - name: Success message
+              run: |
+                  echo "🎉 Quick test completed successfully!"
+                  echo "✅ Frontend builds"
+                  echo "✅ Backend imports"
+                  echo "✅ Linting passes"
