@@ -82,9 +82,9 @@ clean_build() {
         print_status "Removed previous frontend build"
     fi
 
-    # Clean any Tauri build artifacts that might interfere
-    if [ -d "frontend/src-tauri/target" ]; then
-        print_warning "Tauri build artifacts found. These will be ignored for web build."
+    # Clean any old build artifacts
+    if [ -d "frontend/src-tauri" ]; then
+        print_warning "Legacy Tauri directory found. This is now a web-only application."
     fi
 
     # Note: Old deployment packages are now cleaned up after successful deployment
@@ -158,9 +158,9 @@ validate_build() {
     local build_size=$(du -sh frontend/dist | cut -f1)
     print_status "Build size: $build_size"
 
-    # Check for Tauri-specific files that shouldn't be in web build
-    if find frontend/dist -name "*tauri*" -o -name "*desktop*" | grep -q .; then
-        print_warning "Found Tauri-specific files in web build. This is normal if they're just assets."
+    # Check for any desktop-specific files that shouldn't be in web build
+    if find frontend/dist -name "*desktop*" | grep -q .; then
+        print_warning "Found desktop-specific files in web build. This may indicate build issues."
     fi
 
     print_success "Build validation completed"
