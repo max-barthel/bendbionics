@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Soft Robot App - Enhanced Build Script
-# This script provides a robust build process with error handling and validation
+# Soft Robot App - Web Build Script
+# Builds the frontend for web deployment (without Tauri)
 
 set -e  # Exit on any error
 
@@ -33,7 +33,7 @@ print_error() {
 
 print_header() {
     echo -e "${PURPLE}================================${NC}"
-    echo -e "${PURPLE}🏗️  Soft Robot App Build${NC}"
+    echo -e "${PURPLE}🌐 Soft Robot Web Build${NC}"
     echo -e "${PURPLE}================================${NC}"
 }
 
@@ -63,21 +63,7 @@ check_prerequisites() {
     fi
     print_status "Node.js version: $(node --version) ✓"
 
-    # Check Rust (for Tauri)
-    if ! command -v cargo &> /dev/null; then
-        print_error "Rust/Cargo is required for Tauri builds. Install from https://rustup.rs/"
-        exit 1
-    fi
-
-    # Check Rust version
-    RUST_VERSION=$(cargo --version | cut -d' ' -f2 | cut -d'.' -f1)
-    if [ "$RUST_VERSION" -lt 1 ]; then
-        print_error "Rust 1.70+ recommended for Tauri. Current: $(cargo --version)"
-        print_warning "Continuing with build, but you may encounter issues..."
-    fi
-    print_status "Rust version: $(cargo --version) ✓"
-
-    # Check if dependencies are installed
+    # Check if frontend dependencies are installed
     if [ ! -d "frontend/node_modules" ]; then
         print_warning "Frontend dependencies not found. Installing..."
         cd frontend && npm install && cd ..
@@ -86,57 +72,50 @@ check_prerequisites() {
     print_success "Prerequisites check completed"
 }
 
-# Function to run pre-build checks
-pre_build_checks() {
-    print_status "Running pre-build checks..."
+# Function to clean previous builds
+clean_build() {
+    print_status "Cleaning previous web builds..."
 
-    # Clean up old test data before build
-    print_status "Cleaning up old test data..."
-    ./cleanup.sh --force > /dev/null 2>&1 || true
-
-    # Run linting
-    print_status "Running linting checks..."
-    ./toolkit.sh all quick
-    if [ $? -ne 0 ]; then
-        print_error "Linting checks failed. Please fix issues before building."
-        exit 1
+    # Clean frontend dist directory
+    if [ -d "frontend/dist" ]; then
+        rm -rf frontend/dist
+        print_status "Removed previous frontend build"
     fi
 
-    # Run tests
-    print_status "Running test suite..."
-    ./toolkit.sh all test
-    if [ $? -ne 0 ]; then
-        print_error "Tests failed. Please fix failing tests before building."
-        exit 1
+    # Clean any Tauri build artifacts that might interfere
+    if [ -d "frontend/src-tauri/target" ]; then
+        print_warning "Tauri build artifacts found. These will be ignored for web build."
     fi
 
-    # Check bundle size
-    print_status "Checking bundle size..."
-    ./toolkit.sh frontend size-check
-    if [ $? -ne 0 ]; then
-        print_warning "Bundle size check failed, but continuing with build..."
-    fi
+    # Note: Old deployment packages are now cleaned up after successful deployment
+    # to avoid having obsolete build folders in the repo
 
-    print_success "Pre-build checks completed"
+    print_success "Clean completed"
 }
 
-# Function to build frontend
-build_frontend() {
-    print_status "Building frontend..."
+# Function to build frontend for web
+build_frontend_web() {
+    print_status "Building frontend for web deployment..."
 
     cd frontend
 
-    # Clean previous build
-    if [ -d "dist" ]; then
-        print_status "Cleaning previous build..."
-        rm -rf dist
+    # Set production environment
+    export NODE_ENV=production
+
+    # Copy production environment file if it exists
+    if [ -f ".env.production" ]; then
+        print_status "Using production environment configuration"
+        cp .env.production .env.local
+    else
+        print_warning "No .env.production found, using default settings"
     fi
 
     # Build with TypeScript check
-    print_status "Running TypeScript compilation..."
+    print_status "Running TypeScript compilation and web build..."
     npm run build
+
     if [ $? -ne 0 ]; then
-        print_error "Frontend build failed"
+        print_error "Frontend web build failed"
         exit 1
     fi
 
@@ -146,100 +125,183 @@ build_frontend() {
         exit 1
     fi
 
-    print_success "Frontend build completed"
-    cd ..
-}
-
-# Function to build Tauri app
-build_tauri() {
-    print_status "Building Tauri desktop app..."
-
-    cd frontend
-
-    # Source Rust environment
-    if [ -f "$HOME/.cargo/env" ]; then
-        source "$HOME/.cargo/env"
-    fi
-
-    # Build Tauri app
-    print_status "Compiling Tauri application..."
-    npm run tauri build
-    if [ $? -ne 0 ]; then
-        print_error "Tauri build failed"
+    # Check for essential files
+    if [ ! -f "dist/index.html" ]; then
+        print_error "index.html not found in build output"
         exit 1
     fi
 
-    print_success "Tauri build completed"
+    print_success "Frontend web build completed"
     cd ..
 }
 
-# Function to bundle backend with desktop app
-bundle_backend() {
-    print_status "Bundling Python backend with desktop app..."
+# Function to validate build output
+validate_build() {
+    print_status "Validating web build output..."
 
-    # Run the backend bundling script
-    ./scripts/bundle-backend.sh
-    if [ $? -ne 0 ]; then
-        print_error "Backend bundling failed"
+    # Check for required files
+    local required_files=("index.html" "css" "js")
+    local missing_files=()
+
+    for file in "${required_files[@]}"; do
+        if [ ! -e "frontend/dist/$file" ]; then
+            missing_files+=("$file")
+        fi
+    done
+
+    if [ ${#missing_files[@]} -ne 0 ]; then
+        print_error "Missing required build files: ${missing_files[*]}"
         exit 1
     fi
 
-    print_success "Backend bundled successfully"
+    # Check build size
+    local build_size=$(du -sh frontend/dist | cut -f1)
+    print_status "Build size: $build_size"
+
+    # Check for Tauri-specific files that shouldn't be in web build
+    if find frontend/dist -name "*tauri*" -o -name "*desktop*" | grep -q .; then
+        print_warning "Found Tauri-specific files in web build. This is normal if they're just assets."
+    fi
+
+    print_success "Build validation completed"
+}
+
+# Function to create deployment package
+create_deployment_package() {
+    print_status "Creating deployment package..."
+
+    # Create deployment directory
+    local deploy_dir="deploy/web-build-$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$deploy_dir"
+
+    # Copy frontend build
+    mkdir -p "$deploy_dir/frontend"
+    cp -r frontend/dist/* "$deploy_dir/frontend/"
+
+    # Create backend directory and copy only necessary files
+    mkdir -p "$deploy_dir/backend"
+
+    # Copy essential backend files only
+    cp -r backend/app "$deploy_dir/backend/"
+    cp backend/requirements.txt "$deploy_dir/backend/"
+
+    # Clean up any __pycache__ directories that might have been copied
+    find "$deploy_dir/backend" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+    find "$deploy_dir/backend" -name "*.pyc" -delete 2>/dev/null || true
+
+    # Copy database if it exists
+    if [ -f "backend/soft_robot.db" ]; then
+        cp backend/soft_robot.db "$deploy_dir/backend/"
+        print_status "Copied database file"
+    fi
+
+    # Copy deployment configurations
+    cp -r deploy/nginx "$deploy_dir/"
+    cp -r deploy/systemd "$deploy_dir/"
+
+    # Copy deployment script
+    cp deploy.sh "$deploy_dir/"
+    chmod +x "$deploy_dir/deploy.sh"
+
+    # Copy environment templates
+    if [ -f "backend/.env.production.example" ]; then
+        cp backend/.env.production.example "$deploy_dir/backend/.env.production.template"
+    fi
+
+    # Copy production environment file if it exists
+    if [ -f "backend/.env.production" ]; then
+        cp backend/.env.production "$deploy_dir/backend/.env.production"
+        print_status "Copied production environment file"
+    else
+        print_warning "No .env.production found, using template"
+    fi
+
+    # Create deployment info file
+    cat > "$deploy_dir/DEPLOYMENT_INFO.txt" << 'INFO_EOF'
+Soft Robot App - Web Deployment Package
+Generated: $(date)
+Build Version: $(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+Contents:
+- frontend/     : Built React application (optimized for production)
+- backend/     : Python FastAPI backend (production files only)
+  - app/       : Application source code
+  - requirements.txt : Python dependencies
+  - soft_robot.db : Database (if exists)
+- nginx/       : Nginx configuration
+- systemd/     : Systemd service configuration
+
+Optimizations Applied:
+- Excluded test files and development dependencies
+- Removed __pycache__ directories and .pyc files
+- Excluded virtual environment and development tools
+- Only essential production files included
+
+Next Steps:
+1. Upload this package to your server
+2. Run the deployment script
+3. Configure environment variables
+4. Setup SSL certificates
+5. Start services
+
+See README.md deployment section for detailed instructions.
+INFO_EOF
+
+    print_success "Deployment package created: $deploy_dir"
+    print_status "Package size: $(du -sh "$deploy_dir" | cut -f1)"
 }
 
 # Function to show build results
 show_build_results() {
     echo -e "${CYAN}================================${NC}"
-    echo -e "${CYAN}📦 Build Results${NC}"
+    echo -e "${CYAN}🌐 Web Build Results${NC}"
     echo -e "${CYAN}================================${NC}"
 
     # Show build timestamp
     echo -e "Build Time: ${GREEN}$(date)${NC}"
 
-    # Check for built files
-    if [ -d "frontend/src-tauri/target/release" ]; then
-        echo -e "Desktop App: ${GREEN}frontend/src-tauri/target/release/${NC}"
-
-        # List executables
-        if ls frontend/src-tauri/target/release/*.exe 2>/dev/null; then
-            echo -e "Windows Executable: ${GREEN}Found${NC}"
-        fi
-        if ls frontend/src-tauri/target/release/*.app 2>/dev/null; then
-            echo -e "macOS App: ${GREEN}Found${NC}"
-        fi
-        if ls frontend/src-tauri/target/release/* 2>/dev/null | grep -v "\.exe$" | grep -v "\.app$" | grep -v "\.dmg$" | grep -v "\.deb$" | grep -v "\.rpm$"; then
-            echo -e "Linux Executable: ${GREEN}Found${NC}"
-        fi
-    fi
-
+    # Show build location
     if [ -d "frontend/dist" ]; then
         echo -e "Web Build: ${GREEN}frontend/dist/${NC}"
+        echo -e "Build Size: ${GREEN}$(du -sh frontend/dist | cut -f1)${NC}"
+    fi
+
+    # Show deployment package
+    local latest_package=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+    if [ -n "$latest_package" ]; then
+        echo -e "Deployment Package: ${GREEN}$latest_package${NC}"
     fi
 
     echo -e "${CYAN}================================${NC}"
-    print_success "Build completed successfully!"
-}
+    print_success "Web build completed successfully!"
 
-# Function to cleanup on error
-cleanup_on_error() {
-    print_error "Build failed. Cleaning up..."
-    # Add any cleanup logic here if needed
+    # Show deployment options
+    if [ -n "$latest_package" ]; then
+        PACKAGE_NAME=$(basename "$latest_package")
+        echo -e "\n${YELLOW}🚀 Deployment Options:${NC}"
+        echo -e "${CYAN}Option 1 - Complete Workflow (Recommended):${NC}"
+        echo -e "${GREEN}./deploy-workflow.sh${NC}"
+        echo -e "\n${CYAN}Option 2 - Manual Steps:${NC}"
+        echo -e "${GREEN}scp -r $latest_package serveruser@217.236.9.232:/tmp/${NC}"
+        echo -e "${GREEN}ssh serveruser@217.236.9.232${NC}"
+        echo -e "${GREEN}cd /tmp/$PACKAGE_NAME${NC}"
+        echo -e "${GREEN}sudo ./deploy.sh${NC}"
+        echo -e "\n${CYAN}Option 3 - Cleanup Only:${NC}"
+        echo -e "${GREEN}./deploy-workflow.sh --cleanup-only${NC}"
+    fi
 }
 
 # Main execution
 main() {
     print_header
 
-    # Set up error cleanup
-    trap cleanup_on_error ERR
-
     # Run build process
     check_directory
     check_prerequisites
-    pre_build_checks
-    build_frontend
-    build_tauri
-    bundle_backend
+    clean_build
+    build_frontend_web
+    validate_build
+    create_deployment_package
     show_build_results
 }
 

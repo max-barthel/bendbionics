@@ -22,16 +22,16 @@ function NumberInput({
 
   // Sync external value with internal string
   useEffect(() => {
-    if (value !== parseFloat(internalValue)) {
-      setInternalValue(isNaN(value) ? '' : value.toString());
+    if (value !== Number.parseFloat(internalValue)) {
+      setInternalValue(Number.isNaN(value) ? '' : value.toString());
     }
   }, [value, internalValue]);
 
   const handleChange = (newValue: string | number) => {
     if (typeof newValue === 'string') {
       setInternalValue(newValue);
-      const parsed = parseFloat(newValue);
-      if (!isNaN(parsed)) {
+      const parsed = Number.parseFloat(newValue);
+      if (!Number.isNaN(parsed)) {
         onChange(parsed);
       }
       // Don't call onChange for invalid numbers, just update internal state

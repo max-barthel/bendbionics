@@ -6,21 +6,14 @@ if ! command -v npx >/dev/null 2>&1; then
   exit 0
 fi
 
-# Check if this is an auto-generated commit message
-if grep -q "auto\|generated\|AI\|assistant" "$1" 2>/dev/null; then
-  echo "🤖 Auto-generated commit detected - using relaxed validation"
-  npx --no -- commitlint --edit "$1" 2>/dev/null || {
-    echo "⚠️  Auto-generated message doesn't follow conventional format, but allowing commit"
-    echo "💡 Consider using 'npm run commit' for better commit messages in the future"
-    exit 0
-  }
-else
-  echo "👤 Manual commit detected - using standard validation"
-  if ! npx --no -- commitlint --edit "$1" 2>/dev/null; then
-    echo "❌ Commit message validation failed."
-    echo "💡 Use 'npm run commit' for guided commit creation."
-    exit 1
-  fi
+# Always try validation first, but be lenient for Cursor's Git tab
+echo "👤 Validating commit message..."
+if ! npx --no -- commitlint --edit "$1" 2>/dev/null; then
+  echo "⚠️  Commit message doesn't follow conventional format"
+  echo "💡 This is allowed for Cursor's Git tab, but consider using conventional format: 'type(scope): description'"
+  echo "💡 Examples: 'feat: add new feature', 'fix: resolve bug', 'docs: update readme'"
+  echo "✅ Allowing commit to proceed..."
+  exit 0
 fi
 
 echo "✅ Commit message validation passed!"

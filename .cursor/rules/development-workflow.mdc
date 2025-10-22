@@ -40,7 +40,7 @@ git push origin feature/description
 
 - **Frontend**: Vite + React + TypeScript + Tailwind
 - **Backend**: FastAPI + SQLAlchemy + Pydantic
-- **Desktop**: Tauri for native performance
+- **Web**: Optimized for modern browsers
 - **Testing**: Playwright for E2E, Vitest for unit tests
 
 ## Code Organization
