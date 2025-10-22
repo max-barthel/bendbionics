@@ -92,5 +92,6 @@
   },
 
   // Privacy
-  "telemetry.telemetryLevel": "off"
+  "telemetry.telemetryLevel": "off",
+  "cursorpyright.analysis.extraPaths": ["${workspaceFolder}/backend"]
 }
