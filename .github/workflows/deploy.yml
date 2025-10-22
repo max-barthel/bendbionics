@@ -135,9 +135,13 @@ jobs:
             - name: 🚀 Deploy on server
               if: ${{ !inputs.skip_deploy }}
               run: |
-                  echo "🚀 Deploying package: ${{ env.PACKAGE_NAME }}"
+                  # Find the latest deployment package
+                  LATEST_PACKAGE=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+                  PACKAGE_NAME=$(basename "$LATEST_PACKAGE")
+
+                  echo "🚀 Deploying package: $PACKAGE_NAME"
                   # Deploy with sudo (requires passwordless sudo setup)
-                  ssh -tt "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "cd ${{ env.SERVER_PATH }}/${{ env.PACKAGE_NAME }} && sudo ./deploy.sh"
+                  ssh -tt "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "cd ${{ env.SERVER_PATH }}/$PACKAGE_NAME && sudo ./deploy.sh"
 
             - name: 🏥 Health check
               if: ${{ !inputs.skip_deploy }}
@@ -152,9 +156,10 @@ jobs:
               if: ${{ !inputs.cleanup_only }}
               run: |
                   # Clean up local deployment package
-                  if [ -n "${{ env.PACKAGE_NAME }}" ] && [ -d "deploy/${{ env.PACKAGE_NAME }}" ]; then
-                      echo "🧹 Removing local package: deploy/${{ env.PACKAGE_NAME }}"
-                      rm -rf "deploy/${{ env.PACKAGE_NAME }}"
+                  LATEST_PACKAGE=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+                  if [ -n "$LATEST_PACKAGE" ] && [ -d "$LATEST_PACKAGE" ]; then
+                      echo "🧹 Removing local package: $LATEST_PACKAGE"
+                      rm -rf "$LATEST_PACKAGE"
                   fi
 
             - name: 🧹 Cleanup old packages
@@ -174,9 +179,11 @@ jobs:
               if: ${{ !inputs.skip_deploy }}
               run: |
                   # Clean up server deployment package
-                  if [ -n "${{ env.PACKAGE_NAME }}" ]; then
+                  LATEST_PACKAGE=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+                  PACKAGE_NAME=$(basename "$LATEST_PACKAGE")
+                  if [ -n "$PACKAGE_NAME" ]; then
                       echo "🧹 Cleaning up server package..."
-                      ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "rm -rf ${{ env.SERVER_PATH }}/${{ env.PACKAGE_NAME }}"
+                      ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "rm -rf ${{ env.SERVER_PATH }}/$PACKAGE_NAME"
                   fi
 
             - name: 🎉 Deployment Results
