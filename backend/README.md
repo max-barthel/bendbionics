@@ -1,4 +1,4 @@
-# Soft Robot API Backend
+# BendBionics API Backend
 
 A FastAPI-based backend for soft robot simulation and control.
 
@@ -55,7 +55,6 @@ tests/
 ├── test_api_routes.py      # API endpoint tests
 ├── test_cache.py          # Caching system tests
 ├── test_config.py         # Configuration tests
-├── test_geometry_tools.py # Geometry utilities tests
 ├── test_integration.py    # Full API workflow tests
 └── test_pcc.py           # PCC model tests
 ```

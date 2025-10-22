@@ -91,14 +91,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { access_token, user: userData } = response;
 
       // Clean the token before storing - remove any quotes
-      const cleanToken = access_token.replace(/(?:^")|(?:"$)/g, '');
+      const cleanToken = access_token.replaceAll('"', '');
 
       // Store token in localStorage
       localStorage.setItem('token', cleanToken);
 
       // Also store in global window object for Tauri compatibility
-      if (typeof window !== 'undefined') {
-        (window as Window & { authToken?: string }).authToken = cleanToken;
+      if (typeof globalThis !== 'undefined') {
+        (globalThis as unknown as Window & { authToken?: string }).authToken =
+          cleanToken;
       }
 
       setToken(cleanToken);
@@ -133,8 +134,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     sessionStorage.removeItem('token');
-    if (typeof window !== 'undefined') {
-      delete (window as Window & { authToken?: string }).authToken;
+    if (typeof globalThis !== 'undefined') {
+      delete (globalThis as unknown as Window & { authToken?: string }).authToken;
     }
     setToken(null);
     setUser(null);

@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Colors for console output
 const colors = {
@@ -23,16 +26,69 @@ function formatBytes(bytes) {
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 function parseSize(sizeStr) {
   const units = { kb: 1024, mb: 1024 * 1024, gb: 1024 * 1024 * 1024 };
   const match = sizeStr.toLowerCase().match(/^(\d+(?:\.\d+)?)\s*(kb|mb|gb)?$/);
   if (!match) return 0;
-  const value = parseFloat(match[1]);
+  const value = Number.parseFloat(match[1]);
   const unit = match[2] || 'bytes';
   return value * (units[unit] || 1);
+}
+
+function checkTotalSize(totalSize, totalBudget) {
+  if (!totalBudget) return { hasErrors: false, hasWarnings: false };
+
+  const maxWarning = parseSize(totalBudget.maximumWarning);
+  const maxError = parseSize(totalBudget.maximumError);
+
+  log(`\n📊 Total Bundle Size: ${formatBytes(totalSize)}`, 'bold');
+
+  if (totalSize > maxError) {
+    log(
+      `❌ ERROR: Bundle size exceeds maximum error threshold (${totalBudget.maximumError})`,
+      'red'
+    );
+    return { hasErrors: true, hasWarnings: false };
+  } else if (totalSize > maxWarning) {
+    log(
+      `⚠️  WARNING: Bundle size exceeds warning threshold (${totalBudget.maximumWarning})`,
+      'yellow'
+    );
+    return { hasErrors: false, hasWarnings: true };
+  } else {
+    log(`✅ Bundle size is within acceptable limits`, 'green');
+    return { hasErrors: false, hasWarnings: false };
+  }
+}
+
+function checkChunkSize(file, budget) {
+  if (!budget) {
+    log(`📄 ${file.name}: ${formatBytes(file.size)}`, 'blue');
+    return { hasErrors: false, hasWarnings: false };
+  }
+
+  const maxWarning = parseSize(budget.maximumWarning);
+  const maxError = parseSize(budget.maximumError);
+
+  if (file.size > maxError) {
+    log(
+      `❌ ${file.name}: ${formatBytes(file.size)} (exceeds ${budget.maximumError})`,
+      'red'
+    );
+    return { hasErrors: true, hasWarnings: false };
+  } else if (file.size > maxWarning) {
+    log(
+      `⚠️  ${file.name}: ${formatBytes(file.size)} (exceeds ${budget.maximumWarning})`,
+      'yellow'
+    );
+    return { hasErrors: false, hasWarnings: true };
+  } else {
+    log(`✅ ${file.name}: ${formatBytes(file.size)}`, 'green');
+    return { hasErrors: false, hasWarnings: false };
+  }
 }
 
 function checkBundleSize() {
@@ -57,29 +113,9 @@ function checkBundleSize() {
   // Check total bundle size
   const totalSize = getTotalSize(distPath);
   const totalBudget = budget.budgets.find(b => b.type === 'total');
-
-  if (totalBudget) {
-    const maxWarning = parseSize(totalBudget.maximumWarning);
-    const maxError = parseSize(totalBudget.maximumError);
-
-    log(`\n📊 Total Bundle Size: ${formatBytes(totalSize)}`, 'bold');
-
-    if (totalSize > maxError) {
-      log(
-        `❌ ERROR: Bundle size exceeds maximum error threshold (${totalBudget.maximumError})`,
-        'red'
-      );
-      hasErrors = true;
-    } else if (totalSize > maxWarning) {
-      log(
-        `⚠️  WARNING: Bundle size exceeds warning threshold (${totalBudget.maximumWarning})`,
-        'yellow'
-      );
-      hasWarnings = true;
-    } else {
-      log(`✅ Bundle size is within acceptable limits`, 'green');
-    }
-  }
+  const totalResult = checkTotalSize(totalSize, totalBudget);
+  hasErrors = hasErrors || totalResult.hasErrors;
+  hasWarnings = hasWarnings || totalResult.hasWarnings;
 
   // Check individual chunks
   log('\n📦 Individual Chunk Analysis:', 'bold');
@@ -93,33 +129,13 @@ function checkBundleSize() {
     }))
     .sort((a, b) => b.size - a.size);
 
-  jsFiles.forEach(file => {
+  for (const file of jsFiles) {
     const chunkName = file.name.replace(/\.(js|css)$/, '').split('-')[0];
-    const budget = budget.chunks[chunkName];
-
-    if (budget) {
-      const maxWarning = parseSize(budget.maximumWarning);
-      const maxError = parseSize(budget.maximumError);
-
-      if (file.size > maxError) {
-        log(
-          `❌ ${file.name}: ${formatBytes(file.size)} (exceeds ${budget.maximumError})`,
-          'red'
-        );
-        hasErrors = true;
-      } else if (file.size > maxWarning) {
-        log(
-          `⚠️  ${file.name}: ${formatBytes(file.size)} (exceeds ${budget.maximumWarning})`,
-          'yellow'
-        );
-        hasWarnings = true;
-      } else {
-        log(`✅ ${file.name}: ${formatBytes(file.size)}`, 'green');
-      }
-    } else {
-      log(`📄 ${file.name}: ${formatBytes(file.size)}`, 'blue');
-    }
-  });
+    const chunkBudget = budget.chunks[chunkName];
+    const chunkResult = checkChunkSize(file, chunkBudget);
+    hasErrors = hasErrors || chunkResult.hasErrors;
+    hasWarnings = hasWarnings || chunkResult.hasWarnings;
+  }
 
   // Generate report
   const report = {
@@ -158,9 +174,9 @@ function getTotalSize(dirPath) {
   function calculateSize(itemPath) {
     const stat = fs.statSync(itemPath);
     if (stat.isDirectory()) {
-      fs.readdirSync(itemPath).forEach(file => {
+      for (const file of fs.readdirSync(itemPath)) {
         calculateSize(path.join(itemPath, file));
-      });
+      }
     } else {
       totalSize += stat.size;
     }

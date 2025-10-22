@@ -63,9 +63,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
     const progressInterval = setInterval(() => {
       setComputationProgress(prev => {
         const newProgress = prev + Math.random() * PROGRESS_CONFIG.INITIAL;
-        return newProgress >= PROGRESS_CONFIG.COMPLETE
-          ? PROGRESS_CONFIG.COMPLETE
-          : newProgress;
+        return Math.min(newProgress, PROGRESS_CONFIG.COMPLETE);
       });
     }, PROGRESS_CONFIG.FINAL);
 
@@ -87,7 +85,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
         segments = result.result.robot_positions;
       } else {
         result = await robotAPI.computePCC(params);
-        segments = result.segments;
+        segments = result.data.segments;
       }
 
       setComputationProgress(100);
@@ -139,7 +137,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
           'server',
           'Service not found. Please check if the backend is running.'
         );
-      } else if (!error.response) {
+      } else if (error.response === undefined) {
         showError(
           'network',
           'Unable to connect to server. Please check your connection.'

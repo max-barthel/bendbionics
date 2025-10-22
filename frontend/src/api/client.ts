@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { tauriClient } from './tauri-client';
 
 // Define the PCCParams type to match backend
 export interface PCCParams {
@@ -20,7 +19,13 @@ export interface TendonConfig {
 
 // Define the API response type
 export interface PCCResponse {
-  segments: number[][][];
+  success: boolean;
+  data: {
+    segments: number[][][];
+  };
+  message: string;
+  timestamp: string;
+  request_id: string | null;
 }
 
 // Define tendon analysis response type
@@ -171,29 +176,29 @@ async function withRetry<T>(
 
 // Get API URL dynamically with fallback
 function getApiUrl(): string {
-  // For desktop app, API is served from the same origin
-  if (typeof window !== 'undefined') {
-    // Check if we're running in the desktop app (same origin)
-    const currentOrigin = window.location.origin;
-
-    // If we're running locally or in the desktop app, use relative URLs
-    if (currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1')) {
-      return ''; // Empty string means same origin
-    }
-
-    // For web deployment, use the configured API URL
-    if ((window as { APP_CONFIG?: { API_URL?: string } }).APP_CONFIG?.API_URL) {
-      return (window as unknown as { APP_CONFIG: { API_URL: string } }).APP_CONFIG
-        .API_URL;
-    }
-  }
-
-  // Fallback to environment variable
+  // First priority: Check environment variable (for development)
   if (import.meta.env['VITE_API_URL']) {
     return import.meta.env['VITE_API_URL'] as string;
   }
 
-  // Default fallback for desktop app
+  // For web app, API is served from the same origin or configured URL
+  if (typeof globalThis !== 'undefined') {
+    // For web deployment, use the configured API URL
+    if ((globalThis as { APP_CONFIG?: { API_URL?: string } }).APP_CONFIG?.API_URL) {
+      return (globalThis as unknown as { APP_CONFIG: { API_URL: string } }).APP_CONFIG
+        .API_URL;
+    }
+
+    // Check if we're running locally or in production
+    const currentOrigin = globalThis.location.origin;
+
+    // If we're running locally and no env var is set, use relative URLs
+    if (currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1')) {
+      return ''; // Empty string means same origin
+    }
+  }
+
+  // Default fallback for web app
   return '';
 }
 
@@ -257,18 +262,6 @@ export const robotAPI = {
     retryConfig?: Partial<RetryConfig>
   ): Promise<PCCResponse> => {
     return withRetry(async () => {
-      // Use Tauri client for desktop app, fallback to axios for web
-      if (
-        typeof window !== 'undefined' &&
-        (window as { __TAURI__?: unknown }).__TAURI__
-      ) {
-        const response = await tauriClient.post<PCCResponse>('/pcc', params);
-        if (!response.success) {
-          throw new Error(response.error ?? 'API call failed');
-        }
-        return response.data as PCCResponse;
-      }
-      // Fallback to axios for web development
       const client = getApiClient();
       const response = await client.post('/pcc', params);
       return response.data as PCCResponse;
@@ -279,21 +272,6 @@ export const robotAPI = {
     retryConfig?: Partial<RetryConfig>
   ): Promise<TendonAnalysisResponse> => {
     return withRetry(async () => {
-      // Use Tauri client for desktop app, fallback to axios for web
-      if (
-        typeof window !== 'undefined' &&
-        (window as { __TAURI__?: unknown }).__TAURI__
-      ) {
-        const response = await tauriClient.post<TendonAnalysisResponse>(
-          '/pcc-with-tendons',
-          params
-        );
-        if (!response.success) {
-          throw new Error(response.error ?? 'API call failed');
-        }
-        return response.data as TendonAnalysisResponse;
-      }
-      // Fallback to axios for web development
       const client = getApiClient();
       const response = await client.post('/pcc-with-tendons', params);
       return response.data as TendonAnalysisResponse;

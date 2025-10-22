@@ -62,7 +62,7 @@ class ErrorBoundary extends Component<Props, State> {
       errorId,
       retryCount: this.retryCount,
       userAgent: navigator.userAgent,
-      url: window.location.href,
+      url: globalThis.location.href,
       timestamp: new Date().toISOString(),
       component: 'ErrorBoundary',
       action: 'componentDidCatch',
@@ -95,7 +95,7 @@ class ErrorBoundary extends Component<Props, State> {
         },
         context: {
           userAgent: navigator.userAgent,
-          url: window.location.href,
+          url: globalThis.location.href,
           timestamp: new Date().toISOString(),
           retryCount: this.retryCount,
         },
@@ -143,7 +143,7 @@ class ErrorBoundary extends Component<Props, State> {
       component: 'ErrorBoundary',
       action: 'handleReload',
     });
-    window.location.reload();
+    globalThis.location.reload();
   };
 
   readonly handleReportBug = () => {
@@ -154,7 +154,7 @@ class ErrorBoundary extends Component<Props, State> {
       stack: error?.stack,
       componentStack: errorInfo?.componentStack,
       userAgent: navigator.userAgent,
-      url: window.location.href,
+      url: globalThis.location.href,
       timestamp: new Date().toISOString(),
     };
 
