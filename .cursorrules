@@ -85,7 +85,7 @@ Work like a true startup: **learn fast, focus relentlessly, and build what only 
 
 ## File Structure
 
-```
+```txt
 ├── frontend/          # React web application
 ├── backend/           # FastAPI Python backend
 ├── .github/           # GitHub Actions workflows
