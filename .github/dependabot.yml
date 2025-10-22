@@ -49,6 +49,18 @@ updates:
           - "typescript"
           - "eslint*"
           - "prettier"
+          - "tailwindcss*"
+          - "@tailwindcss/*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Group web framework updates
+      web-framework:
+        patterns:
+          - "react*"
+          - "@types/react*"
+          - "react-dom*"
+          - "react-router*"
         update-types:
           - "minor"
           - "patch"
@@ -146,9 +158,9 @@ updates:
           - "minor"
           - "patch"
 
-  # Rust dependencies (Tauri)
-  - package-ecosystem: "cargo"
-    directory: "/frontend/src-tauri"
+  # Web-specific dependencies
+  - package-ecosystem: "npm"
+    directory: "/frontend"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -158,21 +170,23 @@ updates:
     assignees:
       - "max-barthel"
     commit-message:
-      prefix: "chore(tauri)"
+      prefix: "chore(web)"
       include: "scope"
     labels:
       - "dependencies"
-      - "tauri"
-      - "language: rust"
+      - "component: web"
+      - "language: javascript"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
     groups:
-      # Group Tauri-related updates
-      tauri:
+      # Group web-specific updates
+      web-tools:
         patterns:
-          - "tauri*"
-          - "@tauri-apps/*"
+          - "vite*"
+          - "@vitejs/*"
+          - "tailwindcss*"
+          - "@tailwindcss/*"
         update-types:
           - "minor"
           - "patch"

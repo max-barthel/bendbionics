@@ -1,0 +1,174 @@
+# Cursor AI Rules for Soft Robot App
+
+## Project Overview
+
+This is a modern web application for simulating soft robot kinematics using the Piecewise Constant Curvature (PCC) model, built with React and FastAPI.
+
+## Architecture
+
+- **Frontend**: React + TypeScript + Tailwind CSS (web-only)
+- **Backend**: FastAPI + Python
+- **Design**: macOS Tahoe 26 aesthetic with liquid glass styling
+- **Testing**: Focused on real user value and critical paths
+
+## Key Features
+
+- 3D visualization of robot segments with real-time updates
+- Real-time parameter adjustment with live preview
+- Unit conversion (degrees/radians, mm/cm/m)
+- Preset Management with user authentication
+- Web-optimized performance with modern browsers
+
+## Development Workflow
+
+- Use `./dev.sh` for development
+- Use `./build.sh` for production builds
+- Use `./toolkit.sh` for development tools
+- All styling with Tailwind CSS only (no direct CSS)
+- Follow Tahoe liquid glass design system consistently
+
+## Code Quality Standards
+
+- **Essential Testing**: Test what actually breaks
+- **TypeScript When Helpful**: Use types to prevent bugs, not for perfection
+- **Basic Linting**: Catch obvious errors, not style perfection
+- **Simple Commits**: Clear messages, no complex conventions
+- **User-Focused Docs**: Document what users need, not everything
+
+## Startup Development Philosophy
+
+Work like a true startup: **learn fast, focus relentlessly, and build what only we can build**.
+
+### Key Values
+
+- **Validated Learning > Output**: Progress is measured by learning from users, not lines of code
+- **Do the Hard Thing**: Aim for simplicity, but don't confuse easy hacks with meaningful progress
+- **Default to Action**: Small steps forward beat perfect plans standing still
+- **Friction Kills**: Every barrier to iteration is a risk to survival
+
+## Code Philosophy
+
+- **YAGNI**: Don't build for a future that may never come
+- **KISS**: Prefer simple, maintainable solutions over clever ones
+- **DRY, But Realistic**: Reuse where it clarifies; avoid abstractions that slow learning
+- **Pragmatic Performance**: Optimize only when users feel the pain
+
+## Decision Making
+
+- **Bias for Action**: Ship, measure, learn — faster than competitors
+- **Good Enough to Learn**: Perfection delays insight; release when value is testable
+- **User-Centered Evidence**: Let real usage guide direction, not assumptions
+- **Leverage Constraints**: Treat limitations as forcing functions for creativity
+
+## Process Guidelines
+
+- **Lightweight Documentation**: Capture only what helps the team move faster
+- **Right-Sized Testing**: Automate what saves real pain; don't gold-plate test suites
+- **Continuous Delivery**: Ship often to derisk deployments and accelerate feedback
+- **Talk to Users**: Every release should shorten the distance to real user feedback
+
+## Anti-Patterns to Avoid
+
+- **Over-Engineering**: Don't build for hypothetical scale before validating demand
+- **Analysis Paralysis**: Planning is useful only if it accelerates building
+- **Perfect Code Fallacy**: Users care about value, not elegance
+- **Process Worship**: Process exists to serve the product, not the other way around
+- **False Optimizations**: Don't polish what hasn't proven to matter
+
+## Technology Stack
+
+- **Frontend**: React 19, TypeScript, Tailwind CSS, Vite, Three.js
+- **Backend**: FastAPI, Python 3.11, SQLite
+- **Testing**: Vitest, Playwright, Pytest
+- **CI/CD**: GitHub Actions, automated deployment
+- **Design**: macOS Tahoe 26 aesthetic, liquid glass styling
+
+## File Structure
+
+```txt
+├── frontend/          # React web application
+├── backend/           # FastAPI Python backend
+├── .github/           # GitHub Actions workflows
+├── deploy/            # Deployment configurations
+└── scripts/           # Development tools
+```
+
+## Commands
+
+- `./dev.sh` - Start development environment
+- `./build.sh` - Build for production
+- `./deploy-workflow.sh` - Deploy to server
+- `./toolkit.sh` - Development toolkit
+- `npm run ci:all` - Run full CI pipeline locally
+
+## Design System
+
+- **Aesthetic**: macOS Tahoe 26 with liquid glass styling
+- **Colors**: Frosted glass, transparency, subtle gradients
+- **Typography**: System fonts with proper hierarchy
+- **Components**: Reusable UI components with consistent styling
+- **Responsive**: Mobile-first design approach
+
+## Performance
+
+- **Bundle Size**: Monitor and optimize bundle size
+- **Lighthouse**: Maintain high performance scores
+- **Core Web Vitals**: Optimize for user experience
+- **Lazy Loading**: Load components and assets on demand
+
+## Security
+
+- **Authentication**: Secure user authentication
+- **API Security**: Proper validation and sanitization
+- **Dependencies**: Regular security updates
+- **Secrets**: Proper secret management in CI/CD
+
+## Deployment
+
+- **Automated**: GitHub Actions handles deployment
+- **Health Checks**: Post-deployment verification
+- **Rollback**: Quick rollback capability
+- **Monitoring**: Application health monitoring
+
+## User Experience
+
+- **Fast Loading**: Optimized for speed
+- **Intuitive**: Clear user interface
+- **Accessible**: WCAG compliance
+- **Responsive**: Works on all devices
+
+## Code Style
+
+- **Consistent**: Follow established patterns
+- **Readable**: Clear and self-documenting
+- **Maintainable**: Easy to modify and extend
+- **Testable**: Write testable code
+
+## Documentation
+
+- **User-Focused**: Document what users need
+- **Developer-Friendly**: Clear setup and contribution guides
+- **API Docs**: Comprehensive API documentation
+- **Examples**: Practical usage examples
+
+## Testing Strategy
+
+- **Unit Tests**: Test individual components
+- **Integration Tests**: Test component interactions
+- **E2E Tests**: Test user workflows
+- **Visual Tests**: Test UI consistency
+- **Performance Tests**: Test application performance
+
+## Monitoring
+
+- **Error Tracking**: Monitor application errors
+- **Performance**: Track application performance
+- **Usage**: Understand user behavior
+- **Health**: Monitor application health
+
+## Maintenance
+
+- **Dependencies**: Keep dependencies updated
+- **Security**: Regular security audits
+- **Performance**: Continuous performance monitoring
+- **Documentation**: Keep documentation current

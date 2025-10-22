@@ -1,0 +1,200 @@
+name: Automated Deployment (replaces deploy-workflow.sh)
+
+on:
+    push:
+        branches: [main, web-app-deployment]
+    workflow_dispatch:
+        inputs:
+            skip_build:
+                description: "Skip build step (use existing build)"
+                required: false
+                default: false
+                type: boolean
+            skip_upload:
+                description: "Skip upload step (use existing package on server)"
+                required: false
+                default: false
+                type: boolean
+            skip_deploy:
+                description: "Skip deploy step (just cleanup)"
+                required: false
+                default: false
+                type: boolean
+            cleanup_only:
+                description: "Only cleanup old deployment packages"
+                required: false
+                default: false
+                type: boolean
+
+env:
+    NODE_VERSION: "20"
+    PYTHON_VERSION: "3.11"
+    # Server configuration (matches deploy-workflow.sh)
+    SERVER_USER: "serveruser"
+    SERVER_HOST: "bendbionics"
+    SERVER_PATH: "/tmp"
+
+jobs:
+    # Complete deployment workflow (replaces deploy-workflow.sh)
+    deploy:
+        name: 🚀 Complete Deployment Workflow
+        runs-on: ubuntu-latest
+        environment: production
+        steps:
+            - name: 🎯 Checkout code
+              uses: actions/checkout@v5
+
+            - name: 🔧 Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: "npm"
+                  cache-dependency-path: frontend/package-lock.json
+
+            - name: 🐍 Setup Python
+              uses: actions/setup-python@v6
+              with:
+                  python-version: ${{ env.PYTHON_VERSION }}
+
+            - name: 📦 Install dependencies
+              run: |
+                  cd frontend && npm ci
+                  cd ../backend && pip install -r requirements.txt
+
+            - name: 🧪 Run tests
+              if: ${{ !inputs.skip_build }}
+              run: |
+                  cd frontend && npm run test:run
+                  cd ../backend && python -m pytest tests/ -v
+
+            - name: 🏗️ Build application
+              if: ${{ !inputs.skip_build }}
+              run: |
+                  cd frontend
+                  npm run build
+
+            - name: 📁 Create deployment package
+              if: ${{ !inputs.skip_build }}
+              run: |
+                  # Create deployment directory (matches deploy-workflow.sh)
+                  DEPLOY_DIR="deploy/web-build-$(date +%Y%m%d-%H%M%S)"
+                  mkdir -p "$DEPLOY_DIR"
+
+                  # Copy frontend build
+                  mkdir -p "$DEPLOY_DIR/frontend"
+                  cp -r frontend/dist/* "$DEPLOY_DIR/frontend/"
+
+                  # Copy backend files
+                  mkdir -p "$DEPLOY_DIR/backend"
+                  cp -r backend/app "$DEPLOY_DIR/backend/"
+                  cp backend/requirements.txt "$DEPLOY_DIR/backend/"
+
+                  # Copy database if exists
+                  if [ -f "backend/soft_robot.db" ]; then
+                      cp backend/soft_robot.db "$DEPLOY_DIR/backend/"
+                  fi
+
+                  # Copy deployment configurations
+                  cp -r deploy/nginx "$DEPLOY_DIR/"
+                  cp -r deploy/systemd "$DEPLOY_DIR/"
+                  cp deploy.sh "$DEPLOY_DIR/"
+                  chmod +x "$DEPLOY_DIR/deploy.sh"
+
+                  # Copy environment files
+                  if [ -f "backend/.env.production" ]; then
+                      cp backend/.env.production "$DEPLOY_DIR/backend/"
+                  fi
+
+                  # Store package name for later steps
+                  echo "DEPLOY_PACKAGE=$DEPLOY_DIR" >> $GITHUB_ENV
+                  echo "PACKAGE_NAME=$(basename $DEPLOY_DIR)" >> $GITHUB_ENV
+
+            - name: 🔑 Setup SSH
+              if: ${{ !inputs.skip_upload }}
+              uses: webfactory/ssh-agent@v0.9.0
+              with:
+                  ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+            - name: 📤 Upload to server
+              if: ${{ !inputs.skip_upload }}
+              run: |
+                  # Find the latest deployment package
+                  LATEST_PACKAGE=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+
+                  if [ -z "$LATEST_PACKAGE" ]; then
+                      echo "❌ No deployment package found. Run build first."
+                      exit 1
+                  fi
+
+                  echo "📤 Uploading package: $LATEST_PACKAGE"
+                  scp -r "$LATEST_PACKAGE" "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
+
+                  # Store package name for deployment
+                  echo "PACKAGE_NAME=$(basename $LATEST_PACKAGE)" >> $GITHUB_ENV
+
+            - name: 🚀 Deploy on server
+              if: ${{ !inputs.skip_deploy }}
+              run: |
+                  # Find the latest deployment package
+                  LATEST_PACKAGE=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+                  PACKAGE_NAME=$(basename "$LATEST_PACKAGE")
+
+                  echo "🚀 Deploying package: $PACKAGE_NAME"
+                  # Deploy with sudo (requires passwordless sudo setup)
+                  ssh -tt "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "cd ${{ env.SERVER_PATH }}/$PACKAGE_NAME && sudo ./deploy.sh"
+
+            - name: 🏥 Health check
+              if: ${{ !inputs.skip_deploy }}
+              run: |
+                  echo "⏳ Waiting for deployment to complete..."
+                  sleep 30
+                  echo "🏥 Checking application health..."
+                  curl -f https://bendbionics.com/health || exit 1
+                  echo "✅ Health check passed!"
+
+            - name: 🧹 Cleanup local package
+              if: ${{ !inputs.cleanup_only }}
+              run: |
+                  # Clean up local deployment package
+                  LATEST_PACKAGE=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+                  if [ -n "$LATEST_PACKAGE" ] && [ -d "$LATEST_PACKAGE" ]; then
+                      echo "🧹 Removing local package: $LATEST_PACKAGE"
+                      rm -rf "$LATEST_PACKAGE"
+                  fi
+
+            - name: 🧹 Cleanup old packages
+              if: ${{ inputs.cleanup_only }}
+              run: |
+                  echo "🧹 Cleaning up old deployment packages..."
+                  OLD_PACKAGES=$(find deploy -name "web-build-*" -type d 2>/dev/null | wc -l)
+                  if [ "$OLD_PACKAGES" -gt 0 ]; then
+                      echo "Found $OLD_PACKAGES old deployment packages"
+                      rm -rf deploy/web-build-*
+                      echo "✅ Old packages cleaned up"
+                  else
+                      echo "No old packages found"
+                  fi
+
+            - name: 🧹 Server cleanup
+              if: ${{ !inputs.skip_deploy }}
+              run: |
+                  # Clean up server deployment package
+                  LATEST_PACKAGE=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+                  PACKAGE_NAME=$(basename "$LATEST_PACKAGE")
+                  if [ -n "$PACKAGE_NAME" ]; then
+                      echo "🧹 Cleaning up server package..."
+                      ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "rm -rf ${{ env.SERVER_PATH }}/$PACKAGE_NAME"
+                  fi
+
+            - name: 🎉 Deployment Results
+              if: success()
+              run: |
+                  echo "🎉 Deployment Workflow Complete!"
+                  echo ""
+                  echo "🌐 Application: https://bendbionics.com"
+                  echo "📚 API Documentation: https://bendbionics.com/docs"
+                  echo "🏥 Health Check: https://bendbionics.com/health"
+                  echo ""
+                  echo "🔧 Useful Commands:"
+                  echo "View logs: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'sudo journalctl -u soft-robot-api -f'"
+                  echo "Restart backend: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'sudo systemctl restart soft-robot-api'"
