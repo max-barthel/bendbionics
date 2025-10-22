@@ -60,8 +60,8 @@ function handleInputChange(
 ) {
   const val = e.target.value;
   if (type === 'number') {
-    const parsed = parseFloat(val);
-    onChange(isNaN(parsed) ? val : parsed);
+    const parsed = Number.parseFloat(val);
+    onChange(Number.isNaN(parsed) ? val : parsed);
   } else {
     onChange(val);
   }

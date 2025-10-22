@@ -1,6 +1,6 @@
 # Scripts Guide
 
-This guide explains the purpose and usage of each script in the Soft Robot App project.
+This guide explains the purpose and usage of each script in the BendBionics platform.
 
 ## 🚀 Quick Start
 
@@ -48,7 +48,7 @@ This guide explains the purpose and usage of each script in the Soft Robot App p
 **What it does**:
 
 - Starts Python backend on port 8000
-- Starts Tauri frontend development
+- Starts React frontend development server
 - Provides health checks and error handling
 - Shows development URLs and info
 
@@ -68,7 +68,7 @@ This guide explains the purpose and usage of each script in the Soft Robot App p
 
 - Backend API: <http://localhost:8000>
 - API Docs: <http://localhost:8000/docs>
-- Frontend: Running in desktop mode
+- Frontend: <http://localhost:5173>
 
 ---
 
@@ -80,7 +80,7 @@ This guide explains the purpose and usage of each script in the Soft Robot App p
 
 - Runs pre-build checks (linting, tests, bundle size)
 - Builds frontend web assets
-- Compiles Tauri desktop application
+- Creates deployment package
 - Shows build results and file locations
 
 **Usage**:
@@ -98,7 +98,7 @@ This guide explains the purpose and usage of each script in the Soft Robot App p
 **Output**:
 
 - Web build: `frontend/dist/`
-- Desktop app: `frontend/src-tauri/target/release/`
+- Deployment package: `deploy/web-build-YYYYMMDD-HHMMSS/`
 
 ---
 
@@ -391,7 +391,7 @@ chmod +x *.sh
 ## 📚 Additional Resources
 
 - [DEVELOPMENT.md](DEVELOPMENT.md) - Development workflows and tools
-- [DEPLOYMENT.md](DEPLOYMENT.md) - CI/CD, monitoring, and production
+- [SERVER.md](SERVER.md) - Server management and deployment
 
 ---
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Soft Robot App - Startup Development Script
-# Quick and agile development - steering a car, not a rocket
+# Soft Robot App - Web Development Script
+# Quick and agile development for web application
 
 set -e  # Exit on any error
 
@@ -33,7 +33,7 @@ print_error() {
 
 print_header() {
     echo -e "${PURPLE}================================${NC}"
-    echo -e "${PURPLE}🚀 Soft Robot App Development${NC}"
+    echo -e "${PURPLE}🌐 Soft Robot Web App Development${NC}"
     echo -e "${PURPLE}================================${NC}"
 }
 
@@ -131,10 +131,10 @@ start_backend() {
     cd backend
 
     # Quick virtual environment check
-    if [ -d ".venv" ]; then
-        source .venv/bin/activate
-    elif [ -d "venv" ]; then
+    if [ -d "venv" ]; then
         source venv/bin/activate
+    elif [ -d ".venv" ]; then
+        source .venv/bin/activate
     fi
 
     # Start backend
@@ -154,13 +154,8 @@ start_frontend() {
 
     cd frontend
 
-    # Quick Rust environment check
-    if [ -f "$HOME/.cargo/env" ]; then
-        source "$HOME/.cargo/env"
-    fi
-
-    # Start frontend (Tauri desktop app)
-    npm run tauri:dev &
+    # Start frontend (web development server)
+    npm run dev &
     FRONTEND_PID=$!
 
     cd ..
@@ -171,11 +166,11 @@ start_frontend() {
 # Function to show development info (startup style - essential info only)
 show_dev_info() {
     echo -e "${CYAN}================================${NC}"
-    echo -e "${CYAN}🚀 Development Ready${NC}"
+    echo -e "${CYAN}🌐 Web Development Ready${NC}"
     echo -e "${CYAN}================================${NC}"
     echo -e "Backend API: ${GREEN}http://localhost:8000${NC}"
     echo -e "API Docs: ${GREEN}http://localhost:8000/docs${NC}"
-    echo -e "Desktop App: ${GREEN}Starting Tauri desktop app${NC}"
+    echo -e "Frontend: ${GREEN}http://localhost:5173${NC}"
     echo -e "${CYAN}================================${NC}"
     echo -e "Press ${YELLOW}Ctrl+C${NC} to stop"
     echo -e "${CYAN}================================${NC}"
