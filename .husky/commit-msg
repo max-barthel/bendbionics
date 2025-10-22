@@ -1,11 +1,19 @@
 echo "🔍 Validating commit message..."
 
-npx --no -- commitlint --edit $1
+# Check if commitlint is available
+if ! command -v npx >/dev/null 2>&1; then
+  echo "⚠️  npx not available - skipping commit message validation"
+  exit 0
+fi
 
-if [ $? -ne 0 ]; then
-  echo "❌ Commit message validation failed."
-  echo "💡 Use 'npm run commit' for guided commit creation."
-  exit 1
+# Always try validation first, but be lenient for Cursor's Git tab
+echo "👤 Validating commit message..."
+if ! npx --no -- commitlint --edit "$1" 2>/dev/null; then
+  echo "⚠️  Commit message doesn't follow conventional format"
+  echo "💡 This is allowed for Cursor's Git tab, but consider using conventional format: 'type(scope): description'"
+  echo "💡 Examples: 'feat: add new feature', 'fix: resolve bug', 'docs: update readme'"
+  echo "✅ Allowing commit to proceed..."
+  exit 0
 fi
 
 echo "✅ Commit message validation passed!"

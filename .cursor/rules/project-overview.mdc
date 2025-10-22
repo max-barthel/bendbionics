@@ -1,18 +1,18 @@
 ---
-description: Soft Robot Simulator - Project Overview and Architecture
+description: BendBionics - Project Overview and Architecture
 globs: ["**/*"]
 alwaysApply: true
 ---
 
-# Soft Robot Simulator Project
+# BendBionics Project
 
 ## Project Overview
 
-This is a modern desktop application for simulating soft robot kinematics using the Piecewise Constant Curvature (PCC) model, built with Tauri for optimal performance.
+This is a modern web application for simulating soft robot kinematics using the Piecewise Constant Curvature (PCC) model, built with React and FastAPI for optimal performance.
 
 ## Architecture
 
-- **Frontend**: React + TypeScript + Tailwind CSS + Tauri (desktop)
+- **Frontend**: React + TypeScript + Tailwind CSS (web)
 - **Backend**: FastAPI + Python with essential testing
 - **Design**: macOS Tahoe 26 aesthetic with liquid glass styling
 - **Testing**: Focused on real user value and critical paths
@@ -23,7 +23,7 @@ This is a modern desktop application for simulating soft robot kinematics using 
 - Real-time parameter adjustment with live preview
 - Unit conversion (degrees/radians, mm/cm/m)
 - Preset Management with user authentication
-- Native desktop performance with Tauri
+- Web-optimized performance with modern browsers
 
 ## Development Workflow
 

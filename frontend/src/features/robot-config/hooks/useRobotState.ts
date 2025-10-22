@@ -48,7 +48,7 @@ export function useRobotState() {
           tendonConfig: {
             count: 3,
             radius: 0.01,
-            coupling_offset: 0.0,
+            coupling_offset: 0,
           },
         };
   });
@@ -62,7 +62,9 @@ export function useRobotState() {
     if (currentArray.length === targetLength) return currentArray;
 
     if (currentArray.length < targetLength) {
-      const newElements = Array(targetLength - currentArray.length).fill(defaultValue);
+      const newElements = new Array(targetLength - currentArray.length).fill(
+        defaultValue
+      );
       return [...currentArray, ...newElements];
     }
 

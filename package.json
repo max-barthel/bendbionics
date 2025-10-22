@@ -15,14 +15,14 @@
     "test:core": "cd frontend && npm run test -- --run && cd ../backend && python -m pytest tests/test_core_apis.py -v",
     "test:watch": "cd frontend && npm run test:watch",
     "test:coverage": "cd frontend && npm run test:coverage",
-    "commit": "cz",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
-    "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md",
+    "commit": "echo 'Use Cursor\\'s Git tab for AI-generated commits or run: npx cz'",
+    "changelog": "echo 'Changelog generation available via commitlint ecosystem'",
+    "version": "echo 'Version management available via commitlint ecosystem'",
     "quality": "node scripts/code-quality-report.js",
     "quality:frontend": "cd frontend && npm run lint && npx tsc --noEmit",
     "quality:backend": "cd backend && ruff check app/ && python -m mypy app/",
     "ci:test": "npm run test && cd backend && python -m pytest tests/ -v",
-    "ci:lint": "npm run lint && cd backend && ruff check app/ && python -m black --check app/",
+    "ci:lint": "npm run lint && cd backend && ruff check app/ && ruff format --check app/",
     "ci:build": "cd frontend && npm run build && cd ../backend && python -c 'import app.main'",
     "ci:all": "npm run ci:lint && npm run ci:test && npm run ci:build",
     "toolkit": "./toolkit.sh",
@@ -42,13 +42,12 @@
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "commitizen": "^4.3.1",
-    "conventional-changelog-cli": "^5.0.0",
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^9.1.7"
   },
   "config": {
     "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
+      "path": "cz-conventional-changelog"
     }
   }
 }

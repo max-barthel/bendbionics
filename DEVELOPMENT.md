@@ -1,6 +1,6 @@
 # Development Guide
 
-This comprehensive guide covers all development workflows, tools, and processes for the Soft Robot App.
+This comprehensive guide covers all development workflows, tools, and processes for the BendBionics platform.
 
 ## 🚀 Quick Start
 
@@ -35,7 +35,6 @@ This comprehensive guide covers all development workflows, tools, and processes 
 
 - **Node.js**: Version 18+
 - **Python**: Version 3.8+
-- **Rust**: For Tauri development
 - **Git**: For version control
 
 ### Setup
@@ -43,7 +42,7 @@ This comprehensive guide covers all development workflows, tools, and processes 
 ```bash
 # Clone repository
 git clone <repository-url>
-cd soft-robot-app
+cd bendbionics
 
 # Setup development environment
 ./setup.sh
@@ -56,7 +55,7 @@ cd soft-robot-app
 
 - Backend API: <http://localhost:8000>
 - API Docs: <http://localhost:8000/docs>
-- Frontend: Running in desktop mode
+- Frontend: <http://localhost:5173>
 
 ## 🧪 Testing Strategy
 
@@ -292,7 +291,7 @@ ptest → Pytest Test
 
 ### Debugging
 
-- **Frontend**: Vite, Vitest, Tauri, Playwright, Storybook
+- **Frontend**: Vite, Vitest, Playwright, Storybook
 - **Backend**: FastAPI, pytest, single files
 - **Full Stack**: Both frontend and backend
 - **Tests**: Both frontend and backend tests
