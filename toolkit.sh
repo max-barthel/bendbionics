@@ -106,6 +106,61 @@ git_commit_check() {
     fi
 }
 
+# Cleanup operations
+cleanup_all() {
+    print_status "Running comprehensive cleanup..."
+
+    # Clean Python cache
+    find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+    find . -name "*.pyc" -delete 2>/dev/null || true
+    print_success "Cleaned Python cache"
+
+    # Clean Node.js cache (but preserve node_modules)
+    rm -rf frontend/.vite 2>/dev/null || true
+    rm -rf frontend/coverage 2>/dev/null || true
+    print_success "Cleaned Node.js cache"
+
+    # Clean build artifacts
+    rm -rf frontend/dist 2>/dev/null || true
+    rm -rf backend/htmlcov 2>/dev/null || true
+    print_success "Cleaned build artifacts"
+
+    # Clean logs
+    find . -name "*.log" -delete 2>/dev/null || true
+    print_success "Cleaned log files"
+
+    # Clean test results
+    rm -rf test-results playwright-report 2>/dev/null || true
+    print_success "Cleaned test results"
+
+    print_success "Cleanup completed"
+}
+
+# Productivity operations
+productivity_stats() {
+    print_status "Generating productivity statistics..."
+
+    echo "📱 Frontend:"
+    echo "  Files: $(find frontend/src -name "*.ts" -o -name "*.tsx" | wc -l)"
+    echo "  Lines: $(find frontend/src -name "*.ts" -o -name "*.tsx" -exec wc -l {} + | tail -1 | awk '{print $1}')"
+
+    echo ""
+    echo "🐍 Backend:"
+    echo "  Files: $(find backend/app -name "*.py" | wc -l)"
+    echo "  Lines: $(find backend/app -name "*.py" -exec wc -l {} + | tail -1 | awk '{print $1}')"
+
+    print_success "Statistics complete"
+}
+
+productivity_todos() {
+    print_status "Finding TODO comments..."
+
+    echo "📝 TODO comments found:"
+    grep -r "TODO" --include="*.ts" --include="*.tsx" --include="*.py" . | head -10
+
+    print_success "TODO search complete"
+}
+
 # Main script logic
 check_directory
 
@@ -179,6 +234,19 @@ case "${1:-help}" in
             *) print_error "Unknown git command: $2" ;;
         esac
         ;;
+    "cleanup")
+        case "${2:-all}" in
+            "all") cleanup_all ;;
+            *) print_error "Unknown cleanup command: $2" ;;
+        esac
+        ;;
+    "productivity")
+        case "${2:-help}" in
+            "stats") productivity_stats ;;
+            "todos") productivity_todos ;;
+            *) print_error "Unknown productivity command: $2" ;;
+        esac
+        ;;
     "quick")
         quick_check
         ;;
@@ -196,6 +264,8 @@ case "${1:-help}" in
         echo "  ci [all|test|lint|build]     - CI/CD operations"
         echo "  docs [storybook|build]       - Documentation"
         echo "  git [commit-check|changelog] - Git operations"
+        echo "  cleanup [all]                - Clean temporary files"
+        echo "  productivity [stats|todos]   - Productivity tools"
         echo "  quick                        - Quick error checks"
         echo ""
         echo "Examples:"

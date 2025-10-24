@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Soft Robot App - Server Deployment Script
+# BendBionics - Server Deployment Script
 # Automated deployment script for Ubuntu server
 
 set -e  # Exit on any error
@@ -15,9 +15,9 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
-APP_DIR="/var/www/soft-robot-app"
-SERVICE_NAME="soft-robot-api"
-NGINX_SITE="soft-robot"
+APP_DIR="/var/www/bendbionics-app"
+SERVICE_NAME="bendbionics-api"
+NGINX_SITE="bendbionics"
 DOMAIN="bendbionics.com"
 
 # Function to print colored output
@@ -39,7 +39,7 @@ print_error() {
 
 print_header() {
     echo -e "${PURPLE}================================${NC}"
-    echo -e "${PURPLE}🚀 Soft Robot App Deployment${NC}"
+    echo -e "${PURPLE}🚀 BendBionics App Deployment${NC}"
     echo -e "${PURPLE}================================${NC}"
 }
 
@@ -498,6 +498,69 @@ EOF
     fi
 }
 
+# Function to install PostgreSQL
+install_postgresql() {
+    print_status "Installing PostgreSQL..."
+
+    # Check if PostgreSQL is already installed
+    if command -v psql &> /dev/null; then
+        print_success "PostgreSQL is already installed"
+        return 0
+    fi
+
+    # Update package list
+    apt-get update
+
+    # Install PostgreSQL
+    print_status "Installing PostgreSQL server and client..."
+    apt-get install -y postgresql postgresql-contrib
+
+    # Start PostgreSQL service
+    print_status "Starting PostgreSQL service..."
+    systemctl start postgresql
+    systemctl enable postgresql
+
+    # Check if PostgreSQL is running
+    if ! systemctl is-active --quiet postgresql; then
+        print_error "Failed to start PostgreSQL service"
+        exit 1
+    fi
+
+    print_success "PostgreSQL installed and started successfully"
+}
+
+# Function to initialize database
+initialize_database() {
+    print_status "Setting up PostgreSQL database..."
+
+    # Install PostgreSQL if not present
+    install_postgresql
+
+    # Check if database exists
+    if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw bendbionics.db; then
+        print_status "Creating bendbionics.db database..."
+        sudo -u postgres createdb bendbionics.db
+        print_success "Database created successfully"
+    else
+        print_success "Database already exists - preserving user data"
+    fi
+
+    # Initialize database tables and run migrations (safe to run multiple times)
+    print_status "Setting up database tables and running migrations..."
+    cd "$APP_DIR/backend"
+    python3 init_database.py
+
+    if [ $? -eq 0 ]; then
+        print_success "Database setup completed successfully"
+        print_info "✅ User data preserved"
+        print_info "✅ Tables created/updated safely"
+        print_info "✅ Migrations applied if needed"
+    else
+        print_error "Database setup failed"
+        exit 1
+    fi
+}
+
 # Function to start services
 start_services() {
     print_status "Starting services..."
@@ -638,6 +701,7 @@ main() {
     copy_application_files
     setup_python_environment
     setup_environment
+    initialize_database
     setup_systemd_service
     setup_nginx
     setup_ssl

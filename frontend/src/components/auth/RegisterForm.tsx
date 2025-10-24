@@ -62,16 +62,20 @@ const RegisterFormSuccess: React.FC<{
 
 const RegisterFormFields: React.FC<{
   username: string;
+  email: string;
   password: string;
   confirmPassword: string;
   setUsername: (value: string) => void;
+  setEmail: (value: string) => void;
   setPassword: (value: string) => void;
   setConfirmPassword: (value: string) => void;
 }> = ({
   username,
+  email,
   password,
   confirmPassword,
   setUsername,
+  setEmail,
   setPassword,
   setConfirmPassword,
 }) => (
@@ -94,11 +98,25 @@ const RegisterFormFields: React.FC<{
     </div>
 
     <div>
+      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+        Email *
+      </label>
+      <Input
+        id="email"
+        type="email"
+        value={email}
+        onChange={(value: string | number) => setEmail(String(value))}
+        placeholder="your.email@example.com"
+        className="w-full"
+      />
+    </div>
+
+    <div>
       <label
         htmlFor="password"
         className="block text-sm font-medium text-gray-700 mb-1"
       >
-        Password
+        Password *
       </label>
       <Input
         id="password"
@@ -116,7 +134,7 @@ const RegisterFormFields: React.FC<{
         htmlFor="confirmPassword"
         className="block text-sm font-medium text-gray-700 mb-1"
       >
-        Confirm Password
+        Confirm Password *
       </label>
       <Input
         id="confirmPassword"
@@ -150,6 +168,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
   const { register } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -190,8 +209,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
     setIsLoading(true);
 
     try {
-      await register({ username, password });
-      setSuccess('Registration successful! You can now save your settings.');
+      await register({ username, email, password });
+      setSuccess(
+        'Registration successful! Check the terminal/server logs for your verification link (dev mode).'
+      );
     } catch (err: unknown) {
       // Use unified error handler for consistent error handling
       handleAuthError(err);
@@ -219,9 +240,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
 
         <RegisterFormFields
           username={username}
+          email={email}
           password={password}
           confirmPassword={confirmPassword}
           setUsername={setUsername}
+          setEmail={setEmail}
           setPassword={setPassword}
           setConfirmPassword={setConfirmPassword}
         />

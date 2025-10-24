@@ -23,7 +23,7 @@ app = FastAPI(
     title=settings.app_name,
     debug=settings.debug,
     description="""
-    ## Soft Robot Simulation API
+    ## BendBionics Soft Robot Simulation API
 
     A comprehensive API for soft robot simulation and analysis with unified
     response system.
@@ -85,10 +85,10 @@ if Path(static_dir).exists():
 @app.get("/api")
 async def api_root():
     """API root endpoint"""
-    return {"message": "Soft Robot API", "version": "1.0.0", "docs": "/docs"}
+    return {"message": "BendBionics API", "version": "1.0.0", "docs": "/docs"}
 
 
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "message": "Soft Robot App is running"}
+    return {"status": "healthy", "message": "BendBionics App is running"}

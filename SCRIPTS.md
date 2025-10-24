@@ -242,7 +242,7 @@ This guide explains the purpose and usage of each script in the BendBionics plat
 ```bash
 # 1. Clone the repository
 git clone <repository-url>
-cd soft-robot-app
+cd bendbionics-app
 
 # 2. Set up development environment
 ./setup.sh

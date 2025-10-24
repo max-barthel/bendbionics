@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Soft Robot App - Web Build Script
-# Builds the frontend for web deployment (without Tauri)
+# BendBionics - Web Build Script
+# Builds the frontend for web deployment
 
 set -e  # Exit on any error
 
@@ -33,7 +33,7 @@ print_error() {
 
 print_header() {
     echo -e "${PURPLE}================================${NC}"
-    echo -e "${PURPLE}🌐 Soft Robot Web Build${NC}"
+    echo -e "${PURPLE}🌐 BendBionics Web Build${NC}"
     echo -e "${PURPLE}================================${NC}"
 }
 
@@ -181,26 +181,25 @@ create_deployment_package() {
     # Create backend directory and copy only necessary files
     mkdir -p "$deploy_dir/backend"
 
-    # Copy essential backend files only
-    cp -r backend/app "$deploy_dir/backend/"
-    cp backend/requirements.txt "$deploy_dir/backend/"
+        # Copy essential backend files only
+        cp -r backend/app "$deploy_dir/backend/"
+        cp backend/requirements.txt "$deploy_dir/backend/"
+        cp backend/init_database.py "$deploy_dir/backend/"
+        cp backend/migrate.py "$deploy_dir/backend/"
 
     # Clean up any __pycache__ directories that might have been copied
     find "$deploy_dir/backend" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
     find "$deploy_dir/backend" -name "*.pyc" -delete 2>/dev/null || true
 
-    # Copy database if it exists
-    if [ -f "backend/soft_robot.db" ]; then
-        cp backend/soft_robot.db "$deploy_dir/backend/"
-        print_status "Copied database file"
-    fi
+    # Note: Database is now PostgreSQL - no file to copy
+    # Database will be initialized on the server using init_database.py
 
     # Copy deployment configurations
     cp -r deploy/nginx "$deploy_dir/"
     cp -r deploy/systemd "$deploy_dir/"
 
     # Copy deployment script
-    cp deploy.sh "$deploy_dir/"
+    cp scripts/deploy/server-deploy.sh "$deploy_dir/deploy.sh"
     chmod +x "$deploy_dir/deploy.sh"
 
     # Copy environment templates
@@ -218,7 +217,7 @@ create_deployment_package() {
 
     # Create deployment info file
     cat > "$deploy_dir/DEPLOYMENT_INFO.txt" << 'INFO_EOF'
-Soft Robot App - Web Deployment Package
+BendBionics - Web Deployment Package
 Generated: $(date)
 Build Version: $(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
@@ -227,9 +226,14 @@ Contents:
 - backend/     : Python FastAPI backend (production files only)
   - app/       : Application source code
   - requirements.txt : Python dependencies
-  - soft_robot.db : Database (if exists)
+  - init_database.py : Database initialization script
 - nginx/       : Nginx configuration
 - systemd/     : Systemd service configuration
+
+Database Setup:
+- PostgreSQL database (bendbionics.db)
+- Email verification system included
+- Run init_database.py on server to create tables
 
 Optimizations Applied:
 - Excluded test files and development dependencies
@@ -239,10 +243,11 @@ Optimizations Applied:
 
 Next Steps:
 1. Upload this package to your server
-2. Run the deployment script
-3. Configure environment variables
-4. Setup SSL certificates
-5. Start services
+2. Setup PostgreSQL database
+3. Run init_database.py to create tables
+4. Configure environment variables
+5. Setup SSL certificates
+6. Start services
 
 See README.md deployment section for detailed instructions.
 INFO_EOF
@@ -291,19 +296,157 @@ show_build_results() {
     fi
 }
 
-# Main execution
-main() {
-    print_header
+# Function to test build locally
+test_build_locally() {
+    print_status "Testing build locally..."
 
-    # Run build process
-    check_directory
-    check_prerequisites
-    clean_build
+    # Clean test environment
+    if [ -d "frontend/dist" ]; then
+        rm -rf frontend/dist
+        print_status "Removed previous frontend build"
+    fi
+
+    # Kill any existing processes on test ports
+    lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+    lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+
+    # Build frontend
+    build_frontend_web
+
+    # Start backend for testing
+    print_status "Starting backend for testing..."
+    cd backend
+    if [ -d "venv" ]; then
+        source venv/bin/activate
+    elif [ -d ".venv" ]; then
+        source .venv/bin/activate
+    fi
+    python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+    BACKEND_PID=$!
+    cd ..
+
+    # Wait for backend to start
+    sleep 3
+
+    # Test backend health
+    if curl -s -f "http://127.0.0.1:8000/api/health" > /dev/null; then
+        print_success "Backend is running and healthy"
+    else
+        print_error "Backend health check failed"
+        kill $BACKEND_PID 2>/dev/null || true
+        exit 1
+    fi
+
+    # Start frontend preview server
+    print_status "Starting frontend preview server..."
+    cd frontend
+    npm run preview &
+    FRONTEND_PID=$!
+    cd ..
+
+    # Wait for frontend to start
+    sleep 3
+
+    # Test frontend
+    if curl -s -f "http://127.0.0.1:4173" > /dev/null; then
+        print_success "Frontend is running and accessible"
+    else
+        print_error "Frontend health check failed"
+        kill $FRONTEND_PID 2>/dev/null || true
+        kill $BACKEND_PID 2>/dev/null || true
+        exit 1
+    fi
+
+    echo -e "${CYAN}================================${NC}"
+    echo -e "${CYAN}🧪 Local Build Test Results${NC}"
+    echo -e "${CYAN}================================${NC}"
+    echo -e "Frontend URL: ${GREEN}http://127.0.0.1:4173${NC}"
+    echo -e "Backend URL: ${GREEN}http://127.0.0.1:8000${NC}"
+    echo -e "API Docs: ${GREEN}http://127.0.0.1:8000/docs${NC}"
+    echo -e "${CYAN}================================${NC}"
+    echo -e "Test servers are running. Press Ctrl+C to stop."
+    echo -e "${CYAN}================================${NC}"
+
+    # Keep processes running for manual testing
+    print_status "Test servers are running. Press Ctrl+C to stop."
+    wait
+}
+
+# Function to run complete deployment workflow
+run_deployment_workflow() {
+    print_status "Running complete deployment workflow..."
+
+    # Build the application
     build_frontend_web
     validate_build
     create_deployment_package
-    show_build_results
+
+    # Find the latest deployment package
+    local latest_package=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+
+    if [ -z "$latest_package" ]; then
+        print_error "No deployment package found"
+        exit 1
+    fi
+
+    print_status "Deployment package created: $latest_package"
+    print_status "To deploy, run: ./deploy-workflow.sh"
+}
+
+# Main execution
+main() {
+    local test_mode=false
+    local deploy_mode=false
+
+    # Parse command line arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --test)
+                test_mode=true
+                shift
+                ;;
+            --deploy)
+                deploy_mode=true
+                shift
+                ;;
+            --help)
+                echo "Usage: $0 [options]"
+                echo ""
+                echo "Options:"
+                echo "  --test           Test build locally before creating deployment package"
+                echo "  --deploy         Complete deployment workflow (build + upload + deploy)"
+                echo "  --help           Show this help message"
+                echo ""
+                echo "Examples:"
+                echo "  $0                # Build for production"
+                echo "  $0 --test         # Test build locally"
+                echo "  $0 --deploy       # Complete deployment"
+                exit 0
+                ;;
+            *)
+                print_error "Unknown option: $1"
+                exit 1
+                ;;
+        esac
+    done
+
+    print_header
+
+    if [ "$test_mode" = true ]; then
+        test_build_locally
+    elif [ "$deploy_mode" = true ]; then
+        run_deployment_workflow
+    else
+        # Standard build process
+        check_directory
+        check_prerequisites
+        clean_build
+        build_frontend_web
+        validate_build
+        create_deployment_package
+        show_build_results
+    fi
 }
 
 # Run main function
-main
+main "$@"

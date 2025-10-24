@@ -5,7 +5,7 @@ import {
   getTahoeGlassStyles,
 } from '../../styles/tahoe-utils';
 
-type InputType = 'text' | 'number' | 'password';
+type InputType = 'text' | 'number' | 'password' | 'email';
 type InputSize = 'sm' | 'md' | 'lg';
 
 interface InputProps {

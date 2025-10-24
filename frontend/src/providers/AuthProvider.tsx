@@ -11,6 +11,7 @@ import {
   authAPI,
   type LoginRequest,
   type RegisterRequest,
+  type UpdateProfileRequest,
   type User,
 } from '../api/auth';
 
@@ -19,6 +20,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
+  updateProfile: (data: UpdateProfileRequest) => Promise<void>;
   logout: () => void;
   deleteAccount: () => Promise<void>;
 }
@@ -141,6 +143,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   }, []);
 
+  const updateProfile = useCallback(async (data: UpdateProfileRequest) => {
+    try {
+      const updatedUser = await authAPI.updateProfile(data);
+      setUser(updatedUser);
+    } catch (error) {
+      console.error('Update profile failed:', error);
+      throw error; // Re-throw so the calling component can handle it
+    }
+  }, []);
+
   const deleteAccount = useCallback(async () => {
     try {
       await authAPI.deleteAccount();
@@ -158,10 +170,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isLoading,
       login,
       register,
+      updateProfile,
       logout,
       deleteAccount,
     }),
-    [user, isLoading, login, register, logout, deleteAccount]
+    [user, isLoading, login, register, updateProfile, logout, deleteAccount]
   );
 
   // Always provide the context, even if there are errors
