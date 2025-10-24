@@ -73,8 +73,22 @@ check_prerequisites() {
 smart_cleanup() {
     print_status "Running smart cleanup..."
 
-    # Only clean old test data, preserve recent work
-    ./cleanup.sh --auto > /dev/null 2>&1 || true
+    # Clean Python cache
+    find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+    find . -name "*.pyc" -delete 2>/dev/null || true
+
+    # Clean Node.js cache (but preserve node_modules)
+    rm -rf frontend/.vite 2>/dev/null || true
+    rm -rf frontend/coverage 2>/dev/null || true
+
+    # Clean build artifacts
+    rm -rf frontend/dist 2>/dev/null || true
+
+    # Clean logs
+    find . -name "*.log" -delete 2>/dev/null || true
+
+    # Clean test results
+    rm -rf test-results playwright-report 2>/dev/null || true
 
     print_success "Smart cleanup completed"
 }
@@ -163,6 +177,31 @@ start_frontend() {
     print_success "Frontend started (PID: $FRONTEND_PID)"
 }
 
+# Function to run quick health checks
+run_health_checks() {
+    print_status "Running quick health checks..."
+
+    # Check if ports are available
+    if lsof -i:8000 > /dev/null 2>&1; then
+        print_warning "Port 8000 is already in use"
+    fi
+
+    if lsof -i:5173 > /dev/null 2>&1; then
+        print_warning "Port 5173 is already in use"
+    fi
+
+    # Check dependencies
+    if [ ! -d "frontend/node_modules" ]; then
+        print_warning "Frontend dependencies not found"
+    fi
+
+    if [ ! -d "backend/venv" ] && [ ! -d "backend/.venv" ]; then
+        print_warning "Backend virtual environment not found"
+    fi
+
+    print_success "Health checks completed"
+}
+
 # Function to show development info (startup style - essential info only)
 show_dev_info() {
     echo -e "${CYAN}================================${NC}"
@@ -186,6 +225,7 @@ main() {
     # Run checks
     check_directory
     check_prerequisites
+    run_health_checks
 
     # Smart cleanup before starting development
     smart_cleanup

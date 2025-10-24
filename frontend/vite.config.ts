@@ -58,6 +58,14 @@ export default defineConfig(({ mode }) => {
       target: 'node14',
     },
     server: {
+      proxy: {
+        // Proxy all API requests to backend during development
+        '/api': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+          rewrite: path => path.replace(/^\/api/, ''),
+        },
+      },
       watch: {
         ignored: [
           '**/src-tauri/target/**',

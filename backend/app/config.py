@@ -27,15 +27,37 @@ class Settings(BaseSettings):
     cors_allow_all_origins: bool = False
 
     # Database settings
-    # Default to SQLite for development, override with DATABASE_URL for
-    # production
-    database_url: str = "sqlite:///./soft_robot.db"
+    # PostgreSQL for both development and production
+    # Uses your system user (maxbarthel) which already has superuser privileges
+    database_url: str = "postgresql://maxbarthel@localhost:5432/bendbionics"
 
     # Authentication settings
     # Use a fixed secret key for development, generate new one for production
-    secret_key: str = "dev-secret-key-for-soft-robot-app-2024"
+    secret_key: str = "CHANGE_THIS_IN_PRODUCTION_OR_ENV_FILE"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+
+    # Email Verification Settings
+    # Mailgun Configuration
+    mailgun_api_key: str = ""
+    mailgun_domain: str = ""
+    mailgun_from_email: str = "noreply@localhost"
+    mailgun_from_name: str = "Soft Robot App"
+
+    # Email Verification Settings
+    # In dev mode (False), verification links are logged to console
+    # In production (True), emails are sent via Mailgun
+    email_verification_enabled: bool = False
+    email_verification_token_expire_hours: int = 24
+    email_verification_url: str = "http://localhost:5173/verify-email"
+
+    # Password Reset Settings
+    password_reset_token_expire_hours: int = 1
+    password_reset_url: str = "http://localhost:5173/reset-password"
+
+    # Frontend URLs (for email links)
+    frontend_url: str = "http://localhost:5173"
+    backend_url: str = "http://localhost:8000"
 
     @field_validator("cors_origins")
     @classmethod

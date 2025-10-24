@@ -13,7 +13,7 @@ import {
 import Visualizer3D from './features/visualization/components/Visualizer3D';
 
 import { AuthPage } from './components/auth/AuthPage';
-import { UserSettings } from './components/auth/UserSettings';
+import { Profile } from './components/auth/Profile';
 
 import { type User } from './api/auth';
 import { LoadingSpinner, Typography } from './components/ui';
@@ -273,7 +273,7 @@ function LoadingScreen({
       <div className="text-center">
         <LoadingSpinner size="lg" color="primary" className="mb-4" />
         <Typography variant="h2" color="primary" className="mb-2">
-          Loading Soft Robot App
+          Loading BendBionics App
         </Typography>
         <Typography variant="body" color="gray">
           {isLoading ? 'Checking authentication...' : 'Initializing components...'}
@@ -326,7 +326,7 @@ function UserDropdownMenu({ appState }: { readonly appState: AppState }) {
           onClick={() => appState.setShowUserSettings(true)}
           className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white/30 rounded-lg transition-colors"
         >
-          Settings
+          Profile
         </button>
         <button
           onClick={() => {
@@ -561,7 +561,7 @@ function AppModals({
         setShowPresetManager={setters.setShowPresetManager}
       />
       {appState.showUserSettings && (
-        <UserSettings onClose={() => setters.setShowUserSettings(false)} />
+        <Profile onClose={() => setters.setShowUserSettings(false)} />
       )}
     </>
   );
