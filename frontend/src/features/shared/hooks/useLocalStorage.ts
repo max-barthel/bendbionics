@@ -38,7 +38,7 @@ const DEFAULT_ROBOT_SETTINGS = {
 
 // Hook for managing robot settings in local storage
 export function useRobotSettings() {
-  const [settings, setSettings] = useLocalStorage('soft-robot-settings', {
+  const [settings, setSettings] = useLocalStorage('bendbionics-settings', {
     segments: DEFAULT_ROBOT_SETTINGS.SEGMENTS,
     bendingAngles: [0, 0, 0, 0, 0],
     rotationAngles: [0, 0, 0, 0, 0],
@@ -66,7 +66,7 @@ export function useRobotSettings() {
 // Hook for managing local presets
 export function useLocalPresets() {
   const [presets, setPresets] = useLocalStorage<Record<string, unknown>[]>(
-    'soft-robot-presets',
+    'bendbionics-presets',
     []
   );
 

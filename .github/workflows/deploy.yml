@@ -89,10 +89,9 @@ jobs:
                   cp -r backend/app "$DEPLOY_DIR/backend/"
                   cp backend/requirements.txt "$DEPLOY_DIR/backend/"
 
-                  # Copy database if exists
-                  if [ -f "backend/soft_robot.db" ]; then
-                      cp backend/soft_robot.db "$DEPLOY_DIR/backend/"
-                  fi
+                    # Copy database initialization and migration scripts
+                    cp backend/init_database.py "$DEPLOY_DIR/backend/"
+                    cp backend/migrate.py "$DEPLOY_DIR/backend/"
 
                   # Copy deployment configurations
                   cp -r deploy/nginx "$DEPLOY_DIR/"
@@ -196,5 +195,5 @@ jobs:
                   echo "🏥 Health Check: https://bendbionics.com/health"
                   echo ""
                   echo "🔧 Useful Commands:"
-                  echo "View logs: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'sudo journalctl -u soft-robot-api -f'"
-                  echo "Restart backend: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'sudo systemctl restart soft-robot-api'"
+                  echo "View logs: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'sudo journalctl -u bendbionics-api -f'"
+                  echo "Restart backend: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'sudo systemctl restart bendbionics-api'"

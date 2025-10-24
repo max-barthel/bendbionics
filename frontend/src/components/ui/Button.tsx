@@ -26,8 +26,11 @@ function Button({
   type = 'button',
   className = '',
 }: ButtonProps) {
-  // Base classes for all buttons
-  const baseClasses = 'font-medium text-gray-800';
+  // Check if custom text color is provided
+  const hasCustomTextColor = className.includes('text-');
+
+  // Base classes for all buttons - only include text-gray-800 if no custom color
+  const baseClasses = hasCustomTextColor ? 'font-medium' : 'font-medium text-gray-800';
 
   // All variants use the same Tahoe glass styling (as per original design)
   const tahoeGlassClasses = getTahoeGlassStyles(
