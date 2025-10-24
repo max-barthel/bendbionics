@@ -7,9 +7,6 @@ build/
 target/
 storybook-static/
 
-# Tauri build files
-src-tauri/target/
-
 # Generated files
 *.min.js
 *.min.css

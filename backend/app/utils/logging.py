@@ -5,7 +5,7 @@ from typing import Optional
 from app.config import Settings
 
 # Create logger instance
-logger = logging.getLogger("soft_robot_api")
+logger = logging.getLogger("bendbionics_api")
 
 
 def setup_logging(settings: Optional[Settings] = None) -> None:

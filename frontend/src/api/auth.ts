@@ -4,7 +4,9 @@ import { client } from './client';
 export interface User {
   id: number;
   username: string;
+  email: string;
   is_active: boolean;
+  email_verified: boolean;
   created_at: string;
 }
 
@@ -15,7 +17,15 @@ export interface LoginRequest {
 
 export interface RegisterRequest {
   username: string;
+  email: string;
   password: string;
+}
+
+export interface UpdateProfileRequest {
+  username?: string;
+  email?: string;
+  current_password?: string;
+  new_password?: string;
 }
 
 export interface AuthResponse {
@@ -67,6 +77,12 @@ export const authAPI = {
   getCurrentUser: async (): Promise<User> => {
     const response = await client().get<User>('/auth/me');
     return response.data;
+  },
+
+  // Update user profile
+  updateProfile: async (data: UpdateProfileRequest): Promise<User> => {
+    const response = await client().put<{ data: User }>('/auth/me', data);
+    return response.data.data;
   },
 
   // Delete user account

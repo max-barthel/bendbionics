@@ -1,13 +1,13 @@
 {
-  "name": "soft-robot-app",
+  "name": "bendbionics-app",
   "version": "1.0.0",
-  "description": "Soft Robot Simulation Application",
+  "description": "BendBionics Soft Robot Simulation Application",
   "scripts": {
     "prepare": "husky",
-    "setup": "./setup.sh",
+    "setup": "./scripts/setup.sh",
     "dev": "./dev.sh",
     "build": "./build.sh",
-    "health": "./health-check.sh",
+    "health": "./scripts/health-check.sh",
     "lint": "cd frontend && npm run lint",
     "lint:fix": "cd frontend && npm run lint:fix",
     "lint:check": "cd frontend && npm run lint -- --quiet",
@@ -31,12 +31,12 @@
     "toolkit:fix": "./toolkit.sh all fix",
     "toolkit:quality": "./toolkit.sh quality report",
     "toolkit:docs": "./toolkit.sh docs storybook",
-    "cleanup": "./cleanup.sh",
-    "cleanup:smart": "./cleanup.sh --smart",
-    "cleanup:force": "./cleanup.sh --force",
-    "cleanup:status": "./cleanup.sh status",
-    "cleanup:check": "./cleanup.sh check",
-    "cleanup:schedule": "./cleanup.sh schedule"
+    "cleanup": "./scripts/cleanup.sh",
+    "cleanup:smart": "./scripts/cleanup.sh --smart",
+    "cleanup:force": "./scripts/cleanup.sh --force",
+    "cleanup:status": "./scripts/cleanup.sh status",
+    "cleanup:check": "./scripts/cleanup.sh check",
+    "cleanup:schedule": "./scripts/cleanup.sh schedule"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
