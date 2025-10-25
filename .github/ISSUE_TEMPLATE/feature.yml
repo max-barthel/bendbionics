@@ -1,0 +1,24 @@
+name: Feature / Idea
+description: Suggest something new
+title: ""
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What do you want?
+      description: Describe the feature or idea
+      placeholder: |
+        I want to be able to...
+
+        This would help with...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Mockups? Similar features elsewhere? Anything else helpful
+      placeholder: Optional - add anything that helps us understand this better
+

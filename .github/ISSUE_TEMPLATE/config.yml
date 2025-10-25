@@ -1,14 +1,1 @@
-blank_issues_enabled: false
-contact_links:
-  - name: 💬 GitHub Discussions
-    url: https://github.com/your-username/soft-robot-app/discussions
-    about: Ask questions and discuss ideas with the community
-  - name: 📖 Documentation
-    url: https://github.com/your-username/soft-robot-app#readme
-    about: Check our documentation for answers
-  - name: 🐛 Bug Reports
-    url: https://github.com/your-username/soft-robot-app/issues/new?template=bug_report.yml
-    about: Report a bug or unexpected behavior
-  - name: ✨ Feature Requests
-    url: https://github.com/your-username/soft-robot-app/issues/new?template=feature_request.yml
-    about: Suggest a new feature or improvement
+blank_issues_enabled: true
