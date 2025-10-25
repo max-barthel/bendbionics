@@ -18,19 +18,13 @@ from sqlmodel import SQLModel, text
 def check_database_exists():
     """Check if database tables already exist"""
     try:
-        from app.database import get_session
-        session = next(get_session())
-
-        # Check if user table exists
-        result = session.execute(text("""
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables
-                WHERE table_name = 'user'
-            );
-        """)).fetchone()
-
-        session.close()
-        return result[0] if result else False
+        from app.database import engine
+        from sqlalchemy import inspect
+        
+        # Use inspector to check if tables exist
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+        return 'user' in tables
 
     except Exception:
         return False
@@ -68,21 +62,22 @@ def run_migrations():
     logger.info("🔄 Checking for required migrations...")
 
     try:
-        from app.database import get_session
-        session = next(get_session())
-
-        # Check if email verification fields exist
-        result = session.execute(text("""
-            SELECT column_name
-            FROM information_schema.columns
-            WHERE table_name = 'user' AND column_name IN (
-                'email', 'email_verified', 'email_verification_token',
-                'email_verification_token_expires', 'password_reset_token',
-                'password_reset_token_expires'
-            )
-        """)).fetchall()
-
-        existing_email_fields = [row[0] for row in result]
+        from app.database import engine
+        from sqlalchemy import inspect
+        
+        # Use inspector to check table structure
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+        
+        # Only run migrations if table exists
+        if 'user' not in tables:
+            logger.info("✅ Fresh database - all tables created with correct schema")
+            return True
+        
+        # Check existing columns
+        columns = inspector.get_columns('user')
+        existing_columns = [col['name'] for col in columns]
+        
         required_email_fields = [
             "email", "email_verified", "email_verification_token",
             "email_verification_token_expires", "password_reset_token",
@@ -90,11 +85,14 @@ def run_migrations():
         ]
 
         missing_fields = [field for field in required_email_fields
-                         if field not in existing_email_fields]
+                         if field not in existing_columns]
 
         if missing_fields:
             logger.warning(f"⚠️  Missing email verification fields: {missing_fields}")
             logger.info("🔄 Running migration to add email verification fields...")
+
+            from app.database import get_session
+            session = next(get_session())
 
             # Add missing email fields
             for field in missing_fields:
@@ -127,11 +125,11 @@ def run_migrations():
                     ))
 
             session.commit()
+            session.close()
             logger.info("✅ Email verification fields migration completed!")
         else:
             logger.info("✅ All required fields present - no migration needed")
 
-        session.close()
         return True
 
     except Exception as e:

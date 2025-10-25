@@ -1,8 +1,9 @@
 from enum import Enum
+from pathlib import Path
 from typing import List
 
 from pydantic import field_validator
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class LogLevel(str, Enum):
@@ -28,8 +29,10 @@ class Settings(BaseSettings):
 
     # Database settings
     # PostgreSQL for both development and production
-    # Uses your system user (maxbarthel) which already has superuser privileges
-    database_url: str = "postgresql://maxbarthel@localhost:5432/bendbionics"
+    # Must be set via DATABASE_URL environment variable or in .env file
+    # Development: postgresql://maxbarthel@localhost:5432/bendbionics
+    # Production: postgresql://username:password@host:5432/database
+    database_url: str
 
     # Authentication settings
     # Use a fixed secret key for development, generate new one for production
@@ -94,12 +97,20 @@ class Settings(BaseSettings):
             return ["*"]
         return self.cors_origins
 
-    class Config:
-        env_file = ".env"
+    # Pydantic v2 settings configuration
+    model_config = SettingsConfigDict(
         # Allow environment variables to override defaults
-        case_sensitive = False
-        extra = "ignore"  # Ignore extra fields from environment variables
+        case_sensitive=False,
+        extra="ignore",  # Ignore extra fields from environment variables
+        # Look for env files in the backend directory (parent of app/)
+        env_file=(
+            str(Path(__file__).parent.parent / ".env.production"),
+            str(Path(__file__).parent.parent / ".env"),
+        ),
+        env_file_encoding="utf-8",
+    )
 
 
 # Create settings instance
+# Pydantic-settings will automatically try .env.production first, then .env
 settings = Settings()

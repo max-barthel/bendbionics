@@ -189,22 +189,45 @@ setup_python_environment() {
 setup_environment() {
     print_status "Configuring environment variables..."
 
-    # Debug: Check what files exist in backend directory
-    print_status "Files in backend directory:"
-    ls -la "$APP_DIR/backend/" || print_error "Failed to list backend directory"
-    print_status "Looking for .env files:"
-    find "$APP_DIR/backend/" -name "*.env*" -o -name "*.production*" || print_error "No .env files found"
-
     # Check if .env.production exists
     if [ ! -f "$APP_DIR/backend/.env.production" ]; then
-        if [ -f "$APP_DIR/backend/.env.production.template" ]; then
-            print_status "Creating .env.production from template..."
-            cp "$APP_DIR/backend/.env.production.template" "$APP_DIR/backend/.env.production"
-            print_warning "Please edit $APP_DIR/backend/.env.production with your production values"
-        else
-            print_error ".env.production not found. Please create it manually."
-            exit 1
-        fi
+        print_error ".env.production file not found!"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "📋 First-Time PostgreSQL Setup Required"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "This appears to be your first deployment. You need to:"
+        echo ""
+        echo "1. Set up PostgreSQL database and credentials:"
+        echo "   Run the setup script from your deployment package:"
+        echo ""
+        echo "   cd /tmp/$(basename $SCRIPT_DIR)"
+        echo "   sudo bash setup-postgres.sh"
+        echo ""
+        echo "2. Then run this deployment script again:"
+        echo "   sudo ./deploy.sh"
+        echo ""
+        echo "The setup script will:"
+        echo "  • Install and configure PostgreSQL"
+        echo "  • Create database and user with secure credentials"
+        echo "  • Generate .env.production with database configuration"
+        echo "  • Save credentials securely"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        exit 1
+    fi
+
+    # Verify .env.production has actual credentials (not template values)
+    if grep -q "YOUR_SECURE_PASSWORD" "$APP_DIR/backend/.env.production" || \
+       grep -q "YOUR_PRODUCTION_SECRET_KEY_HERE" "$APP_DIR/backend/.env.production"; then
+        print_error ".env.production contains template values!"
+        echo ""
+        print_warning "Please run the PostgreSQL setup script first:"
+        echo "  cd /tmp/$(basename $SCRIPT_DIR)"
+        echo "  sudo bash setup-postgres.sh"
+        echo ""
+        exit 1
     fi
 
     # Set proper permissions
@@ -219,10 +242,10 @@ setup_systemd_service() {
     print_status "Setting up systemd service..."
 
     # Copy service file
-    if [ -f "$SCRIPT_DIR/systemd/soft-robot-api.service" ]; then
-        cp "$SCRIPT_DIR/systemd/soft-robot-api.service" "/etc/systemd/system/$SERVICE_NAME.service"
+    if [ -f "$SCRIPT_DIR/systemd/bendbionics-api.service" ]; then
+        cp "$SCRIPT_DIR/systemd/bendbionics-api.service" "/etc/systemd/system/$SERVICE_NAME.service"
     else
-        print_error "systemd service file not found at $SCRIPT_DIR/systemd/soft-robot-api.service"
+        print_error "systemd service file not found at $SCRIPT_DIR/systemd/bendbionics-api.service"
         exit 1
     fi
 
@@ -238,10 +261,10 @@ setup_nginx() {
     print_status "Setting up nginx configuration..."
 
     # Copy nginx configuration
-    if [ -f "$SCRIPT_DIR/nginx/soft-robot.conf" ]; then
-        cp "$SCRIPT_DIR/nginx/soft-robot.conf" "/etc/nginx/sites-available/$NGINX_SITE"
+    if [ -f "$SCRIPT_DIR/nginx/bendbionics.conf" ]; then
+        cp "$SCRIPT_DIR/nginx/bendbionics.conf" "/etc/nginx/sites-available/$NGINX_SITE"
     else
-        print_error "nginx configuration file not found at $SCRIPT_DIR/nginx/soft-robot.conf"
+        print_error "nginx configuration file not found at $SCRIPT_DIR/nginx/bendbionics.conf"
         exit 1
     fi
 
@@ -295,7 +318,7 @@ server {
 
     # Serve frontend static files
     location / {
-        root /var/www/soft-robot-app/frontend;
+        root /var/www/bendbionics-app/frontend;
         try_files \$uri \$uri/ /index.html;
 
         # Cache static assets
@@ -305,9 +328,8 @@ server {
         }
     }
 
-    # Proxy API requests to backend
-    location /api {
-        rewrite ^/api/(.*) /$1 break;
+    # Proxy all requests to backend (backend handles routing)
+    location ~ ^/(api|pcc|auth|presets|tendons|docs|openapi\.json|redoc) {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -358,13 +380,12 @@ server {
 
     # Frontend
     location / {
-        root /var/www/soft-robot-app/frontend;
+        root /var/www/bendbionics-app/frontend;
         try_files \$uri \$uri/ /index.html;
     }
 
-    # API
-    location /api {
-        rewrite ^/api/(.*) /\$1 break;
+    # Proxy all API requests to backend (backend handles routing)
+    location ~ ^/(api|pcc|auth|presets|tendons|docs|openapi\.json|redoc) {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -428,8 +449,8 @@ server {
 
     # Serve frontend static files
     location / {
-        root /var/www/soft-robot-app/frontend;
-        try_files $uri $uri/ /index.html;
+        root /var/www/bendbionics-app/frontend;
+        try_files \$uri \$uri/ /index.html;
 
         # Cache static assets
         location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
@@ -438,16 +459,15 @@ server {
         }
     }
 
-    # Proxy API requests to backend
-    location /api {
-        rewrite ^/api/(.*) /$1 break;
+    # Proxy all API requests to backend (backend handles routing)
+    location ~ ^/(api|pcc|auth|presets|tendons|docs|openapi\.json|redoc) {
         proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Port $server_port;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header X-Forwarded-Host \$host;
+        proxy_set_header X-Forwarded-Port \$server_port;
 
         # Timeout settings
         proxy_connect_timeout 60s;
@@ -455,27 +475,10 @@ server {
         proxy_read_timeout 60s;
     }
 
-    # API documentation
-    location /docs {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    location /openapi.json {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
     # Health check endpoint
     location /health {
         proxy_pass http://127.0.0.1:8000/api/health;
-        proxy_set_header Host $host;
+        proxy_set_header Host \$host;
         access_log off;
     }
 }
@@ -536,11 +539,11 @@ initialize_database() {
     # Install PostgreSQL if not present
     install_postgresql
 
-    # Check if database exists
-    if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw bendbionics.db; then
-        print_status "Creating bendbionics.db database..."
-        sudo -u postgres createdb bendbionics.db
-        print_success "Database created successfully"
+    # Check if database exists (setup-postgres.sh should have created it)
+    if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw bendbionics; then
+        print_warning "Database 'bendbionics' not found!"
+        print_error "Please run setup-postgres.sh first to create the database and user"
+        exit 1
     else
         print_success "Database already exists - preserving user data"
     fi
@@ -548,13 +551,18 @@ initialize_database() {
     # Initialize database tables and run migrations (safe to run multiple times)
     print_status "Setting up database tables and running migrations..."
     cd "$APP_DIR/backend"
-    python3 init_database.py
 
-    if [ $? -eq 0 ]; then
+    # Use virtual environment's Python to ensure dependencies are available
+    source venv/bin/activate
+    python init_database.py
+    INIT_RESULT=$?
+    deactivate
+
+    if [ $INIT_RESULT -eq 0 ]; then
         print_success "Database setup completed successfully"
-        print_info "✅ User data preserved"
-        print_info "✅ Tables created/updated safely"
-        print_info "✅ Migrations applied if needed"
+        print_status "✅ User data preserved"
+        print_status "✅ Tables created/updated safely"
+        print_status "✅ Migrations applied if needed"
     else
         print_error "Database setup failed"
         exit 1
@@ -604,12 +612,12 @@ test_deployment() {
 
     # Test backend API
     print_status "Testing backend API..."
-    if curl -s -f "http://127.0.0.1:8000/health" > /dev/null; then
+    if curl -s -f "http://127.0.0.1:8000/api/health" > /dev/null; then
         print_success "Backend API is responding"
     else
         print_warning "Backend API health check failed"
         print_status "Trying to get more info..."
-        curl -v "http://127.0.0.1:8000/health" || true
+        curl -v "http://127.0.0.1:8000/api/health" || true
     fi
 
     # Test nginx

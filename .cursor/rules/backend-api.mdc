@@ -69,12 +69,15 @@ All API responses must use the unified `APIResponse` format:
 
 ## Database Operations
 
+- **PostgreSQL in Production**: Production uses PostgreSQL for reliability
+- **SQLite for Development**: Fast local development with SQLite
 - **Direct SQLAlchemy**: Use ORM directly, no repository pattern
 - **Simple Migrations**: Basic schema changes only
 - **YAGNI**: Don't abstract until you need it
 
 ## Authentication & Security
 
-- **Basic JWT**: Simple token authentication
+- **JWT Authentication**: Token-based auth with secure cookies
 - **Essential Validation**: Validate only what matters
-- **Security When Needed**: Add security features when users demand them
+- **Environment Variables**: Use .env files for secrets
+- **SSL/TLS**: HTTPS enforced in production (Let's Encrypt)

@@ -46,14 +46,27 @@ Modular tendon calculation system that works with any robot model:
 - **Configurable**: 3-12 tendons with custom positioning
 - **Actuation Commands**: Direct control commands for robot hardware
 - **Length Calculations**: Precise tendon length requirements
+- **Cylindrical Couplings**: Models coupling elements with routing eyelets
 
 ### Usage Pattern
 
 ```python
-# Tendon analysis
-tendon_result = analyze_tendon_configuration(params)
-actuation_commands = tendon_result['actuation_commands']
-tendon_lengths = tendon_result['tendon_lengths']
+from app.models.pcc.pcc_model import compute_pcc_with_tendons
+from app.models.pcc.types import PCCParams, TendonConfig
+
+# Create robot with tendon configuration
+params = PCCParams(
+    bending_angles=[0.5, 0.3],
+    rotation_angles=[0.0, 0.0],
+    backbone_lengths=[0.1, 0.1],
+    coupling_lengths=[0.02, 0.02, 0.02],
+    tendon_config=TendonConfig(count=6, radius=0.012)
+)
+
+# Calculate with tendon analysis
+result = compute_pcc_with_tendons(params)
+actuation_commands = result['actuation_commands']
+tendon_lengths = result['tendon_lengths']
 ```
 
 ## 3D Visualization
