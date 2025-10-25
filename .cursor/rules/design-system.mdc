@@ -8,7 +8,9 @@ alwaysApply: false
 
 ## Core Design Principles
 
-Follow the macOS Tahoe 26 design language with liquid glass as the signature style:
+Follow the macOS Tahoe 26 design language with liquid glass as the signature style.
+
+**Using Tailwind CSS 4** - Modern utility-first CSS framework with improved performance and DX.
 
 ### Visual Hierarchy
 
@@ -86,5 +88,12 @@ className =
 
 - Implement proper ARIA labels
 - Ensure keyboard navigation
-- Maintain color contrast ratios
+- Maintain color contrast ratios (WCAG AA minimum)
 - Test with screen readers
+
+## Responsive Design
+
+- Mobile-first approach with Tailwind breakpoints
+- Use Tailwind's responsive utilities: `sm:`, `md:`, `lg:`, `xl:`, `2xl:`
+- Test across devices with browser dev tools
+- Ensure touch targets are at least 44x44px on mobile

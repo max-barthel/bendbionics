@@ -12,11 +12,17 @@ Use the provided scripts for consistent development:
 
 ```bash
 # Development
-./dev.sh              # Start development servers
-./setup.sh            # First-time setup
-./build.sh            # Production build
-./health-check.sh     # System health check
-./toolkit.sh          # Development tools
+./dev.sh                  # Start development servers
+./setup.sh                # First-time setup
+./toolkit.sh              # Development tools
+
+# Production
+./build.sh                # Create production build
+./deploy-workflow.sh      # Deploy to bendbionics.com server
+
+# Testing
+./scripts/health-check.sh # System health check
+npm run test:all          # Run all tests
 ```
 
 ## Code Quality Standards
@@ -38,10 +44,12 @@ git push origin feature/description
 
 ## Development Tools
 
-- **Frontend**: Vite + React + TypeScript + Tailwind
-- **Backend**: FastAPI + SQLAlchemy + Pydantic
+- **Frontend**: Vite + React 19 + TypeScript + Tailwind CSS 4
+- **Backend**: FastAPI + SQLAlchemy + Pydantic + PostgreSQL
+- **3D Visualization**: Three.js with @react-three/fiber
 - **Web**: Optimized for modern browsers
 - **Testing**: Playwright for E2E, Vitest for unit tests
+- **CI/CD**: GitHub Actions for automated deployment
 
 ## Code Organization
 

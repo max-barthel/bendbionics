@@ -8,27 +8,31 @@ alwaysApply: true
 
 ## Project Overview
 
-This is a modern web application for simulating soft robot kinematics using the Piecewise Constant Curvature (PCC) model, built with React and FastAPI for optimal performance.
+Modern web application for simulating soft robot kinematics using the Piecewise Constant Curvature (PCC) model. Deployed at **bendbionics.com** with React and FastAPI.
 
 ## Architecture
 
-- **Frontend**: React + TypeScript + Tailwind CSS (web)
-- **Backend**: FastAPI + Python with essential testing
+- **Frontend**: React 19 + TypeScript + Tailwind CSS 4 (Vite)
+- **Backend**: FastAPI + Python 3.11+
+- **Database**: PostgreSQL (production) / SQLite (development)
+- **Deployment**: Ubuntu server + nginx + SSL (Let's Encrypt)
 - **Design**: macOS Tahoe 26 aesthetic with liquid glass styling
 - **Testing**: Focused on real user value and critical paths
 
 ## Key Features
 
-- 3D visualization of robot segments with real-time updates
+- 3D visualization of robot segments with real-time updates (Three.js)
 - Real-time parameter adjustment with live preview
 - Unit conversion (degrees/radians, mm/cm/m)
-- Preset Management with user authentication
+- Preset Management with user authentication (JWT)
+- Modular tendon calculation system (3-12 tendons)
 - Web-optimized performance with modern browsers
 
 ## Development Workflow
 
 - Use `./dev.sh` for development
 - Use `./build.sh` for production builds
+- Use `./deploy-workflow.sh` for deployment
 - Use `./toolkit.sh` for development tools
 - All styling with Tailwind CSS only (no direct CSS)
 - Follow Tahoe liquid glass design system consistently

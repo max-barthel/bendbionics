@@ -102,12 +102,13 @@ build_frontend_web() {
     # Set production environment
     export NODE_ENV=production
 
-    # Copy production environment file if it exists
+    # Copy production environment file
     if [ -f ".env.production" ]; then
         print_status "Using production environment configuration"
         cp .env.production .env.local
     else
-        print_warning "No .env.production found, using default settings"
+        print_error ".env.production not found. Please create it from .env.production.example"
+        exit 1
     fi
 
     # Build with TypeScript check
@@ -171,7 +172,7 @@ create_deployment_package() {
     print_status "Creating deployment package..."
 
     # Create deployment directory
-    local deploy_dir="deploy/web-build-$(date +%Y%m%d-%H%M%S)"
+    local deploy_dir="builds/web-build-$(date +%Y%m%d-%H%M%S)"
     mkdir -p "$deploy_dir"
 
     # Copy frontend build
@@ -195,12 +196,19 @@ create_deployment_package() {
     # Database will be initialized on the server using init_database.py
 
     # Copy deployment configurations
-    cp -r deploy/nginx "$deploy_dir/"
-    cp -r deploy/systemd "$deploy_dir/"
+    cp -r config/nginx "$deploy_dir/"
+    cp -r config/systemd "$deploy_dir/"
 
-    # Copy deployment script
+    # Copy deployment scripts
     cp scripts/deploy/server-deploy.sh "$deploy_dir/deploy.sh"
     chmod +x "$deploy_dir/deploy.sh"
+
+    # Copy PostgreSQL setup script
+    if [ -f "scripts/deploy/setup-postgres.sh" ]; then
+        cp scripts/deploy/setup-postgres.sh "$deploy_dir/setup-postgres.sh"
+        chmod +x "$deploy_dir/setup-postgres.sh"
+        print_status "Included PostgreSQL setup script"
+    fi
 
     # Copy environment templates
     if [ -f "backend/.env.production.example" ]; then
@@ -222,18 +230,74 @@ Generated: $(date)
 Build Version: $(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
 Contents:
-- frontend/     : Built React application (optimized for production)
-- backend/     : Python FastAPI backend (production files only)
-  - app/       : Application source code
+- frontend/          : Built React application (optimized for production)
+- backend/           : Python FastAPI backend (production files only)
+  - app/             : Application source code
   - requirements.txt : Python dependencies
   - init_database.py : Database initialization script
-- nginx/       : Nginx configuration
-- systemd/     : Systemd service configuration
+  - migrate.py       : Database migration script
+- nginx/             : Nginx configuration
+- systemd/           : Systemd service configuration
+- deploy.sh          : Main deployment script
+- setup-postgres.sh  : PostgreSQL setup script (first-time only)
 
-Database Setup:
-- PostgreSQL database (bendbionics.db)
-- Email verification system included
-- Run init_database.py on server to create tables
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIRST-TIME DEPLOYMENT INSTRUCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If this is your first deployment, run these commands on your server:
+
+1. Upload the package:
+   scp -r web-build-YYYYMMDD-HHMMSS serveruser@your-server:/tmp/
+
+2. SSH into your server:
+   ssh serveruser@your-server
+
+3. Set up PostgreSQL (FIRST-TIME ONLY):
+   cd /tmp/web-build-YYYYMMDD-HHMMSS
+   sudo bash setup-postgres.sh
+
+   This will:
+   • Install PostgreSQL
+   • Create database and user with secure credentials
+   • Generate .env.production file
+   • Save credentials for reference
+
+4. Deploy the application:
+   sudo bash deploy.sh
+
+   This will:
+   • Install dependencies
+   • Initialize database tables
+   • Configure nginx and systemd
+   • Start the application
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SUBSEQUENT DEPLOYMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For updates after initial setup, just run:
+
+1. Upload new package:
+   scp -r web-build-YYYYMMDD-HHMMSS serveruser@your-server:/tmp/
+
+2. Deploy:
+   ssh serveruser@your-server
+   cd /tmp/web-build-YYYYMMDD-HHMMSS
+   sudo bash deploy.sh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Database Configuration:
+- PostgreSQL database: bendbionics
+- User: bendbionics_user
+- Credentials saved in /root/.bendbionics-db-credentials
+
+Post-Deployment:
+1. Update CORS_ORIGINS in .env.production with your domain(s)
+2. Configure Mailgun credentials for email verification
+3. Update FRONTEND_URL and BACKEND_URL with your actual URLs
+4. Set up SSL certificates with certbot (optional)
 
 Optimizations Applied:
 - Excluded test files and development dependencies
@@ -241,15 +305,7 @@ Optimizations Applied:
 - Excluded virtual environment and development tools
 - Only essential production files included
 
-Next Steps:
-1. Upload this package to your server
-2. Setup PostgreSQL database
-3. Run init_database.py to create tables
-4. Configure environment variables
-5. Setup SSL certificates
-6. Start services
-
-See README.md deployment section for detailed instructions.
+For detailed documentation, see README.md and DEVELOPMENT.md
 INFO_EOF
 
     print_success "Deployment package created: $deploy_dir"
@@ -272,7 +328,7 @@ show_build_results() {
     fi
 
     # Show deployment package
-    local latest_package=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+    local latest_package=$(ls -td builds/web-build-* 2>/dev/null | head -1)
     if [ -n "$latest_package" ]; then
         echo -e "Deployment Package: ${GREEN}$latest_package${NC}"
     fi
@@ -382,7 +438,7 @@ run_deployment_workflow() {
     create_deployment_package
 
     # Find the latest deployment package
-    local latest_package=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+    local latest_package=$(ls -td builds/web-build-* 2>/dev/null | head -1)
 
     if [ -z "$latest_package" ]; then
         print_error "No deployment package found"

@@ -137,7 +137,7 @@ upload_to_server() {
     print_status "Uploading to server..."
 
     # Find the latest deployment package
-    local latest_package=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+    local latest_package=$(ls -td builds/web-build-* 2>/dev/null | head -1)
 
     if [ -z "$latest_package" ]; then
         print_error "No deployment package found. Run build first."
@@ -203,12 +203,12 @@ cleanup_local_package() {
 cleanup_old_packages() {
     print_status "Cleaning up old deployment packages..."
 
-    # Clean up old deployment packages in deploy directory
-    if [ -d "deploy" ]; then
-        local old_packages=$(find deploy -name "web-build-*" -type d 2>/dev/null | wc -l)
+    # Clean up old deployment packages in builds directory
+    if [ -d "builds" ]; then
+        local old_packages=$(find builds -name "web-build-*" -type d 2>/dev/null | wc -l)
         if [ "$old_packages" -gt 0 ]; then
             print_status "Found $old_packages old deployment packages"
-            rm -rf deploy/web-build-*
+            rm -rf builds/web-build-*
             print_success "Old packages cleaned up"
         else
             print_status "No old packages found"
@@ -228,8 +228,8 @@ show_results() {
     echo -e "Health Check: ${GREEN}https://bendbionics.com/health${NC}"
 
     echo -e "\n${BLUE}Useful Commands:${NC}"
-    echo -e "View logs: ${CYAN}ssh $SERVER_USER@$SERVER_HOST 'sudo journalctl -u soft-robot-api -f'${NC}"
-    echo -e "Restart backend: ${CYAN}ssh $SERVER_USER@$SERVER_HOST 'sudo systemctl restart soft-robot-api'${NC}"
+    echo -e "View logs: ${CYAN}ssh $SERVER_USER@$SERVER_HOST 'sudo journalctl -u bendbionics-api -f'${NC}"
+    echo -e "Restart backend: ${CYAN}ssh $SERVER_USER@$SERVER_HOST 'sudo systemctl restart bendbionics-api'${NC}"
 
     echo -e "${CYAN}================================${NC}"
 }

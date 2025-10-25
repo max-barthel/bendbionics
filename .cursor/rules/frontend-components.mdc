@@ -8,11 +8,10 @@ alwaysApply: false
 
 ## React Component Structure
 
-When creating React components:
+When creating React components (React 19):
 
 ```tsx
 // 1. Imports at top
-import React from "react";
 import { ComponentProps } from "./types";
 
 // 2. Interface definitions
@@ -26,6 +25,8 @@ export function ComponentName({ prop1, prop2 }: ComponentProps) {
   return <div className="tahoe-glass-container">{/* Component JSX */}</div>;
 }
 ```
+
+Note: React 19 doesn't require `import React from "react"` anymore.
 
 ## Styling Guidelines
 
@@ -68,3 +69,9 @@ className =
 - **User-Critical Components Only**: Test components users actually interact with
 - **Quick Smoke Tests**: Basic rendering tests, not comprehensive coverage
 - **Real User Scenarios**: Test actual user workflows, not edge cases
+
+## Component Documentation
+
+- **Storybook**: Available for component development and documentation
+- **Visual Testing**: Use Storybook for visual regression testing
+- **Interactive Docs**: Document components with Storybook stories when needed
