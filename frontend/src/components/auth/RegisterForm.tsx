@@ -209,10 +209,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
     setIsLoading(true);
 
     try {
-      await register({ username, email, password });
-      setSuccess(
-        'Registration successful! Check the terminal/server logs for your verification link (dev mode).'
-      );
+      const response = await register({ username, email, password });
+      // Use the message from the backend (environment-aware)
+      setSuccess(response.message);
     } catch (err: unknown) {
       // Use unified error handler for consistent error handling
       handleAuthError(err);
