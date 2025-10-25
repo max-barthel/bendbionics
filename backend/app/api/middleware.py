@@ -152,18 +152,32 @@ class CORSMiddleware(BaseHTTPMiddleware):
         self.allow_headers = allow_headers or ["*"]
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        # Determine the appropriate origin
+        origin = request.headers.get("origin")
+        allow_origin = "*"
+        
+        if origin and "*" not in self.allow_origins:
+            # If specific origins are configured, check if request origin is allowed
+            if origin in self.allow_origins:
+                allow_origin = origin
+            else:
+                # Origin not allowed, use first configured origin as fallback
+                allow_origin = self.allow_origins[0] if self.allow_origins else "*"
+        elif self.allow_origins and "*" not in self.allow_origins:
+            # No origin header but specific origins configured
+            allow_origin = self.allow_origins[0]
+
         # Handle preflight requests
         if request.method == "OPTIONS":
             response = Response()
-            response.headers["Access-Control-Allow-Origin"] = ", ".join(
-                self.allow_origins
-            )
+            response.headers["Access-Control-Allow-Origin"] = allow_origin
             response.headers["Access-Control-Allow-Methods"] = ", ".join(
                 self.allow_methods
             )
             response.headers["Access-Control-Allow-Headers"] = ", ".join(
                 self.allow_headers
             )
+            response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Max-Age"] = "86400"  # 24 hours
             return response
 
@@ -171,8 +185,9 @@ class CORSMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
 
         # Add CORS headers to response
-        response.headers["Access-Control-Allow-Origin"] = ", ".join(self.allow_origins)
+        response.headers["Access-Control-Allow-Origin"] = allow_origin
         response.headers["Access-Control-Allow-Methods"] = ", ".join(self.allow_methods)
         response.headers["Access-Control-Allow-Headers"] = ", ".join(self.allow_headers)
+        response.headers["Access-Control-Allow-Credentials"] = "true"
 
         return response
