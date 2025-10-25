@@ -115,16 +115,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = useCallback(
     async (data: RegisterRequest) => {
       try {
-        const userData = await authAPI.register(data);
-        setUser(userData);
+        const response = await authAPI.register(data);
+        setUser(response.user);
         // Auto-login after registration for local users
-        if ('is_local' in userData && userData.is_local) {
+        if ('is_local' in response.user && response.user.is_local) {
           const loginData = {
             username: data.username,
             password: data.password,
           };
           await login(loginData);
         }
+        return response; // Return the full response including message
       } catch (error) {
         console.error('Registration failed:', error);
         throw error; // Re-throw so the calling component can handle it

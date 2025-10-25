@@ -59,12 +59,23 @@ export interface UpdatePresetRequest {
   configuration?: RobotConfiguration;
 }
 
+export interface RegisterResponse {
+  user: User;
+  message: string;
+}
+
 // Authentication API
 export const authAPI = {
   // Register new user
-  register: async (data: RegisterRequest): Promise<User> => {
-    const response = await client().post<{ data: User }>('/auth/register', data);
-    return response.data.data;
+  register: async (data: RegisterRequest): Promise<RegisterResponse> => {
+    const response = await client().post<{ data: User; message: string }>(
+      '/auth/register',
+      data
+    );
+    return {
+      user: response.data.data,
+      message: response.data.message,
+    };
   },
 
   // Login user
