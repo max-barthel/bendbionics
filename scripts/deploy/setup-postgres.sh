@@ -148,14 +148,17 @@ SECRET_KEY=$SECRET_KEY
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-# Email Settings (Mailgun) - UPDATE THESE!
-MAILGUN_API_KEY=your_mailgun_api_key
-MAILGUN_DOMAIN=your_mailgun_domain
+# Email Settings (Mailgun)
+# Note: These are set by GitHub Actions during deployment
+# If you need to update them manually, see EMAIL_SETUP.md
+MAILGUN_API_KEY=PLACEHOLDER_SET_BY_GITHUB_ACTIONS
+MAILGUN_DOMAIN=PLACEHOLDER_SET_BY_GITHUB_ACTIONS
 MAILGUN_FROM_EMAIL=noreply@bendbionics.com
 MAILGUN_FROM_NAME=BendBionics
 
 # Email Verification
-EMAIL_VERIFICATION_ENABLED=true
+# This will be enabled once Mailgun credentials are deployed
+EMAIL_VERIFICATION_ENABLED=false
 EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS=24
 EMAIL_VERIFICATION_URL=https://bendbionics.com/verify-email
 

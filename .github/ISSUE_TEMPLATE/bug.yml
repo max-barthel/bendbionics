@@ -1,0 +1,27 @@
+name: Bug Report
+description: Something's broken
+title: ""
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What's broken?
+      description: Tell us what happened and how to reproduce it
+      placeholder: |
+        When I do X, Y breaks...
+
+        To reproduce:
+        1. Go to...
+        2. Click...
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Browser? Screenshots? Error logs? Anything else helpful
+      placeholder: Optional - add anything that helps us fix this faster
+

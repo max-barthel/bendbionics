@@ -189,9 +189,17 @@ setup_python_environment() {
 setup_environment() {
     print_status "Configuring environment variables..."
 
-    # Check if .env.production exists
-    if [ ! -f "$APP_DIR/backend/.env.production" ]; then
-        print_error ".env.production file not found!"
+    # Get the directory where this script is located
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    # Path to the new .env.production from deployment package
+    NEW_ENV_FILE="$SCRIPT_DIR/backend/.env.production"
+    # Path to existing .env.production on server (has DATABASE_URL and SECRET_KEY)
+    EXISTING_ENV_FILE="$APP_DIR/backend/.env.production"
+
+    # Check if this is first-time deployment
+    if [ ! -f "$EXISTING_ENV_FILE" ]; then
+        print_error "Server .env.production file not found!"
         echo ""
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "📋 First-Time PostgreSQL Setup Required"
@@ -218,21 +226,51 @@ setup_environment() {
         exit 1
     fi
 
-    # Verify .env.production has actual credentials (not template values)
-    if grep -q "YOUR_SECURE_PASSWORD" "$APP_DIR/backend/.env.production" || \
-       grep -q "YOUR_PRODUCTION_SECRET_KEY_HERE" "$APP_DIR/backend/.env.production"; then
-        print_error ".env.production contains template values!"
-        echo ""
-        print_warning "Please run the PostgreSQL setup script first:"
-        echo "  cd /tmp/$(basename $SCRIPT_DIR)"
-        echo "  sudo bash setup-postgres.sh"
-        echo ""
+    # Backup existing environment file
+    cp "$EXISTING_ENV_FILE" "$EXISTING_ENV_FILE.backup.$(date +%Y%m%d-%H%M%S)"
+    print_status "Backed up existing environment file"
+
+    # Extract critical server settings (DATABASE_URL and SECRET_KEY)
+    DATABASE_URL=$(grep "^DATABASE_URL=" "$EXISTING_ENV_FILE" | cut -d '=' -f2-)
+    SECRET_KEY=$(grep "^SECRET_KEY=" "$EXISTING_ENV_FILE" | cut -d '=' -f2-)
+
+    if [ -z "$DATABASE_URL" ] || [ -z "$SECRET_KEY" ]; then
+        print_error "Failed to extract DATABASE_URL or SECRET_KEY from existing config"
         exit 1
     fi
 
+    # Check if deployment package has new .env.production with email config
+    if [ -f "$NEW_ENV_FILE" ]; then
+        print_status "Merging new email configuration with existing server settings..."
+
+        # Copy new env file as base
+        cp "$NEW_ENV_FILE" "$EXISTING_ENV_FILE.tmp"
+
+        # Add server-specific settings (DATABASE_URL and SECRET_KEY)
+        # Remove any placeholder database settings and add real ones
+        sed -i '/^DATABASE_URL=/d' "$EXISTING_ENV_FILE.tmp"
+        sed -i '/^SECRET_KEY=/d' "$EXISTING_ENV_FILE.tmp"
+
+        # Append server settings
+        echo "" >> "$EXISTING_ENV_FILE.tmp"
+        echo "# Server-specific settings (from server setup)" >> "$EXISTING_ENV_FILE.tmp"
+        echo "DATABASE_URL=$DATABASE_URL" >> "$EXISTING_ENV_FILE.tmp"
+        echo "SECRET_KEY=$SECRET_KEY" >> "$EXISTING_ENV_FILE.tmp"
+
+        # Replace existing file
+        mv "$EXISTING_ENV_FILE.tmp" "$EXISTING_ENV_FILE"
+
+        print_success "Environment configuration merged successfully"
+        print_status "✅ Email configuration updated"
+        print_status "✅ Database credentials preserved"
+        print_status "✅ Secret key preserved"
+    else
+        print_status "No new environment file in deployment package - using existing config"
+    fi
+
     # Set proper permissions
-    chown www-data:www-data "$APP_DIR/backend/.env.production"
-    chmod 600 "$APP_DIR/backend/.env.production"
+    chown www-data:www-data "$EXISTING_ENV_FILE"
+    chmod 600 "$EXISTING_ENV_FILE"
 
     print_success "Environment configuration completed"
 }
