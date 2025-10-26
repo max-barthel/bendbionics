@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../providers/AuthProvider';
 import { ExclamationTriangleIcon, TrashIcon, UserIcon } from '../icons';
@@ -19,42 +19,44 @@ const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
   onConfirm,
   onCancel,
 }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-      <div className="flex items-center mb-4">
-        <ExclamationTriangleIcon className="h-6 w-6 text-red-500 mr-3" />
-        <Typography variant="h3" className="text-red-600">
-          Delete Account
-        </Typography>
-      </div>
-      <Typography variant="body" className="text-gray-600 mb-6">
-        Are you sure you want to delete your account? This action cannot be undone. All
-        your data will be permanently removed.
-      </Typography>
-      {deleteError && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-          <Typography variant="body" className="text-red-600 text-sm">
-            {deleteError}
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="bg-white/90 backdrop-blur-2xl border border-white/50 rounded-2xl shadow-2xl max-w-md w-full relative">
+      <div className="p-6">
+        <div className="flex items-center mb-4">
+          <ExclamationTriangleIcon className="h-6 w-6 text-red-500 mr-3" />
+          <Typography variant="h3" className="text-red-600">
+            Delete Account
           </Typography>
         </div>
-      )}
-      <div className="flex space-x-3">
-        <Button
-          variant="secondary"
-          onClick={onCancel}
-          disabled={isDeleting}
-          className="flex-1"
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="primary"
-          onClick={onConfirm}
-          disabled={isDeleting}
-          className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-        >
-          {isDeleting ? 'Deleting...' : 'Delete Account'}
-        </Button>
+        <Typography variant="body" className="text-gray-600 mb-6">
+          Are you sure you want to delete your account? This action cannot be undone.
+          All your data will be permanently removed.
+        </Typography>
+        {deleteError && (
+          <div className="mb-4 p-3 bg-red-50/80 backdrop-blur-sm border border-red-200/50 rounded-xl">
+            <Typography variant="body" className="text-red-600 text-sm">
+              {deleteError}
+            </Typography>
+          </div>
+        )}
+        <div className="flex space-x-3">
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            disabled={isDeleting}
+            className="flex-1 border border-gray-300 bg-white/80 backdrop-blur-sm hover:bg-white/90 hover:scale-105 transition-all duration-300 rounded-full py-3"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="outline"
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="flex-1 border border-red-300 bg-red-50/80 backdrop-blur-sm hover:bg-red-100/90 text-red-600 hover:text-red-700 hover:scale-105 transition-all duration-300 rounded-full py-3"
+          >
+            {isDeleting ? 'Deleting...' : 'Delete Account'}
+          </Button>
+        </div>
       </div>
     </div>
   </div>
@@ -65,13 +67,18 @@ interface ProfileProps {
 }
 
 export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
-  const { user, logout, deleteAccount } = useAuth();
+  const { user, logout, deleteAccount, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Refresh user data when Profile component opens to ensure latest info
+  useEffect(() => {
+    refreshUser();
+  }, [refreshUser]);
 
   const handleLogout = () => {
     logout();

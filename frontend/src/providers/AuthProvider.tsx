@@ -22,6 +22,7 @@ interface AuthContextType {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<RegisterResponse>;
   updateProfile: (data: UpdateProfileRequest) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => void;
   deleteAccount: () => Promise<void>;
 }
@@ -155,6 +156,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      if (token) {
+        const userData = await authAPI.getCurrentUser();
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('Refresh user failed:', error);
+      // Don't throw error here - just log it
+      // The user might still be valid but the refresh failed
+    }
+  }, [token]);
+
   const deleteAccount = useCallback(async () => {
     try {
       await authAPI.deleteAccount();
@@ -173,10 +187,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       login,
       register,
       updateProfile,
+      refreshUser,
       logout,
       deleteAccount,
     }),
-    [user, isLoading, login, register, updateProfile, logout, deleteAccount]
+    [
+      user,
+      isLoading,
+      login,
+      register,
+      updateProfile,
+      refreshUser,
+      logout,
+      deleteAccount,
+    ]
   );
 
   // Always provide the context, even if there are errors

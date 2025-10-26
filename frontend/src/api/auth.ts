@@ -86,8 +86,8 @@ export const authAPI = {
 
   // Get current user info
   getCurrentUser: async (): Promise<User> => {
-    const response = await client().get<User>('/auth/me');
-    return response.data;
+    const response = await client().get<{ data: User }>('/auth/me');
+    return response.data.data;
   },
 
   // Update user profile

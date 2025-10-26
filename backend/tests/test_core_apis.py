@@ -57,8 +57,14 @@ def test_user_authentication():
 
     # Register user with unique username using timestamp
     unique_username = f"authtestuser_{int(time.time())}"
+    unique_email = f"authtestuser_{int(time.time())}@example.com"
     register_response = client.post(
-        "/auth/register", json={"username": unique_username, "password": "testpass123"}
+        "/auth/register",
+        json={
+            "username": unique_username,
+            "email": unique_email,
+            "password": "testpass123",
+        },
     )
     assert register_response.status_code == 201
 
@@ -69,6 +75,46 @@ def test_user_authentication():
     assert login_response.status_code == 200
     data = login_response.json()
     assert "access_token" in data["data"]
+
+
+def test_delete_account():
+    """Test delete account functionality that users need."""
+    import time
+
+    # Register user with unique username using timestamp
+    unique_username = f"deletetestuser_{int(time.time())}"
+    unique_email = f"deletetestuser_{int(time.time())}@example.com"
+    register_response = client.post(
+        "/auth/register",
+        json={
+            "username": unique_username,
+            "email": unique_email,
+            "password": "testpass123",
+        },
+    )
+    assert register_response.status_code == 201
+
+    # Login user
+    login_response = client.post(
+        "/auth/login", json={"username": unique_username, "password": "testpass123"}
+    )
+    assert login_response.status_code == 200
+    login_data = login_response.json()
+    token = login_data["data"]["access_token"]
+
+    # Delete account with authentication
+    headers = {"Authorization": f"Bearer {token}"}
+    delete_response = client.delete("/auth/account", headers=headers)
+    assert delete_response.status_code == 200
+    delete_data = delete_response.json()
+    assert delete_data["success"] is True
+    assert "Account deleted successfully" in delete_data["message"]
+
+    # Verify user can no longer login
+    login_after_delete = client.post(
+        "/auth/login", json={"username": unique_username, "password": "testpass123"}
+    )
+    assert login_after_delete.status_code == 401
 
 
 def test_preset_save_load():
