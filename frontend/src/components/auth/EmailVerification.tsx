@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authAPI } from '../../api/auth';
+import { useAuth } from '../../providers/AuthProvider';
 import Button from '../ui/Button';
 import Typography from '../ui/Typography';
 
@@ -12,6 +13,7 @@ interface VerificationState {
 export const EmailVerification: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
   const [verificationState, setVerificationState] = useState<VerificationState>(() => {
     // Check if we have a persisted verification state
     const token = searchParams.get('token');
@@ -72,6 +74,8 @@ export const EmailVerification: React.FC = () => {
         setVerificationState(successState);
         // Persist the success state
         localStorage.setItem(`verification_${token}`, JSON.stringify(successState));
+        // Refresh user data to update email verification status
+        await refreshUser();
       } catch (error: unknown) {
         console.error('Email verification failed:', error);
 

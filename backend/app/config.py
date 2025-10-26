@@ -22,7 +22,16 @@ class Settings(BaseSettings):
     # For production, set this via environment variable CORS_ORIGINS
     # Format: JSON array of strings, e.g.,
     # '["https://yourdomain.com", "https://www.yourdomain.com"]'
-    cors_origins: List[str] = ["http://localhost:5173"]
+    cors_origins: List[str] = [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:5175",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+        "http://127.0.0.1:5175",
+        "http://127.0.0.1:3000",
+    ]
 
     # Allow all origins in development (use with caution in production)
     cors_allow_all_origins: bool = False
