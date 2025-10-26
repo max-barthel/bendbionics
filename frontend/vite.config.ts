@@ -65,6 +65,26 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: path => path.replace(/^\/api/, ''),
         },
+        // Proxy auth routes directly
+        '/auth': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+        },
+        // Proxy preset routes directly
+        '/presets': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+        },
+        // Proxy PCC routes directly
+        '/pcc': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+        },
+        // Proxy tendon routes directly
+        '/tendons': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+        },
       },
       watch: {
         ignored: [
