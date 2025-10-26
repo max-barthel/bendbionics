@@ -17,19 +17,30 @@ class EmailService:
         self.domain = settings.mailgun_domain
         self.from_email = settings.mailgun_from_email
         self.from_name = settings.mailgun_from_name
-        self.base_url = f"https://api.mailgun.net/v3/{self.domain}"
+
+        # Support different Mailgun regions
+        region = getattr(settings, "mailgun_region", "us")
+        if region == "eu":
+            self.base_url = f"https://api.eu.mailgun.net/v3/{self.domain}"
+        else:
+            self.base_url = f"https://api.mailgun.net/v3/{self.domain}"
 
     async def send_email(
         self,
         to_email: str,
         subject: str,
         html_content: str,
-        text_content: Optional[str] = None
+        text_content: Optional[str] = None,
     ) -> bool:
         """Send an email via Mailgun API"""
         if not self.api_key or not self.domain:
             logger.warning("Mailgun not configured - email not sent")
             return False
+
+        # Log request details for debugging
+        logger.info(f"Sending email via Mailgun to: {to_email}")
+        logger.debug(f"Mailgun API URL: {self.base_url}/messages")
+        logger.debug(f"From: {self.from_name} <{self.from_email}>")
 
         try:
             async with httpx.AsyncClient() as client:
@@ -41,12 +52,27 @@ class EmailService:
                         "to": to_email,
                         "subject": subject,
                         "html": html_content,
-                        "text": text_content or self._html_to_text(html_content)
-                    }
+                        "text": text_content or self._html_to_text(html_content),
+                    },
                 )
-                return response.status_code == 200
+
+                # Log response details
+                logger.info(f"Mailgun API response: {response.status_code}")
+
+                if response.status_code == 200:
+                    logger.info(f"Email sent successfully to {to_email}")
+                    return True
+                # Log detailed error information
+                logger.error(f"Mailgun API error - Status: {response.status_code}")
+                logger.error(f"Mailgun API error - Response: {response.text}")
+                logger.error(f"Mailgun API error - Headers: {dict(response.headers)}")
+                return False
+
+        except httpx.HTTPError as e:
+            logger.error(f"HTTP error sending email to {to_email}: {e}")
+            return False
         except Exception as e:
-            logger.error(f"Failed to send email: {e}")
+            logger.error(f"Unexpected error sending email to {to_email}: {e}")
             return False
 
     async def send_verification_email(
@@ -111,7 +137,7 @@ class EmailService:
         return await self.send_email(
             to_email=to_email,
             subject="Verify Your Email - BendBionics",
-            html_content=html_content
+            html_content=html_content,
         )
 
     async def send_password_reset_email(
@@ -176,12 +202,13 @@ class EmailService:
         return await self.send_email(
             to_email=to_email,
             subject="Reset Your Password - BendBionics",
-            html_content=html_content
+            html_content=html_content,
         )
 
     def _html_to_text(self, html: str) -> str:
         """Convert HTML to plain text (basic implementation)"""
         import re
+
         # Remove HTML tags and clean up whitespace
         return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", html)).strip()
 
@@ -198,14 +225,20 @@ def generate_password_reset_token() -> str:
 
 def get_token_expiry(hours: int) -> datetime:
     """Get token expiry datetime"""
-    return now_utc() + timedelta(hours=hours)
+    return (now_utc() + timedelta(hours=hours)).replace(tzinfo=None)
 
 
 def is_token_expired(expires_at: Optional[datetime]) -> bool:
     """Check if token is expired"""
     if expires_at is None:
         return True
-    return now_utc() > expires_at
+
+    # Always use timezone-naive comparison for PostgreSQL compatibility
+    # Convert both to timezone-naive UTC datetimes
+    current_utc = now_utc().replace(tzinfo=None) if now_utc().tzinfo else now_utc()
+    expires_utc = expires_at.replace(tzinfo=None) if expires_at.tzinfo else expires_at
+
+    return current_utc > expires_utc
 
 
 # Create email service instance
