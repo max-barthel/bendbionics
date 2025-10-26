@@ -1,24 +1,44 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authAPI } from '../../api/auth';
 import Button from '../ui/Button';
 import Typography from '../ui/Typography';
 
 interface VerificationState {
-  status: 'verifying' | 'success' | 'error' | 'expired';
+  status: 'verifying' | 'success' | 'error' | 'expired' | 'already_verified';
   message: string;
 }
 
 export const EmailVerification: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [verificationState, setVerificationState] = useState<VerificationState>({
-    status: 'verifying',
-    message: 'Verifying your email...',
+  const [verificationState, setVerificationState] = useState<VerificationState>(() => {
+    // Check if we have a persisted verification state
+    const token = searchParams.get('token');
+    if (token) {
+      const persistedState = localStorage.getItem(`verification_${token}`);
+      if (persistedState) {
+        try {
+          return JSON.parse(persistedState);
+        } catch {
+          // If parsing fails, fall back to default state
+        }
+      }
+    }
+    return {
+      status: 'verifying',
+      message: 'Verifying your email...',
+    };
   });
+  const verificationAttempted = useRef(false);
 
   useEffect(() => {
     const verifyEmail = async () => {
+      // Prevent duplicate verification calls using useRef
+      if (verificationAttempted.current) {
+        return;
+      }
+
       const token = searchParams.get('token');
 
       if (!token) {
@@ -29,27 +49,61 @@ export const EmailVerification: React.FC = () => {
         return;
       }
 
+      // Skip verification if we already have a persisted state (success or error)
+      const persistedState = localStorage.getItem(`verification_${token}`);
+      if (
+        persistedState &&
+        (verificationState.status === 'success' ||
+          verificationState.status === 'already_verified' ||
+          verificationState.status === 'error' ||
+          verificationState.status === 'expired')
+      ) {
+        return;
+      }
+
+      verificationAttempted.current = true;
+
       try {
         await authAPI.verifyEmail(token);
-        setVerificationState({
-          status: 'success',
+        const successState = {
+          status: 'success' as const,
           message: 'Your email has been successfully verified!',
-        });
+        };
+        setVerificationState(successState);
+        // Persist the success state
+        localStorage.setItem(`verification_${token}`, JSON.stringify(successState));
       } catch (error: unknown) {
         console.error('Email verification failed:', error);
 
-        // Check if it's an expired token error
-        if (error instanceof Error && error.message.includes('expired')) {
-          setVerificationState({
-            status: 'expired',
-            message: 'This verification link has expired. Please request a new one.',
-          });
+        // Check for specific error types
+        let errorState: VerificationState;
+        if (error instanceof Error) {
+          if (error.message.includes('expired')) {
+            errorState = {
+              status: 'expired',
+              message: 'This verification link has expired. Please request a new one.',
+            };
+          } else if (error.message.includes('Invalid verification token')) {
+            errorState = {
+              status: 'already_verified',
+              message: 'This email has already been verified. You can now sign in.',
+            };
+          } else {
+            errorState = {
+              status: 'error',
+              message: 'Email verification failed. The link may be invalid or expired.',
+            };
+          }
         } else {
-          setVerificationState({
+          errorState = {
             status: 'error',
-            message: 'Email verification failed. The link may be invalid or expired.',
-          });
+            message: 'Email verification failed. Please try again.',
+          };
         }
+
+        setVerificationState(errorState);
+        // Persist the error state
+        localStorage.setItem(`verification_${token}`, JSON.stringify(errorState));
       }
     };
 
@@ -71,6 +125,7 @@ export const EmailVerification: React.FC = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
         );
       case 'success':
+      case 'already_verified':
         return (
           <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
@@ -115,6 +170,7 @@ export const EmailVerification: React.FC = () => {
   const getStatusColor = () => {
     switch (verificationState.status) {
       case 'success':
+      case 'already_verified':
         return 'text-green-600';
       case 'error':
       case 'expired':
@@ -133,6 +189,7 @@ export const EmailVerification: React.FC = () => {
           <Typography variant="h2" className={`mb-4 ${getStatusColor()}`}>
             {verificationState.status === 'verifying' && 'Verifying Email'}
             {verificationState.status === 'success' && 'Email Verified!'}
+            {verificationState.status === 'already_verified' && 'Already Verified!'}
             {verificationState.status === 'error' && 'Verification Failed'}
             {verificationState.status === 'expired' && 'Link Expired'}
           </Typography>
@@ -142,7 +199,8 @@ export const EmailVerification: React.FC = () => {
           </Typography>
 
           <div className="space-y-3">
-            {verificationState.status === 'success' && (
+            {(verificationState.status === 'success' ||
+              verificationState.status === 'already_verified') && (
               <Button
                 onClick={handleContinue}
                 variant="primary"

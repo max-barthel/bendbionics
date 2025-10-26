@@ -144,7 +144,7 @@ export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
               <UserIcon className="w-8 h-8 text-gray-600" />
             </div>
             <Typography variant="h3" color="primary" className="mb-2 text-gray-800">
-              {isEditing ? 'Edit Profile' : 'Profile Settings'}
+              {isEditing ? 'Edit Profile' : 'Profile'}
             </Typography>
             <Typography variant="body" color="gray" className="text-gray-600">
               {isEditing ? 'Update your account information' : 'Manage your account'}
