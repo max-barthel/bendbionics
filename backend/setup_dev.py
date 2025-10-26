@@ -54,6 +54,7 @@ def check_environment():
 MAILGUN_API_KEY=your-mailgun-api-key
 MAILGUN_DOMAIN=your-mailgun-domain
 MAILGUN_FROM_EMAIL=noreply@yourdomain.com
+MAILGUN_REGION=eu
 
 # Email Verification
 EMAIL_VERIFICATION_ENABLED=true

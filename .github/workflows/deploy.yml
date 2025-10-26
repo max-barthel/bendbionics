@@ -103,6 +103,37 @@ jobs:
                   echo "DEPLOY_PACKAGE=$DEPLOY_DIR" >> $GITHUB_ENV
                   echo "PACKAGE_NAME=$(basename $DEPLOY_DIR)" >> $GITHUB_ENV
 
+            - name: 🔍 Validate Mailgun secrets
+              if: ${{ !inputs.skip_build }}
+              run: |
+                  echo "🔍 Validating Mailgun configuration..."
+
+                  # Check if secrets are set
+                  if [ -z "${{ secrets.MAILGUN_API_KEY }}" ]; then
+                      echo "❌ MAILGUN_API_KEY secret is not set"
+                      echo "   Please add MAILGUN_API_KEY to your GitHub repository secrets"
+                      exit 1
+                  fi
+
+                  if [ -z "${{ secrets.MAILGUN_DOMAIN }}" ]; then
+                      echo "❌ MAILGUN_DOMAIN secret is not set"
+                      echo "   Please add MAILGUN_DOMAIN to your GitHub repository secrets"
+                      exit 1
+                  fi
+
+                  # Validate domain format (should not include protocol)
+                  DOMAIN="${{ secrets.MAILGUN_DOMAIN }}"
+                  if [[ "$DOMAIN" == http* ]]; then
+                      echo "❌ MAILGUN_DOMAIN should not include protocol (http/https)"
+                      echo "   Use: mg.yourdomain.com"
+                      echo "   Not: https://mg.yourdomain.com"
+                      exit 1
+                  fi
+
+                  echo "✅ Mailgun secrets validation passed"
+                  echo "   Domain: $DOMAIN"
+                  echo "   API Key: ${MAILGUN_API_KEY:0:8}..."
+
             - name: 📧 Create production environment file
               if: ${{ !inputs.skip_build }}
               env:
@@ -136,6 +167,7 @@ jobs:
                   # Append Mailgun secrets (environment variables from secrets)
                   echo "MAILGUN_API_KEY=${MAILGUN_API_KEY}" >> "$DEPLOY_DIR/backend/.env.production"
                   echo "MAILGUN_DOMAIN=${MAILGUN_DOMAIN}" >> "$DEPLOY_DIR/backend/.env.production"
+                  echo "MAILGUN_REGION=eu" >> "$DEPLOY_DIR/backend/.env.production"
 
                   # Append remaining static config
                   cat >> "$DEPLOY_DIR/backend/.env.production" << 'EOF'

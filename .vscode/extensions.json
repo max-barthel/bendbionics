@@ -5,7 +5,6 @@
     "esbenp.prettier-vscode",
     "ms-vscode.vscode-typescript-next",
     "rust-lang.rust-analyzer",
-    "tauri-apps.tauri-vscode",
     "ms-vscode.vscode-json",
     "redhat.vscode-yaml",
     "ms-vscode.vscode-markdown",

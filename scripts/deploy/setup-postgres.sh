@@ -155,6 +155,7 @@ MAILGUN_API_KEY=PLACEHOLDER_SET_BY_GITHUB_ACTIONS
 MAILGUN_DOMAIN=PLACEHOLDER_SET_BY_GITHUB_ACTIONS
 MAILGUN_FROM_EMAIL=noreply@bendbionics.com
 MAILGUN_FROM_NAME=BendBionics
+MAILGUN_REGION=eu
 
 # Email Verification
 # This will be enabled once Mailgun credentials are deployed

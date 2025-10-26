@@ -13,6 +13,7 @@ import {
 import Visualizer3D from './features/visualization/components/Visualizer3D';
 
 import { AuthPage } from './components/auth/AuthPage';
+import { EmailVerification } from './components/auth/EmailVerification';
 import { Profile } from './components/auth/Profile';
 
 import { type User } from './api/auth';
@@ -751,6 +752,7 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/auth" element={<AuthPage />} />
+      <Route path="/verify-email" element={<EmailVerification />} />
       <Route
         path="/"
         element={

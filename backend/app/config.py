@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     mailgun_domain: str = ""
     mailgun_from_email: str = "noreply@localhost"
     mailgun_from_name: str = "BendBionics"
+    mailgun_region: str = "us"  # "us" or "eu"
 
     # Email Verification Settings
     # In dev mode (False), verification links are logged to console
