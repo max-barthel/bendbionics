@@ -17,6 +17,144 @@ import { useRobotState } from '../hooks/useRobotState';
 import { ControlTab } from './tabs/ControlTab';
 import { RobotSetupTab } from './tabs/RobotSetupTab';
 
+// Helper function to create PCC parameters
+const createPCCParams = (
+  robotState: ReturnType<typeof useRobotState>[0]
+): PCCParams => ({
+  bending_angles: robotState.bendingAngles,
+  rotation_angles: robotState.rotationAngles,
+  backbone_lengths: robotState.backboneLengths,
+  coupling_lengths: robotState.couplingLengths,
+  discretization_steps: robotState.discretizationSteps,
+  ...(robotState.tendonConfig && { tendon_config: robotState.tendonConfig }),
+});
+
+// Helper function to create base robot configuration
+const createBaseConfiguration = (
+  robotState: ReturnType<typeof useRobotState>[0]
+): Omit<RobotConfiguration, 'tendonAnalysis'> => ({
+  segments: robotState.segments,
+  bendingAngles: robotState.bendingAngles,
+  rotationAngles: robotState.rotationAngles,
+  backboneLengths: robotState.backboneLengths,
+  couplingLengths: robotState.couplingLengths,
+  discretizationSteps: robotState.discretizationSteps,
+  ...(robotState.tendonConfig && { tendonConfig: robotState.tendonConfig }),
+});
+
+// Helper function to extract tendon analysis data
+const extractTendonAnalysis = (result: unknown) => {
+  if (!isApiResponseWithResult(result)) return undefined;
+
+  const { actuation_commands, coupling_data, tendon_analysis } = result.data.result;
+
+  if (!actuation_commands || !coupling_data || !tendon_analysis) return undefined;
+
+  return {
+    actuation_commands: actuation_commands as Record<
+      string,
+      {
+        length_change_m: number;
+        pull_direction: string;
+        magnitude: number;
+      }
+    >,
+    coupling_data: coupling_data as {
+      positions: number[][];
+      orientations: number[][][];
+    },
+    tendon_analysis: tendon_analysis as {
+      routing_points: number[][][];
+    },
+  };
+};
+
+// Helper function to handle tendon computation
+const handleTendonComputation = async (
+  params: PCCParams,
+  robotState: ReturnType<typeof useRobotState>[0],
+  onResult: (segments: number[][][], configuration: RobotConfiguration) => void
+) => {
+  const result = await robotAPI.computePCCWithTendons(params);
+  const segments = isApiResponseWithResult(result)
+    ? result.data.result.robot_positions
+    : [];
+  const tendonAnalysis = extractTendonAnalysis(result);
+
+  const configuration: RobotConfiguration = {
+    ...createBaseConfiguration(robotState),
+    ...(tendonAnalysis && { tendonAnalysis }),
+  };
+
+  onResult(segments, configuration);
+};
+
+// Helper function to handle regular PCC computation
+const handleRegularComputation = async (
+  params: PCCParams,
+  robotState: ReturnType<typeof useRobotState>[0],
+  onResult: (segments: number[][][], configuration: RobotConfiguration) => void
+) => {
+  const result = await robotAPI.computePCC(params);
+  const configuration = createBaseConfiguration(robotState);
+  onResult(result.data.segments || [], configuration);
+};
+
+// Helper function to handle errors
+const handleComputationError = (
+  err: unknown,
+  showError: (type: 'validation' | 'server', message: string) => void
+) => {
+  const error = err as {
+    response?: {
+      status?: number;
+      data?: {
+        detail?: string | Array<{ loc: string[]; msg: string; type: string }>;
+        message?: string;
+      };
+    };
+    message?: string;
+  };
+
+  // Handle validation errors (422) with better formatting
+  if (
+    error.response?.status === 422 &&
+    error.response.data &&
+    Array.isArray(error.response.data.detail)
+  ) {
+    const validationErrors = error.response.data.detail
+      .map(
+        (err: { loc: string[]; msg: string; type: string }) =>
+          `${err.loc.join('.')}: ${err.msg}`
+      )
+      .join(', ');
+    showError('validation', `Validation error: ${validationErrors}`);
+    return;
+  }
+
+  // Handle different error detail types
+  let errorMessage = 'Computation failed';
+
+  if (error.response?.data?.detail) {
+    if (typeof error.response.data.detail === 'string') {
+      errorMessage = error.response.data.detail;
+    } else if (Array.isArray(error.response.data.detail)) {
+      errorMessage = error.response.data.detail
+        .map(
+          (err: { loc: string[]; msg: string; type: string }) =>
+            `${err.loc.join('.')}: ${err.msg}`
+        )
+        .join(', ');
+    }
+  } else if (error.response?.data?.message) {
+    errorMessage = error.response.data.message;
+  } else if (error.message) {
+    errorMessage = error.message;
+  }
+
+  showError('server', errorMessage);
+};
+
 // Type guard for API response with result
 const isApiResponseWithResult = (
   response: unknown
@@ -90,85 +228,15 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
       setLoading(true);
 
       try {
-        const params: PCCParams = {
-          bending_angles: robotState.bendingAngles,
-          rotation_angles: robotState.rotationAngles,
-          backbone_lengths: robotState.backboneLengths,
-          coupling_lengths: robotState.couplingLengths,
-          discretization_steps: robotState.discretizationSteps,
-          ...(robotState.tendonConfig && { tendon_config: robotState.tendonConfig }),
-        };
+        const params = createPCCParams(robotState);
 
-        // Use tendon endpoint if tendon configuration is provided
-        let result;
         if (robotState.tendonConfig) {
-          result = await robotAPI.computePCCWithTendons(params);
-          // Extract segments from tendon result - fix nested data access
-          const segments = isApiResponseWithResult(result)
-            ? result.data.result.robot_positions
-            : [];
-
-          // Extract tendon analysis data from the response
-          const tendonAnalysis =
-            isApiResponseWithResult(result) &&
-            result.data.result.actuation_commands &&
-            result.data.result.coupling_data &&
-            result.data.result.tendon_analysis
-              ? {
-                  actuation_commands: result.data.result.actuation_commands as Record<
-                    string,
-                    {
-                      length_change_m: number;
-                      pull_direction: string;
-                      magnitude: number;
-                    }
-                  >,
-                  coupling_data: result.data.result.coupling_data as {
-                    positions: number[][];
-                    orientations: number[][][];
-                  },
-                  tendon_analysis: result.data.result.tendon_analysis as {
-                    routing_points: number[][][];
-                  },
-                }
-              : undefined;
-
-          const configuration: RobotConfiguration = {
-            segments: robotState.segments,
-            bendingAngles: robotState.bendingAngles,
-            rotationAngles: robotState.rotationAngles,
-            backboneLengths: robotState.backboneLengths,
-            couplingLengths: robotState.couplingLengths,
-            discretizationSteps: robotState.discretizationSteps,
-            tendonConfig: robotState.tendonConfig,
-            ...(tendonAnalysis && { tendonAnalysis }),
-          };
-
-          onResult(segments, configuration);
+          await handleTendonComputation(params, robotState, onResult);
         } else {
-          result = await robotAPI.computePCC(params);
-
-          const configuration: RobotConfiguration = {
-            segments: robotState.segments,
-            bendingAngles: robotState.bendingAngles,
-            rotationAngles: robotState.rotationAngles,
-            backboneLengths: robotState.backboneLengths,
-            couplingLengths: robotState.couplingLengths,
-            discretizationSteps: robotState.discretizationSteps,
-          };
-
-          onResult(result.data.segments || [], configuration);
+          await handleRegularComputation(params, robotState, onResult);
         }
       } catch (err: unknown) {
-        // Error handled by error handler
-        const error = err as {
-          response?: { data?: { detail?: string } };
-          message?: string;
-        };
-        showError(
-          'server',
-          error.response?.data?.detail ?? error.message ?? 'Computation failed'
-        );
+        handleComputationError(err, showError);
       } finally {
         setLoading(false);
       }

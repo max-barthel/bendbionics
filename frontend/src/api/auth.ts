@@ -100,6 +100,14 @@ export const authAPI = {
   deleteAccount: async (): Promise<void> => {
     await client().delete('/auth/account');
   },
+
+  // Verify email with token
+  verifyEmail: async (token: string): Promise<{ email_verified: boolean }> => {
+    const response = await client().post<{ data: { email_verified: boolean } }>(
+      `/auth/verify-email?token=${encodeURIComponent(token)}`
+    );
+    return response.data.data;
+  },
 };
 
 // Preset API

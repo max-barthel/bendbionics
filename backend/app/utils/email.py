@@ -230,40 +230,22 @@ def get_token_expiry(hours: int) -> datetime:
 
 def is_token_expired(expires_at: Optional[datetime]) -> bool:
     """Check if token is expired"""
-    from app.utils.logging import logger
-    
-    logger.info(f"is_token_expired called with: {expires_at} (type: {type(expires_at)})")
-    logger.info(f"expires_at.tzinfo: {getattr(expires_at, 'tzinfo', 'N/A')}")
-    
     if expires_at is None:
         return True
 
-    try:
-        # Always use timezone-naive comparison for PostgreSQL compatibility
-        # Convert both to timezone-naive UTC datetimes
-        current_utc = now_utc()
-        if current_utc.tzinfo is not None:
-            current_utc = current_utc.replace(tzinfo=None)
+    # Get current time and ensure it's timezone-naive
+    current_utc = now_utc()
+    if current_utc.tzinfo is not None:
+        current_utc = current_utc.replace(tzinfo=None)
 
+    # Ensure expires_at is timezone-naive
+    if expires_at.tzinfo is not None:
+        expires_utc = expires_at.replace(tzinfo=None)
+    else:
         expires_utc = expires_at
-        if expires_utc.tzinfo is not None:
-            expires_utc = expires_utc.replace(tzinfo=None)
 
-        return current_utc > expires_utc
-    except Exception as e:
-        # Log the error for debugging
-        from app.utils.logging import logger
-
-        logger.error(f"Error in is_token_expired: {e}")
-        logger.error(
-            f"Current UTC type: {type(current_utc)}, "
-            f"tzinfo: {getattr(current_utc, 'tzinfo', 'N/A')}"
-        )
-        logger.error(
-            f"Expires UTC type: {type(expires_utc)}, "
-            f"tzinfo: {getattr(expires_utc, 'tzinfo', 'N/A')}"
-        )
-        raise
+    # Both should now be timezone-naive UTC datetimes
+    return current_utc > expires_utc
 
 
 # Create email service instance

@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlmodel import Session, select
 
@@ -36,6 +36,7 @@ from app.utils.email import (
     get_token_expiry,
     is_token_expired,
 )
+from app.utils.logging import logger
 from app.utils.timezone import now_utc
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -84,9 +85,7 @@ async def register(user_data: UserCreate, session: Session = Depends(get_session
 
     # Send verification email (logs to console in dev mode)
     await email_service.send_verification_email(
-        to_email=user_data.email,
-        username=user_data.username,
-        token=verification_token
+        to_email=user_data.email, username=user_data.username, token=verification_token
     )
 
     user_response = UserResponse(
@@ -99,9 +98,15 @@ async def register(user_data: UserCreate, session: Session = Depends(get_session
     )
 
     if settings.email_verification_enabled:
-        message = "User registered successfully. Please check your email to verify your account."
+        message = (
+            "User registered successfully. Please check your email to verify your "
+            "account."
+        )
     else:
-        message = "User registered successfully. Check the server logs for your verification link."
+        message = (
+            "User registered successfully. Check the server logs for your verification "
+            "link."
+        )
 
     return created_response(
         data=user_response.model_dump(mode="json"),
@@ -172,7 +177,9 @@ async def update_user_profile(
             )
 
         # Verify current password
-        if not verify_password(user_data.current_password, current_user.hashed_password):
+        if not verify_password(
+            user_data.current_password, current_user.hashed_password
+        ):
             raise AuthenticationError(message="Current password is incorrect")
 
     # Update username if provided
@@ -213,7 +220,7 @@ async def update_user_profile(
         await email_service.send_verification_email(
             to_email=user_data.email,
             username=current_user.username,
-            token=verification_token
+            token=verification_token,
         )
 
     # Update password if provided
@@ -221,7 +228,7 @@ async def update_user_profile(
         current_user.hashed_password = get_password_hash(user_data.new_password)
 
     # Update timestamp
-    current_user.updated_at = now_utc()
+    current_user.updated_at = now_utc().replace(tzinfo=None)
 
     session.add(current_user)
     session.commit()
@@ -268,58 +275,87 @@ async def delete_account(
 
 
 @router.post("/verify-email")
-async def verify_email(token: str, session: Session = Depends(get_session)):
+async def verify_email(
+    token: str = Query(..., description="Email verification token"),
+    session: Session = Depends(get_session),
+):
     """Verify user email with token"""
-    user = session.exec(
-        select(User).where(User.email_verification_token == token)
-    ).first()
+    from app.utils.logging import logger
+
+    logger.info(f"verify_email called with token: {token}")
+
+    try:
+        # Query user and convert timezone-aware datetimes to timezone-naive
+        user = session.exec(
+            select(User).where(User.email_verification_token == token)
+        ).first()
+
+        if user and user.email_verification_token_expires:
+            # Convert timezone-aware datetime to timezone-naive if needed
+            if user.email_verification_token_expires.tzinfo is not None:
+                user.email_verification_token_expires = (
+                    user.email_verification_token_expires.replace(tzinfo=None)
+                )
+
+        logger.info("Database query completed successfully")
+    except Exception as e:
+        logger.error(f"Database query failed: {e}")
+        raise
 
     if not user:
+        logger.info("User not found for token")
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid verification token"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification token"
         )
 
-    if is_token_expired(user.email_verification_token_expires):
+    logger.info(f"User found: {user.username}")
+    logger.info(
+        f"Token expires at: {user.email_verification_token_expires} (type: {type(user.email_verification_token_expires)})"
+    )
+    logger.info(
+        f"Token expires tzinfo: {getattr(user.email_verification_token_expires, 'tzinfo', 'N/A')}"
+    )
+
+    # Ensure the token expiry is timezone-naive before checking
+    token_expires = user.email_verification_token_expires
+    if token_expires and token_expires.tzinfo is not None:
+        token_expires = token_expires.replace(tzinfo=None)
+
+    if is_token_expired(token_expires):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Verification token has expired"
+            detail="Verification token has expired",
         )
 
     # Mark email as verified
     user.email_verified = True
     user.email_verification_token = None
     user.email_verification_token_expires = None
-    user.updated_at = now_utc()
+    user.updated_at = now_utc().replace(tzinfo=None)
 
     session.add(user)
     session.commit()
 
     return success_response(
-        data={"email_verified": True},
-        message="Email verified successfully"
+        data={"email_verified": True}, message="Email verified successfully"
     )
 
 
 @router.post("/resend-verification")
-async def resend_verification(request: EmailVerificationRequest, session: Session = Depends(get_session)):
+async def resend_verification(
+    request: EmailVerificationRequest, session: Session = Depends(get_session)
+):
     """Resend email verification"""
-    user = session.exec(
-        select(User).where(User.email == request.email)
-    ).first()
+    user = session.exec(select(User).where(User.email == request.email)).first()
 
     if not user:
         # Don't reveal if email exists or not
         return success_response(
-            data={},
-            message="If the email exists, a verification email has been sent"
+            data={}, message="If the email exists, a verification email has been sent"
         )
 
     if user.email_verified:
-        return success_response(
-            data={},
-            message="Email is already verified"
-        )
+        return success_response(data={}, message="Email is already verified")
 
     # Generate new verification token
     verification_token = generate_verification_token()
@@ -327,36 +363,30 @@ async def resend_verification(request: EmailVerificationRequest, session: Sessio
 
     user.email_verification_token = verification_token
     user.email_verification_token_expires = token_expires
-    user.updated_at = now_utc()
+    user.updated_at = now_utc().replace(tzinfo=None)
 
     session.add(user)
     session.commit()
 
     # Send verification email (logs to console in dev mode)
     await email_service.send_verification_email(
-        to_email=user.email,
-        username=user.username,
-        token=verification_token
+        to_email=user.email, username=user.username, token=verification_token
     )
 
-    return success_response(
-        data={},
-        message="Verification email sent"
-    )
+    return success_response(data={}, message="Verification email sent")
 
 
 @router.post("/request-password-reset")
-async def request_password_reset(request: PasswordResetRequest, session: Session = Depends(get_session)):
+async def request_password_reset(
+    request: PasswordResetRequest, session: Session = Depends(get_session)
+):
     """Request password reset"""
-    user = session.exec(
-        select(User).where(User.email == request.email)
-    ).first()
+    user = session.exec(select(User).where(User.email == request.email)).first()
 
     if not user:
         # Don't reveal if email exists or not
         return success_response(
-            data={},
-            message="If the email exists, a password reset email has been sent"
+            data={}, message="If the email exists, a password reset email has been sent"
         )
 
     # Generate password reset token
@@ -365,26 +395,23 @@ async def request_password_reset(request: PasswordResetRequest, session: Session
 
     user.password_reset_token = reset_token
     user.password_reset_token_expires = token_expires
-    user.updated_at = now_utc()
+    user.updated_at = now_utc().replace(tzinfo=None)
 
     session.add(user)
     session.commit()
 
     # Send password reset email
     await email_service.send_password_reset_email(
-        to_email=user.email,
-        username=user.username,
-        token=reset_token
+        to_email=user.email, username=user.username, token=reset_token
     )
 
-    return success_response(
-        data={},
-        message="Password reset email sent"
-    )
+    return success_response(data={}, message="Password reset email sent")
 
 
 @router.post("/reset-password")
-async def reset_password(request: PasswordResetConfirm, session: Session = Depends(get_session)):
+async def reset_password(
+    request: PasswordResetConfirm, session: Session = Depends(get_session)
+):
     """Reset password with token"""
     user = session.exec(
         select(User).where(User.password_reset_token == request.token)
@@ -392,26 +419,55 @@ async def reset_password(request: PasswordResetConfirm, session: Session = Depen
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid reset token"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid reset token"
         )
 
     if is_token_expired(user.password_reset_token_expires):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Reset token has expired"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Reset token has expired"
         )
 
     # Update password
     user.hashed_password = get_password_hash(request.new_password)
     user.password_reset_token = None
     user.password_reset_token_expires = None
-    user.updated_at = now_utc()
+    user.updated_at = now_utc().replace(tzinfo=None)
 
     session.add(user)
     session.commit()
 
-    return success_response(
-        data={},
-        message="Password reset successfully"
+    return success_response(data={}, message="Password reset successfully")
+
+
+@router.post("/debug/test-email")
+async def debug_email_sending(to_email: str, session: Session = Depends(get_session)):
+    """Debug endpoint to test email sending (development only)"""
+    # Only allow in development mode
+    if settings.debug:
+        logger.info(f"🧪 Testing email sending to: {to_email}")
+
+        # Test sending a simple email
+        success = await email_service.send_email(
+            to_email=to_email,
+            subject="BendBionics Test Email",
+            html_content=f"""
+            <h2>Test Email from BendBionics</h2>
+            <p>This is a test email to verify Mailgun configuration.</p>
+            <p>If you receive this, email verification is working correctly!</p>
+            <p><strong>Time:</strong> {now_utc().isoformat()}</p>
+            """,
+        )
+
+        if success:
+            return success_response(
+                data={"email_sent": True, "to": to_email},
+                message="Test email sent successfully",
+            )
+        return success_response(
+            data={"email_sent": False, "to": to_email},
+            message="Test email failed - check server logs for details",
+        )
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Debug endpoint only available in development mode",
     )

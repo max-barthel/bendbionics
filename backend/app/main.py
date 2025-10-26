@@ -16,6 +16,7 @@ from app.api.routes import router as pcc_router
 from app.api.tendon_routes import router as tendon_router
 from app.config import Settings
 from app.database import create_db_and_tables
+from app.utils.logging import logger
 
 settings = Settings()
 
@@ -72,8 +73,32 @@ app.include_router(tendon_router)
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database on startup"""
+    """Initialize database and validate configuration on startup"""
     create_db_and_tables()
+
+    # Validate Mailgun configuration
+    if settings.email_verification_enabled:
+        if not settings.mailgun_api_key or not settings.mailgun_domain:
+            logger.warning(
+                "⚠️  EMAIL_VERIFICATION_ENABLED=true but Mailgun credentials are missing!"
+            )
+            logger.warning(
+                "   Set MAILGUN_API_KEY and MAILGUN_DOMAIN environment variables"
+            )
+            logger.warning(
+                "   Email verification will not work until credentials are configured"
+            )
+        else:
+            logger.info("✅ Mailgun configuration found - email verification enabled")
+            logger.info(f"   Domain: {settings.mailgun_domain}")
+            logger.info(f"   Region: {settings.mailgun_region}")
+            logger.info(
+                f"   From: {settings.mailgun_from_name} <{settings.mailgun_from_email}>"
+            )
+    else:
+        logger.info(
+            "📧 Email verification disabled - verification links will be logged to console"
+        )
 
 
 # Mount static files for frontend
