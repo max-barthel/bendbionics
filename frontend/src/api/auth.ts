@@ -86,8 +86,8 @@ export const authAPI = {
 
   // Get current user info
   getCurrentUser: async (): Promise<User> => {
-    const response = await client().get<User>('/auth/me');
-    return response.data;
+    const response = await client().get<{ data: User }>('/auth/me');
+    return response.data.data;
   },
 
   // Update user profile
@@ -103,9 +103,11 @@ export const authAPI = {
 
   // Verify email with token
   verifyEmail: async (token: string): Promise<{ email_verified: boolean }> => {
-    const response = await client().post<{ data: { email_verified: boolean } }>(
-      `/auth/verify-email?token=${encodeURIComponent(token)}`
-    );
+    const response = await client().post<{
+      success: boolean;
+      data: { email_verified: boolean };
+      message: string;
+    }>(`/auth/verify-email?token=${encodeURIComponent(token)}`);
     return response.data.data;
   },
 };

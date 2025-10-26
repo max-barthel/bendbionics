@@ -140,20 +140,25 @@ async def login(user_data: UserLogin, session: Session = Depends(get_session)):
     return success_response(data=login_data, message="Login successful")
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me")
 async def get_current_user_info(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     session: Session = Depends(get_session),
 ):
     """Get current user information"""
     current_user = get_current_user(credentials, session)
-    return UserResponse(
+    user_response = UserResponse(
         id=current_user.id,
         username=current_user.username,
         email=current_user.email,
         is_active=current_user.is_active,
         email_verified=current_user.email_verified,
         created_at=current_user.created_at,
+    )
+
+    return success_response(
+        data=user_response.model_dump(mode="json"),
+        message="User information retrieved successfully",
     )
 
 
@@ -271,7 +276,7 @@ async def delete_account(
     session.delete(current_user)
     session.commit()
 
-    return {"message": "Account deleted successfully"}
+    return success_response(message="Account deleted successfully")
 
 
 @router.post("/verify-email")

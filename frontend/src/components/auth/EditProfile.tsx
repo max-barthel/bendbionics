@@ -94,7 +94,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
       let message = 'Profile updated successfully!';
       if (email !== user?.email) {
         message =
-          'Profile updated! Please check your email to verify your new address.';
+          'Profile updated! Please check the server logs for your verification link.';
       }
 
       onSuccess(message);
