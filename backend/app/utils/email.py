@@ -230,6 +230,11 @@ def get_token_expiry(hours: int) -> datetime:
 
 def is_token_expired(expires_at: Optional[datetime]) -> bool:
     """Check if token is expired"""
+    from app.utils.logging import logger
+    
+    logger.info(f"is_token_expired called with: {expires_at} (type: {type(expires_at)})")
+    logger.info(f"expires_at.tzinfo: {getattr(expires_at, 'tzinfo', 'N/A')}")
+    
     if expires_at is None:
         return True
 
@@ -248,6 +253,7 @@ def is_token_expired(expires_at: Optional[datetime]) -> bool:
     except Exception as e:
         # Log the error for debugging
         from app.utils.logging import logger
+
         logger.error(f"Error in is_token_expired: {e}")
         logger.error(
             f"Current UTC type: {type(current_utc)}, "
