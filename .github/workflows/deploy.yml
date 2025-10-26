@@ -201,6 +201,32 @@ jobs:
                   curl -f https://bendbionics.com/health || exit 1
                   echo "✅ Health check passed!"
 
+            - name: 🔍 Verify deployment and cleanup
+              if: ${{ !inputs.skip_deploy }}
+              run: |
+                  echo "🔍 Verifying deployment and cleanup results..."
+                  ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "
+                      # Verify service is running
+                      echo '📊 Service Status:'
+                      sudo systemctl is-active bendbionics-api
+
+                      # Check disk usage after cleanup
+                      echo '💾 Disk Usage:'
+                      df -h / | tail -1
+
+                      # Verify backup was created
+                      echo '💾 Backup Status:'
+                      ls -lht /mnt/data/backups/database/ | head -3
+
+                      # Check journal size
+                      echo '📝 Journal Size:'
+                      journalctl --disk-usage
+
+                      # Verify no old services running
+                      echo '🔧 Active Services:'
+                      systemctl list-units --type=service | grep -E 'robot|bendbionics' || echo 'Only bendbionics-api.service running ✅'
+                  "
+
             - name: 🧹 Cleanup local package
               if: ${{ !inputs.cleanup_only }}
               run: |

@@ -51,6 +51,30 @@ check_root() {
     fi
 }
 
+# Function to create pre-deployment backup
+pre_deployment_backup() {
+    print_status "Creating pre-deployment backup..."
+
+    # Create backup directories if they don't exist
+    mkdir -p /mnt/data/backups/{database,configs,deployments}
+
+    # Database backup
+    print_status "Backing up database..."
+    sudo -u postgres pg_dump bendbionics | gzip > "/mnt/data/backups/database/bendbionics_predeploy_$(date +%Y%m%d_%H%M%S).sql.gz" 2>/dev/null || true
+
+    # Config backup (if changed)
+    if [ -f "$APP_DIR/backend/.env.production" ]; then
+        print_status "Backing up environment configuration..."
+        cp "$APP_DIR/backend/.env.production" "/mnt/data/backups/configs/env.production.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || true
+    fi
+
+    # Keep only last 5 pre-deploy backups
+    find /mnt/data/backups/database -name "bendbionics_predeploy_*.sql.gz" -type f | sort -r | tail -n +6 | xargs -r rm 2>/dev/null || true
+    find /mnt/data/backups/configs -name "env.production.*" -type f | sort -r | tail -n +6 | xargs -r rm 2>/dev/null || true
+
+    print_success "Pre-deployment backup completed"
+}
+
 # Function to check prerequisites
 check_prerequisites() {
     print_status "Checking server prerequisites..."
@@ -688,14 +712,14 @@ test_deployment() {
     fi
 }
 
-# Function to cleanup temp files
+# Function to cleanup temp files and perform post-deployment maintenance
 cleanup_temp_files() {
-    print_status "Cleaning up temporary files..."
+    print_status "Performing post-deployment cleanup and maintenance..."
 
     # Get the directory where this script is located (temp folder)
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-    # Clean up old deployment packages in /tmp
+    # 1. Clean up old deployment packages in /tmp
     OLD_PACKAGES=$(find /tmp -name "web-build-*" -type d 2>/dev/null | wc -l)
     if [ "$OLD_PACKAGES" -gt 0 ]; then
         print_status "Cleaning up $OLD_PACKAGES old deployment packages from /tmp..."
@@ -703,14 +727,49 @@ cleanup_temp_files() {
         print_status "Removed old deployment packages from /tmp"
     fi
 
-    # Clean up current deployment package after successful deployment
+    # 2. Clean Python cache files from the application
+    print_status "Cleaning Python cache files..."
+    find "$APP_DIR/backend" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+    find "$APP_DIR/backend" -type f -name "*.pyc" -delete 2>/dev/null || true
+    print_status "Python cache cleaned"
+
+    # 3. Archive current deployment package to HDD for 7 days
     if [ -d "$SCRIPT_DIR" ] && [[ "$SCRIPT_DIR" == /tmp/web-build-* ]]; then
+        ARCHIVE_DIR="/mnt/data/backups/deployments"
+        mkdir -p "$ARCHIVE_DIR"
+        ARCHIVE_NAME="$(basename "$SCRIPT_DIR").tar.gz"
+        print_status "Archiving deployment package to HDD: $ARCHIVE_NAME"
+        tar -czf "$ARCHIVE_DIR/$ARCHIVE_NAME" -C /tmp "$(basename "$SCRIPT_DIR")" 2>/dev/null || true
+
+        # Clean old deployment archives (keep last 7 days)
+        find "$ARCHIVE_DIR" -name "web-build-*.tar.gz" -mtime +7 -delete 2>/dev/null || true
+        print_status "Deployment package archived to HDD"
+
+        # Remove current deployment package from /tmp
         print_status "Removing current deployment package: $SCRIPT_DIR"
         rm -rf "$SCRIPT_DIR"
         print_status "Deployment package removed from server"
     fi
 
-    print_success "Cleanup completed"
+    # 4. Trim journal logs if over 100MB
+    JOURNAL_SIZE=$(journalctl --disk-usage | grep -oP '\d+\.\d+M' | grep -oP '\d+' | head -1)
+    if [ "${JOURNAL_SIZE:-0}" -gt 100 ]; then
+        print_status "Journal size is ${JOURNAL_SIZE}MB, trimming to 100MB..."
+        journalctl --vacuum-size=100M 2>/dev/null || true
+        print_status "Journal trimmed"
+    fi
+
+    # 5. Clean apt cache weekly (check last clean date)
+    LAST_CLEAN="/var/log/last-apt-clean"
+    if [ ! -f "$LAST_CLEAN" ] || [ $(find "$LAST_CLEAN" -mtime +7 2>/dev/null) ]; then
+        print_status "Running weekly apt cleanup..."
+        apt-get autoremove -y >/dev/null 2>&1 || true
+        apt-get clean >/dev/null 2>&1 || true
+        touch "$LAST_CLEAN"
+        print_status "Apt cache cleaned"
+    fi
+
+    print_success "Post-deployment cleanup completed"
 }
 
 
@@ -754,6 +813,7 @@ main() {
 
     # Run deployment process
     check_prerequisites
+    pre_deployment_backup
     install_dependencies
     setup_app_directory
     copy_application_files
