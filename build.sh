@@ -201,7 +201,9 @@ create_deployment_package() {
 
     # Copy deployment scripts
     cp scripts/deploy/server-deploy.sh "$deploy_dir/deploy.sh"
+    cp scripts/deploy/start-backend.sh "$deploy_dir/start-backend.sh"
     chmod +x "$deploy_dir/deploy.sh"
+    chmod +x "$deploy_dir/start-backend.sh"
 
     # Copy PostgreSQL setup script
     if [ -f "scripts/deploy/setup-postgres.sh" ]; then

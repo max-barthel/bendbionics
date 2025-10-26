@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Soft Robot App - Health Check Script
+# BendBionics - Health Check Script
 # This script checks the health of the development environment and services
 
 set -e  # Exit on any error
@@ -33,7 +33,7 @@ print_error() {
 
 print_header() {
     echo -e "${PURPLE}================================${NC}"
-    echo -e "${PURPLE}🏥 Soft Robot App Health Check${NC}"
+    echo -e "${PURPLE}🏥 BendBionics Health Check${NC}"
     echo -e "${PURPLE}================================${NC}"
 }
 

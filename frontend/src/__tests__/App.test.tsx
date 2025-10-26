@@ -444,7 +444,7 @@ describe('App', () => {
       renderApp();
 
       expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
-      expect(screen.getByText('Loading Soft Robot App')).toBeInTheDocument();
+      expect(screen.getByText('Loading BendBionics')).toBeInTheDocument();
       expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
     });
 
@@ -458,7 +458,7 @@ describe('App', () => {
       renderApp();
 
       expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
-      expect(screen.getByText('Loading Soft Robot App')).toBeInTheDocument();
+      expect(screen.getByText('Loading BendBionics')).toBeInTheDocument();
       expect(screen.getByText('Initializing components...')).toBeInTheDocument();
 
       // Wait for initialization to complete

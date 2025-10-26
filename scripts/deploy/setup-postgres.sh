@@ -131,7 +131,7 @@ cat > "$ENV_FILE" << EOF
 # Generated: $(date)
 
 # Application Settings
-APP_NAME="Soft Robot API"
+APP_NAME="BendBionics API"
 DEBUG=false
 LOG_LEVEL=INFO
 

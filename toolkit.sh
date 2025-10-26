@@ -1,8 +1,6 @@
 #!/bin/bash
 
-# Soft Robot App - Lean Development Toolkit
-# Streamlined script for common development tasks
-# Focus: Essential operations only, leveraging existing npm scripts
+# BendBionics - Development Toolkit
 
 set -e
 
@@ -251,7 +249,7 @@ case "${1:-help}" in
         quick_check
         ;;
     "help"|*)
-        echo "Soft Robot App - Lean Development Toolkit"
+        echo "BendBionics - Development Toolkit"
         echo ""
         echo "Usage: $0 [command] [subcommand]"
         echo ""

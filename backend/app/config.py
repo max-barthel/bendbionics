@@ -14,7 +14,7 @@ class LogLevel(str, Enum):
 
 
 class Settings(BaseSettings):
-    app_name: str = "Soft Robot API"
+    app_name: str = "BendBionics API"
     debug: bool = False
     log_level: LogLevel = LogLevel.INFO  # Only accepts valid log levels
 
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     mailgun_api_key: str = ""
     mailgun_domain: str = ""
     mailgun_from_email: str = "noreply@localhost"
-    mailgun_from_name: str = "Soft Robot App"
+    mailgun_from_name: str = "BendBionics"
 
     # Email Verification Settings
     # In dev mode (False), verification links are logged to console

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Soft Robot App - Web Development Script
+# BendBionics - Web Development Script
 # Quick and agile development for web application
 
 set -e  # Exit on any error
@@ -33,7 +33,7 @@ print_error() {
 
 print_header() {
     echo -e "${PURPLE}================================${NC}"
-    echo -e "${PURPLE}🌐 Soft Robot Web App Development${NC}"
+    echo -e "${PURPLE}🌐 BendBionics Development${NC}"
     echo -e "${PURPLE}================================${NC}"
 }
 

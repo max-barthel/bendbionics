@@ -14,7 +14,7 @@ const RegisterFormHeader: React.FC = () => (
       Create Account
     </Typography>
     <Typography variant="body" color="gray" className="text-gray-600">
-      Join the Soft Robot community
+      Join the BendBionics community
     </Typography>
   </div>
 );

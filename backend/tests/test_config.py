@@ -39,7 +39,7 @@ class TestSettings:
         """Test that Settings has correct default values."""
         settings = Settings(_env_file=None)
 
-        assert settings.app_name == "Soft Robot API"
+        assert settings.app_name == "BendBionics API"
         assert settings.debug is False
         assert settings.log_level == LogLevel.INFO
         assert settings.cors_origins == ["http://localhost:5173"]
@@ -366,7 +366,7 @@ class TestSettings:
             settings = Settings(_env_file=None)
 
             # Should use defaults when environment variables are missing
-            assert settings.app_name == "Soft Robot API"
+            assert settings.app_name == "BendBionics API"
             assert settings.debug is False
             assert settings.log_level == LogLevel.INFO
             assert settings.cors_origins == ["http://localhost:5173"]

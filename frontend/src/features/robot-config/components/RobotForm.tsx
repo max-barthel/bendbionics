@@ -85,7 +85,7 @@ function Form({
         }}
         className="flex flex-col space-y-6"
       >
-        <FormHeader title="Soft Robot Parameters" isValidating={validating} />
+        <FormHeader title="Parameters" isValidating={validating} />
 
         <FormErrorDisplay error={error} onClose={hideError} />
 
