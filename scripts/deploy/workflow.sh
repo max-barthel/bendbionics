@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Soft Robot App - Complete Deployment Workflow
+# BendBionics - Complete Deployment Workflow
 # Handles build, upload, deploy, and cleanup in one script
 
 set -e  # Exit on any error

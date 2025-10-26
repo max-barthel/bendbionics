@@ -17,7 +17,7 @@ export const AuthPage: React.FC = () => {
         <div className="text-center">
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
             <Typography variant="h1" color="primary" className="mb-2 text-gray-800">
-              Soft Robot App
+              BendBionics
             </Typography>
             <Typography variant="body" color="gray" className="mb-12 text-gray-600">
               {isLogin

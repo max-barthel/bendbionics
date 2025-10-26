@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Soft Robot App - Local Web Build Testing Script
+# BendBionics - Local Build Testing Script
 # Tests the web build locally before deployment
 
 set -e  # Exit on any error
@@ -33,7 +33,7 @@ print_error() {
 
 print_header() {
     echo -e "${PURPLE}================================${NC}"
-    echo -e "${PURPLE}🧪 Web Build Testing${NC}"
+    echo -e "${PURPLE}🧪 BendBionics Build Testing${NC}"
     echo -e "${PURPLE}================================${NC}"
 }
 
@@ -95,7 +95,7 @@ build_frontend_web() {
 
     # Set production environment
     export NODE_ENV=production
-    
+
     # Copy production environment file if it exists
     if [ -f ".env.production" ]; then
         print_status "Using production environment configuration"
@@ -107,7 +107,7 @@ build_frontend_web() {
     # Build with TypeScript check
     print_status "Running web build..."
     npm run build:web
-    
+
     if [ $? -ne 0 ]; then
         print_error "Frontend web build failed"
         exit 1
@@ -262,7 +262,7 @@ show_test_results() {
 # Function to cleanup on exit
 cleanup() {
     print_status "Cleaning up test processes..."
-    
+
     if [ ! -z "$BACKEND_PID" ]; then
         kill $BACKEND_PID 2>/dev/null || true
         print_status "Backend process terminated"

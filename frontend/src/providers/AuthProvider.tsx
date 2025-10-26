@@ -11,6 +11,7 @@ import {
   authAPI,
   type LoginRequest,
   type RegisterRequest,
+  type RegisterResponse,
   type UpdateProfileRequest,
   type User,
 } from '../api/auth';
@@ -19,7 +20,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (data: LoginRequest) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<RegisterResponse>;
   updateProfile: (data: UpdateProfileRequest) => Promise<void>;
   logout: () => void;
   deleteAccount: () => Promise<void>;

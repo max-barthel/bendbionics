@@ -135,6 +135,18 @@ copy_application_files() {
         exit 1
     fi
 
+    # Copy startup script
+    if [ -f "$SCRIPT_DIR/start-backend.sh" ]; then
+        # Create scripts/deploy directory if it doesn't exist
+        mkdir -p "$APP_DIR/scripts/deploy"
+        cp "$SCRIPT_DIR/start-backend.sh" "$APP_DIR/scripts/deploy/"
+        chmod +x "$APP_DIR/scripts/deploy/start-backend.sh"
+        print_status "Startup script copied and made executable"
+    else
+        print_error "Startup script not found in deployment package"
+        exit 1
+    fi
+
     # Copy frontend files
     if [ -d "$SCRIPT_DIR/frontend" ]; then
         # Create frontend directory if it doesn't exist

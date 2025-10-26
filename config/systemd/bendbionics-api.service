@@ -9,7 +9,8 @@ Group=www-data
 WorkingDirectory=/var/www/bendbionics-app/backend
 Environment="PATH=/var/www/bendbionics-app/backend/venv/bin"
 Environment="PYTHONPATH=/var/www/bendbionics-app/backend"
-ExecStart=/var/www/bendbionics-app/backend/venv/bin/gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 127.0.0.1:8000 --timeout 120 --keep-alive 2 --max-requests 1000 --max-requests-jitter 50
+EnvironmentFile=/var/www/bendbionics-app/backend/.env.production
+ExecStart=/var/www/bendbionics-app/scripts/deploy/start-backend.sh
 Restart=always
 RestartSec=10
 StandardOutput=journal

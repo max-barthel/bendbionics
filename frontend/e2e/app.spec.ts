@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('Soft Robot App', () => {
+test.describe('BendBionics App', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the app
     await page.goto('/');
@@ -8,7 +8,7 @@ test.describe('Soft Robot App', () => {
 
   test('should load the main application', async ({ page }) => {
     // Check if the app loads without errors
-    await expect(page).toHaveTitle(/Soft Robot/);
+    await expect(page).toHaveTitle(/BendBionics/);
 
     // Check for main UI elements
     await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible();

@@ -1,7 +1,7 @@
 {
-  "name": "bendbionics-app",
+  "name": "bendbionics",
   "version": "1.0.0",
-  "description": "BendBionics Soft Robot Simulation Application",
+  "description": "Soft Robot Simulation Platform",
   "scripts": {
     "prepare": "husky",
     "setup": "./scripts/setup.sh",

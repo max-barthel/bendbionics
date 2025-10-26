@@ -1,5 +1,5 @@
 /**
- * Design Tokens for Soft Robot App
+ * Design Tokens for BendBionics
  *
  * This file contains all the design tokens for the Tahoe glass design system.
  * It consolidates all the duplicate styling patterns found across components.

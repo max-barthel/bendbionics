@@ -44,7 +44,7 @@ class TestMainApp:
         assert "message" in data
         assert "version" in data
         assert "docs" in data
-        assert data["message"] == "Soft Robot API"
+        assert data["message"] == "BendBionics API"
         assert data["version"] == "1.0.0"
 
     def test_health_check_endpoint(self):
@@ -57,7 +57,7 @@ class TestMainApp:
         assert "status" in data
         assert "message" in data
         assert data["status"] == "healthy"
-        assert "Soft Robot App is running" in data["message"]
+        assert "BendBionics is running" in data["message"]
 
     def test_static_files_mounting_placeholder(self):
         """Test static files mounting placeholder."""
