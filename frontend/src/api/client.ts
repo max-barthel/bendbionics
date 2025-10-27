@@ -235,12 +235,22 @@ function getApiClient() {
 }
 
 // Helper function to handle response errors
-function handleResponseError(error: { response?: { status?: number } }) {
-  // Handle 401 Unauthorized - clear token but don't redirect automatically
-  // Let individual components handle the error appropriately
+function handleResponseError(error: {
+  response?: { status?: number };
+  config?: { url?: string };
+}) {
+  // Handle 401 Unauthorized - only clear token for authentication endpoints
+  // This prevents clearing tokens on temporary server issues for other endpoints
   if (error.response?.status === HTTP_STATUS.UNAUTHORIZED) {
-    localStorage.removeItem('token');
-    // Don't automatically redirect - let the component handle it
+    const url = error.config?.url || '';
+
+    // Only clear token for authentication-related endpoints
+    if (url.includes('/auth/login') || url.includes('/auth/register')) {
+      localStorage.removeItem('token');
+      console.warn('Authentication failed - token cleared');
+    }
+    // For other endpoints (like /auth/me), let the component handle the error
+    // This prevents automatic logout on temporary server issues
   }
 
   // Log server errors in development

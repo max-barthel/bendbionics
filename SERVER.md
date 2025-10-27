@@ -146,8 +146,9 @@ If SSL is not configured yet:
    ```
 
 3. Reload nginx:
+
    ```bash
-   sudo systemctl reload nginx
+    sudo systemctl reload nginx
    ```
 
 ## Troubleshooting
@@ -189,6 +190,7 @@ If SSL is not configured yet:
    ```
 
 3. Test configuration:
+
    ```bash
    cd /var/www/bendbionics-app/backend
    source venv/bin/activate

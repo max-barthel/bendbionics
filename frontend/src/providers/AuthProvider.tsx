@@ -58,19 +58,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           try {
             const userData = await authAPI.getCurrentUser();
             setUser(userData);
-          } catch {
-            // Token validation failed, clearing token
-            // Token is invalid, clear it
-            localStorage.removeItem('token');
-            setToken(null);
+          } catch (error) {
+            // Only clear token if it's a genuine authentication error
+            // Don't clear on network issues or temporary server problems
+            if (error && typeof error === 'object' && 'response' in error) {
+              const response = (error as { response?: { status?: number } }).response;
+              if (response?.status === 401) {
+                console.warn(
+                  'Token appears invalid during initial check - clearing authentication'
+                );
+                localStorage.removeItem('token');
+                setToken(null);
+              }
+            }
+            // For other errors (network, server issues), keep the user logged in
           }
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        // If anything goes wrong, just clear everything and continue
-        localStorage.removeItem('token');
-        setToken(null);
-        setUser(null);
+        // Don't clear everything on any error - just log it
+        // This prevents clearing tokens on network issues or temporary problems
+        console.warn('Auth check failed but keeping user logged in');
       } finally {
         setIsLoading(false);
       }
@@ -159,13 +167,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshUser = useCallback(async () => {
     try {
       if (token) {
+        console.log('Refreshing user data...');
         const userData = await authAPI.getCurrentUser();
+        console.log('User data refreshed successfully:', userData);
         setUser(userData);
+      } else {
+        console.log('No token available for refresh');
       }
     } catch (error) {
       console.error('Refresh user failed:', error);
-      // Don't throw error here - just log it
-      // The user might still be valid but the refresh failed
+
+      // Don't clear token on any error - let the user stay logged in
+      // The token might still be valid, just the refresh failed
+      console.warn('Refresh failed but keeping user logged in');
     }
   }, [token]);
 
