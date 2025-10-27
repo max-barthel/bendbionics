@@ -192,7 +192,7 @@ jobs:
 
             - name: 🔑 Setup SSH
               if: ${{ !inputs.skip_upload }}
-              uses: webfactory/ssh-agent@v0.9.0
+              uses: webfactory/ssh-agent@v0.9.1
               with:
                   ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
