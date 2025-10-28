@@ -111,6 +111,7 @@ class TendonCalculator:
             "segment_lengths": segment_lengths.tolist(),
             "total_lengths": total_lengths.tolist(),
             "length_changes": total_length_changes.tolist(),
+            "segment_length_changes": segment_length_changes.tolist(),
             "routing_points": routing_points.tolist(),
         }
 

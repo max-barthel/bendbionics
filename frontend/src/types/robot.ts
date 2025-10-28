@@ -17,6 +17,10 @@ export interface RobotConfiguration extends Partial<RobotState> {
     };
     tendon_analysis?: {
       routing_points: number[][][];
+      segment_lengths: number[][];
+      total_lengths: number[][];
+      length_changes: number[][];
+      segment_length_changes: number[][];
     };
   };
 }

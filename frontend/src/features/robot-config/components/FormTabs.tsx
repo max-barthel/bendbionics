@@ -65,6 +65,10 @@ const extractTendonAnalysis = (result: unknown) => {
     },
     tendon_analysis: tendon_analysis as {
       routing_points: number[][][];
+      segment_lengths: number[][];
+      total_lengths: number[][];
+      length_changes: number[][];
+      segment_length_changes: number[][];
     },
   };
 };
