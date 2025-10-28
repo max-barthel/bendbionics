@@ -104,7 +104,7 @@ describe('formValidation', () => {
     it('detects NaN values', async () => {
       const robotState = {
         segments: 3,
-        bendingAngles: [0.1, NaN, 0.3],
+        bendingAngles: [0.1, Number.NaN, 0.3],
         rotationAngles: [0, 0, 0],
         backboneLengths: [0.07, 0.07, 0.07],
         couplingLengths: [0.03, 0.03, 0.03, 0.03],
