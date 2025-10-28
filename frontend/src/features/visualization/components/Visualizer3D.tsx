@@ -33,7 +33,6 @@ type Visualizer3DProps = {
   readonly tendonConfig?: {
     readonly count: number;
     readonly radius: number;
-    readonly coupling_offset: number;
   };
   readonly tendonAnalysis?: {
     readonly actuation_commands: Record<
@@ -141,8 +140,7 @@ function Visualizer3D({
     couplingIndex: number,
     orientation: number[][],
     tendonCount: number,
-    radius: number,
-    offset: number
+    radius: number
   ) => {
     const elements: React.ReactElement[] = [];
     const x = Number(couplingPos[0]) || 0;
@@ -154,7 +152,7 @@ function Visualizer3D({
       const angle = (2 * Math.PI * i) / tendonCount;
       const localX = radius * Math.cos(angle);
       const localY = radius * Math.sin(angle);
-      const localZ = offset;
+      const localZ = 0;
       const { globalX, globalY, globalZ } = transformToGlobal(
         localX,
         localY,
@@ -165,7 +163,7 @@ function Visualizer3D({
         matrix
       );
 
-      // Create eyelet sphere
+      // Create eyelet sphere and tendon connection line
       elements.push(
         <Sphere
           key={`tendon-${couplingIndex}-${i}`}
@@ -177,16 +175,12 @@ function Visualizer3D({
           position={[globalX, globalY, globalZ]}
         >
           <meshBasicMaterial color="#000000" />
-        </Sphere>
-      );
-
-      // Add tendon connection line
-      elements.push(
+        </Sphere>,
         <Line
           key={`tendon-line-${couplingIndex}-${i}`}
           points={[
             [globalX, globalY, globalZ],
-            [x, y, z + offset],
+            [x, y, z],
           ]}
           color="#9ca3af"
           lineWidth={1}
@@ -258,16 +252,16 @@ function Visualizer3D({
     }
 
     const elements: React.ReactElement[] = [];
-    const { count: tendonCount, radius, coupling_offset: offset } = tendonConfig;
+    const { count: tendonCount, radius } = tendonConfig;
     const { positions: couplingPositions, orientations: couplingOrientations } =
       tendonAnalysis.coupling_data;
 
     // Create tendon eyelets for each coupling point
-    couplingPositions.forEach((couplingPos, couplingIndex) => {
-      if (couplingPos.length < 3) return;
+    for (const [couplingIndex, couplingPos] of couplingPositions.entries()) {
+      if (couplingPos.length < 3) continue;
 
       const orientation = couplingOrientations[couplingIndex];
-      if (!orientation || orientation.length < 3) return;
+      if (!orientation || orientation.length < 3) continue;
 
       elements.push(
         ...createTendonEyelets(
@@ -275,11 +269,10 @@ function Visualizer3D({
           couplingIndex,
           orientation,
           tendonCount,
-          radius,
-          offset
+          radius
         )
       );
-    });
+    }
 
     // Add tendon routing lines between consecutive coupling elements
     if (couplingPositions.length > 1) {
@@ -358,13 +351,17 @@ function Visualizer3D({
   };
 
   const hasData = useMemo(() => {
-    return segments.length > 0 && segments.some(segment => segment.length > 0);
+    return segments.some(segment => segment.length > 0);
   }, [segments]);
+
+  const showEmptyState = useMemo(() => {
+    return !hasData;
+  }, [hasData]);
 
   return (
     <div className="h-full flex flex-col" data-testid="visualizer-3d">
       <div className="flex-1 relative">
-        {!hasData ? (
+        {showEmptyState ? (
           <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
             <TahoeGlass className="p-8 max-w-md mx-4" size="xl">
               <div className="flex flex-col items-center text-center">

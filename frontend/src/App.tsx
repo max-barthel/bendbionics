@@ -61,7 +61,6 @@ const DEFAULT_COUPLING_LENGTH = 0.03;
 const DEFAULT_DISCRETIZATION_STEPS = 1000;
 const DEFAULT_TENDON_COUNT = 3;
 const DEFAULT_TENDON_RADIUS = 0.01;
-const DEFAULT_TENDON_OFFSET = 0;
 const DEFAULT_TIMEOUT = 100;
 
 // Timing constants
@@ -163,7 +162,6 @@ function createTendonConfig(configuration: RobotConfiguration) {
     configuration.tendonConfig ?? {
       count: DEFAULT_TENDON_COUNT,
       radius: DEFAULT_TENDON_RADIUS,
-      coupling_offset: DEFAULT_TENDON_OFFSET,
     }
   );
 }

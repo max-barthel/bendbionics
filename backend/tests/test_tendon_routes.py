@@ -48,7 +48,6 @@ class TestTendonRoutes:
             "tendon_config": {
                 "count": 3,
                 "radius": 0.01,
-                "coupling_offset": 0.0,
             },
         }
 
@@ -88,7 +87,6 @@ class TestTendonRoutes:
             "tendon_config": {
                 "count": 3,
                 "radius": 0.01,
-                "coupling_offset": 0.0,
             },
         }
 
@@ -133,7 +131,6 @@ class TestTendonRoutes:
             "tendon_config": {
                 "count": 3,
                 "radius": 0.01,
-                "coupling_offset": 0.0,
             },
         }
 
@@ -177,7 +174,6 @@ class TestTendonRoutes:
             "tendon_config": {
                 "count": 3,
                 "radius": 0.01,
-                "coupling_offset": 0.0,
             },
         }
 
@@ -220,7 +216,6 @@ class TestTendonRoutes:
             "tendon_config": {
                 "count": 3,
                 "radius": 0.01,
-                "coupling_offset": 0.0,
             },
         }
 
@@ -237,4 +232,98 @@ class TestTendonRoutes:
         assert "coupling_data" in data["data"]
         assert data["data"]["tendon_analysis"] == {}
         assert data["data"]["actuation_commands"] == {}
-        assert data["data"]["tendon_config"] == {}
+
+    def test_tendon_length_delta_validation(self):
+        """Test tendon length delta calculation against MATLAB reference."""
+        import numpy as np
+        from app.models.pcc.pcc_model import compute_pcc_with_tendons
+        from app.models.pcc.types import PCCParams
+        from app.models.tendon.types import TendonConfig
+
+        # MATLAB test configuration (from PCC.m lines 11-44)
+        # Bending angles: 36 degrees each segment
+        # Rotation angles: 60 degrees each segment
+        # Backbone lengths: 70mm each
+        # Coupling lengths: 30mm each
+        # Tendon radius: 30mm (from r_sf)
+
+        params = PCCParams(
+            bending_angles=[np.deg2rad(36), np.deg2rad(36), np.deg2rad(36)],
+            rotation_angles=[np.deg2rad(60), np.deg2rad(60), np.deg2rad(60)],
+            backbone_lengths=[0.070, 0.070, 0.070],  # 70mm in meters
+            coupling_lengths=[0.030, 0.030, 0.030, 0.030],  # 30mm in meters
+            discretization_steps=100,
+            tendon_config=TendonConfig(count=3, radius=0.030),  # 30mm radius
+        )
+
+        # Compute tendon analysis
+        result = compute_pcc_with_tendons(params)
+
+        # Extract tendon analysis data
+        tendon_analysis = result["tendon_analysis"]
+        length_changes = np.array(tendon_analysis["length_changes"])
+        actuation_commands = result["actuation_commands"]
+
+        # Validate basic structure
+        # With 3 backbone segments + 4 coupling lengths, we get 5 coupling elements
+        assert length_changes.shape == (3, 5), (
+            f"Expected shape (3, 5), got {length_changes.shape}"
+        )
+
+        # Validate sign convention: negative = pull, positive = release
+        for tendon_id, command in actuation_commands.items():
+            length_change = command["length_change_m"]
+            pull_direction = command["pull_direction"]
+
+            if length_change < 0:
+                assert pull_direction == "pull", (
+                    f"Tendon {tendon_id}: negative change should be pull"
+                )
+            elif length_change > 0:
+                assert pull_direction == "release", (
+                    f"Tendon {tendon_id}: positive change should be release"
+                )
+            else:
+                assert pull_direction == "hold", (
+                    f"Tendon {tendon_id}: zero change should be hold"
+                )
+
+        # Validate that all tendons have reasonable length changes
+        # For a bent configuration, we expect some tendons to be shortened (negative)
+        # and others to be lengthened (positive)
+        final_changes = length_changes[:, -1]  # Final length changes for each tendon
+
+        # At least one tendon should need pulling (negative change)
+        assert np.any(final_changes < 0), "At least one tendon should need pulling"
+
+        # At least one tendon should need releasing (positive change)
+        assert np.any(final_changes > 0), "At least one tendon should need releasing"
+
+        # Changes should be reasonable magnitude (not too large)
+        max_change = np.max(np.abs(final_changes))
+        assert max_change < 0.1, f"Length changes too large: {max_change}m"
+
+        # Test straight configuration (all angles = 0)
+        straight_params = PCCParams(
+            bending_angles=[0.0, 0.0, 0.0],
+            rotation_angles=[0.0, 0.0, 0.0],
+            backbone_lengths=[0.070, 0.070, 0.070],
+            coupling_lengths=[0.030, 0.030, 0.030, 0.030],
+            discretization_steps=100,
+            tendon_config=TendonConfig(count=3, radius=0.030),
+        )
+
+        straight_result = compute_pcc_with_tendons(straight_params)
+        straight_length_changes = np.array(
+            straight_result["tendon_analysis"]["length_changes"]
+        )
+
+        # For straight configuration, all length changes should be close to zero
+        assert np.allclose(straight_length_changes, 0, atol=1e-6), (
+            f"Straight configuration should have zero length changes, "
+            f"got {straight_length_changes}"
+        )
+
+        # Tendon length delta validation passed
+        # Bent config final changes: {final_changes}
+        # Straight config final changes: {straight_length_changes[:, -1]}

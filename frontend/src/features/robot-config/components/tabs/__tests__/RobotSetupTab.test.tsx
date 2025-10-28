@@ -57,7 +57,6 @@ describe('RobotSetupTab', () => {
     tendonConfig: {
       count: 3,
       radius: 0.01,
-      coupling_offset: 0.0,
     },
   };
 
