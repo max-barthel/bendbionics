@@ -137,7 +137,6 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
             robotState.tendonConfig ?? {
               count: 3,
               radius: 0.01,
-              coupling_offset: 0.0,
             }
           }
           onConfigChange={tendonConfig => updateRobotState({ tendonConfig })}

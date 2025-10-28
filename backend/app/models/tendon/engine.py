@@ -63,16 +63,9 @@ class TendonAnalysisEngine:
         # Step 2: Extract coupling element data using the model's method
         coupling_data = robot_model.get_coupling_elements(robot_positions)
 
-        # Step 3: Calculate tendon lengths and actuation requirements
-        # Extract backbone parameters if available
-        backbone_lengths = getattr(params, "backbone_lengths", None)
-        coupling_lengths = getattr(params, "coupling_lengths", None)
-
         tendon_analysis = self.tendon_calculator.calculate_tendon_lengths(
             coupling_data["positions"],
             coupling_data["orientations"],
-            backbone_lengths,
-            coupling_lengths,
         )
 
         # Step 4: Get practical actuation commands

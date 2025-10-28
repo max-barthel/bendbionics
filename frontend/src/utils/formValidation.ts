@@ -65,7 +65,7 @@ const validateTendonConfig = (
 ): boolean => {
   if (!tendonConfig) return true;
 
-  const { count, radius, coupling_offset } = tendonConfig;
+  const { count, radius } = tendonConfig;
 
   if (count < 3) {
     showError('validation', 'Must have at least 3 tendons for stability.');
@@ -84,11 +84,6 @@ const validateTendonConfig = (
 
   if (radius > 0.1) {
     showError('validation', 'Radius cannot exceed 10cm.');
-    return false;
-  }
-
-  if (Math.abs(coupling_offset) > 0.05) {
-    showError('validation', 'Coupling offset cannot exceed 5cm.');
     return false;
   }
 

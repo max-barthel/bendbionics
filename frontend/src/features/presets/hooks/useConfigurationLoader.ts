@@ -9,7 +9,6 @@ const DEFAULT_VALUES = {
   DISCRETIZATION_STEPS: 1000,
   TENDON_COUNT: 3,
   TENDON_RADIUS: 0.01,
-  TENDON_OFFSET: 0,
 } as const;
 
 // Helper function to check if configuration should be loaded
@@ -38,11 +37,9 @@ const createNewState = (config: Record<string, unknown>) => {
     tendonConfig: (config['tendonConfig'] as {
       count: number;
       radius: number;
-      coupling_offset: number;
     }) ?? {
       count: DEFAULT_VALUES.TENDON_COUNT,
       radius: DEFAULT_VALUES.TENDON_RADIUS,
-      coupling_offset: DEFAULT_VALUES.TENDON_OFFSET,
     },
   };
 };

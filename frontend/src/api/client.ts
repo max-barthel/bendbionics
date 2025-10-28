@@ -14,7 +14,6 @@ export interface PCCParams {
 export interface TendonConfig {
   count: number;
   radius: number;
-  coupling_offset: number;
 }
 
 // Define the API response type

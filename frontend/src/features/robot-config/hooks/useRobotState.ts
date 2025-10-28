@@ -16,7 +16,6 @@ export interface RobotState {
   tendonConfig?: {
     count: number;
     radius: number;
-    coupling_offset: number;
   };
 }
 
@@ -48,7 +47,6 @@ export function useRobotState() {
           tendonConfig: {
             count: 3,
             radius: 0.01,
-            coupling_offset: 0,
           },
         };
   });

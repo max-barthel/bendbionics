@@ -39,15 +39,13 @@ class TendonCalculator:
         for angle in angles:
             x = self.config.radius * np.cos(angle)
             y = self.config.radius * np.sin(angle)
-            z = self.config.coupling_offset
+            z = 0.0  # No vertical offset
             self.tendon_positions.append(np.array([x, y, z]))
 
     def calculate_tendon_lengths(
         self,
         coupling_positions: List[np.ndarray],
         coupling_orientations: List[np.ndarray],
-        backbone_lengths: List[float] | None = None,
-        coupling_lengths: List[float] | None = None,
     ) -> Dict[str, Any]:
         """
         Calculate tendon lengths based on coupling element data.
@@ -75,13 +73,6 @@ class TendonCalculator:
         # Calculate tendon lengths between consecutive coupling elements
         segment_lengths = np.zeros((num_tendons, num_elements - 1))
 
-        # Check if robot is straight (all coupling positions have same x,y)
-        is_straight = all(
-            abs(coupling_positions[i][0]) < 1e-6
-            and abs(coupling_positions[i][1]) < 1e-6
-            for i in range(num_elements)
-        )
-
         # Always calculate segment lengths through eyelets for accuracy
         for i in range(num_elements - 1):
             for j in range(num_tendons):
@@ -97,20 +88,29 @@ class TendonCalculator:
             total_lengths[:, i] = total_lengths[:, i - 1] + segment_lengths[:, i - 1]
 
         # Calculate length changes (how much each tendon needs to be pulled)
-        # Reference is the straight configuration
-        reference_lengths = self._calculate_reference_lengths(
-            coupling_positions,
-            backbone_lengths,
-            coupling_lengths,
-            is_straight,
-            total_lengths,
+        # Reference is the straight configuration - calculate segment-by-segment deltas
+        reference_segment_lengths = self._calculate_reference_segment_lengths(
+            coupling_positions
         )
-        length_changes = total_lengths - reference_lengths
+
+        # Calculate segment length changes: bent - reference
+        # Positive = tendon shortened = needs pulling
+        # Negative = tendon lengthened = needs releasing
+        segment_length_changes = segment_lengths - reference_segment_lengths
+
+        # Calculate cumulative length changes from base to each coupling element
+        total_length_changes = np.zeros((num_tendons, num_elements))
+        total_length_changes[:, 0] = 0  # Base position
+
+        for i in range(1, num_elements):
+            total_length_changes[:, i] = (
+                total_length_changes[:, i - 1] + segment_length_changes[:, i - 1]
+            )
 
         return {
             "segment_lengths": segment_lengths.tolist(),
             "total_lengths": total_lengths.tolist(),
-            "length_changes": length_changes.tolist(),
+            "length_changes": total_length_changes.tolist(),
             "routing_points": routing_points.tolist(),
         }
 
@@ -148,92 +148,65 @@ class TendonCalculator:
 
         return routing_points
 
-    def _calculate_reference_lengths(
+    def _calculate_reference_segment_lengths(
         self,
         coupling_positions: List[np.ndarray],
-        backbone_lengths: List[float] | None = None,
-        coupling_lengths: List[float] | None = None,
-        is_straight: bool = False,
-        total_lengths: np.ndarray = None,
     ) -> np.ndarray:
-        """Calculate reference tendon lengths for straight configuration."""
+        """
+        Calculate reference tendon segment lengths for straight configuration.
+
+        This method constructs a straight robot configuration (all segments pointing
+        up the Z-axis) and calculates the distances between eyelets in consecutive
+        coupling elements.
+
+        Args:
+            coupling_positions: List of coupling element positions
+
+        Returns:
+            Array of reference segment lengths for each tendon and segment
+        """
         num_elements = len(coupling_positions)
         num_tendons = self.config.count
-        reference_lengths = np.zeros((num_tendons, num_elements))
 
-        if backbone_lengths and coupling_lengths:
-            if is_straight:
-                self._calculate_straight_reference(
-                    reference_lengths, total_lengths, num_elements
-                )
-            else:
-                self._calculate_bent_reference(
-                    reference_lengths, backbone_lengths, coupling_lengths, num_elements
-                )
-        else:
-            self._calculate_fallback_reference(
-                reference_lengths, coupling_positions, num_elements
-            )
+        # Create straight configuration positions
+        # All coupling elements at x=0, y=0, with increasing z based on actual geometry
+        straight_positions = []
+        cumulative_z = 0.0
 
-        return reference_lengths
-
-    def _calculate_straight_reference(
-        self,
-        reference_lengths: np.ndarray,
-        total_lengths: np.ndarray,
-        num_elements: int,
-    ):
-        """Calculate reference for straight robot configuration."""
         for i in range(num_elements):
+            # Use actual coupling element position as reference for z-coordinate
+            # This preserves the actual segment lengths from the robot configuration
             if i == 0:
-                reference_lengths[:, i] = 0
+                cumulative_z = 0.0
             else:
-                reference_lengths[:, i] = total_lengths[0, i]
+                # Calculate z-distance from previous coupling element
+                prev_pos = coupling_positions[i - 1]
+                curr_pos = coupling_positions[i]
+                z_distance = np.linalg.norm(curr_pos - prev_pos)
+                cumulative_z += z_distance
 
-    def _calculate_bent_reference(
-        self,
-        reference_lengths: np.ndarray,
-        backbone_lengths: List[float],
-        coupling_lengths: List[float],
-        num_elements: int,
-    ):
-        """Calculate reference for bent robot configuration."""
-        for i in range(num_elements):
-            if i == 0:
-                reference_lengths[:, i] = 0
-            else:
-                cumulative_length = self._calculate_cumulative_length(
-                    backbone_lengths, coupling_lengths, i
+            straight_positions.append(np.array([0.0, 0.0, cumulative_z]))
+
+        # Create identity orientations (no rotation for straight configuration)
+        straight_orientations = [np.eye(3) for _ in range(num_elements)]
+
+        # Calculate routing points for straight configuration
+        straight_routing_points = self._calculate_routing_points(
+            straight_positions, straight_orientations
+        )
+
+        # Calculate segment lengths between consecutive coupling elements
+        reference_segment_lengths = np.zeros((num_tendons, num_elements - 1))
+
+        for i in range(num_elements - 1):
+            for j in range(num_tendons):
+                start_point = straight_routing_points[i][j]
+                end_point = straight_routing_points[i + 1][j]
+                reference_segment_lengths[j, i] = np.linalg.norm(
+                    end_point - start_point
                 )
-                reference_lengths[:, i] = cumulative_length
 
-    def _calculate_cumulative_length(
-        self, backbone_lengths: List[float], coupling_lengths: List[float], i: int
-    ) -> float:
-        """Calculate cumulative length up to element i."""
-        cumulative_length = 0
-        for j in range(i):
-            if j < len(backbone_lengths):
-                cumulative_length += backbone_lengths[j]
-            if j + 1 < len(coupling_lengths):
-                cumulative_length += coupling_lengths[j + 1]
-        return cumulative_length
-
-    def _calculate_fallback_reference(
-        self,
-        reference_lengths: np.ndarray,
-        coupling_positions: List[np.ndarray],
-        num_elements: int,
-    ):
-        """Calculate fallback reference using straight-line distances."""
-        for i in range(num_elements):
-            if i == 0:
-                reference_lengths[:, i] = 0
-            else:
-                base_pos = coupling_positions[0]
-                current_pos = coupling_positions[i]
-                straight_distance = np.linalg.norm(current_pos - base_pos)
-                reference_lengths[:, i] = straight_distance
+        return reference_segment_lengths
 
     def get_actuation_commands(
         self, length_changes: np.ndarray
@@ -253,7 +226,9 @@ class TendonCalculator:
             # Get the final length change for this tendon
             final_change = length_changes[i, -1]
 
-            # Determine pull direction (corrected sign convention)
+            # Determine pull direction based on first principles calculation
+            # Negative change = tendon shortened = needs pulling
+            # Positive change = tendon lengthened = needs releasing
             if final_change > 0:
                 pull_direction = "release"  # Positive = tendon gets longer
             elif final_change < 0:
