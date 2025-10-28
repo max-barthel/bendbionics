@@ -18,7 +18,6 @@ export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
 }) => {
   const [localConfig, setLocalConfig] = useState<TendonConfig>(tendonConfig);
   const [radiusUnit, setRadiusUnit] = useState<LengthUnit>('mm');
-  const [offsetUnit, setOffsetUnit] = useState<LengthUnit>('mm');
   const lengthUnits: readonly LengthUnit[] = ['mm', 'cm', 'm'];
 
   // Update local config when prop changes
@@ -64,11 +63,6 @@ export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
     handleConfigChange('radius', siValue);
   };
 
-  const handleOffsetChange = (value: number) => {
-    const siValue = convertToSI(value, offsetUnit);
-    handleConfigChange('coupling_offset', siValue);
-  };
-
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Tendon Count - using SliderInput like basic tab */}
@@ -104,30 +98,6 @@ export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
               selectedUnit={radiusUnit}
               onUnitChange={setRadiusUnit}
               ariaLabel="Radius"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Vertical Offset - using ArrayInputGroup style with unit switching */}
-      <div className="space-y-3">
-        <SubsectionTitle
-          title="Vertical Offset"
-          description="Vertical offset of eyelets from coupling center"
-        />
-
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <NumberInput
-              value={convertFromSI(localConfig.coupling_offset, offsetUnit)}
-              onChange={handleOffsetChange}
-              placeholder="Offset"
-            />
-            <UnitSelector
-              units={lengthUnits}
-              selectedUnit={offsetUnit}
-              onUnitChange={setOffsetUnit}
-              ariaLabel="Vertical Offset"
             />
           </div>
         </div>

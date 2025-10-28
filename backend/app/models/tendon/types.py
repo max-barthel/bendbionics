@@ -11,7 +11,6 @@ class TendonConfig(BaseModel):
 
     count: int = 3  # Number of tendons
     radius: float = 0.03  # Distance from center to tendon eyelets (m)
-    coupling_offset: float = 0.0  # Vertical offset of eyelets (m)
 
     @field_validator("count")
     @classmethod
@@ -32,14 +31,6 @@ class TendonConfig(BaseModel):
             raise ValueError(msg)
         if v > 0.1:  # Max 10cm
             msg = "Radius cannot exceed 10cm"
-            raise ValueError(msg)
-        return v
-
-    @field_validator("coupling_offset")
-    @classmethod
-    def validate_offset(cls, v):
-        if abs(v) > 0.05:  # 5cm max offset
-            msg = "Coupling offset cannot exceed 5cm"
             raise ValueError(msg)
         return v
 

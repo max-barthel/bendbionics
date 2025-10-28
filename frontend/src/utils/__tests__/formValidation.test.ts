@@ -17,7 +17,7 @@ describe('formValidation', () => {
         backboneLengths: [0.07, 0.07, 0.07],
         couplingLengths: [0.03, 0.03, 0.03, 0.03],
         discretizationSteps: 1000,
-        tendonConfig: { count: 3, radius: 0.01, coupling_offset: 0.0 },
+        tendonConfig: { count: 3, radius: 0.01 },
       };
 
       const result = await validateRobotConfiguration(robotState, mockShowError);
@@ -33,7 +33,7 @@ describe('formValidation', () => {
         backboneLengths: [0.07, 0.07, 0.07],
         couplingLengths: [0.03, 0.03, 0.03, 0.03],
         discretizationSteps: 1000,
-        tendonConfig: { count: 3, radius: 0.01, coupling_offset: 0.0 },
+        tendonConfig: { count: 3, radius: 0.01 },
       };
 
       const result = await validateRobotConfiguration(robotState, mockShowError);
@@ -52,7 +52,7 @@ describe('formValidation', () => {
         backboneLengths: [0.07, 0.07, 0.07],
         couplingLengths: [0.03, 0.03, 0.03, 0.03],
         discretizationSteps: 1000,
-        tendonConfig: { count: 3, radius: 0.01, coupling_offset: 0.0 },
+        tendonConfig: { count: 3, radius: 0.01 },
       };
 
       const result = await validateRobotConfiguration(robotState, mockShowError);
@@ -71,7 +71,7 @@ describe('formValidation', () => {
         backboneLengths: [0.07, 0.07, 0.07],
         couplingLengths: [0.03, 0.03, 0.03], // Only 3 values, should be 4
         discretizationSteps: 1000,
-        tendonConfig: { count: 3, radius: 0.01, coupling_offset: 0.0 },
+        tendonConfig: { count: 3, radius: 0.01 },
       };
 
       const result = await validateRobotConfiguration(robotState, mockShowError);
@@ -90,7 +90,7 @@ describe('formValidation', () => {
         backboneLengths: [0.07, 0.07, 0.07],
         couplingLengths: [0.03, 0.03, 0.03, 0.03],
         discretizationSteps: 0, // Invalid
-        tendonConfig: { count: 3, radius: 0.01, coupling_offset: 0.0 },
+        tendonConfig: { count: 3, radius: 0.01 },
       };
 
       const result = await validateRobotConfiguration(robotState, mockShowError);
@@ -109,7 +109,7 @@ describe('formValidation', () => {
         backboneLengths: [0.07, 0.07, 0.07],
         couplingLengths: [0.03, 0.03, 0.03, 0.03],
         discretizationSteps: 1000,
-        tendonConfig: { count: 3, radius: 0.01, coupling_offset: 0.0 },
+        tendonConfig: { count: 3, radius: 0.01 },
       };
 
       const result = await validateRobotConfiguration(robotState, mockShowError);
@@ -128,7 +128,7 @@ describe('formValidation', () => {
         backboneLengths: [0.07, 0.07, 0.07],
         couplingLengths: [0.03, 0.03, 0.03, 0.03],
         discretizationSteps: 1000,
-        tendonConfig: { count: 3, radius: 0.01, coupling_offset: 0.0 },
+        tendonConfig: { count: 3, radius: 0.01 },
       };
 
       const result = await validateRobotConfiguration(robotState, mockShowError);
@@ -147,7 +147,7 @@ describe('formValidation', () => {
         backboneLengths: [0.07, 0.07, 0.07],
         couplingLengths: [], // Empty array
         discretizationSteps: 1000,
-        tendonConfig: { count: 3, radius: 0.01, coupling_offset: 0.0 },
+        tendonConfig: { count: 3, radius: 0.01 },
       };
 
       const result = await validateRobotConfiguration(robotState, mockShowError);
