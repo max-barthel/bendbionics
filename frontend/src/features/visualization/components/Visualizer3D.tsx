@@ -49,6 +49,10 @@ type Visualizer3DProps = {
     };
     readonly tendon_analysis?: {
       readonly routing_points: number[][][];
+      readonly segment_lengths: number[][];
+      readonly total_lengths: number[][];
+      readonly length_changes: number[][];
+      readonly segment_length_changes: number[][];
     };
   };
   readonly sidebarCollapsed: boolean;
@@ -81,8 +85,8 @@ function Visualizer3D({
           <Line
             key={`segment-${index}-${points.length}`}
             points={points}
-            color={index % 2 === 0 ? '#3b82f6' : '#22c55e'}
-            lineWidth={2}
+            color={index % 2 === 0 ? '#808080' : '#000000'}
+            lineWidth={3}
           />
         );
       })
@@ -235,7 +239,7 @@ function Visualizer3D({
               [nextEyelet[0] || 0, nextEyelet[1] || 0, nextEyelet[2] || 0],
             ]}
             color={tendonColor}
-            lineWidth={isActive ? 3 : 2}
+            lineWidth={2}
             dashed={!isActive}
           />
         );
