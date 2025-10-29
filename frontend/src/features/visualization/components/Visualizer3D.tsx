@@ -1,18 +1,25 @@
 import { Line, OrbitControls, Sphere } from '@react-three/drei';
+import type { ThreeEvent } from '@react-three/fiber';
 import { Canvas } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { Typography } from '../../../components/ui';
 import TahoeGlass from '../../../components/ui/TahoeGlass';
 import { getTendonColor } from '../../../utils/tendonColors';
+import { CoordinateTooltip } from './CoordinateTooltip';
 import { TendonResultsPanel } from './TendonResultsPanel';
 
 // Constants for 3D visualization
 const VISUALIZATION_CONSTANTS = {
   TENDON_ACTIVATION_THRESHOLD: 0.001,
-  SPHERE_RADIUS: 0.005,
+  SPHERE_RADIUS: 0.002,
   SPHERE_SEGMENTS: 8,
   SPHERE_RINGS: 6,
+  // Clickable sphere multipliers
+  CLICKABLE_SPHERE_SEGMENT_MULTIPLIER: 0.3,
+  CLICKABLE_SPHERE_COUPLING_MULTIPLIER: 0.3,
+  CLICKABLE_SPHERE_SEGMENTS: 6,
+  CLICKABLE_SPHERE_RINGS: 4,
   CAMERA_POSITION: 1.5,
   CAMERA_DISTANCE: 200,
   CAMERA_NEAR: 0.5,
@@ -69,29 +76,106 @@ function Visualizer3D({
   setShowTendonResults,
 }: Visualizer3DProps) {
   const controlsRef = useRef<OrbitControlsImpl>(null);
+  const [clickedCoordinates, setClickedCoordinates] = useState<{
+    x: number;
+    y: number;
+    z: number;
+    screenX: number;
+    screenY: number;
+  } | null>(null);
+
+  // Handle click on 3D objects
+  const handleObjectClick = useCallback((event: ThreeEvent<MouseEvent>) => {
+    event.stopPropagation();
+    const point = event.point;
+    const nativeEvent = event.nativeEvent;
+
+    setClickedCoordinates({
+      x: point.x,
+      y: point.y,
+      z: point.z,
+      screenX: nativeEvent.clientX,
+      screenY: nativeEvent.clientY,
+    });
+  }, []);
+
+  // Show dialog when coordinates are available
+  useEffect(() => {
+    if (clickedCoordinates) {
+      // Use setTimeout to ensure the dialog is rendered before showing
+      const timer = setTimeout(() => {
+        const dialog = document.querySelector(
+          'dialog[aria-label="Coordinate information panel"]'
+        ) as HTMLDialogElement;
+        if (dialog) {
+          dialog.show();
+        }
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [clickedCoordinates]);
 
   const lines = useMemo(() => {
-    return segments
-      .map((segment, index) => {
-        const points = segment
-          .filter(point => point.length === 3 && point.every(Number.isFinite))
-          .map(([x, y, z]) => [x, y, z] as [number, number, number]);
+    const lineElements: React.ReactElement[] = [];
+    const clickablePoints: React.ReactElement[] = [];
 
-        if (points.length < 2) {
-          return null;
+    for (const [index, segment] of segments.entries()) {
+      const points = segment
+        .filter(point => point.length === 3 && point.every(Number.isFinite))
+        .map(([x, y, z]) => [x, y, z] as [number, number, number]);
+
+      if (points.length < 2) {
+        continue;
+      }
+
+      // Add line
+      lineElements.push(
+        <Line
+          key={`segment-${index}-${points.length}`}
+          points={points}
+          color={index % 2 === 0 ? '#808080' : '#000000'}
+          lineWidth={3}
+        />
+      );
+
+      // Add clickable spheres at key points (start, mid, end)
+      // Use Set to ensure unique indices
+      const keyPointIndicesSet = new Set<number>([
+        0, // Start
+        Math.floor(points.length / 2), // Mid
+        points.length - 1, // End
+      ]);
+
+      // Convert to array and sort for consistent ordering
+      const uniquePointIndices = Array.from(keyPointIndicesSet).sort((a, b) => a - b);
+
+      for (let i = 0; i < uniquePointIndices.length; i++) {
+        const pointIndex = uniquePointIndices[i];
+        if (pointIndex === undefined) continue;
+        const point = points[pointIndex];
+        if (point) {
+          clickablePoints.push(
+            <Sphere
+              key={`segment-point-${index}-${pointIndex}-${i}`}
+              args={[
+                VISUALIZATION_CONSTANTS.SPHERE_RADIUS *
+                  VISUALIZATION_CONSTANTS.CLICKABLE_SPHERE_SEGMENT_MULTIPLIER,
+                VISUALIZATION_CONSTANTS.CLICKABLE_SPHERE_SEGMENTS,
+                VISUALIZATION_CONSTANTS.CLICKABLE_SPHERE_RINGS,
+              ]}
+              position={[point[0], point[1], point[2]]}
+              onClick={handleObjectClick}
+            >
+              <meshBasicMaterial color="#000000" opacity={0} />
+            </Sphere>
+          );
         }
+      }
+    }
 
-        return (
-          <Line
-            key={`segment-${index}-${points.length}`}
-            points={points}
-            color={index % 2 === 0 ? '#808080' : '#000000'}
-            lineWidth={3}
-          />
-        );
-      })
-      .filter(Boolean);
-  }, [segments]);
+    return [...lineElements, ...clickablePoints];
+  }, [segments, handleObjectClick]);
 
   // Helper function to extract rotation matrix components
   const extractRotationMatrix = (orientation: number[][]) => {
@@ -177,6 +261,7 @@ function Visualizer3D({
             VISUALIZATION_CONSTANTS.SPHERE_RINGS,
           ]}
           position={[globalX, globalY, globalZ]}
+          onClick={handleObjectClick}
         >
           <meshBasicMaterial color="#000000" />
         </Sphere>,
@@ -260,6 +345,32 @@ function Visualizer3D({
     const { positions: couplingPositions, orientations: couplingOrientations } =
       tendonAnalysis.coupling_data;
 
+    // Create clickable spheres at coupling center points (start, mid, end)
+    for (const [couplingIndex, couplingPos] of couplingPositions.entries()) {
+      if (couplingPos.length < 3) continue;
+
+      const x = Number(couplingPos[0]) || 0;
+      const y = Number(couplingPos[1]) || 0;
+      const z = Number(couplingPos[2]) || 0;
+
+      // Add invisible clickable sphere at coupling center (larger for easier clicking)
+      elements.push(
+        <Sphere
+          key={`coupling-center-${couplingIndex}`}
+          args={[
+            VISUALIZATION_CONSTANTS.SPHERE_RADIUS *
+              VISUALIZATION_CONSTANTS.CLICKABLE_SPHERE_COUPLING_MULTIPLIER,
+            VISUALIZATION_CONSTANTS.SPHERE_SEGMENTS,
+            VISUALIZATION_CONSTANTS.SPHERE_RINGS,
+          ]}
+          position={[x, y, z]}
+          onClick={handleObjectClick}
+        >
+          <meshBasicMaterial color="#000000" opacity={0} />
+        </Sphere>
+      );
+    }
+
     // Create tendon eyelets for each coupling point
     for (const [couplingIndex, couplingPos] of couplingPositions.entries()) {
       if (couplingPos.length < 3) continue;
@@ -290,7 +401,7 @@ function Visualizer3D({
     }
 
     return elements;
-  }, [tendonConfig, tendonAnalysis]);
+  }, [tendonConfig, tendonAnalysis, handleObjectClick]);
 
   const { center, size } = useMemo(() => {
     const allPoints = segments
@@ -361,6 +472,11 @@ function Visualizer3D({
   const showEmptyState = useMemo(() => {
     return !hasData;
   }, [hasData]);
+
+  // Memoize the toggle callback to prevent unnecessary re-renders
+  const handleToggleTendonResults = useCallback(() => {
+    setShowTendonResults(!showTendonResults);
+  }, [showTendonResults, setShowTendonResults]);
 
   return (
     <div className="h-full flex flex-col" data-testid="visualizer-3d">
@@ -467,7 +583,19 @@ function Visualizer3D({
               <TendonResultsPanel
                 tendonAnalysis={tendonAnalysis}
                 isVisible={showTendonResults}
-                onToggle={() => setShowTendonResults(!showTendonResults)}
+                onToggle={handleToggleTendonResults}
+              />
+            )}
+
+            {/* Coordinate Tooltip */}
+            {clickedCoordinates && (
+              <CoordinateTooltip
+                x={clickedCoordinates.x}
+                y={clickedCoordinates.y}
+                z={clickedCoordinates.z}
+                screenX={clickedCoordinates.screenX}
+                screenY={clickedCoordinates.screenY}
+                onClose={() => setClickedCoordinates(null)}
               />
             )}
           </>

@@ -7,17 +7,17 @@
 
 // Tahoe Glass Effect Tokens
 export const tahoeGlass = {
-  // Base glass effect - the signature Tahoe style
-  base: 'bg-white/20 backdrop-blur-xl border border-white/30',
+  // Base glass effect - the signature Tahoe style (transparent frosted glass)
+  base: 'bg-white/2 backdrop-blur-sm border border-white/5',
 
   // Enhanced glass effect with stronger opacity
-  enhanced: 'bg-white/30 backdrop-blur-xl border border-white/40',
+  enhanced: 'bg-white/5 backdrop-blur-md border border-white/10',
 
   // Subtle glass effect for overlays
-  subtle: 'bg-white/10 backdrop-blur-xl border border-white/20',
+  subtle: 'bg-white/1 backdrop-blur-sm border border-white/3',
 
   // Strong glass effect for emphasis
-  strong: 'bg-white/40 backdrop-blur-xl border border-white/50',
+  strong: 'bg-white/10 backdrop-blur-lg border border-white/15',
 } as const;
 
 // Shadow Tokens
@@ -77,17 +77,17 @@ export const focusStates = {
 
 // Hover States
 export const hoverStates = {
-  // Standard glass hover
-  glass: 'hover:bg-white/30 hover:shadow-2xl',
+  // Standard glass hover (transparent frosted glass)
+  glass: 'hover:bg-white/5 hover:shadow-2xl',
 
   // Subtle hover for inputs
-  subtle: 'hover:bg-white/10 hover:shadow-lg',
+  subtle: 'hover:bg-white/3 hover:shadow-lg',
 
   // Scale hover for buttons
   scale: 'hover:scale-105',
 
   // Combined glass and scale hover
-  glassScale: 'hover:bg-white/30 hover:shadow-2xl hover:scale-105',
+  glassScale: 'hover:bg-white/5 hover:shadow-2xl hover:scale-105',
 } as const;
 
 // Disabled States
