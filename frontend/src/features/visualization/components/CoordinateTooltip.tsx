@@ -261,7 +261,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
             </div>
 
             {/* Unit selector - not selectable */}
-            <div className="flex bg-white/10 border border-white/20 rounded-full p-1 shadow-lg gap-1 select-none">
+            <div className="flex bg-white/3 border border-white/8 rounded-full p-1 shadow-lg gap-1 select-none">
               {(['mm', 'cm', 'm'] as const).map(unitOption => (
                 <button
                   key={unitOption}
@@ -269,8 +269,8 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
                   onMouseDown={e => e.stopPropagation()}
                   className={`relative flex-1 h-6 px-2 flex items-center justify-center text-xs font-medium rounded-full transition-colors duration-200 border-2 ${
                     unit === unitOption
-                      ? 'bg-blue-500/30 text-gray-900 border-blue-400/50'
-                      : 'text-gray-600 hover:text-gray-800 hover:bg-white/30 border-transparent'
+                      ? 'bg-blue-500/20 text-gray-900 border-blue-400/30'
+                      : 'text-gray-600 hover:text-gray-800 hover:bg-white/20 border-transparent'
                   }`}
                   aria-label={`Select ${unitOption} unit`}
                 >
@@ -284,7 +284,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
 
             {/* Coordinate values - highlightable div for easy selection */}
             <div
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-2 select-text cursor-text hover:bg-white/10 transition-colors"
+              className="w-full bg-white/2 border border-white/5 rounded-lg p-2 select-text cursor-text hover:bg-white/4 transition-colors"
               title="Click to select all coordinates"
               onMouseDown={e => e.stopPropagation()}
               role="textbox" // NOSONAR typescript:S6819

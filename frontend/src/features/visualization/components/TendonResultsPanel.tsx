@@ -245,7 +245,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     return (
       <button
         onClick={onToggle}
-        className="fixed top-1/2 right-4 transform -translate-y-1/2 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105"
+        className="fixed top-1/2 right-4 transform -translate-y-1/2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1.5 shadow-2xl hover:bg-white/10 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105"
         aria-label="Show tendon results"
       >
         <svg
@@ -271,7 +271,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
       {!isVisible && firstTendonEntry && (
         <button
           onClick={onToggle}
-          className="fixed bottom-8 right-42 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105"
+          className="fixed bottom-8 right-42 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1.5 shadow-2xl hover:bg-white/10 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105"
           aria-label="Show tendon results"
         >
           <svg
@@ -304,7 +304,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
         }}
         ref={panelRef}
       >
-        <div className="h-full relative bg-white/20 backdrop-blur-2xl border border-white/30 rounded-tl-2xl shadow-2xl shadow-black/10">
+        <div className="h-full relative bg-white/2 backdrop-blur-sm border border-white/5 rounded-tl-2xl shadow-2xl shadow-black/10">
           {/* Resize Handle - show when panel can be resized */}
           {(hasHorizontalScroll || panelWidth < optimalWidth) && (
             <div className="absolute left-0 top-0 w-1 h-full z-20 group">
@@ -323,7 +323,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
             {isVisible && (
               <button
                 onClick={onToggle}
-                className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out z-10 hover:scale-105"
+                className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1.5 shadow-2xl hover:bg-white/10 hover:shadow-2xl transition-all duration-300 ease-in-out z-10 hover:scale-105"
                 aria-label={isVisible ? 'Hide tendon results' : 'Show tendon results'}
               >
                 <svg
