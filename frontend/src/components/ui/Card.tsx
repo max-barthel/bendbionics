@@ -1,4 +1,5 @@
 import React from 'react';
+import TahoeGlass from './TahoeGlass';
 
 type CardProps = {
   readonly children: React.ReactNode;
@@ -7,12 +8,14 @@ type CardProps = {
 
 function Card({ children, className = '' }: CardProps) {
   return (
-    <div
+    <TahoeGlass
       data-testid="card"
-      className={`p-8 bg-white rounded-xl shadow-lg border border-neutral-200 ${className}`}
+      className={`p-8 shadow-2xl shadow-black/20 ${className}`}
+      variant="enhanced"
+      size="lg"
     >
       {children}
-    </div>
+    </TahoeGlass>
   );
 }
 

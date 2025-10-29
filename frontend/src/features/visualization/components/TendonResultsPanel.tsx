@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Typography } from '../../../components/ui';
 import { getTendonColorClasses } from '../../../utils/tendonColors';
 
@@ -46,7 +46,11 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
   const [unit, setUnit] = useState<LengthUnit>('mm');
   const [panelWidth, setPanelWidth] = useState(384); // Default width (w-96 = 384px)
   const [isResizing, setIsResizing] = useState(false);
+  const [hasHorizontalScroll, setHasHorizontalScroll] = useState(false);
+  const [optimalWidth, setOptimalWidth] = useState(384); // Width where no scroll is needed
   const panelRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   const convertLength = (length: number, targetUnit: LengthUnit) => {
     const mm = length * 1000; // Convert from meters to mm
@@ -73,29 +77,127 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     return `${sign}${converted.toFixed(2)}`;
   };
 
+  // Simple scroll check without debouncing to avoid infinite loops
+  const checkHorizontalScroll = useCallback(() => {
+    if (!contentRef.current) return;
+
+    const table = contentRef.current.querySelector('table');
+    const tableContainer = contentRef.current.querySelector('.overflow-x-auto');
+
+    // Check multiple elements for horizontal scroll
+    const contentHasScroll =
+      contentRef.current.scrollWidth > contentRef.current.clientWidth;
+    const tableHasScroll = table && table.scrollWidth > table.clientWidth;
+    const containerHasScroll =
+      tableContainer && tableContainer.scrollWidth > tableContainer.clientWidth;
+
+    const hasScroll = contentHasScroll || tableHasScroll || containerHasScroll;
+
+    // Only update state if values actually changed to prevent unnecessary re-renders
+    const newHasScroll = Boolean(hasScroll);
+    setHasHorizontalScroll(prev => (prev === newHasScroll ? prev : newHasScroll));
+
+    // Calculate optimal width
+    const contentScrollWidth = contentRef.current.scrollWidth;
+    const tableScrollWidth = table?.scrollWidth || 0;
+    const containerScrollWidth = tableContainer?.scrollWidth || 0;
+
+    const maxScrollWidth = Math.max(
+      contentScrollWidth,
+      tableScrollWidth,
+      containerScrollWidth
+    );
+
+    const padding = 48; // Account for panel padding and borders
+    const newOptimalWidth = Math.max(maxScrollWidth + padding, 360);
+
+    // Only update if width actually changed
+    setOptimalWidth(prev => (prev === newOptimalWidth ? prev : newOptimalWidth));
+  }, []);
+
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
+    // Always allow resizing when the handle is visible
     setIsResizing(true);
   }, []);
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      if (!isResizing) return;
+      if (!isResizing || !panelRef.current) return;
 
       const newWidth = window.innerWidth - e.clientX;
       const minWidth = 360;
-      const maxWidth = window.innerWidth * 0.8; // Allow up to 80% of screen width
+      // Use optimal width as max, but don't exceed 80% of screen width
+      const maxWidth = Math.min(optimalWidth, window.innerWidth * 0.8);
 
+      // Always allow resizing within bounds
       if (newWidth >= minWidth && newWidth <= maxWidth) {
-        setPanelWidth(newWidth);
+        // Update DOM directly for smooth resizing without React re-renders
+        panelRef.current.style.width = `${newWidth}px`;
+        // Don't check scroll during resize - only at the end
       }
     },
-    [isResizing]
+    [isResizing, optimalWidth]
   );
 
   const handleMouseUp = useCallback(() => {
+    // Sync final width to state when resizing ends
+    if (panelRef.current) {
+      const rect = panelRef.current.getBoundingClientRect();
+      setPanelWidth(rect.width);
+      // Check scroll after resize ends
+      checkHorizontalScroll();
+    }
     setIsResizing(false);
-  }, []);
+  }, [checkHorizontalScroll]);
+
+  // Check for horizontal scroll on mount and when tendon analysis changes
+  useEffect(() => {
+    if (tendonAnalysis && isVisible) {
+      // Use setTimeout to ensure DOM is fully rendered
+      const timer = setTimeout(() => {
+        checkHorizontalScroll();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [tendonAnalysis, isVisible, checkHorizontalScroll]);
+
+  // Add ResizeObserver to detect when table content changes
+  useEffect(() => {
+    if (!contentRef.current || !isVisible) return;
+
+    if (resizeObserverRef.current) {
+      resizeObserverRef.current.disconnect();
+    }
+
+    resizeObserverRef.current = new ResizeObserver(() => {
+      checkHorizontalScroll();
+    });
+
+    // Observe the content container and any tables
+    resizeObserverRef.current.observe(contentRef.current);
+    const table = contentRef.current.querySelector('table');
+    if (table) {
+      resizeObserverRef.current.observe(table);
+    }
+
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
+    };
+  }, [checkHorizontalScroll, isVisible]);
+
+  // Check on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      checkHorizontalScroll();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [checkHorizontalScroll]);
 
   // Add event listeners for mouse move and up
   useEffect(() => {
@@ -110,11 +212,40 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     return undefined;
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
+  // Memoize expensive calculations - always call hooks
+  const tendonEntries = useMemo(
+    () =>
+      tendonAnalysis?.actuation_commands
+        ? Object.entries(tendonAnalysis.actuation_commands)
+        : [],
+    [tendonAnalysis?.actuation_commands]
+  );
+
+  const totalTendons = tendonEntries.length;
+
+  // Memoize dynamic height calculation
+  const dynamicHeight = useMemo(() => {
+    return Math.min(
+      Math.max(
+        totalTendons * HEIGHT_CONSTANTS.TENDON_CARD_HEIGHT + HEIGHT_CONSTANTS.PADDING,
+        HEIGHT_CONSTANTS.MIN_HEIGHT
+      ),
+      HEIGHT_CONSTANTS.MAX_HEIGHT
+    );
+  }, [totalTendons]);
+
+  const dynamicHeightClass = useMemo(
+    () => `h-[${dynamicHeight}px] max-h-[${dynamicHeight}px]`,
+    [dynamicHeight]
+  );
+
+  const firstTendonEntry = tendonEntries[0];
+
   if (!tendonAnalysis?.actuation_commands) {
     return (
       <button
         onClick={onToggle}
-        className="fixed top-1/2 right-4 transform -translate-y-1/2 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105"
+        className="fixed top-1/2 right-4 transform -translate-y-1/2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1.5 shadow-2xl hover:bg-white/10 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105"
         aria-label="Show tendon results"
       >
         <svg
@@ -134,29 +265,13 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     );
   }
 
-  const tendonEntries = Object.entries(tendonAnalysis.actuation_commands);
-  const totalTendons = tendonEntries.length;
-
-  // Calculate dynamic height based on number of tendons
-  // Each tendon card is ~80px tall, plus padding and close button space
-  const dynamicHeight = Math.min(
-    Math.max(
-      totalTendons * HEIGHT_CONSTANTS.TENDON_CARD_HEIGHT + HEIGHT_CONSTANTS.PADDING,
-      HEIGHT_CONSTANTS.MIN_HEIGHT
-    ),
-    HEIGHT_CONSTANTS.MAX_HEIGHT
-  );
-  const dynamicHeightClass = `h-[${dynamicHeight}px] max-h-[${dynamicHeight}px]`;
-
-  const firstTendonEntry = tendonEntries[0];
-
   return (
     <>
       {/* Simple Toggle Button (when folded) */}
       {!isVisible && firstTendonEntry && (
         <button
           onClick={onToggle}
-          className="fixed bottom-8 right-42 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105"
+          className="fixed bottom-8 right-42 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1.5 shadow-2xl hover:bg-white/10 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105"
           aria-label="Show tendon results"
         >
           <svg
@@ -185,23 +300,30 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
         style={{
           width: `${panelWidth}px`,
           right: 0,
+          willChange: isResizing ? 'width' : 'auto',
         }}
         ref={panelRef}
       >
-        <div className="h-full relative bg-white/20 backdrop-blur-2xl border border-white/30 rounded-tl-2xl shadow-2xl shadow-black/10">
-          {/* Resize Handle */}
-          <button
-            className="absolute left-0 top-0 w-1 h-full bg-transparent hover:bg-blue-400/30 cursor-col-resize transition-colors duration-200 z-20 border-none p-0"
-            onMouseDown={handleMouseDown}
-            aria-label="Resize panel"
-            type="button"
-          />
+        <div className="h-full relative bg-white/2 backdrop-blur-sm border border-white/5 rounded-tl-2xl shadow-2xl shadow-black/10">
+          {/* Resize Handle - show when panel can be resized */}
+          {(hasHorizontalScroll || panelWidth < optimalWidth) && (
+            <div className="absolute left-0 top-0 w-1 h-full z-20 group">
+              <button
+                className="w-full h-full bg-transparent hover:bg-blue-400/30 cursor-col-resize transition-colors duration-200 border-none p-0"
+                onMouseDown={handleMouseDown}
+                aria-label="Resize panel"
+                type="button"
+              />
+              {/* Visual indicator */}
+              <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-blue-400/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+            </div>
+          )}
           <div className="flex flex-col h-full">
             {/* Close Button - positioned over content */}
             {isVisible && (
               <button
                 onClick={onToggle}
-                className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-1.5 shadow-2xl hover:bg-white/60 hover:shadow-2xl transition-all duration-300 ease-in-out z-10 hover:scale-105"
+                className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1.5 shadow-2xl hover:bg-white/10 hover:shadow-2xl transition-all duration-300 ease-in-out z-10 hover:scale-105"
                 aria-label={isVisible ? 'Hide tendon results' : 'Show tendon results'}
               >
                 <svg
@@ -220,7 +342,10 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
               </button>
             )}
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 pl-6 pb-6 min-h-0">
+            <div
+              ref={contentRef}
+              className="flex-1 overflow-y-auto p-4 pl-6 pb-6 min-h-0"
+            >
               <div className="space-y-4">
                 {/* Unit Selection */}
                 <div className="flex items-center justify-between mb-4">

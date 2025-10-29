@@ -4,13 +4,10 @@ import { combineStyles, getTahoeGlassStyles } from '../../styles/tahoe-utils';
 type TahoeGlassVariant = 'base' | 'enhanced' | 'subtle' | 'strong';
 type TahoeGlassSize = 'sm' | 'md' | 'lg' | 'xl';
 
-interface TahoeGlassProps {
+interface TahoeGlassProps extends React.HTMLAttributes<HTMLElement> {
   readonly variant?: TahoeGlassVariant;
   readonly size?: TahoeGlassSize;
   readonly children: React.ReactNode;
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
-  readonly onClick?: () => void;
   readonly as?: keyof React.JSX.IntrinsicElements;
 }
 
@@ -28,6 +25,7 @@ function TahoeGlass({
   style = {},
   onClick,
   as: Component = 'div',
+  ...restProps
 }: TahoeGlassProps) {
   // Get Tahoe glass styling based on variant
   const tahoeGlassClasses = getTahoeGlassStyles(
@@ -56,7 +54,7 @@ function TahoeGlass({
 
   return React.createElement(
     Component,
-    { className: classes, style, onClick },
+    { ...restProps, className: classes, style, onClick },
     children
   );
 }

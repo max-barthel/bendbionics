@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 
 // Feature imports - using direct imports to avoid export conflicts
@@ -16,7 +16,7 @@ import { AuthPage } from './components/auth/AuthPage';
 import { EmailVerification } from './components/auth/EmailVerification';
 import { Profile } from './components/auth/Profile';
 
-import { type User } from './api/auth';
+import { presetAPI, type User } from './api/auth';
 import { LoadingSpinner, Typography } from './components/ui';
 import TahoeGlass from './components/ui/TahoeGlass';
 import { AuthProvider, useAuth } from './providers';
@@ -149,6 +149,67 @@ function useAppInitialization(setIsInitializing: (value: boolean) => void) {
 
     return () => clearTimeout(timer);
   }, [setIsInitializing]);
+}
+
+// Custom hook to auto-load a public preset on first visit
+function useAutoLoadPreset(
+  segments: number[][][],
+  isInitializing: boolean,
+  handleLoadPreset: (configuration: RobotConfiguration) => void,
+  setTriggerComputation: (trigger: boolean) => void
+) {
+  const hasAutoLoadedRef = useRef(false);
+
+  useEffect(() => {
+    // Only auto-load if:
+    // 1. App has finished initializing
+    // 2. No segments are currently displayed (first load)
+    // 3. We haven't already attempted to auto-load
+    if (!isInitializing && segments.length === 0 && !hasAutoLoadedRef.current) {
+      hasAutoLoadedRef.current = true;
+
+      const loadPublicPreset = async () => {
+        try {
+          const publicPresets = await presetAPI.getPublicPresets();
+          if (publicPresets.length > 0) {
+            // Load the first public preset
+            const firstPreset = publicPresets[0];
+            if (firstPreset?.configuration) {
+              if (import.meta.env.DEV) {
+                logger.debug('Auto-loading public preset:', LogContext.UI, {
+                  presetName: firstPreset.name,
+                });
+              }
+              handleLoadPreset(firstPreset.configuration);
+
+              // Trigger computation after loading the preset
+              // Add a small delay to ensure the preset is fully loaded
+              setTimeout(() => {
+                setTriggerComputation(true);
+              }, 200);
+            }
+          }
+        } catch (error) {
+          // Silently fail - if public presets can't be loaded, just show the default screen
+          if (import.meta.env.DEV) {
+            logger.debug('Could not auto-load public preset:', LogContext.UI, {
+              error,
+            });
+          }
+        }
+      };
+
+      // Small delay to ensure app is fully ready
+      const timer = setTimeout(() => {
+        void loadPublicPreset();
+      }, INITIALIZATION_DELAY + 100);
+
+      return () => clearTimeout(timer);
+    }
+
+    // Return undefined if the condition is not met
+    return undefined;
+  }, [isInitializing, segments.length, handleLoadPreset, setTriggerComputation]);
 }
 
 // Helper function to create array with default values
@@ -427,27 +488,34 @@ function Sidebar({
 }) {
   return (
     <div
-      className={`fixed top-0 left-0 h-full bg-white/15 backdrop-blur-3xl border-r border-white/30 shadow-2xl transition-all duration-300 ease-in-out overflow-hidden z-40 ${
+      className={`fixed top-0 left-0 h-full transition-all duration-300 ease-in-out overflow-hidden z-40 ${
         appState.sidebarCollapsed
           ? 'w-0 -translate-x-full opacity-0'
           : 'w-96 translate-x-0 opacity-100 rounded-r-2xl'
       }`}
     >
-      <div className="w-96 h-full pr-2">
-        <FormTabs
-          key={appState.presetLoadKey}
-          onResult={handleFormResult}
-          initialConfiguration={appState.currentConfiguration}
-          user={appState.user}
-          currentConfiguration={appState.currentConfiguration}
-          onLoadPreset={handleLoadPreset}
-          navigate={appState.navigate}
-          onLoadingChange={appState.setLoading}
-          triggerComputation={appState.triggerComputation}
-          onComputationTriggered={handleComputationTriggered}
-          onShowPresetManager={handleShowPresetManager}
-        />
-      </div>
+      <TahoeGlass
+        className="h-full w-96 rounded-r-2xl shadow-2xl p-0 mr-4"
+        variant="strong"
+        size="sm"
+        style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.3)' }}
+      >
+        <div className="w-full h-full pr-2">
+          <FormTabs
+            key={appState.presetLoadKey}
+            onResult={handleFormResult}
+            initialConfiguration={appState.currentConfiguration}
+            user={appState.user}
+            currentConfiguration={appState.currentConfiguration}
+            onLoadPreset={handleLoadPreset}
+            navigate={appState.navigate}
+            onLoadingChange={appState.setLoading}
+            triggerComputation={appState.triggerComputation}
+            onComputationTriggered={handleComputationTriggered}
+            onShowPresetManager={handleShowPresetManager}
+          />
+        </div>
+      </TahoeGlass>
     </div>
   );
 }
@@ -728,6 +796,14 @@ function AppContent() {
     setShowTendonResults: appState.setShowTendonResults,
     setRobotState: appState.setRobotState,
   });
+
+  // Auto-load a public preset on first visit
+  useAutoLoadPreset(
+    appState.segments,
+    appState.isInitializing,
+    handleLoadPreset,
+    appState.setTriggerComputation
+  );
 
   const handlers = useAppHandlers(appState, {
     setSegments: appState.setSegments,
