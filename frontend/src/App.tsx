@@ -488,27 +488,34 @@ function Sidebar({
 }) {
   return (
     <div
-      className={`fixed top-0 left-0 h-full bg-white/15 backdrop-blur-3xl border-r border-white/30 shadow-2xl transition-all duration-300 ease-in-out overflow-hidden z-40 ${
+      className={`fixed top-0 left-0 h-full transition-all duration-300 ease-in-out overflow-hidden z-40 ${
         appState.sidebarCollapsed
           ? 'w-0 -translate-x-full opacity-0'
           : 'w-96 translate-x-0 opacity-100 rounded-r-2xl'
       }`}
     >
-      <div className="w-96 h-full pr-2">
-        <FormTabs
-          key={appState.presetLoadKey}
-          onResult={handleFormResult}
-          initialConfiguration={appState.currentConfiguration}
-          user={appState.user}
-          currentConfiguration={appState.currentConfiguration}
-          onLoadPreset={handleLoadPreset}
-          navigate={appState.navigate}
-          onLoadingChange={appState.setLoading}
-          triggerComputation={appState.triggerComputation}
-          onComputationTriggered={handleComputationTriggered}
-          onShowPresetManager={handleShowPresetManager}
-        />
-      </div>
+      <TahoeGlass
+        className="h-full w-96 rounded-r-2xl shadow-2xl p-0 mr-4"
+        variant="strong"
+        size="sm"
+        style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.3)' }}
+      >
+        <div className="w-full h-full pr-2">
+          <FormTabs
+            key={appState.presetLoadKey}
+            onResult={handleFormResult}
+            initialConfiguration={appState.currentConfiguration}
+            user={appState.user}
+            currentConfiguration={appState.currentConfiguration}
+            onLoadPreset={handleLoadPreset}
+            navigate={appState.navigate}
+            onLoadingChange={appState.setLoading}
+            triggerComputation={appState.triggerComputation}
+            onComputationTriggered={handleComputationTriggered}
+            onShowPresetManager={handleShowPresetManager}
+          />
+        </div>
+      </TahoeGlass>
     </div>
   );
 }
