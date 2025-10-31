@@ -30,88 +30,18 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  // Handle drag start - check if we should drag or not
+  // Handle drag start (initiated from the drag handle button)
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!tooltipRef.current) return;
-
-    // Don't drag if clicking on interactive elements (buttons or coordinate area)
-    const target = e.target as HTMLElement;
-    if (
-      target.closest('button[aria-label="Close coordinates"]') ||
-      target.closest('button[aria-label*="Select"]') ||
-      target.closest('[aria-label="Coordinate values - click to select and copy"]')
-    ) {
-      return;
-    }
-
-    // Prevent default behavior and start dragging
     e.preventDefault();
     e.stopPropagation();
-
     setIsDragging(true);
-
     const rect = tooltipRef.current.getBoundingClientRect();
     setDragOffset({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
     });
   }, []);
-
-  // Handle keyboard drag (for accessibility)
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (!tooltipRef.current) return;
-
-      // Don't handle keyboard events if focus is on interactive elements
-      const target = e.target as HTMLElement;
-      if (
-        target.closest('button[aria-label="Close coordinates"]') ||
-        target.closest('button[aria-label*="Select"]') ||
-        target.closest('[aria-label="Coordinate values - click to select and copy"]')
-      ) {
-        return;
-      }
-
-      const step = 10; // pixels to move per key press
-      let newLeft = adjustedPosition.left;
-      let newTop = adjustedPosition.top;
-
-      switch (e.key) {
-        case 'ArrowLeft':
-          e.preventDefault();
-          newLeft = Math.max(0, adjustedPosition.left - step);
-          break;
-        case 'ArrowRight':
-          e.preventDefault();
-          newLeft = Math.min(window.innerWidth - 200, adjustedPosition.left + step);
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          newTop = Math.max(0, adjustedPosition.top - step);
-          break;
-        case 'ArrowDown':
-          e.preventDefault();
-          newTop = Math.min(window.innerHeight - 200, adjustedPosition.top + step);
-          break;
-        case 'Enter':
-        case ' ':
-          e.preventDefault();
-          // Focus the first interactive element
-          {
-            const firstButton = tooltipRef.current.querySelector('button');
-            if (firstButton) {
-              firstButton.focus();
-            }
-          }
-          break;
-        default:
-          return;
-      }
-
-      setAdjustedPosition({ left: newLeft, top: newTop });
-    },
-    [adjustedPosition]
-  );
 
   // Handle drag move - update DOM directly for smooth dragging
   const handleMouseMove = useCallback(
@@ -223,13 +153,10 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
       aria-label="Coordinate information panel"
       aria-modal="false"
     >
-      <div
+      <section
         className="w-full h-full bg-transparent border-none p-0 relative group cursor-grab active:cursor-grabbing outline-none focus:outline-none"
+        aria-label="Coordinate panel"
         onMouseDown={handleMouseDown}
-        onKeyDown={handleKeyDown}
-        role="button" // NOSONAR typescript:S6819
-        tabIndex={0}
-        aria-label="Drag coordinate panel"
       >
         <TahoeGlass className="min-w-[160px] shadow-2xl" size="md">
           <div className="flex flex-col gap-2">
@@ -241,7 +168,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
               <button
                 onClick={onClose}
                 onMouseDown={e => e.stopPropagation()}
-                className="text-gray-600 hover:text-gray-900 transition-colors p-1 rounded-full hover:bg-white/30"
+                className="text-gray-500 hover:text-gray-700 transition-colors p-1 rounded-full"
                 aria-label="Close coordinates"
               >
                 <svg
@@ -258,6 +185,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
                   />
                 </svg>
               </button>
+              {/* Drag handle removed per request; dragging still works from panel */}
             </div>
 
             {/* Unit selector - not selectable */}
@@ -282,14 +210,12 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
               ))}
             </div>
 
-            {/* Coordinate values - highlightable div for easy selection */}
+            {/* Coordinate values - selectable rows, right-aligned values */}
             <div
-              className="w-full bg-white/2 border border-white/5 rounded-lg p-2 select-text cursor-text hover:bg-white/4 transition-colors outline-none focus:outline-none"
-              title="Click to select all coordinates"
+              className="w-full bg-white/2 border border-white/5 rounded-lg p-2 hover:bg-white/4 transition-colors outline-none focus:outline-none select-text"
+              title="Click and drag to select coordinates"
               onMouseDown={e => e.stopPropagation()}
-              role="textbox" // NOSONAR typescript:S6819
-              tabIndex={0}
-              aria-label="Coordinate values - click to select and copy"
+              aria-label="Coordinate values"
             >
               <div className="space-y-1">
                 <div className="flex items-center justify-between py-0.5">
@@ -299,7 +225,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
                   >
                     X:
                   </Typography>
-                  <span className="text-sm text-gray-900 font-mono select-text">
+                  <span className="text-sm text-gray-900 font-mono select-text text-right cursor-text">
                     {formatCoordinate(x, unit)}
                   </span>
                 </div>
@@ -310,7 +236,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
                   >
                     Y:
                   </Typography>
-                  <span className="text-sm text-gray-900 font-mono select-text">
+                  <span className="text-sm text-gray-900 font-mono select-text text-right cursor-text">
                     {formatCoordinate(y, unit)}
                   </span>
                 </div>
@@ -321,7 +247,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
                   >
                     Z:
                   </Typography>
-                  <span className="text-sm text-gray-900 font-mono select-text">
+                  <span className="text-sm text-gray-900 font-mono select-text text-right cursor-text">
                     {formatCoordinate(z, unit)}
                   </span>
                 </div>
@@ -329,7 +255,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
             </div>
           </div>
         </TahoeGlass>
-      </div>
+      </section>
     </dialog>
   );
 };
