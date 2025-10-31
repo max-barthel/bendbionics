@@ -51,6 +51,9 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
   const panelRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const isAutoAdjustingRef = useRef(false);
+  const lastTendonCountRef = useRef(0);
+  const lastSegmentCountRef = useRef(0);
 
   const convertLength = (length: number, targetUnit: LengthUnit) => {
     const mm = length * 1000; // Convert from meters to mm
@@ -80,6 +83,9 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
   // Simple scroll check without debouncing to avoid infinite loops
   const checkHorizontalScroll = useCallback(() => {
     if (!contentRef.current) return;
+
+    // Skip updates during auto-adjustment to prevent feedback loops
+    if (isAutoAdjustingRef.current) return;
 
     const table = contentRef.current.querySelector('table');
     const tableContainer = contentRef.current.querySelector('.overflow-x-auto');
@@ -198,6 +204,80 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [checkHorizontalScroll]);
+
+  // Calculate current tendon and segment counts
+  const currentTendonCount =
+    tendonAnalysis?.tendon_analysis?.segment_length_changes?.length ?? 0;
+  const currentSegmentCount = tendonAnalysis?.tendon_analysis?.segment_length_changes[0]
+    ?.length
+    ? tendonAnalysis.tendon_analysis.segment_length_changes[0].length - 1
+    : 0;
+
+  // Auto-adjust panel width only when tendon/segment counts change (not on every optimalWidth change)
+  useEffect(() => {
+    if (!isVisible || isResizing || !panelRef.current || !tendonAnalysis) return;
+
+    const tendonCountChanged = currentTendonCount !== lastTendonCountRef.current;
+    const segmentCountChanged = currentSegmentCount !== lastSegmentCountRef.current;
+
+    // Only adjust when counts actually change
+    if (!tendonCountChanged && !segmentCountChanged) {
+      return;
+    }
+
+    // Update refs
+    lastTendonCountRef.current = currentTendonCount;
+    lastSegmentCountRef.current = currentSegmentCount;
+
+    // Wait a bit for DOM to update, then calculate and adjust
+    const timer = setTimeout(() => {
+      if (!contentRef.current) return;
+
+      // Temporarily enable auto-adjust flag
+      isAutoAdjustingRef.current = true;
+
+      // Calculate panel width to match table width exactly
+      const table = contentRef.current.querySelector('table');
+      if (!table) {
+        isAutoAdjustingRef.current = false;
+        return;
+      }
+
+      // Get the actual rendered width of the table
+      const tableWidth = table.getBoundingClientRect().width;
+
+      // Add padding: content div has pl-6 (24px left) + p-4 (16px right) = 40px total horizontal padding
+      const contentPadding = 40; // 24px left + 16px right
+      const calculatedOptimalWidth = Math.max(tableWidth + contentPadding, 360);
+
+      const minWidth = 360;
+      const maxAllowed = Math.min(calculatedOptimalWidth, window.innerWidth * 0.8);
+      const clamped = Math.max(minWidth, Math.min(maxAllowed, calculatedOptimalWidth));
+
+      // Always update to match table size (small threshold to avoid infinite loops)
+      const difference = Math.abs(panelWidth - clamped);
+      if (difference > 2) {
+        setPanelWidth(clamped);
+      }
+
+      // Clear auto-adjust flag after adjustment settles
+      setTimeout(() => {
+        isAutoAdjustingRef.current = false;
+        // Re-enable scroll checking after adjustment
+        checkHorizontalScroll();
+      }, 200);
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [
+    currentTendonCount,
+    currentSegmentCount,
+    isVisible,
+    isResizing,
+    tendonAnalysis,
+    panelWidth,
+    checkHorizontalScroll,
+  ]);
 
   // Add event listeners for mouse move and up
   useEffect(() => {
@@ -375,8 +455,8 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
 
                 {/* Tendon Length Changes Table */}
                 {tendonAnalysis?.tendon_analysis?.segment_length_changes && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse table-fixed">
+                  <div className="overflow-x-auto flex justify-end">
+                    <table className="w-auto border-collapse table-fixed">
                       <thead>
                         <tr>
                           <th className="w-18 px-3 py-2 text-center text-sm font-medium text-gray-700 bg-white/10 border border-white/20 rounded-tl-lg">

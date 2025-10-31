@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { robotAPI, type PCCParams } from '../../../api/client';
 import { validateRobotConfiguration } from '../../../utils/formValidation';
 import { useErrorHandler } from '../../shared/hooks/useErrorHandler';
@@ -44,6 +44,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
   const [loading, setLoading] = useState(false);
   const [validating] = useState(false);
   const [computationProgress, setComputationProgress] = useState(0);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { error, showError, hideError } = useErrorHandler();
 
@@ -155,6 +156,24 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
     }
   }, [robotState, showError, hideError, onResult, onLoadingChange]);
 
+  // Debounced auto-compute entrypoint: validate and compute if not already loading
+  const computeIfValid = useCallback(async (): Promise<boolean> => {
+    if (loading) {
+      return false;
+    }
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    return await new Promise<boolean>(resolve => {
+      debounceTimerRef.current = setTimeout(async () => {
+        const ok = await handleSubmit();
+        resolve(ok);
+      }, 200);
+    });
+  }, [handleSubmit, loading]);
+
   return {
     // State
     loading,
@@ -164,6 +183,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
 
     // Actions
     handleSubmit,
+    computeIfValid,
     hideError,
   };
 }

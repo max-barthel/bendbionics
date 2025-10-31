@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { LoadingSpinner, Typography, UnitSelector } from '../../../components/ui';
+import { useState } from 'react';
+import { Typography, UnitSelector } from '../../../components/ui';
 import NumberInput from '../../shared/components/NumberInput';
 
 type UnitMode = 'angle' | 'length';
@@ -9,6 +9,7 @@ type ArrayInputGroupProps = {
   readonly values: number[]; // Always in SI units internally
   readonly onChange: (values: number[]) => void;
   readonly mode?: UnitMode;
+  readonly onFieldCommit?: () => void;
 };
 
 function ArrayInputGroup({
@@ -16,9 +17,8 @@ function ArrayInputGroup({
   values,
   onChange,
   mode = 'angle',
+  onFieldCommit,
 }: ArrayInputGroupProps) {
-  const [isUpdating, setIsUpdating] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const angleUnits = ['deg', 'rad'] as const;
   const lengthUnits = ['mm', 'cm', 'm'] as const;
 
@@ -67,30 +67,10 @@ function ArrayInputGroup({
       : lengthConversion[unit as 'mm' | 'cm' | 'm'].fromSI(v);
 
   const handleValueChange = (index: number, newDisplayValue: number) => {
-    setIsUpdating(true);
     const updated = [...values];
     updated[index] = convertToSI(newDisplayValue);
     onChange(updated);
-
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    // Simulate processing delay for better UX
-    timeoutRef.current = setTimeout(() => {
-      setIsUpdating(false);
-    }, 100);
   };
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
 
   const handleUnitChange = (newUnit: string) => {
     setUnit(newUnit as (typeof unitOptions)[number]);
@@ -108,7 +88,6 @@ function ArrayInputGroup({
           >
             {label}
           </Typography>
-          {isUpdating && <LoadingSpinner size="sm" color="primary" />}
         </div>
         <UnitSelector
           units={unitOptions}
@@ -121,9 +100,10 @@ function ArrayInputGroup({
       <div className="grid gap-3 gap-y-4 ml-2 grid-cols-3">
         {values.map((val, idx) => (
           <NumberInput
-            key={`${label}-${idx}-${val}`}
+            key={`${label}-${idx}`}
             value={Number(convertFromSI(val).toFixed(4))} // Rounded for UI
             onChange={value => handleValueChange(idx, value)}
+            {...(onFieldCommit && { onBlur: onFieldCommit })}
             placeholder={`#${idx + 1}`}
             data-testid={`number-input-${idx + 1}`}
           />

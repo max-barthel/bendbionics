@@ -4,8 +4,9 @@ import { Route, Routes, useNavigate } from 'react-router-dom';
 // Feature imports - using direct imports to avoid export conflicts
 import ErrorBoundary from './components/ErrorBoundary';
 import { PresetManager } from './features/presets/components/presets/PresetManager';
-import FormTabs from './features/robot-config/components/FormTabs';
-import SubmitButton from './features/robot-config/components/SubmitButton';
+import FormTabs, {
+  type FormTabsRef,
+} from './features/robot-config/components/FormTabs';
 import {
   useRobotState,
   type RobotState,
@@ -35,8 +36,6 @@ interface AppState {
   setIsInitializing: (initializing: boolean) => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
-  triggerComputation: boolean;
-  setTriggerComputation: (trigger: boolean) => void;
   sidebarCollapsed: boolean;
   setSidebarCollapsed: (collapsed: boolean) => void;
   currentConfiguration: RobotConfiguration;
@@ -77,7 +76,6 @@ function useAppState() {
   const [segments, setSegments] = useState<number[][][]>([]);
   const [isInitializing, setIsInitializing] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [triggerComputation, setTriggerComputation] = useState(false);
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentConfiguration, setCurrentConfiguration] = useState<RobotConfiguration>(
@@ -103,8 +101,6 @@ function useAppState() {
     setIsInitializing,
     loading,
     setLoading,
-    triggerComputation,
-    setTriggerComputation,
     sidebarCollapsed,
     setSidebarCollapsed,
     currentConfiguration,
@@ -155,8 +151,7 @@ function useAppInitialization(setIsInitializing: (value: boolean) => void) {
 function useAutoLoadPreset(
   segments: number[][][],
   isInitializing: boolean,
-  handleLoadPreset: (configuration: RobotConfiguration) => void,
-  setTriggerComputation: (trigger: boolean) => void
+  handleLoadPreset: (configuration: RobotConfiguration) => void
 ) {
   const hasAutoLoadedRef = useRef(false);
 
@@ -182,11 +177,7 @@ function useAutoLoadPreset(
               }
               handleLoadPreset(firstPreset.configuration);
 
-              // Trigger computation after loading the preset
-              // Add a small delay to ensure the preset is fully loaded
-              setTimeout(() => {
-                setTriggerComputation(true);
-              }, 200);
+              // Computation will be auto-triggered after preset load by form logic
             }
           }
         } catch (error) {
@@ -209,7 +200,7 @@ function useAutoLoadPreset(
 
     // Return undefined if the condition is not met
     return undefined;
-  }, [isInitializing, segments.length, handleLoadPreset, setTriggerComputation]);
+  }, [isInitializing, segments.length, handleLoadPreset]);
 }
 
 // Helper function to create array with default values
@@ -474,8 +465,8 @@ function Sidebar({
   appState,
   handleFormResult,
   handleLoadPreset,
-  handleComputationTriggered,
   handleShowPresetManager,
+  formTabsRef,
 }: {
   readonly appState: AppState;
   readonly handleFormResult: (
@@ -483,8 +474,8 @@ function Sidebar({
     configuration: RobotConfiguration
   ) => void;
   readonly handleLoadPreset: (configuration: RobotConfiguration) => void;
-  readonly handleComputationTriggered: () => void;
   readonly handleShowPresetManager: () => void;
+  readonly formTabsRef: React.RefObject<FormTabsRef>;
 }) {
   return (
     <div
@@ -498,11 +489,15 @@ function Sidebar({
         className="h-full w-96 rounded-r-2xl shadow-2xl p-0 mr-4"
         variant="strong"
         size="sm"
-        style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.3)' }}
+        style={{
+          boxShadow:
+            '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.3)',
+        }}
       >
         <div className="w-full h-full pr-2">
           <FormTabs
             key={appState.presetLoadKey}
+            ref={formTabsRef}
             onResult={handleFormResult}
             initialConfiguration={appState.currentConfiguration}
             user={appState.user}
@@ -510,8 +505,6 @@ function Sidebar({
             onLoadPreset={handleLoadPreset}
             navigate={appState.navigate}
             onLoadingChange={appState.setLoading}
-            triggerComputation={appState.triggerComputation}
-            onComputationTriggered={handleComputationTriggered}
             onShowPresetManager={handleShowPresetManager}
           />
         </div>
@@ -560,10 +553,12 @@ function PresetManagerModal({
   appState,
   handleLoadPreset,
   setShowPresetManager,
+  onAfterLoadPreset,
 }: {
   readonly appState: AppState;
   readonly handleLoadPreset: (configuration: RobotConfiguration) => void;
   readonly setShowPresetManager: (show: boolean) => void;
+  readonly onAfterLoadPreset: () => void;
 }) {
   if (!appState.showPresetManager) {
     return null;
@@ -599,6 +594,9 @@ function PresetManagerModal({
             onLoadPreset={config => {
               handleLoadPreset(config);
               appState.setShowPresetManager(false);
+              setTimeout(() => {
+                onAfterLoadPreset();
+              }, 120);
             }}
           />
         </div>
@@ -612,6 +610,7 @@ function AppModals({
   appState,
   handleLoadPreset,
   setters,
+  onAfterLoadPreset,
 }: {
   readonly appState: AppState;
   readonly handleLoadPreset: (configuration: RobotConfiguration) => void;
@@ -619,6 +618,7 @@ function AppModals({
     setShowPresetManager: (show: boolean) => void;
     setShowUserSettings: (show: boolean) => void;
   };
+  readonly onAfterLoadPreset: () => void;
 }) {
   return (
     <>
@@ -626,6 +626,7 @@ function AppModals({
         appState={appState}
         handleLoadPreset={handleLoadPreset}
         setShowPresetManager={setters.setShowPresetManager}
+        onAfterLoadPreset={onAfterLoadPreset}
       />
       {appState.showUserSettings && (
         <Profile onClose={() => setters.setShowUserSettings(false)} />
@@ -670,31 +671,11 @@ function Visualizer3DWrapper({ appState }: { readonly appState: AppState }) {
   );
 }
 
-// Floating compute button component
-function FloatingComputeButton({ appState }: { readonly appState: AppState }) {
-  return (
-    <div
-      className={`fixed bottom-6 z-50 transition-all duration-300 ease-in-out ${
-        appState.sidebarCollapsed ? 'left-6' : 'left-[calc(384px+16px)]'
-      }`}
-    >
-      <SubmitButton
-        onClick={() => {
-          // Trigger computation from FormTabs
-          appState.setTriggerComputation(true);
-        }}
-        loading={appState.loading}
-      />
-    </div>
-  );
-}
-
 // Main app layout component
 function MainAppLayout({
   appState,
   handleFormResult,
   handleLoadPreset,
-  handleComputationTriggered,
   handleShowPresetManager,
   toggleSidebar,
 }: {
@@ -704,10 +685,13 @@ function MainAppLayout({
     configuration: RobotConfiguration
   ) => void;
   readonly handleLoadPreset: (configuration: RobotConfiguration) => void;
-  readonly handleComputationTriggered: () => void;
   readonly handleShowPresetManager: () => void;
   readonly toggleSidebar: () => void;
 }) {
+  const formTabsRef = useRef<FormTabsRef>(null as unknown as FormTabsRef);
+  const triggerFormCompute = () => {
+    formTabsRef.current?.handleSubmit();
+  };
   return (
     <div className="h-screen flex flex-col">
       <div className="flex-1 bg-gradient-to-br from-gray-200 to-gray-300 relative overflow-hidden">
@@ -716,13 +700,12 @@ function MainAppLayout({
           appState={appState}
           handleFormResult={handleFormResult}
           handleLoadPreset={handleLoadPreset}
-          handleComputationTriggered={handleComputationTriggered}
           handleShowPresetManager={handleShowPresetManager}
+          formTabsRef={formTabsRef}
         />
         <SidebarToggle appState={appState} toggleSidebar={toggleSidebar} />
         <UserMenu appState={appState} />
       </div>
-      <FloatingComputeButton appState={appState} />
       <AppModals
         appState={appState}
         handleLoadPreset={handleLoadPreset}
@@ -730,6 +713,7 @@ function MainAppLayout({
           setShowPresetManager: appState.setShowPresetManager,
           setShowUserSettings: appState.setShowUserSettings,
         }}
+        onAfterLoadPreset={triggerFormCompute}
       />
     </div>
   );
@@ -742,7 +726,6 @@ function useAppHandlers(
     setSegments: (segments: number[][][]) => void;
     setCurrentConfiguration: (config: RobotConfiguration) => void;
     setShowTendonResults: (show: boolean) => void;
-    setTriggerComputation: (trigger: boolean) => void;
     setShowPresetManager: (show: boolean) => void;
     setSidebarCollapsed: (collapsed: boolean) => void;
   }
@@ -764,10 +747,6 @@ function useAppHandlers(
     [setters, appState.isLoadingPreset]
   );
 
-  const handleComputationTriggered = useCallback(() => {
-    setters.setTriggerComputation(false);
-  }, [setters]);
-
   const handleShowPresetManager = useCallback(() => {
     setters.setShowPresetManager(true);
   }, [setters]);
@@ -778,7 +757,6 @@ function useAppHandlers(
 
   return {
     handleFormResult,
-    handleComputationTriggered,
     handleShowPresetManager,
     toggleSidebar,
   };
@@ -798,18 +776,12 @@ function AppContent() {
   });
 
   // Auto-load a public preset on first visit
-  useAutoLoadPreset(
-    appState.segments,
-    appState.isInitializing,
-    handleLoadPreset,
-    appState.setTriggerComputation
-  );
+  useAutoLoadPreset(appState.segments, appState.isInitializing, handleLoadPreset);
 
   const handlers = useAppHandlers(appState, {
     setSegments: appState.setSegments,
     setCurrentConfiguration: appState.setCurrentConfiguration,
     setShowTendonResults: appState.setShowTendonResults,
-    setTriggerComputation: appState.setTriggerComputation,
     setShowPresetManager: appState.setShowPresetManager,
     setSidebarCollapsed: appState.setSidebarCollapsed,
   });
@@ -834,7 +806,6 @@ function AppContent() {
             appState={appState}
             handleFormResult={handlers.handleFormResult}
             handleLoadPreset={handleLoadPreset}
-            handleComputationTriggered={handlers.handleComputationTriggered}
             handleShowPresetManager={handlers.handleShowPresetManager}
             toggleSidebar={handlers.toggleSidebar}
           />

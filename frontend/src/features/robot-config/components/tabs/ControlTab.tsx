@@ -9,12 +9,14 @@ interface ControlTabProps {
   onShowPresetManager?: () => void;
   robotState: RobotState;
   setRobotState: (state: RobotState | ((prev: RobotState) => RobotState)) => void;
+  onFieldCommit?: () => void;
 }
 
 export const ControlTab: React.FC<ControlTabProps> = ({
   onShowPresetManager,
   robotState,
   setRobotState,
+  onFieldCommit,
 }) => {
   const [showBendingSettings, setShowBendingSettings] = useState(true);
   const [showRotationSettings, setShowRotationSettings] = useState(true);
@@ -58,6 +60,7 @@ export const ControlTab: React.FC<ControlTabProps> = ({
         <AngleControlPanel
           values={robotState.bendingAngles}
           onChange={bendingAngles => updateRobotState({ bendingAngles })}
+          {...(onFieldCommit && { onFieldCommit })}
         />
       </CollapsibleSection>
 
@@ -72,6 +75,7 @@ export const ControlTab: React.FC<ControlTabProps> = ({
         <AngleControlPanel
           values={robotState.rotationAngles}
           onChange={rotationAngles => updateRobotState({ rotationAngles })}
+          {...(onFieldCommit && { onFieldCommit })}
         />
       </CollapsibleSection>
     </div>
