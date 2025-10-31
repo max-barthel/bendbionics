@@ -151,7 +151,8 @@ function useAppInitialization(setIsInitializing: (value: boolean) => void) {
 function useAutoLoadPreset(
   segments: number[][][],
   isInitializing: boolean,
-  handleLoadPreset: (configuration: RobotConfiguration) => void
+  handleLoadPreset: (configuration: RobotConfiguration) => void,
+  onPresetLoaded?: () => void
 ) {
   const hasAutoLoadedRef = useRef(false);
 
@@ -177,7 +178,12 @@ function useAutoLoadPreset(
               }
               handleLoadPreset(firstPreset.configuration);
 
-              // Computation will be auto-triggered after preset load by form logic
+              // Trigger computation after preset load with delay to ensure state is set
+              if (onPresetLoaded) {
+                setTimeout(() => {
+                  onPresetLoaded();
+                }, PRESET_LOAD_DELAY + 200);
+              }
             }
           }
         } catch (error) {
@@ -200,7 +206,7 @@ function useAutoLoadPreset(
 
     // Return undefined if the condition is not met
     return undefined;
-  }, [isInitializing, segments.length, handleLoadPreset]);
+  }, [isInitializing, segments.length, handleLoadPreset, onPresetLoaded]);
 }
 
 // Helper function to create array with default values
@@ -689,9 +695,18 @@ function MainAppLayout({
   readonly toggleSidebar: () => void;
 }) {
   const formTabsRef = useRef<FormTabsRef>(null as unknown as FormTabsRef);
-  const triggerFormCompute = () => {
+  const triggerFormCompute = useCallback(() => {
     formTabsRef.current?.handleSubmit();
-  };
+  }, []);
+
+  // Auto-load a public preset on first visit and trigger computation
+  useAutoLoadPreset(
+    appState.segments,
+    appState.isInitializing,
+    handleLoadPreset,
+    triggerFormCompute
+  );
+
   return (
     <div className="h-screen flex flex-col">
       <div className="flex-1 bg-gradient-to-br from-gray-200 to-gray-300 relative overflow-hidden">
@@ -738,11 +753,6 @@ function useAppHandlers(
       if (!appState.isLoadingPreset) {
         setters.setCurrentConfiguration(configuration);
       }
-
-      // Auto-unfold tendon results panel if tendon analysis data is available
-      if (configuration.tendonAnalysis?.actuation_commands) {
-        setters.setShowTendonResults(true);
-      }
     },
     [setters, appState.isLoadingPreset]
   );
@@ -774,9 +784,6 @@ function AppContent() {
     setShowTendonResults: appState.setShowTendonResults,
     setRobotState: appState.setRobotState,
   });
-
-  // Auto-load a public preset on first visit
-  useAutoLoadPreset(appState.segments, appState.isInitializing, handleLoadPreset);
 
   const handlers = useAppHandlers(appState, {
     setSegments: appState.setSegments,
