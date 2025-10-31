@@ -168,7 +168,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
               <button
                 onClick={onClose}
                 onMouseDown={e => e.stopPropagation()}
-                className="text-gray-500 hover:text-gray-700 transition-colors p-1 rounded-full"
+                className="text-gray-500 hover:text-gray-700 transition-colors p-1 rounded-full focus:outline-none"
                 aria-label="Close coordinates"
               >
                 <svg
