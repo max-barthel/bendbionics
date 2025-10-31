@@ -210,7 +210,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
   return (
     <dialog
       ref={tooltipRef}
-      className={`fixed z-50 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+      className={`fixed z-50 outline-none focus:outline-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
       style={{
         left: `${adjustedPosition.left}px`,
         top: `${adjustedPosition.top}px`,
@@ -224,7 +224,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
       aria-modal="false"
     >
       <div
-        className="w-full h-full bg-transparent border-none p-0 relative group cursor-grab active:cursor-grabbing"
+        className="w-full h-full bg-transparent border-none p-0 relative group cursor-grab active:cursor-grabbing outline-none focus:outline-none"
         onMouseDown={handleMouseDown}
         onKeyDown={handleKeyDown}
         role="button" // NOSONAR typescript:S6819
@@ -284,7 +284,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
 
             {/* Coordinate values - highlightable div for easy selection */}
             <div
-              className="w-full bg-white/2 border border-white/5 rounded-lg p-2 select-text cursor-text hover:bg-white/4 transition-colors"
+              className="w-full bg-white/2 border border-white/5 rounded-lg p-2 select-text cursor-text hover:bg-white/4 transition-colors outline-none focus:outline-none"
               title="Click to select all coordinates"
               onMouseDown={e => e.stopPropagation()}
               role="textbox" // NOSONAR typescript:S6819
