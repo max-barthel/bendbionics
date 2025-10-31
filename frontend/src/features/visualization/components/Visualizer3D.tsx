@@ -3,8 +3,7 @@ import type { ThreeEvent } from '@react-three/fiber';
 import { Canvas } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-import { Typography } from '../../../components/ui';
-import TahoeGlass from '../../../components/ui/TahoeGlass';
+// Removed unused Typography and TahoeGlass imports after empty state cleanup
 import { getTendonColor } from '../../../utils/tendonColors';
 import { CoordinateTooltip } from './CoordinateTooltip';
 import { TendonResultsPanel } from './TendonResultsPanel';
@@ -483,40 +482,7 @@ function Visualizer3D({
       <div className="flex-1 relative">
         {showEmptyState ? (
           <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
-            <TahoeGlass className="p-8 max-w-md mx-4" size="xl">
-              <div className="flex flex-col items-center text-center">
-                <div className="relative mb-6">
-                  {/* Floating geometric shapes animation */}
-                  <div className="w-20 h-20 relative">
-                    {/* Main rotating ring */}
-                    <div className="absolute inset-0 border-2 border-blue-400/30 rounded-full animate-spin">
-                      <div className="absolute top-0 left-1/2 w-2 h-2 bg-blue-500 rounded-full transform -translate-x-1/2 -translate-y-1"></div>
-                    </div>
-
-                    {/* Inner pulsing circle */}
-                    <div className="absolute inset-2 border border-indigo-400/40 rounded-full animate-pulse"></div>
-
-                    {/* Center dot with glow */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full shadow-lg animate-pulse"></div>
-                    </div>
-
-                    {/* Floating particles */}
-                    <div className="absolute -top-2 -right-2 w-2 h-2 bg-blue-400/60 rounded-full animate-bounce [animation-delay:0s] [animation-duration:2s]"></div>
-                    <div className="absolute -bottom-2 -left-2 w-1.5 h-1.5 bg-indigo-400/60 rounded-full animate-bounce [animation-delay:1s] [animation-duration:2.5s]"></div>
-                    <div className="absolute top-1/2 -left-3 w-1 h-1 bg-blue-300/60 rounded-full animate-bounce [animation-delay:0.5s] [animation-duration:3s]"></div>
-                  </div>
-                </div>
-                <Typography variant="h3" className="text-gray-800 mb-3 font-semibold">
-                  Ready to Compute
-                </Typography>
-                <Typography variant="body" className="text-gray-600 leading-relaxed">
-                  Configure your robot parameters and click{' '}
-                  <span className="font-medium text-gray-800">Compute</span> to see the
-                  3D visualization
-                </Typography>
-              </div>
-            </TahoeGlass>
+            {/* Empty state removed to allow auto-compute UX without CTA */}
           </div>
         ) : (
           <>
