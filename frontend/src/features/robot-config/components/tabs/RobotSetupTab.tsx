@@ -16,12 +16,14 @@ interface RobotSetupTabProps {
   onShowPresetManager?: () => void;
   robotState: RobotState;
   setRobotState: (state: RobotState | ((prev: RobotState) => RobotState)) => void;
+  onFieldCommit?: () => void;
 }
 
 export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
   onShowPresetManager,
   robotState,
   setRobotState,
+  onFieldCommit,
 }) => {
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [showBasicSettings, setShowBasicSettings] = useState(true);
@@ -72,6 +74,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
           <SliderInput
             value={robotState.segments}
             onChange={(segments: number) => updateRobotState({ segments })}
+            {...(onFieldCommit && { onBlur: onFieldCommit })}
             min={1}
             max={10}
             step={1}
@@ -103,6 +106,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
               values={robotState.backboneLengths}
               onChange={backboneLengths => updateRobotState({ backboneLengths })}
               mode="length"
+              {...(onFieldCommit && { onFieldCommit })}
             />
           </div>
 
@@ -119,6 +123,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
               values={robotState.couplingLengths}
               onChange={couplingLengths => updateRobotState({ couplingLengths })}
               mode="length"
+              {...(onFieldCommit && { onFieldCommit })}
             />
           </div>
         </div>
@@ -140,6 +145,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
             }
           }
           onConfigChange={tendonConfig => updateRobotState({ tendonConfig })}
+          {...(onFieldCommit && { onFieldCommit })}
         />
       </CollapsibleSection>
 
@@ -161,6 +167,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
             onChange={(discretizationSteps: number) =>
               updateRobotState({ discretizationSteps })
             }
+            {...(onFieldCommit && { onBlur: onFieldCommit })}
             min={100}
             max={5000}
             step={100}

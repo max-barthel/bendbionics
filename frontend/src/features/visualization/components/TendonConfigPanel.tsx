@@ -9,12 +9,14 @@ interface TendonConfigPanelProps {
   tendonConfig: TendonConfig;
   onConfigChange: (config: TendonConfig) => void;
   className?: string;
+  onFieldCommit?: () => void;
 }
 
 export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
   tendonConfig,
   onConfigChange,
   className = '',
+  onFieldCommit,
 }) => {
   const [localConfig, setLocalConfig] = useState<TendonConfig>(tendonConfig);
   const [radiusUnit, setRadiusUnit] = useState<LengthUnit>('mm');
@@ -71,6 +73,7 @@ export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
         <SliderInput
           value={localConfig.count}
           onChange={value => handleConfigChange('count', value)}
+          {...(onFieldCommit && { onBlur: onFieldCommit })}
           min={3}
           max={12}
           step={1}
@@ -91,6 +94,7 @@ export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
             <NumberInput
               value={convertFromSI(localConfig.radius, radiusUnit)}
               onChange={handleRadiusChange}
+              {...(onFieldCommit && { onBlur: onFieldCommit })}
               placeholder="Radius"
             />
             <UnitSelector

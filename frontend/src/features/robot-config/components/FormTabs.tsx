@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState,
 } from 'react';
 import { robotAPI, type PCCParams } from '../../../api/client';
@@ -194,26 +195,16 @@ type FormTabsProps = {
   onLoadPreset?: (configuration: RobotConfiguration) => void;
   navigate?: (path: string) => void;
   onLoadingChange?: (loading: boolean) => void;
-  triggerComputation?: boolean;
-  onComputationTriggered?: () => void;
   onShowPresetManager?: () => void;
 };
 
-type FormTabsRef = {
+export type FormTabsRef = {
   handleSubmit: () => Promise<void>;
 };
 
 const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
   (
-    {
-      onResult,
-      initialConfiguration,
-      user,
-      onLoadingChange,
-      triggerComputation,
-      onComputationTriggered,
-      onShowPresetManager,
-    },
+    { onResult, initialConfiguration, user, onLoadingChange, onShowPresetManager },
     ref
   ) => {
     const [robotState, setRobotState] = useRobotState();
@@ -251,17 +242,48 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
       onLoadingChange?.(loading);
     }, [loading, onLoadingChange]);
 
-    // Handle external computation trigger
-    useEffect(() => {
-      if (triggerComputation && !loading) {
-        void handleSubmit();
-        onComputationTriggered?.();
-      }
-    }, [triggerComputation, loading, onComputationTriggered, handleSubmit]);
+    // External compute trigger removed in favor of auto-compute on field commit
 
     useImperativeHandle(ref, () => ({
       handleSubmit,
     }));
+
+    // Auto-compute after a preset is loaded/applied (only on actual preset load, not state changes)
+    const lastPresetRef = useRef<string>('');
+    const handleSubmitRef = useRef(handleSubmit);
+    handleSubmitRef.current = handleSubmit; // Keep ref up to date
+
+    useEffect(() => {
+      if (!initialConfiguration) {
+        return;
+      }
+      // Only trigger if this is a genuinely new preset (not a re-render with same config)
+      const configString = JSON.stringify(initialConfiguration);
+      if (configString === lastPresetRef.current) {
+        return;
+      }
+      lastPresetRef.current = configString;
+      // Small delay to let useConfigurationLoader apply state
+      const timer = setTimeout(() => {
+        if (!loading) {
+          void handleSubmitRef.current();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }, [initialConfiguration, loading]);
+
+    const onFieldCommit = (() => {
+      let timer: ReturnType<typeof setTimeout> | null = null;
+      return () => {
+        if (loading) return;
+        if (timer) {
+          clearTimeout(timer);
+        }
+        timer = setTimeout(() => {
+          void handleSubmit();
+        }, 250);
+      };
+    })();
 
     const tabs = [
       {
@@ -293,6 +315,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
               {...(onShowPresetManager && { onShowPresetManager })}
               robotState={robotState}
               setRobotState={setRobotState}
+              onFieldCommit={onFieldCommit}
             />
           </TabPanel>
 
@@ -302,6 +325,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
               {...(onShowPresetManager && { onShowPresetManager })}
               robotState={robotState}
               setRobotState={setRobotState}
+              onFieldCommit={onFieldCommit}
             />
           </TabPanel>
         </div>

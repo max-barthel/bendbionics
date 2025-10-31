@@ -17,6 +17,7 @@ type SliderInputProps = {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  onBlur?: () => void;
 };
 
 // Range display component
@@ -52,6 +53,7 @@ function Slider({
   onChange,
   disabled,
   label,
+  onBlur,
 }: {
   readonly id: string;
   readonly min: number;
@@ -61,6 +63,7 @@ function Slider({
   readonly onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   readonly disabled: boolean;
   readonly label: string | undefined;
+  readonly onBlur?: () => void;
 }) {
   return (
     <input
@@ -71,6 +74,9 @@ function Slider({
       step={step}
       value={value}
       onChange={onChange}
+      onBlur={onBlur}
+      {...(onBlur && { onMouseUp: onBlur })}
+      {...(onBlur && { onTouchEnd: onBlur })}
       disabled={disabled}
       aria-label={label ?? 'Slider input'}
       className={`w-full h-2 appearance-none cursor-pointer rounded-full bg-white/20 backdrop-blur-xl border-2 border-white/40 shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-400/50 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white/50 [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-300 [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:bg-gradient-to-br [&::-webkit-slider-thumb]:from-blue-500/90 [&::-webkit-slider-thumb]:to-indigo-600/90 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-500/30 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white/50 [&::-moz-range-thumb]:shadow-lg [&::-moz-range-thumb]:bg-gradient-to-br [&::-moz-range-thumb]:from-blue-500/90 [&::-moz-range-thumb]:to-indigo-600/90`}
@@ -88,13 +94,14 @@ function SliderInput({
   placeholder,
   disabled = false,
   className = '',
+  onBlur,
 }: Readonly<SliderInputProps>) {
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = Number(e.target.value);
     onChange(newValue);
   };
 
-  const sliderId = `slider-${label?.toLowerCase().replace(/\s+/g, '-') ?? 'input'}`;
+  const sliderId = `slider-${label ? label.toLowerCase().split(/\s+/).join('-') : 'input'}`;
 
   return (
     <div className={combineStyles('space-y-4', className)}>
@@ -114,6 +121,7 @@ function SliderInput({
             step={step}
             value={value}
             onChange={handleSliderChange}
+            {...(onBlur && { onBlur })}
             disabled={disabled}
             label={label}
           />
@@ -123,6 +131,7 @@ function SliderInput({
           <NumberInput
             value={value}
             onChange={onChange}
+            {...(onBlur && { onBlur })}
             {...(placeholder && { placeholder })}
             disabled={disabled}
           />

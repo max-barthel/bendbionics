@@ -3,7 +3,7 @@ import { Card, SliderInput } from '../../../components/ui';
 import { useFormSubmission } from '../hooks/useFormSubmission';
 import { useRobotState, type RobotState } from '../hooks/useRobotState';
 import ArrayInputGroup from './ArrayInputGroup';
-import { FormActions, FormErrorDisplay, FormHeader, RobotStructureInfo } from './forms';
+import { FormErrorDisplay, FormHeader, RobotStructureInfo } from './forms';
 
 // Default configuration constants
 const DEFAULT_CONFIG = {
@@ -29,9 +29,10 @@ function Form({
   const [robotState, setRobotState] = useRobotState();
 
   // Use the unified form submission hook
-  const { loading, validating, error, handleSubmit, hideError } = useFormSubmission({
-    onResult: result => onResult(result.segments, result.configuration),
-  });
+  const { validating, error, handleSubmit, computeIfValid, hideError } =
+    useFormSubmission({
+      onResult: result => onResult(result.segments, result.configuration),
+    });
 
   // Load initial configuration if provided
   useEffect(() => {
@@ -66,15 +67,20 @@ function Form({
           (config['discretizationSteps'] as number) ??
           DEFAULT_CONFIG.DISCRETIZATION_STEPS,
       });
+      // After applying initial configuration, attempt auto-compute
+      void computeIfValid();
     }
     // If no initialConfiguration is provided, the useRobotState hook will use its own defaults
-  }, [initialConfiguration, setRobotState]);
+  }, [initialConfiguration, setRobotState, computeIfValid]);
 
   const updateRobotState = (updates: Partial<RobotState>) => {
     setRobotState(prev => ({ ...prev, ...updates }));
   };
 
   // The handleSubmit function is now provided by the useFormSubmission hook
+  const onFieldCommit = () => {
+    void computeIfValid();
+  };
 
   return (
     <Card>
@@ -94,6 +100,7 @@ function Form({
             label="Segments"
             value={robotState.segments}
             onChange={(segments: number) => updateRobotState({ segments })}
+            onBlur={onFieldCommit}
             min={1}
             max={10}
             step={1}
@@ -107,6 +114,7 @@ function Form({
           values={robotState.bendingAngles}
           onChange={bendingAngles => updateRobotState({ bendingAngles })}
           mode="angle"
+          onFieldCommit={onFieldCommit}
         />
 
         <ArrayInputGroup
@@ -114,6 +122,7 @@ function Form({
           values={robotState.rotationAngles}
           onChange={rotationAngles => updateRobotState({ rotationAngles })}
           mode="angle"
+          onFieldCommit={onFieldCommit}
         />
 
         <ArrayInputGroup
@@ -121,6 +130,7 @@ function Form({
           values={robotState.backboneLengths}
           onChange={backboneLengths => updateRobotState({ backboneLengths })}
           mode="length"
+          onFieldCommit={onFieldCommit}
         />
 
         <ArrayInputGroup
@@ -128,6 +138,7 @@ function Form({
           values={robotState.couplingLengths}
           onChange={couplingLengths => updateRobotState({ couplingLengths })}
           mode="length"
+          onFieldCommit={onFieldCommit}
         />
 
         <SliderInput
@@ -136,13 +147,12 @@ function Form({
           onChange={(discretizationSteps: number) =>
             updateRobotState({ discretizationSteps })
           }
+          onBlur={onFieldCommit}
           min={100}
           max={5000}
           step={100}
           placeholder="Steps"
         />
-
-        <FormActions onSubmit={handleSubmit} loading={loading} />
       </form>
     </Card>
   );
