@@ -12,11 +12,13 @@ const ANGLE_CONSTANTS = {
 interface AngleControlPanelProps {
   values: number[];
   onChange: (values: number[]) => void;
+  onFieldCommit?: () => void;
 }
 
 export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
   values,
   onChange,
+  onFieldCommit,
 }) => {
   const [selectedSegment, setSelectedSegment] = useState(0);
   const [useDegrees, setUseDegrees] = useState(true);
@@ -101,6 +103,7 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
                 updateSegmentValueRadians(selectedSegment, value);
               }
             }}
+            {...(onFieldCommit && { onBlur: onFieldCommit })}
             min={useDegrees ? -ANGLE_CONSTANTS.MAX_ANGLE_DEGREES : -Math.PI}
             max={useDegrees ? ANGLE_CONSTANTS.MAX_ANGLE_DEGREES : Math.PI}
             step={useDegrees ? 1 : Math.PI / ANGLE_CONSTANTS.MAX_ANGLE_DEGREES}

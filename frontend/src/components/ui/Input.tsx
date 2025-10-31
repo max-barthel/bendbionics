@@ -21,6 +21,7 @@ interface InputProps {
   className?: string;
   onBlur?: () => void;
   onFocus?: () => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   min?: number;
   max?: number;
   step?: number;
@@ -145,6 +146,7 @@ function Input({
   className = '',
   onBlur,
   onFocus,
+  onKeyDown,
   min,
   max,
   step,
@@ -173,6 +175,7 @@ function Input({
         onChange={e => handleInputChange(e, type, onChange)}
         onFocus={handleFocus}
         onBlur={handleBlur}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
         disabled={disabled}
         min={min}
