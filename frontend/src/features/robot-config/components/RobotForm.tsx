@@ -68,7 +68,9 @@ function Form({
           DEFAULT_CONFIG.DISCRETIZATION_STEPS,
       });
       // After applying initial configuration, attempt auto-compute
-      void computeIfValid();
+      computeIfValid().catch(() => {
+        // Silently handle errors - error state is managed by useFormSubmission
+      });
     }
     // If no initialConfiguration is provided, the useRobotState hook will use its own defaults
   }, [initialConfiguration, setRobotState, computeIfValid]);
@@ -79,7 +81,9 @@ function Form({
 
   // The handleSubmit function is now provided by the useFormSubmission hook
   const onFieldCommit = () => {
-    void computeIfValid();
+    computeIfValid().catch(() => {
+      // Silently handle errors - error state is managed by useFormSubmission
+    });
   };
 
   return (
@@ -87,7 +91,9 @@ function Form({
       <form
         onSubmit={e => {
           e.preventDefault();
-          void handleSubmit();
+          handleSubmit().catch(() => {
+            // Silently handle errors - error state is managed by useFormSubmission
+          });
         }}
         className="flex flex-col space-y-6"
       >
