@@ -1,16 +1,16 @@
-import React, { useId, useState } from 'react';
+import { inputSizeClasses, type ComponentSize } from '@/styles/design-tokens';
 import {
   combineStyles,
   getFloatingLabelStyles,
   getTahoeGlassStyles,
 } from '@/styles/tahoe-utils';
+import React, { useId, useState } from 'react';
 
 type InputType = 'text' | 'number' | 'password' | 'email';
-type InputSize = 'sm' | 'md' | 'lg';
 
 interface InputProps {
   type?: InputType;
-  size?: InputSize;
+  size?: ComponentSize;
   value: string | number;
   onChange: (value: string | number) => void;
   placeholder?: string;
@@ -28,12 +28,7 @@ interface InputProps {
 }
 
 // Helper function to get input classes
-function getInputClasses(size: InputSize, error?: string, className?: string) {
-  const sizeClasses = {
-    sm: 'pl-4 pr-2 py-2 text-sm',
-    md: 'px-3 py-2.5 text-sm',
-    lg: 'px-4 py-3 text-base',
-  };
+function getInputClasses(size: ComponentSize, error?: string, className?: string) {
   const baseClasses = 'text-gray-800 placeholder:text-gray-500 bg-gray-50';
   const tahoeGlassClasses = getTahoeGlassStyles(
     'base',
@@ -47,7 +42,7 @@ function getInputClasses(size: InputSize, error?: string, className?: string) {
   return combineStyles(
     baseClasses,
     tahoeGlassClasses,
-    sizeClasses[size],
+    inputSizeClasses[size],
     errorClasses,
     className
   );
@@ -120,7 +115,11 @@ function useInputFocusHandlers(
 }
 
 // Custom hook for input state and styling
-function useInputStateAndStyling(size: InputSize, error?: string, className?: string) {
+function useInputStateAndStyling(
+  size: ComponentSize,
+  error?: string,
+  className?: string
+) {
   const { isFocused, setIsFocused } = useInputState();
   const classes = getInputClasses(size, error, className);
   return { isFocused, setIsFocused, classes };

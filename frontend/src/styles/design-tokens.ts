@@ -255,7 +255,8 @@ export const modalVariants = {
     'bg-white border border-gray-200 rounded-2xl shadow-2xl w-full max-h-[80vh] overflow-hidden relative',
 
   // Modal content with Tahoe glass effect
-  contentGlass: 'bg-white/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl',
+  contentGlass:
+    'bg-white/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl',
 } as const;
 
 // Slider Variants
@@ -349,13 +350,15 @@ export const messageVariants = {
   error: 'mb-4 p-3 bg-red-50 border border-red-200 rounded-md',
 
   // Error message with Tahoe glass effect
-  errorGlass: 'mb-4 p-3 bg-red-50/80 backdrop-blur-sm border border-red-200/50 rounded-xl',
+  errorGlass:
+    'mb-4 p-3 bg-red-50/80 backdrop-blur-sm border border-red-200/50 rounded-xl',
 
   // Standard success message
   success: 'mb-4 p-3 bg-green-50 border border-green-200 rounded-md',
 
   // Success message with Tahoe glass effect (called successShadow in component)
-  successShadow: 'mb-4 p-3 bg-green-50/80 backdrop-blur-sm border border-green-200/50 rounded-xl',
+  successShadow:
+    'mb-4 p-3 bg-green-50/80 backdrop-blur-sm border border-green-200/50 rounded-xl',
 
   // Message text styling
   messageText: 'text-sm font-medium',
@@ -365,6 +368,71 @@ export const messageVariants = {
 
   // Error icon SVG styling
   errorIconSvg: 'h-5 w-5 text-red-400',
+} as const;
+
+// Size Type Definitions
+export type ComponentSize = 'sm' | 'md' | 'lg';
+export type ExtendedComponentSize = 'sm' | 'md' | 'lg' | 'xl';
+
+// Button Size Classes
+export const buttonSizeClasses = {
+  // Button component sizes (with text sizing)
+  sm: 'px-3 py-1.5 text-sm',
+  md: 'px-4 py-2 text-sm',
+  lg: 'px-6 py-3 text-base',
+} as const;
+
+// Input Size Classes
+export const inputSizeClasses = {
+  // Standard input sizes (Input.tsx pattern)
+  sm: 'pl-4 pr-2 py-2 text-sm',
+  md: 'px-3 py-2.5 text-sm',
+  lg: 'px-4 py-3 text-base',
+} as const;
+
+// Number Input Size Classes
+export const numberInputSizeClasses = {
+  // TahoeNumberInput sizes (slightly different from standard input)
+  sm: 'px-4 py-2 text-xs',
+  md: 'px-5 py-2.5 text-sm',
+  lg: 'px-6 py-3 text-base',
+} as const;
+
+// Icon Button Size Classes (padding only)
+export const iconButtonSizeClasses = {
+  sm: 'p-1.5',
+  md: 'p-2',
+  lg: 'p-3',
+} as const;
+
+// Close Button Size Classes (smaller padding)
+export const closeButtonSizeClasses = {
+  sm: 'p-1',
+  md: 'p-1.5',
+  lg: 'p-2',
+} as const;
+
+// Icon Size Classes (for SVG icons in buttons)
+export const iconSizeClasses = {
+  sm: 'w-3 h-3',
+  md: 'w-4 h-4',
+  lg: 'w-5 h-5',
+} as const;
+
+// Container Size Classes (for TahoeGlass and similar containers)
+export const containerSizeClasses = {
+  sm: 'px-2 py-1',
+  md: 'px-4 py-2',
+  lg: 'px-6 py-3',
+  xl: 'px-8 py-4',
+} as const;
+
+// Modal Size Classes
+export const modalSizeClasses = {
+  sm: 'max-w-md',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
 } as const;
 
 // Type definitions for better TypeScript support

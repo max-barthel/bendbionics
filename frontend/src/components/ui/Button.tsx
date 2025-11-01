@@ -1,11 +1,10 @@
-import React from 'react';
+import { buttonSizeClasses, type ComponentSize } from '@/styles/design-tokens';
 import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
+import React from 'react';
 import LoadingSpinner from './LoadingSpinner';
 
-type ButtonSize = 'sm' | 'md' | 'lg';
-
 interface ButtonProps {
-  readonly size?: ButtonSize;
+  readonly size?: ComponentSize;
   readonly children: React.ReactNode;
   readonly onClick?: () => void;
   readonly disabled?: boolean;
@@ -46,17 +45,11 @@ function Button({
     'glass' // hover state
   );
 
-  const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base',
-  };
-
   const isDisabled = disabled || loading;
   const classes = combineStyles(
     baseClasses,
     tahoeGlassClasses,
-    sizeClasses[size],
+    buttonSizeClasses[size],
     className
   );
 
