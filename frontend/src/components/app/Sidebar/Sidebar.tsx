@@ -1,27 +1,15 @@
+import TahoeGlass from '@/components/ui/TahoeGlass';
 import type { FormTabsRef } from '@/features/robot-config/components/FormTabs';
 import FormTabs from '@/features/robot-config/components/FormTabs';
-import type { RobotConfiguration } from '@/types/robot';
-import TahoeGlass from '@/components/ui/TahoeGlass';
-import type { AppState } from '@/types/app';
+import { useAppState } from '@/providers';
 
 interface SidebarProps {
-  readonly appState: AppState;
-  readonly handleFormResult: (
-    result: number[][][],
-    configuration: RobotConfiguration
-  ) => void;
-  readonly handleLoadPreset: (configuration: RobotConfiguration) => void;
-  readonly handleShowPresetManager: () => void;
   readonly formTabsRef: React.RefObject<FormTabsRef>;
 }
 
-export function Sidebar({
-  appState,
-  handleFormResult,
-  handleLoadPreset,
-  handleShowPresetManager,
-  formTabsRef,
-}: Readonly<SidebarProps>) {
+export function Sidebar({ formTabsRef }: Readonly<SidebarProps>) {
+  const appState = useAppState();
+
   return (
     <div
       className={`fixed top-0 left-0 h-full transition-all duration-300 ease-in-out overflow-hidden z-40 ${
@@ -43,14 +31,14 @@ export function Sidebar({
           <FormTabs
             key={appState.presetLoadKey}
             ref={formTabsRef}
-            onResult={handleFormResult}
+            onResult={appState.handleFormResult}
             initialConfiguration={appState.currentConfiguration}
             user={appState.user}
             currentConfiguration={appState.currentConfiguration}
-            onLoadPreset={handleLoadPreset}
+            onLoadPreset={appState.handleLoadPreset}
             navigate={appState.navigate}
             onLoadingChange={appState.setLoading}
-            onShowPresetManager={handleShowPresetManager}
+            onShowPresetManager={appState.handleShowPresetManager}
           />
         </div>
       </TahoeGlass>

@@ -1,9 +1,11 @@
 import { useCallback } from 'react';
-import type { AppState } from '@/types/app';
 import type { RobotConfiguration } from '@/types/robot';
 
 export function useAppHandlers(
-  appState: AppState,
+  state: {
+    readonly isLoadingPreset: boolean;
+    readonly sidebarCollapsed: boolean;
+  },
   setters: {
     readonly setSegments: (segments: number[][][]) => void;
     readonly setCurrentConfiguration: (config: RobotConfiguration) => void;
@@ -17,11 +19,11 @@ export function useAppHandlers(
       setters.setSegments(result);
 
       // Only update currentConfiguration if we're not loading a preset
-      if (!appState.isLoadingPreset) {
+      if (!state.isLoadingPreset) {
         setters.setCurrentConfiguration(configuration);
       }
     },
-    [setters, appState.isLoadingPreset]
+    [setters, state.isLoadingPreset]
   );
 
   const handleShowPresetManager = useCallback(() => {
@@ -29,8 +31,8 @@ export function useAppHandlers(
   }, [setters]);
 
   const toggleSidebar = useCallback(() => {
-    setters.setSidebarCollapsed(!appState.sidebarCollapsed);
-  }, [setters, appState.sidebarCollapsed]);
+    setters.setSidebarCollapsed(!state.sidebarCollapsed);
+  }, [setters, state.sidebarCollapsed]);
 
   return {
     handleFormResult,

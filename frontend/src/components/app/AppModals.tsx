@@ -1,34 +1,19 @@
-import type { RobotConfiguration } from '@/types/robot';
 import { Profile } from '../auth/Profile';
 import { PresetManagerModal } from './PresetManagerModal';
-import type { AppState } from '@/types/app';
+import { useAppState } from '@/providers';
 
 interface AppModalsProps {
-  readonly appState: AppState;
-  readonly handleLoadPreset: (configuration: RobotConfiguration) => void;
-  readonly setters: {
-    readonly setShowPresetManager: (show: boolean) => void;
-    readonly setShowUserSettings: (show: boolean) => void;
-  };
   readonly onAfterLoadPreset: () => void;
 }
 
-export function AppModals({
-  appState,
-  handleLoadPreset,
-  setters,
-  onAfterLoadPreset,
-}: Readonly<AppModalsProps>) {
+export function AppModals({ onAfterLoadPreset }: Readonly<AppModalsProps>) {
+  const appState = useAppState();
+
   return (
     <>
-      <PresetManagerModal
-        appState={appState}
-        handleLoadPreset={handleLoadPreset}
-        setShowPresetManager={setters.setShowPresetManager}
-        onAfterLoadPreset={onAfterLoadPreset}
-      />
+      <PresetManagerModal onAfterLoadPreset={onAfterLoadPreset} />
       {appState.showUserSettings && (
-        <Profile onClose={() => setters.setShowUserSettings(false)} />
+        <Profile onClose={() => appState.setShowUserSettings(false)} />
       )}
     </>
   );

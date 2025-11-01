@@ -1,32 +1,15 @@
-import { useCallback, useRef } from 'react';
 import type { FormTabsRef } from '@/features/robot-config/components/FormTabs';
 import { useAutoLoadPreset } from '@/hooks/app/useAutoLoadPreset';
+import { useAppState } from '@/providers';
 import { backgroundGradients } from '@/styles/design-tokens';
+import { useCallback, useRef } from 'react';
 import { AppModals } from './AppModals';
 import { Sidebar, SidebarToggle } from './Sidebar';
 import { UserMenu } from './UserMenu';
 import { Visualizer3DWrapper } from './Visualizer3DWrapper';
-import type { AppState } from '@/types/app';
-import type { RobotConfiguration } from '@/types/robot';
 
-interface MainAppLayoutProps {
-  readonly appState: AppState;
-  readonly handleFormResult: (
-    result: number[][][],
-    configuration: RobotConfiguration
-  ) => void;
-  readonly handleLoadPreset: (configuration: RobotConfiguration) => void;
-  readonly handleShowPresetManager: () => void;
-  readonly toggleSidebar: () => void;
-}
-
-export function MainAppLayout({
-  appState,
-  handleFormResult,
-  handleLoadPreset,
-  handleShowPresetManager,
-  toggleSidebar,
-}: Readonly<MainAppLayoutProps>) {
+export function MainAppLayout() {
+  const appState = useAppState();
   const formTabsRef = useRef<FormTabsRef>(null as unknown as FormTabsRef);
   const triggerFormCompute = useCallback(() => {
     formTabsRef.current?.handleSubmit();
@@ -36,33 +19,21 @@ export function MainAppLayout({
   useAutoLoadPreset(
     appState.segments,
     appState.isInitializing,
-    handleLoadPreset,
+    appState.handleLoadPreset,
     triggerFormCompute
   );
 
   return (
     <div className="h-screen flex flex-col">
-      <div className={`flex-1 ${backgroundGradients.appBackground} relative overflow-hidden`}>
-        <Visualizer3DWrapper appState={appState} />
-        <Sidebar
-          appState={appState}
-          handleFormResult={handleFormResult}
-          handleLoadPreset={handleLoadPreset}
-          handleShowPresetManager={handleShowPresetManager}
-          formTabsRef={formTabsRef}
-        />
-        <SidebarToggle appState={appState} toggleSidebar={toggleSidebar} />
-        <UserMenu appState={appState} />
+      <div
+        className={`flex-1 ${backgroundGradients.appBackground} relative overflow-hidden`}
+      >
+        <Visualizer3DWrapper />
+        <Sidebar formTabsRef={formTabsRef} />
+        <SidebarToggle />
+        <UserMenu />
       </div>
-      <AppModals
-        appState={appState}
-        handleLoadPreset={handleLoadPreset}
-        setters={{
-          setShowPresetManager: appState.setShowPresetManager,
-          setShowUserSettings: appState.setShowUserSettings,
-        }}
-        onAfterLoadPreset={triggerFormCompute}
-      />
+      <AppModals onAfterLoadPreset={triggerFormCompute} />
     </div>
   );
 }

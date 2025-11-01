@@ -1,4 +1,8 @@
-import { iconButtonSizeClasses, type ComponentSize } from '@/styles/design-tokens';
+import {
+  buttonVariants,
+  iconButtonSizeClasses,
+  type ComponentSize,
+} from '@/styles/design-tokens';
 import { combineStyles, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 import type { ReactNode } from 'react';
 
@@ -33,18 +37,10 @@ export function IconButton({
     const glassClasses = getTahoeGlassPreset('enhancedButton');
     variantClasses = combineStyles(glassClasses, 'hover:scale-105');
   } else if (variant === 'outline') {
-    variantClasses = combineStyles(
-      'border border-gray-300 bg-white/80 backdrop-blur-sm hover:bg-white/90',
-      'rounded-full transition-all duration-300 hover:scale-105'
-    );
+    variantClasses = buttonVariants.outline;
   } else {
     // solid variant
-    variantClasses = combineStyles(
-      'bg-gradient-to-br from-blue-500/25 to-indigo-500/25',
-      'backdrop-blur-xl border border-blue-400/30 shadow-lg',
-      'hover:scale-105 rounded-full transition-all duration-300',
-      'shadow-blue-500/20'
-    );
+    variantClasses = buttonVariants.solid;
   }
 
   const classes = combineStyles(

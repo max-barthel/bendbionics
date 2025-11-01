@@ -1,12 +1,10 @@
 import { PrimaryButton } from '@/components/ui';
+import { useAppState } from '@/providers';
 import { buttonVariants } from '@/styles/design-tokens';
-import type { AppState } from '@/types/app';
 
-interface SignInButtonProps {
-  readonly appState: AppState;
-}
+export function SignInButton() {
+  const appState = useAppState();
 
-export function SignInButton({ appState }: Readonly<SignInButtonProps>) {
   return (
     <PrimaryButton
       onClick={() => appState.navigate('/auth')}

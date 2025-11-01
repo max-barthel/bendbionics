@@ -1,6 +1,7 @@
 import { ExclamationTriangleIcon, TrashIcon, UserIcon } from '@/components/icons';
-import { Button, Modal, Typography } from '@/components/ui';
+import { Button, FormMessage, Modal, Typography } from '@/components/ui';
 import { useAuth } from '@/providers/AuthProvider';
+import { buttonVariants } from '@/styles/design-tokens';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EditProfile } from './EditProfile';
@@ -35,25 +36,19 @@ const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
       Are you sure you want to delete your account? This action cannot be undone. All
       your data will be permanently removed.
     </Typography>
-    {deleteError && (
-      <div className="mb-4 p-3 bg-red-50/80 backdrop-blur-sm border border-red-200/50 rounded-xl">
-        <Typography variant="body" className="text-red-600 text-sm">
-          {deleteError}
-        </Typography>
-      </div>
-    )}
+    {deleteError && <FormMessage message={deleteError} type="error" variant="glass" />}
     <div className="flex space-x-3">
       <Button
         onClick={onCancel}
         disabled={isDeleting}
-        className="flex-1 border border-gray-300 bg-white/80 backdrop-blur-sm hover:bg-white/90 hover:scale-105 transition-all duration-300 rounded-full py-3"
+        className={`flex-1 ${buttonVariants.outline} py-3`}
       >
         Cancel
       </Button>
       <Button
         onClick={onConfirm}
         disabled={isDeleting}
-        className="flex-1 border border-red-300 bg-red-50/80 backdrop-blur-sm hover:bg-red-100/90 text-red-600 hover:text-red-700 hover:scale-105 transition-all duration-300 rounded-full py-3"
+        className={`flex-1 ${buttonVariants.delete} py-3`}
       >
         {isDeleting ? 'Deleting...' : 'Delete Account'}
       </Button>
@@ -186,21 +181,21 @@ export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
             <div className="space-y-4">
               <Button
                 onClick={() => setIsEditing(true)}
-                className="w-full border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
+                className={`w-full ${buttonVariants.outline} py-3`}
               >
                 Edit Profile
               </Button>
 
               <Button
                 onClick={handleLogout}
-                className="w-full border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
+                className={`w-full ${buttonVariants.outline} py-3`}
               >
                 Sign Out
               </Button>
 
               <Button
                 onClick={confirmDelete}
-                className="w-full border border-red-300 bg-red-50 hover:scale-105 text-red-600 hover:text-red-700 transition-all duration-300 rounded-full py-3"
+                className={`w-full ${buttonVariants.delete} py-3`}
               >
                 <div className="flex items-center justify-center gap-2">
                   <TrashIcon className="w-4 h-4" />

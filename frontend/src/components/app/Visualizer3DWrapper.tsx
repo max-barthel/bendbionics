@@ -1,17 +1,15 @@
-import { lazy, Suspense } from 'react';
-import Visualizer3D from '@/features/visualization/components/Visualizer3D';
-import { tahoeGlass } from '@/styles/design-tokens';
 import { LoadingSpinner, Typography } from '@/components/ui';
-import type { AppState } from '@/types/app';
+import Visualizer3D from '@/features/visualization/components/Visualizer3D';
+import { useAppState } from '@/providers';
+import { tahoeGlass } from '@/styles/design-tokens';
+import { lazy, Suspense } from 'react';
 
 // Lazy load heavy component
 const LazyVisualizer3D = lazy(() => Promise.resolve({ default: Visualizer3D }));
 
-interface Visualizer3DWrapperProps {
-  readonly appState: AppState;
-}
+export function Visualizer3DWrapper() {
+  const appState = useAppState();
 
-export function Visualizer3DWrapper({ appState }: Readonly<Visualizer3DWrapperProps>) {
   return (
     <div className={`w-full h-full ${tahoeGlass.enhanced} relative`}>
       <Suspense

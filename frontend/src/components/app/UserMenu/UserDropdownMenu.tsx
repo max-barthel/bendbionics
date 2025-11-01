@@ -1,12 +1,10 @@
 import TahoeGlass from '@/components/ui/TahoeGlass';
+import { useAppState } from '@/providers';
 import { UserAvatarIcon } from './UserAvatarIcon';
-import type { AppState } from '@/types/app';
 
-interface UserDropdownMenuProps {
-  readonly appState: AppState;
-}
+export function UserDropdownMenu() {
+  const appState = useAppState();
 
-export function UserDropdownMenu({ appState }: Readonly<UserDropdownMenuProps>) {
   return (
     <TahoeGlass className="absolute top-full right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible">
       <div className="p-3 border-b border-white/20">
