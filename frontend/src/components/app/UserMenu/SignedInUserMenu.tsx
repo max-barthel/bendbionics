@@ -1,13 +1,11 @@
 import TahoeGlass from '@/components/ui/TahoeGlass';
+import { useAppState } from '@/providers';
 import { UserAvatarIcon } from './UserAvatarIcon';
 import { UserDropdownMenu } from './UserDropdownMenu';
-import type { AppState } from '@/types/app';
 
-interface SignedInUserMenuProps {
-  readonly appState: AppState;
-}
+export function SignedInUserMenu() {
+  const appState = useAppState();
 
-export function SignedInUserMenu({ appState }: Readonly<SignedInUserMenuProps>) {
   return (
     <div className="group relative">
       <TahoeGlass as="button" className="flex items-center gap-2 hover:scale-105">
@@ -29,7 +27,7 @@ export function SignedInUserMenu({ appState }: Readonly<SignedInUserMenuProps>) 
           />
         </svg>
       </TahoeGlass>
-      <UserDropdownMenu appState={appState} />
+      <UserDropdownMenu />
     </div>
   );
 }

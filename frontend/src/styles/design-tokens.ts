@@ -250,6 +250,20 @@ export const buttonVariants = {
   // Solid button variant (blue gradient)
   solid:
     'bg-gradient-to-br from-blue-500/25 to-indigo-500/25 backdrop-blur-xl border border-blue-400/30 shadow-lg hover:scale-105 rounded-full transition-all duration-300 shadow-blue-500/20',
+
+  // Cancel/Neutral button variant (white/neutral, from PresetManager)
+  cancel:
+    'backdrop-blur-xl border border-white/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-white/18 to-white/8 shadow-black/10',
+
+  // Load button variant (green, from PresetManager)
+  load: 'backdrop-blur-xl border border-green-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-green-500/25 to-green-600/25 shadow-green-500/20',
+
+  // Edit button variant (yellow, from PresetManager)
+  edit: 'backdrop-blur-xl border border-yellow-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-yellow-500/25 to-yellow-600/25 shadow-yellow-500/20',
+
+  // Delete button variant (red, from PresetManager)
+  delete:
+    'backdrop-blur-xl border border-red-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-red-500/25 to-red-600/25 shadow-red-500/20',
 } as const;
 
 // Toggle Button Variants

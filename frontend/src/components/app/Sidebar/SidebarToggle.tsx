@@ -1,18 +1,12 @@
 import { IconButton } from '@/components/ui';
-import type { AppState } from '@/types/app';
+import { useAppState } from '@/providers';
 
-interface SidebarToggleProps {
-  readonly appState: AppState;
-  readonly toggleSidebar: () => void;
-}
+export function SidebarToggle() {
+  const appState = useAppState();
 
-export function SidebarToggle({
-  appState,
-  toggleSidebar,
-}: Readonly<SidebarToggleProps>) {
   return (
     <IconButton
-      onClick={toggleSidebar}
+      onClick={appState.toggleSidebar}
       aria-label={appState.sidebarCollapsed ? 'Show parameters' : 'Hide parameters'}
       variant="glass"
       size="md"
