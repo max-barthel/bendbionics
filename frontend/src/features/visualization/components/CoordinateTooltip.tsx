@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { tahoeGlass, unitSelectorVariants } from '@/styles/design-tokens';
+import { combineStyles } from '@/styles/tahoe-utils';
 import { Typography } from '@/components/ui';
 import TahoeGlass from '@/components/ui/TahoeGlass';
 
@@ -189,7 +191,14 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
             </div>
 
             {/* Unit selector - not selectable */}
-            <div className="flex bg-white/3 border border-white/8 rounded-full p-1 shadow-lg gap-1 select-none">
+            <div
+              className={combineStyles(
+                unitSelectorVariants.container,
+                'select-none',
+                // Override with lighter variant for coordinate tooltip
+                'bg-white/3 border-white/8'
+              )}
+            >
               {(['mm', 'cm', 'm'] as const).map(unitOption => (
                 <button
                   key={unitOption}
@@ -212,7 +221,10 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
 
             {/* Coordinate values - selectable rows, right-aligned values */}
             <div
-              className="w-full bg-white/2 border border-white/5 rounded-lg p-2 hover:bg-white/4 transition-colors outline-none focus:outline-none select-text"
+              className={combineStyles(
+                'w-full rounded-lg p-2 hover:bg-white/4 transition-colors outline-none focus:outline-none select-text',
+                tahoeGlass.base
+              )}
               title="Click and drag to select coordinates"
               onMouseDown={e => e.stopPropagation()}
               aria-label="Coordinate values"

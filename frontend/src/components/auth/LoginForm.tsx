@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
 import { useAuth } from '@/providers';
-import { Input, PrimaryButton, Typography } from '@/components/ui';
+import { FormField, FormMessage, PrimaryButton, Typography } from '@/components/ui';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
@@ -19,32 +19,6 @@ const LoginFormHeader: React.FC = () => (
   </div>
 );
 
-const LoginFormError: React.FC<{
-  error: { visible: boolean; message: string };
-}> = ({ error }) => {
-  if (!error.visible) {
-    return null;
-  }
-
-  return (
-    <div className="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-md shadow-sm">
-      <div className="flex">
-        <div className="flex-shrink-0">
-          <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </div>
-        <div className="ml-3">
-          <p className="text-sm font-medium">{error.message}</p>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const LoginFormFields: React.FC<{
   username: string;
@@ -53,39 +27,23 @@ const LoginFormFields: React.FC<{
   setPassword: (value: string) => void;
 }> = ({ username, password, setUsername, setPassword }) => (
   <>
-    <div>
-      <label
-        htmlFor="username"
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
-        Username
-      </label>
-      <Input
-        id="username"
-        type="text"
-        value={username}
-        onChange={(value: string | number) => setUsername(String(value))}
-        placeholder="Enter your username"
-        className="w-full"
-      />
-    </div>
+    <FormField
+      id="username"
+      label="Username"
+      type="text"
+      value={username}
+      onChange={(value: string | number) => setUsername(String(value))}
+      placeholder="Enter your username"
+    />
 
-    <div>
-      <label
-        htmlFor="password"
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
-        Password
-      </label>
-      <Input
-        id="password"
-        type="password"
-        value={password}
-        onChange={(value: string | number) => setPassword(String(value))}
-        placeholder="Enter your password"
-        className="w-full"
-      />
-    </div>
+    <FormField
+      id="password"
+      label="Password"
+      type="password"
+      value={password}
+      onChange={(value: string | number) => setPassword(String(value))}
+      placeholder="Enter your password"
+    />
   </>
 );
 
@@ -143,7 +101,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
         }}
         className="space-y-4"
       >
-        <LoginFormError error={error} />
+        {error.visible && (
+          <FormMessage message={error.message} type="error" variant="standard" />
+        )}
         <LoginFormFields
           username={username}
           password={password}

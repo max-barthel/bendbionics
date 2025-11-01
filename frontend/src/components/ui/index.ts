@@ -4,6 +4,7 @@ export { default as Button } from './Button';
 export { default as Card } from './Card';
 export { CloseButton } from './CloseButton';
 export { FormMessage } from './FormMessage';
+export { FormField } from './FormField';
 export { IconButton } from './IconButton';
 export { default as Input } from './Input';
 export { default as LoadingOverlay } from './LoadingOverlay';

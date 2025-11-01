@@ -1,3 +1,5 @@
+import { hoverStates } from '@/styles/design-tokens';
+import { combineStyles } from '@/styles/tahoe-utils';
 import TahoeGlass from '@/components/ui/TahoeGlass';
 import { useAppState } from '@/providers';
 import { UserAvatarIcon } from './UserAvatarIcon';
@@ -21,7 +23,10 @@ export function UserDropdownMenu() {
       <div className="p-1">
         <button
           onClick={() => appState.setShowUserSettings(true)}
-          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white/30 rounded-lg transition-colors"
+          className={combineStyles(
+            'w-full text-left px-3 py-2 text-sm text-gray-700 rounded-lg transition-colors',
+            hoverStates.menu
+          )}
         >
           Profile
         </button>
@@ -30,7 +35,10 @@ export function UserDropdownMenu() {
             appState.logout();
             appState.navigate('/');
           }}
-          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-white/30 rounded-lg transition-colors"
+          className={combineStyles(
+            'w-full text-left px-3 py-2 text-sm text-gray-700 rounded-lg transition-colors',
+            hoverStates.menu
+          )}
         >
           Sign Out
         </button>
