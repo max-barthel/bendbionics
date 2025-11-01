@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedErrorHandler } from '../../features/shared/hooks/useUnifiedErrorHandler';
 import { useAuth } from '../../providers';
-import { Button, Input, Typography } from '../ui';
+import { Button, Input, PrimaryButton, Typography } from '../ui';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
@@ -53,7 +53,7 @@ const RegisterFormSuccess: React.FC<{
   <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
     {success}
     <div className="mt-3">
-      <Button variant="outline" onClick={onContinue} className="w-full">
+      <Button onClick={onContinue} className="w-full">
         Continue to App
       </Button>
     </div>
@@ -248,15 +248,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
           setConfirmPassword={setConfirmPassword}
         />
 
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
-          disabled={isLoading}
-        >
+        <PrimaryButton type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? 'Creating account...' : 'Create Account'}
-        </Button>
+        </PrimaryButton>
       </form>
 
       <RegisterFormFooter onSwitchToLogin={onSwitchToLogin} />

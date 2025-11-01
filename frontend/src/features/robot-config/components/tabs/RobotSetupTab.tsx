@@ -6,7 +6,8 @@ import {
   TendonIcon,
   UploadIcon,
 } from '../../../../components/icons';
-import { SliderInput, SubsectionTitle, Typography } from '../../../../components/ui';
+import { PrimaryButton, SliderInput, SubsectionTitle, Typography } from '../../../../components/ui';
+import { buttonVariants } from '../../../../styles/design-tokens';
 import { CollapsibleSection } from '../../../shared/components/CollapsibleSection';
 import { TendonConfigPanel } from '../../../visualization/components/TendonConfigPanel';
 import { type RobotState } from '../../hooks/useRobotState';
@@ -46,16 +47,15 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
           <br />
           Then save as a preset.
         </Typography>
-        <button
+        <PrimaryButton
           onClick={() => onShowPresetManager?.()}
-          className="w-full mt-6 px-4 py-2 backdrop-blur-xl text-gray-900 text-sm font-medium border border-blue-400/30 shadow-lg transition-all duration-300 rounded-full hover:scale-105 relative bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
+          className="w-full mt-6 px-4 py-2 justify-center"
         >
           <div className="flex items-center justify-center gap-2">
             <UploadIcon className="w-4 h-4" />
-            Preset Manager
+            <span className={buttonVariants.primaryText}>Preset Manager</span>
           </div>
-          <div className="absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
-        </button>
+        </PrimaryButton>
       </div>
 
       {/* Segments - Most Important */}

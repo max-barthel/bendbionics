@@ -3,36 +3,12 @@ import type { ThreeEvent } from '@react-three/fiber';
 import { Canvas } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-// Removed unused Typography and TahoeGlass imports after empty state cleanup
+import { PrimaryButton } from '../../../components/ui';
+import { VISUALIZATION_CONSTANTS } from '../../../constants/visualization';
+import { buttonVariants } from '../../../styles/design-tokens';
 import { getTendonColor } from '../../../utils/tendonColors';
 import { CoordinateTooltip } from './CoordinateTooltip';
 import { TendonResultsPanel } from './TendonResultsPanel';
-
-// Constants for 3D visualization
-const VISUALIZATION_CONSTANTS = {
-  TENDON_ACTIVATION_THRESHOLD: 0.001,
-  SPHERE_RADIUS: 0.002,
-  SPHERE_SEGMENTS: 8,
-  SPHERE_RINGS: 6,
-  // Clickable sphere multipliers
-  CLICKABLE_SPHERE_SEGMENT_MULTIPLIER: 0.3,
-  CLICKABLE_SPHERE_COUPLING_MULTIPLIER: 0.3,
-  CLICKABLE_SPHERE_SEGMENTS: 6,
-  CLICKABLE_SPHERE_RINGS: 4,
-  CAMERA_POSITION: 1.5,
-  CAMERA_DISTANCE: 200,
-  CAMERA_NEAR: 0.5,
-  CAMERA_FAR: 50,
-  LIGHT_INTENSITY: 15,
-  LIGHT_DISTANCE: 200,
-  CAMERA_DISTANCE_MULTIPLIER: 1.5,
-  CAMERA_MIN_MULTIPLIER: 0.5,
-  CAMERA_MAX_MULTIPLIER: 4,
-  CAMERA_MIN_DISTANCE: 50,
-  CAMERA_MAX_DISTANCE: 1000,
-  CAMERA_FAR_MULTIPLIER: 15,
-  LIGHT_POSITION_Z: 200,
-} as const;
 
 type Visualizer3DProps = {
   readonly segments: number[][][];
@@ -519,9 +495,9 @@ function Visualizer3D({
             </Canvas>
 
             {/* Reset Button */}
-            <button
+            <PrimaryButton
               onClick={resetView}
-              className={`absolute top-4 px-4 py-2 backdrop-blur-xl text-gray-900 text-sm font-medium border border-blue-400/30 shadow-lg transition-all duration-300 rounded-full hover:scale-105 z-50 bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20 ${
+              className={`absolute top-4 px-4 py-2 z-50 ${
                 sidebarCollapsed ? 'left-4' : 'left-[calc(384px+16px)]'
               }`}
             >
@@ -539,10 +515,9 @@ function Visualizer3D({
                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                   />
                 </svg>
-                Reset View
+                <span className={buttonVariants.primaryText}>Reset View</span>
               </div>
-              <div className="absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
-            </button>
+            </PrimaryButton>
 
             {/* Tendon Results Panel */}
             {tendonAnalysis && (

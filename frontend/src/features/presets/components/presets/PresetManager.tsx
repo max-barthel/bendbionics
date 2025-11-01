@@ -6,7 +6,7 @@ import {
   type CreatePresetRequest,
   type Preset,
 } from '../../../../api/auth';
-import { Button, Input, Typography } from '../../../../components/ui';
+import { Button, Input, PrimaryButton, Typography } from '../../../../components/ui';
 import { useAuth } from '../../../../providers';
 
 // Constants for error messages
@@ -309,13 +309,9 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
         </div>
 
         <div className="space-y-4">
-          <Button
-            variant="primary"
-            onClick={() => navigate('/auth')}
-            className="backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
-          >
+          <PrimaryButton onClick={() => navigate('/auth')}>
             Sign In to Save Presets
-          </Button>
+          </PrimaryButton>
           <div className="mt-4">
             <Typography variant="body" color="gray" className="text-sm text-gray-600">
               You can still use the app without signing in!
@@ -338,13 +334,9 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       </div>
 
       <div className="flex justify-center mb-6">
-        <Button
-          variant="primary"
-          onClick={() => setShowSaveForm(!showSaveForm)}
-          className="backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
-        >
+        <PrimaryButton onClick={() => setShowSaveForm(!showSaveForm)}>
           {showSaveForm ? 'Cancel' : 'Save Current Configuration'}
-        </Button>
+        </PrimaryButton>
       </div>
 
       {showSaveForm && (
@@ -394,14 +386,13 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
                 {error}
               </Typography>
             )}
-            <Button
-              variant="primary"
+            <PrimaryButton
               onClick={handleSavePreset}
               disabled={isLoading}
-              className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
+              className="w-full"
             >
               {isLoading ? 'Saving...' : 'Save Preset'}
-            </Button>
+            </PrimaryButton>
           </div>
         </div>
       )}
@@ -502,17 +493,13 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
                         />
                       </div>
                       <div className="flex gap-2">
-                        <Button
-                          variant="primary"
-                          size="sm"
+                        <PrimaryButton
                           onClick={() => handleSaveEdit(preset.id)}
                           disabled={isLoading}
-                          className="backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
                         >
                           {isLoading ? 'Saving...' : 'Save'}
-                        </Button>
+                        </PrimaryButton>
                         <Button
-                          variant="outline"
                           size="sm"
                           onClick={handleCancelEdit}
                           disabled={isLoading}
@@ -547,7 +534,6 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
                         </Typography>
                         <div className="flex gap-2">
                           <Button
-                            variant="primary"
                             size="sm"
                             onClick={() => handleLoadPreset(preset)}
                             className="backdrop-blur-xl border border-green-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-green-500/25 to-green-600/25 shadow-green-500/20"
@@ -555,7 +541,6 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
                             Load
                           </Button>
                           <Button
-                            variant="outline"
                             size="sm"
                             onClick={() => handleEditPreset(preset)}
                             className="backdrop-blur-xl border border-yellow-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-yellow-500/25 to-yellow-600/25 shadow-yellow-500/20"
@@ -563,7 +548,6 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
                             Edit
                           </Button>
                           <Button
-                            variant="outline"
                             size="sm"
                             onClick={() => handleDeletePreset(preset.id)}
                             className="backdrop-blur-xl border border-red-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-red-500/25 to-red-600/25 shadow-red-500/20"

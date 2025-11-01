@@ -33,10 +33,7 @@ export {
   AngleControlPanel,
   CollapsibleSection,
   // Shared
-  ErrorBoundary,
   ErrorDisplay,
-  NumberInput,
-  useErrorHandler,
   useLocalStorage,
   useRetryAPI,
   useUnifiedErrorHandler,

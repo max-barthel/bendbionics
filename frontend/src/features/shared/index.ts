@@ -8,12 +8,9 @@
 // Components
 export { AngleControlPanel } from './components/AngleControlPanel';
 export { CollapsibleSection } from './components/CollapsibleSection';
-export { ErrorBoundary } from './components/ErrorBoundary';
 export { ErrorDisplay } from './components/ErrorDisplay';
-export { default as NumberInput } from './components/NumberInput';
 
 // Hooks
-export { useErrorHandler } from './hooks/useErrorHandler';
 export {
   useLocalPresets,
   useLocalStorage,

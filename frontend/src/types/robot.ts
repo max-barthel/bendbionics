@@ -25,7 +25,5 @@ export interface RobotConfiguration extends Partial<RobotState> {
   };
 }
 
-// Define user type
-export interface User {
-  username: string;
-}
+// Re-export User type from API for convenience
+export type { User } from '../api/auth';

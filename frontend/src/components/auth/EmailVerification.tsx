@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authAPI } from '../../api/auth';
 import { useAuth } from '../../providers/AuthProvider';
+import { PrimaryButton } from '../ui';
 import Button from '../ui/Button';
 import Typography from '../ui/Typography';
 
@@ -205,34 +206,19 @@ export const EmailVerification: React.FC = () => {
           <div className="space-y-3">
             {(verificationState.status === 'success' ||
               verificationState.status === 'already_verified') && (
-              <Button
-                onClick={handleContinue}
-                variant="primary"
-                size="lg"
-                className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
-              >
+              <PrimaryButton onClick={handleContinue} className="w-full">
                 Continue to Sign In
-              </Button>
+              </PrimaryButton>
             )}
 
             {(verificationState.status === 'error' ||
               verificationState.status === 'expired') && (
               <>
-                <Button
-                  onClick={handleResendVerification}
-                  variant="primary"
-                  size="lg"
-                  className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
-                >
+                <PrimaryButton onClick={handleResendVerification} className="w-full">
                   Request New Verification Email
-                </Button>
+                </PrimaryButton>
 
-                <Button
-                  onClick={handleContinue}
-                  variant="secondary"
-                  size="lg"
-                  className="w-full"
-                >
+                <Button onClick={handleContinue} size="lg" className="w-full">
                   Back to Sign In
                 </Button>
               </>

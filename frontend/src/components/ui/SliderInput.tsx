@@ -1,6 +1,6 @@
 import React from 'react';
-import NumberInput from '../../features/shared/components/NumberInput';
 import { combineStyles, getTahoeGlassStyles } from '../../styles/tahoe-utils';
+import NumberInput from './NumberInput';
 
 // Constants
 const DEFAULT_MAX_VALUE = 2000;

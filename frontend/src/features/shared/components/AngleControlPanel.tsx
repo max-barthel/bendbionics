@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
-import { SliderInput, SubsectionTitle, UnitSelector } from '../../../components/ui';
-
-// Constants for angle calculations
-const MAX_ANGLE_DEGREES = 180;
-const ANGLE_CONSTANTS = {
-  DEGREES_TO_RADIANS: Math.PI / MAX_ANGLE_DEGREES,
+import {
+  PanelContainer,
+  SliderInput,
+  SubsectionTitle,
+  UnitSelector,
+} from '../../../components/ui';
+import { panelVariants } from '../../../styles/design-tokens';
+import { combineStyles } from '../../../styles/tahoe-utils';
+import {
   MAX_ANGLE_DEGREES,
-  MIN_ANGLE_DEGREES: -MAX_ANGLE_DEGREES,
-} as const;
+  MAX_ANGLE_RADIANS,
+  convertFromSI,
+  convertToSI,
+  getUnits,
+} from '../../../utils/unitConversions';
 
 interface AngleControlPanelProps {
   values: number[];
@@ -22,7 +28,7 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
 }) => {
   const [selectedSegment, setSelectedSegment] = useState(0);
   const [useDegrees, setUseDegrees] = useState(true);
-  const angleUnits = ['deg', 'rad'] as const;
+  const angleUnits = getUnits('angle');
 
   const updateSegmentValue = (index: number, newValueRadians: number) => {
     const newValues = [...values];
@@ -31,7 +37,7 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
   };
 
   const updateSegmentValueDegrees = (index: number, newValueDegrees: number) => {
-    const newValueRadians = newValueDegrees * ANGLE_CONSTANTS.DEGREES_TO_RADIANS;
+    const newValueRadians = convertToSI(newValueDegrees, 'deg', 'angle');
     updateSegmentValue(index, newValueRadians);
   };
 
@@ -44,36 +50,44 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
       {/* Segment Selector */}
       <div className="space-y-2">
         <SubsectionTitle title="Select Segment to Adjust" />
-        <div className="flex flex-wrap gap-2 text-xs bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-2 shadow-2xl shadow-black/5">
-          {values.map((value, index) => (
-            <button
-              key={`segment-${index}-${value}`}
-              type="button"
-              className={`w-[calc(50%-4px)] h-16 flex flex-col justify-center flex-shrink-0 p-3 rounded-xl cursor-pointer ${
-                selectedSegment === index
-                  ? 'bg-gradient-to-br from-blue-500/25 to-indigo-500/25 text-gray-900 shadow-lg border border-blue-400/30 shadow-blue-500/10'
-                  : 'text-gray-600 hover:text-gray-800 hover:bg-white/20'
-              }`}
-              onClick={() => setSelectedSegment(index)}
-            >
-              <div className="font-medium text-center">Segment {index + 1}</div>
-              <div className="text-gray-600 text-center text-xs leading-tight">
-                {useDegrees ? (
-                  <>
-                    {((value * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) / Math.PI).toFixed(1)}
-                    ° ({value.toFixed(3)} rad)
-                  </>
-                ) : (
-                  <>
-                    {value.toFixed(3)} rad (
-                    {((value * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) / Math.PI).toFixed(1)}
-                    °)
-                  </>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
+        <PanelContainer
+          variant="segmentSelector"
+          className="flex flex-wrap gap-2 text-xs"
+        >
+          {values.map((value, index) => {
+            const segmentButtonClasses = combineStyles(
+              'w-[calc(50%-4px)] h-16 flex flex-col justify-center flex-shrink-0 p-3 rounded-xl cursor-pointer',
+              selectedSegment === index
+                ? panelVariants.segmentSelected
+                : panelVariants.segmentUnselected
+            );
+
+            const displayDegrees = convertFromSI(value, 'deg', 'angle');
+            const displayRadians = convertFromSI(value, 'rad', 'angle');
+
+            return (
+              <button
+                key={`segment-${index}-${value}`}
+                type="button"
+                className={segmentButtonClasses}
+                onClick={() => setSelectedSegment(index)}
+              >
+                <div className="font-medium text-center">Segment {index + 1}</div>
+                <div className="text-gray-600 text-center text-xs leading-tight">
+                  {useDegrees ? (
+                    <>
+                      {displayDegrees.toFixed(1)}° ({displayRadians.toFixed(3)} rad)
+                    </>
+                  ) : (
+                    <>
+                      {displayRadians.toFixed(3)} rad ({displayDegrees.toFixed(1)}°)
+                    </>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </PanelContainer>
       </div>
 
       {/* Individual Segment Control */}
@@ -92,9 +106,8 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
           <SliderInput
             value={
               useDegrees
-                ? ((values[selectedSegment] ?? 0) * ANGLE_CONSTANTS.MAX_ANGLE_DEGREES) /
-                  Math.PI
-                : (values[selectedSegment] ?? 0)
+                ? convertFromSI(values[selectedSegment] ?? 0, 'deg', 'angle')
+                : convertFromSI(values[selectedSegment] ?? 0, 'rad', 'angle')
             }
             onChange={(value: number) => {
               if (useDegrees) {
@@ -104,9 +117,9 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
               }
             }}
             {...(onFieldCommit && { onBlur: onFieldCommit })}
-            min={useDegrees ? -ANGLE_CONSTANTS.MAX_ANGLE_DEGREES : -Math.PI}
-            max={useDegrees ? ANGLE_CONSTANTS.MAX_ANGLE_DEGREES : Math.PI}
-            step={useDegrees ? 1 : Math.PI / ANGLE_CONSTANTS.MAX_ANGLE_DEGREES}
+            min={useDegrees ? -MAX_ANGLE_DEGREES : -MAX_ANGLE_RADIANS}
+            max={useDegrees ? MAX_ANGLE_DEGREES : MAX_ANGLE_RADIANS}
+            step={useDegrees ? 1 : MAX_ANGLE_RADIANS / MAX_ANGLE_DEGREES}
             placeholder={`#${selectedSegment + 1}`}
             label=""
           />
