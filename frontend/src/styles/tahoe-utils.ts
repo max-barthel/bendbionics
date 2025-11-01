@@ -16,6 +16,7 @@ import {
   shadows,
   styleCombinations,
   tahoeGlass,
+  tahoeGlassPresets,
   transitions,
   type BorderRadiusVariant,
   type FocusStateVariant,
@@ -51,6 +52,52 @@ export function getTahoeGlassStyles(
   }
 
   return styles.join(' ');
+}
+
+/**
+ * Get Tahoe glass styles using a preset
+ * This simplifies common style combinations used across components
+ */
+export function getTahoeGlassPreset(
+  preset: keyof typeof tahoeGlassPresets,
+  glassVariantOverride?: TahoeGlassVariant,
+  includeDisabled: boolean = true
+): string {
+  const presetConfig = tahoeGlassPresets[preset];
+
+  // Handle container preset which doesn't have a fixed glassVariant
+  if (preset === 'container') {
+    if (!glassVariantOverride) {
+      throw new Error(
+        "Container preset requires a glassVariantOverride parameter since it doesn't have a fixed glass variant"
+      );
+    }
+    return getTahoeGlassStyles(
+      glassVariantOverride,
+      presetConfig.shadowVariant,
+      presetConfig.borderRadiusVariant,
+      presetConfig.transitionVariant,
+      presetConfig.focusVariant,
+      presetConfig.hoverVariant,
+      includeDisabled
+    );
+  }
+
+  // For other presets, use the preset's glassVariant unless overridden
+  // TypeScript doesn't narrow the union type, so we use 'in' to check
+  const glassVariant =
+    glassVariantOverride ||
+    ('glassVariant' in presetConfig ? presetConfig.glassVariant : 'base');
+
+  return getTahoeGlassStyles(
+    glassVariant,
+    presetConfig.shadowVariant,
+    presetConfig.borderRadiusVariant,
+    presetConfig.transitionVariant,
+    presetConfig.focusVariant,
+    presetConfig.hoverVariant,
+    includeDisabled
+  );
 }
 
 /**

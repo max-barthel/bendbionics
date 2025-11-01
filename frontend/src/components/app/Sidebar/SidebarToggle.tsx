@@ -1,5 +1,5 @@
 import { IconButton } from '@/components/ui';
-import type { AppState } from '../UserMenu/types';
+import type { AppState } from '@/types/app';
 
 interface SidebarToggleProps {
   readonly appState: AppState;

@@ -2,7 +2,7 @@ import { inputSizeClasses, type ComponentSize } from '@/styles/design-tokens';
 import {
   combineStyles,
   getFloatingLabelStyles,
-  getTahoeGlassStyles,
+  getTahoeGlassPreset,
 } from '@/styles/tahoe-utils';
 import React, { useId, useState } from 'react';
 
@@ -30,14 +30,7 @@ interface InputProps {
 // Helper function to get input classes
 function getInputClasses(size: ComponentSize, error?: string, className?: string) {
   const baseClasses = 'text-gray-800 placeholder:text-gray-500 bg-gray-50';
-  const tahoeGlassClasses = getTahoeGlassStyles(
-    'base',
-    'subtle',
-    'full',
-    'standard',
-    'blue',
-    'subtle'
-  );
+  const tahoeGlassClasses = getTahoeGlassPreset('input');
   const errorClasses = error ? 'border-red-400/50 focus:ring-red-400/50' : '';
   return combineStyles(
     baseClasses,

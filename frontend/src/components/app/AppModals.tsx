@@ -1,7 +1,7 @@
 import type { RobotConfiguration } from '@/types/robot';
 import { Profile } from '../auth/Profile';
 import { PresetManagerModal } from './PresetManagerModal';
-import type { AppState } from './UserMenu/types';
+import type { AppState } from '@/types/app';
 
 interface AppModalsProps {
   readonly appState: AppState;

@@ -96,6 +96,86 @@ export const disabledStates = {
   standard: 'disabled:opacity-50 disabled:cursor-not-allowed',
 } as const;
 
+// Tahoe Glass Style Presets
+// Common parameter combinations used across components to reduce repetition
+export const tahoeGlassPresets = {
+  // Standard button/glass component style
+  // Used in: Button, TahoeGlass
+  button: {
+    glassVariant: 'base' as const,
+    shadowVariant: 'glass' as const,
+    borderRadiusVariant: 'full' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'white' as const,
+    hoverVariant: 'glass' as const,
+  },
+
+  // Enhanced button/icon style
+  // Used in: IconButton, CloseButton
+  enhancedButton: {
+    glassVariant: 'enhanced' as const,
+    shadowVariant: 'glass' as const,
+    borderRadiusVariant: 'full' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'white' as const,
+    hoverVariant: 'glass' as const,
+  },
+
+  // Input field style
+  // Used in: Input
+  input: {
+    glassVariant: 'base' as const,
+    shadowVariant: 'subtle' as const,
+    borderRadiusVariant: 'full' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'blue' as const,
+    hoverVariant: 'subtle' as const,
+  },
+
+  // Number input display style
+  // Used in: TahoeNumberInput (display)
+  numberInputDisplay: {
+    glassVariant: 'base' as const,
+    shadowVariant: 'subtle' as const,
+    borderRadiusVariant: 'medium' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'white' as const,
+    hoverVariant: 'glass' as const,
+  },
+
+  // Number input field style
+  // Used in: TahoeNumberInput (input)
+  numberInputField: {
+    glassVariant: 'subtle' as const,
+    shadowVariant: 'subtle' as const,
+    borderRadiusVariant: 'full' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'blue' as const,
+    hoverVariant: 'subtle' as const,
+  },
+
+  // Slider input range display style
+  // Used in: SliderInput
+  sliderRange: {
+    glassVariant: 'subtle' as const,
+    shadowVariant: 'glass' as const,
+    borderRadiusVariant: 'full' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'white' as const,
+    hoverVariant: 'glass' as const,
+  },
+
+  // Large container style (used in TahoeGlass with variant)
+  // Note: This is a base preset, glassVariant is passed as prop
+  container: {
+    shadowVariant: 'glass' as const,
+    borderRadiusVariant: 'large' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'white' as const,
+    hoverVariant: 'glass' as const,
+  },
+} as const;
+
 // Pre-composed Style Combinations
 export const styleCombinations = {
   // Standard Tahoe glass button
@@ -242,6 +322,12 @@ export const unitSelectorVariants = {
   // Selected button inner gradient overlay
   buttonSelectedOverlay:
     'absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner',
+} as const;
+
+// Background Gradients
+export const backgroundGradients = {
+  // Main app background gradient (from MainAppLayout)
+  appBackground: 'bg-gradient-to-br from-gray-200 to-gray-300',
 } as const;
 
 // Modal Variants

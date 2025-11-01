@@ -3,7 +3,7 @@ import {
   iconSizeClasses,
   type ComponentSize,
 } from '@/styles/design-tokens';
-import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
+import { combineStyles, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 
 interface CloseButtonProps {
   readonly onClick: () => void;
@@ -24,14 +24,7 @@ export function CloseButton({
   className = '',
 }: CloseButtonProps) {
   // Base glass styling for close button
-  const glassClasses = getTahoeGlassStyles(
-    'enhanced', // glass variant
-    'glass', // shadow variant
-    'full', // border radius (rounded-full)
-    'standard', // transition
-    'white', // focus state
-    'glass' // hover state
-  );
+  const glassClasses = getTahoeGlassPreset('enhancedButton');
 
   const classes = combineStyles(
     'absolute top-4 right-4 z-10',

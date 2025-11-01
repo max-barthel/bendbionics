@@ -1,5 +1,5 @@
 import { iconButtonSizeClasses, type ComponentSize } from '@/styles/design-tokens';
-import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
+import { combineStyles, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 import type { ReactNode } from 'react';
 
 interface IconButtonProps {
@@ -30,14 +30,7 @@ export function IconButton({
 }: Readonly<IconButtonProps>) {
   let variantClasses = '';
   if (variant === 'glass') {
-    const glassClasses = getTahoeGlassStyles(
-      'enhanced', // glass variant
-      'glass', // shadow variant
-      'full', // border radius
-      'standard', // transition
-      'white', // focus state
-      'glass' // hover state
-    );
+    const glassClasses = getTahoeGlassPreset('enhancedButton');
     variantClasses = combineStyles(glassClasses, 'hover:scale-105');
   } else if (variant === 'outline') {
     variantClasses = combineStyles(

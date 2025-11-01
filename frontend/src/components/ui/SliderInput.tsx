@@ -1,5 +1,5 @@
 import React from 'react';
-import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
+import { combineStyles, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 import NumberInput from './NumberInput';
 
 // Constants
@@ -22,14 +22,7 @@ type SliderInputProps = {
 
 // Range display component
 function RangeDisplay({ min, max }: { readonly min: number; readonly max: number }) {
-  const rangeDisplayClasses = getTahoeGlassStyles(
-    'subtle',
-    'glass',
-    'full',
-    'standard',
-    'white',
-    'glass'
-  );
+  const rangeDisplayClasses = getTahoeGlassPreset('sliderRange');
 
   return (
     <div

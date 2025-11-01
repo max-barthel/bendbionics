@@ -1,11 +1,12 @@
 import { useCallback, useRef } from 'react';
 import type { FormTabsRef } from '@/features/robot-config/components/FormTabs';
 import { useAutoLoadPreset } from '@/hooks/app/useAutoLoadPreset';
+import { backgroundGradients } from '@/styles/design-tokens';
 import { AppModals } from './AppModals';
 import { Sidebar, SidebarToggle } from './Sidebar';
 import { UserMenu } from './UserMenu';
 import { Visualizer3DWrapper } from './Visualizer3DWrapper';
-import type { AppState } from './UserMenu/types';
+import type { AppState } from '@/types/app';
 import type { RobotConfiguration } from '@/types/robot';
 
 interface MainAppLayoutProps {
@@ -41,7 +42,7 @@ export function MainAppLayout({
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="flex-1 bg-gradient-to-br from-gray-200 to-gray-300 relative overflow-hidden">
+      <div className={`flex-1 ${backgroundGradients.appBackground} relative overflow-hidden`}>
         <Visualizer3DWrapper appState={appState} />
         <Sidebar
           appState={appState}

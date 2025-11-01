@@ -1,5 +1,5 @@
 import { numberInputSizeClasses, type ComponentSize } from '@/styles/design-tokens';
-import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
+import { combineStyles, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 import React, { useEffect, useState } from 'react';
 
 // Constants
@@ -65,15 +65,7 @@ function FloatingLabel({ placeholder }: { readonly placeholder: string }) {
     <div
       className={combineStyles(
         'absolute -top-3 left-3 px-2 text-xs font-medium text-gray-700 transition-all duration-300',
-        getTahoeGlassStyles(
-          'base',
-          'subtle',
-          'medium',
-          'standard',
-          'white',
-          'glass',
-          false
-        )
+        getTahoeGlassPreset('numberInputDisplay', undefined, false)
       )}
     >
       {placeholder}
@@ -205,14 +197,7 @@ function useTahoeNumberInput(
       ...(onBlur && { onBlur }),
     });
 
-  const tahoeGlassClasses = getTahoeGlassStyles(
-    'subtle',
-    'subtle',
-    'full',
-    'standard',
-    'blue',
-    'subtle'
-  );
+  const tahoeGlassClasses = getTahoeGlassPreset('numberInputField');
 
   return {
     inputValue,
