@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Typography } from '../../../components/ui';
+import { PanelContainer, ToggleButton, Typography } from '../../../components/ui';
+import { tableCellVariants, unitSelectorVariants } from '../../../styles/design-tokens';
+import { combineStyles } from '../../../styles/tahoe-utils';
 import { getTendonColorClasses } from '../../../utils/tendonColors';
+import { convertFromSI } from '../../../utils/unitConversions';
 
 // Constants for dynamic height calculations
 const HEIGHT_CONSTANTS = {
@@ -55,27 +58,13 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
   const lastTendonCountRef = useRef(0);
   const lastSegmentCountRef = useRef(0);
 
-  const convertLength = (length: number, targetUnit: LengthUnit) => {
-    const mm = length * 1000; // Convert from meters to mm
-    switch (targetUnit) {
-      case 'mm':
-        return mm;
-      case 'cm':
-        return mm / 10;
-      case 'm':
-        return mm / 1000;
-      default:
-        return mm;
-    }
-  };
-
   const formatLength = (length: number, targetUnit: LengthUnit) => {
-    const converted = convertLength(length, targetUnit);
+    const converted = convertFromSI(length, targetUnit, 'length');
     return converted.toFixed(2);
   };
 
   const formatLengthChange = (change: number, targetUnit: LengthUnit) => {
-    const converted = convertLength(change, targetUnit);
+    const converted = convertFromSI(change, targetUnit, 'length');
     const sign = converted >= 0 ? '+' : '';
     return `${sign}${converted.toFixed(2)}`;
   };
@@ -314,34 +303,17 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     );
   }, [totalTendons]);
 
-  const dynamicHeightClass = useMemo(
-    () => `h-[${dynamicHeight}px] max-h-[${dynamicHeight}px]`,
-    [dynamicHeight]
-  );
-
   const firstTendonEntry = tendonEntries[0];
 
   if (!tendonAnalysis?.actuation_commands) {
     return (
-      <button
+      <ToggleButton
         onClick={onToggle}
-        className="fixed top-1/2 right-4 transform -translate-y-1/2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1.5 shadow-2xl hover:bg-white/10 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105"
+        className="fixed top-1/2 right-4 transform -translate-y-1/2"
         aria-label="Show tendon results"
-      >
-        <svg
-          className="w-4 h-4 text-gray-600 transition-transform duration-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
-      </button>
+        isOpen={false}
+        direction="left-right"
+      />
     );
   }
 
@@ -349,42 +321,30 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     <>
       {/* Simple Toggle Button (when folded) */}
       {!isVisible && firstTendonEntry && (
-        <button
+        <ToggleButton
           onClick={onToggle}
-          className="fixed bottom-8 right-42 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1.5 shadow-2xl hover:bg-white/10 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105"
+          className="fixed bottom-8 right-42"
           aria-label="Show tendon results"
-        >
-          <svg
-            className="w-4 h-4 text-gray-600 transition-transform duration-300"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 15l7-7 7 7"
-            />
-          </svg>
-        </button>
+          isOpen={false}
+        />
       )}
 
       {/* Bottom-Right Panel */}
       <div
-        className={`fixed bottom-0 transition-all duration-500 ease-in-out z-40 ${
-          isVisible
-            ? `${dynamicHeightClass} translate-y-0 opacity-100`
-            : 'h-0 translate-y-full opacity-0'
-        }`}
+        className={combineStyles(
+          'fixed bottom-0 transition-all duration-500 ease-in-out z-40',
+          isVisible ? 'translate-y-0 opacity-100' : 'h-0 translate-y-full opacity-0'
+        )}
         style={{
           width: `${panelWidth}px`,
+          height: isVisible ? `${dynamicHeight}px` : '0',
+          maxHeight: isVisible ? `${dynamicHeight}px` : '0',
           right: 0,
           willChange: isResizing ? 'width' : 'auto',
         }}
         ref={panelRef}
       >
-        <div className="h-full relative bg-white/2 backdrop-blur-sm border border-white/5 rounded-tl-2xl shadow-2xl shadow-black/10">
+        <PanelContainer className="h-full relative">
           {/* Resize Handle - show when panel can be resized */}
           {(hasHorizontalScroll || panelWidth < optimalWidth) && (
             <div className="absolute left-0 top-0 w-1 h-full z-20 group">
@@ -401,25 +361,12 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
           <div className="flex flex-col h-full">
             {/* Close Button - positioned over content */}
             {isVisible && (
-              <button
+              <ToggleButton
                 onClick={onToggle}
-                className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1.5 shadow-2xl hover:bg-white/10 hover:shadow-2xl transition-all duration-300 ease-in-out z-10 hover:scale-105"
+                className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10"
                 aria-label={isVisible ? 'Hide tendon results' : 'Show tendon results'}
-              >
-                <svg
-                  className="w-4 h-4 text-gray-600 transition-transform duration-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d={isVisible ? 'M19 9l-7 7-7-7' : 'M5 15l7-7 7 7'}
-                  />
-                </svg>
-              </button>
+                isOpen={isVisible}
+              />
             )}
             {/* Content */}
             <div
@@ -432,21 +379,21 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                   <Typography variant="label" color="primary" className="font-semibold">
                     Tendon Length Changes
                   </Typography>
-                  <div className="flex bg-white/10 border border-white/20 rounded-full p-1 shadow-lg gap-1">
+                  <div className={unitSelectorVariants.container}>
                     {(['mm', 'cm', 'm'] as const).map(unitOption => (
                       <button
                         key={unitOption}
                         onClick={() => setUnit(unitOption)}
-                        className={`relative flex-1 h-7 px-3 flex items-center justify-center text-xs font-medium rounded-full transition-colors duration-200 border-2 ${
+                        className={
                           unit === unitOption
-                            ? 'bg-blue-500/30 text-gray-900 border-blue-400/50'
-                            : 'text-gray-600 hover:text-gray-800 hover:bg-white/30 border-transparent'
-                        }`}
+                            ? unitSelectorVariants.buttonSelected
+                            : unitSelectorVariants.buttonUnselected
+                        }
                         aria-label={`Select ${unitOption} unit`}
                       >
                         {unitOption}
                         {unit === unitOption && (
-                          <div className="absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
+                          <div className={unitSelectorVariants.buttonSelectedOverlay} />
                         )}
                       </button>
                     ))}
@@ -459,7 +406,12 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                     <table className="w-auto border-collapse table-fixed">
                       <thead>
                         <tr>
-                          <th className="w-18 px-3 py-2 text-center text-sm font-medium text-gray-700 bg-white/10 border border-white/20 rounded-tl-lg">
+                          <th
+                            className={combineStyles(
+                              'w-18',
+                              tableCellVariants.headerFirst
+                            )}
+                          >
                             <span className="text-lg font-bold text-gray-600">Δ</span>
                           </th>
                           {tendonEntries.map(([tendonId]) => {
@@ -467,7 +419,10 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                             return (
                               <th
                                 key={tendonId}
-                                className="w-20 px-3 py-2 text-center text-sm font-medium text-gray-700 bg-white/10 border border-white/20"
+                                className={combineStyles(
+                                  'w-20',
+                                  tableCellVariants.header
+                                )}
                               >
                                 <div className="flex items-center justify-center gap-2">
                                   <div
@@ -487,14 +442,22 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                             const segmentKey = `segment-${segmentIndex + 1}`;
                             return (
                               <tr key={segmentKey}>
-                                <td className="w-16 px-3 py-2 text-sm font-medium text-gray-700 bg-white/10 border border-white/20">
+                                <td
+                                  className={combineStyles(
+                                    'w-16',
+                                    tableCellVariants.bodyFirst
+                                  )}
+                                >
                                   Seg {segmentIndex + 1}
                                 </td>
                                 {tendonAnalysis.tendon_analysis?.segment_length_changes.map(
                                   (tendonLengths, tendonIndex) => (
                                     <td
                                       key={`tendon-${tendonIndex}-segment-${segmentIndex + 1}`}
-                                      className="w-20 px-3 py-2 text-sm text-center text-gray-600 bg-white/5 border border-white/20"
+                                      className={combineStyles(
+                                        'w-20',
+                                        tableCellVariants.body
+                                      )}
                                     >
                                       {formatLengthChange(
                                         tendonLengths[segmentIndex + 1] ?? 0,
@@ -508,7 +471,12 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                           })}
                         {/* Totals Row */}
                         <tr className="border-t-2 border-gray-300/60">
-                          <td className="w-16 px-3 py-2 text-sm font-bold text-gray-800 bg-white/15 border border-white/20 rounded-bl-lg">
+                          <td
+                            className={combineStyles(
+                              'w-16',
+                              tableCellVariants.bodyFirst
+                            )}
+                          >
                             Total
                           </td>
                           {tendonEntries.map(([tendonId], tendonIndex) => {
@@ -526,7 +494,10 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                             return (
                               <td
                                 key={tendonId}
-                                className="w-20 px-3 py-2 text-sm font-bold text-center text-gray-800 bg-white/15 border border-white/20"
+                                className={combineStyles(
+                                  'w-20',
+                                  tableCellVariants.total
+                                )}
                               >
                                 {formatLength(totalFromSegments, unit)}
                               </td>
@@ -540,7 +511,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
               </div>
             </div>
           </div>
-        </div>
+        </PanelContainer>
       </div>
     </>
   );

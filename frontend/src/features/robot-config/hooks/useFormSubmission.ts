@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { robotAPI, type PCCParams } from '../../../api/client';
 import { validateRobotConfiguration } from '../../../utils/formValidation';
-import { useErrorHandler } from '../../shared/hooks/useErrorHandler';
+import { useUnifiedErrorHandler } from '../../shared/hooks/useUnifiedErrorHandler';
 import { useRobotState } from './useRobotState';
 
 // Progress and timeout constants
@@ -46,7 +46,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
   const [computationProgress, setComputationProgress] = useState(0);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { error, showError, hideError } = useErrorHandler();
+  const { error, showError, hideError } = useUnifiedErrorHandler();
 
   const handleSubmit = useCallback(async (): Promise<boolean> => {
     hideError();

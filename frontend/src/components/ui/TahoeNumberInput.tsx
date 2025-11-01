@@ -18,6 +18,7 @@ interface TahoeNumberInputProps {
   className?: string;
   disabled?: boolean;
   size?: Size;
+  onBlur?: () => void;
   'data-testid'?: string;
 }
 
@@ -114,8 +115,10 @@ function useInputHandlers(params: {
   min: number | undefined;
   max: number | undefined;
   precision: number;
+  onBlur?: () => void;
 }) {
-  const { setInputValue, setIsFocused, value, onChange, min, max, precision } = params;
+  const { setInputValue, setIsFocused, value, onChange, min, max, precision, onBlur } =
+    params;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -131,6 +134,8 @@ function useInputHandlers(params: {
     if (inputValue === '' || inputValue === '-') {
       setInputValue(value.toString());
     }
+    // Call external onBlur if provided
+    onBlur?.();
   };
 
   const handleFocus = () => setIsFocused(true);
@@ -179,18 +184,24 @@ function InputField({
       placeholder={placeholder}
       disabled={disabled}
       data-testid={dataTestId}
-      className={`w-full bg-transparent border-0 outline-none text-gray-900 placeholder-gray-500/70 font-medium pr-4 transition-all duration-300 ${getSizeClasses(size)} [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${isFocused ? 'placeholder-gray-400/60' : ''}`}
+      className={combineStyles(
+        'w-full bg-transparent border-0 outline-none text-gray-900 placeholder-gray-500/70 font-medium pr-4 transition-all duration-300',
+        getSizeClasses(size),
+        '[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]',
+        isFocused ? 'placeholder-gray-400/60' : ''
+      )}
     />
   );
 }
 
-// Custom hook for TahoeNumberInput state and handlers
-function useTahoeNumberInputState(
+// Custom hook for TahoeNumberInput - consolidates state, handlers, and styling
+function useTahoeNumberInput(
   value: number,
   onChange: (value: number) => void,
   min?: number,
   max?: number,
-  precision: number = DEFAULT_PRECISION
+  precision: number = DEFAULT_PRECISION,
+  onBlur?: () => void
 ) {
   const { inputValue, setInputValue, isFocused, setIsFocused } = useInputState(value);
   const { handleInputChange, handleBlur, handleFocus, handleKeyDown } =
@@ -202,19 +213,9 @@ function useTahoeNumberInputState(
       min,
       max,
       precision,
+      ...(onBlur && { onBlur }),
     });
-  return {
-    inputValue,
-    isFocused,
-    handleInputChange,
-    handleBlur,
-    handleFocus,
-    handleKeyDown,
-  };
-}
 
-// Custom hook for TahoeNumberInput styling
-function useTahoeNumberInputStyling() {
   const tahoeGlassClasses = getTahoeGlassStyles(
     'subtle',
     'subtle',
@@ -223,26 +224,7 @@ function useTahoeNumberInputStyling() {
     'blue',
     'subtle'
   );
-  return { tahoeGlassClasses };
-}
 
-// Custom hook for TahoeNumberInput state and styling
-function useTahoeNumberInputStateAndStyling(
-  value: number,
-  onChange: (value: number) => void,
-  min?: number,
-  max?: number,
-  precision: number = DEFAULT_PRECISION
-) {
-  const {
-    inputValue,
-    isFocused,
-    handleInputChange,
-    handleBlur,
-    handleFocus,
-    handleKeyDown,
-  } = useTahoeNumberInputState(value, onChange, min, max, precision);
-  const { tahoeGlassClasses } = useTahoeNumberInputStyling();
   return {
     inputValue,
     isFocused,
@@ -250,115 +232,6 @@ function useTahoeNumberInputStateAndStyling(
     handleBlur,
     handleFocus,
     handleKeyDown,
-    tahoeGlassClasses,
-  };
-}
-
-// Custom hook for TahoeNumberInput rendering
-function useTahoeNumberInputRendering(params: {
-  readonly inputValue: string;
-  readonly isFocused: boolean;
-  readonly handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  readonly handleBlur: (value: string) => void;
-  readonly handleFocus: () => void;
-  readonly handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  readonly disabled: boolean;
-  readonly size: Size;
-  readonly placeholder: string | undefined;
-  readonly dataTestId: string | undefined;
-}) {
-  const {
-    inputValue,
-    isFocused,
-    handleInputChange,
-    handleBlur,
-    handleFocus,
-    handleKeyDown,
-    disabled,
-    size,
-    placeholder,
-    dataTestId,
-  } = params;
-  return {
-    inputValue,
-    isFocused,
-    handleInputChange,
-    handleBlur,
-    handleFocus,
-    handleKeyDown,
-    placeholder: placeholder ?? undefined,
-    disabled,
-    dataTestId,
-    size,
-  };
-}
-
-// Custom hook for TahoeNumberInput component
-function useTahoeNumberInputComponent(params: {
-  readonly value: number;
-  readonly onChange: (value: number) => void;
-  readonly disabled: boolean;
-  readonly size: Size;
-  readonly min: number | undefined;
-  readonly max: number | undefined;
-  readonly precision: number;
-  readonly placeholder: string | undefined;
-  readonly dataTestId: string | undefined;
-}) {
-  const {
-    value,
-    onChange,
-    disabled,
-    size,
-    min,
-    max,
-    precision,
-    placeholder,
-    dataTestId,
-  } = params;
-  const {
-    inputValue,
-    isFocused,
-    handleInputChange,
-    handleBlur,
-    handleFocus,
-    handleKeyDown,
-    tahoeGlassClasses,
-  } = useTahoeNumberInputStateAndStyling(value, onChange, min, max, precision);
-  const {
-    inputValue: renderInputValue,
-    isFocused: renderIsFocused,
-    handleInputChange: renderHandleInputChange,
-    handleBlur: renderHandleBlur,
-    handleFocus: renderHandleFocus,
-    handleKeyDown: renderHandleKeyDown,
-    placeholder: renderPlaceholder,
-    disabled: renderDisabled,
-    dataTestId: renderDataTestId,
-    size: renderSize,
-  } = useTahoeNumberInputRendering({
-    inputValue,
-    isFocused,
-    handleInputChange,
-    handleBlur,
-    handleFocus,
-    handleKeyDown,
-    disabled,
-    size,
-    placeholder,
-    dataTestId,
-  });
-  return {
-    inputValue: renderInputValue,
-    isFocused: renderIsFocused,
-    handleInputChange: renderHandleInputChange,
-    handleBlur: renderHandleBlur,
-    handleFocus: renderHandleFocus,
-    handleKeyDown: renderHandleKeyDown,
-    placeholder: renderPlaceholder,
-    disabled: renderDisabled,
-    dataTestId: renderDataTestId,
-    size: renderSize,
     tahoeGlassClasses,
   };
 }
@@ -373,6 +246,7 @@ export function TahoeNumberInput({
   className = '',
   disabled = false,
   size = 'md',
+  onBlur,
   'data-testid': dataTestId,
 }: Readonly<TahoeNumberInputProps>) {
   const {
@@ -382,23 +256,8 @@ export function TahoeNumberInput({
     handleBlur,
     handleFocus,
     handleKeyDown,
-    placeholder: renderPlaceholder,
-    disabled: renderDisabled,
-    dataTestId: renderDataTestId,
-    size: renderSize,
     tahoeGlassClasses,
-    isFocused: renderIsFocused,
-  } = useTahoeNumberInputComponent({
-    value,
-    onChange,
-    disabled,
-    size,
-    min,
-    max,
-    precision,
-    placeholder,
-    dataTestId,
-  });
+  } = useTahoeNumberInput(value, onChange, min, max, precision, onBlur);
 
   return (
     <div className={combineStyles('relative group', className)}>
@@ -415,15 +274,20 @@ export function TahoeNumberInput({
           handleBlur={handleBlur}
           handleFocus={handleFocus}
           handleKeyDown={handleKeyDown}
-          placeholder={renderPlaceholder}
-          disabled={renderDisabled}
-          dataTestId={renderDataTestId}
-          size={renderSize}
-          isFocused={renderIsFocused}
+          placeholder={placeholder}
+          disabled={disabled}
+          dataTestId={dataTestId}
+          size={size}
+          isFocused={isFocused}
         />
 
         <div
-          className={`absolute inset-0 rounded-full pointer-events-none transition-all duration-500 ${isFocused ? 'bg-gradient-to-br from-white/15 via-white/8 to-white/3 shadow-inner' : 'bg-gradient-to-br from-white/12 via-white/6 to-white/2 shadow-inner'}`}
+          className={combineStyles(
+            'absolute inset-0 rounded-full pointer-events-none transition-all duration-500',
+            isFocused
+              ? 'bg-gradient-to-br from-white/15 via-white/8 to-white/3 shadow-inner'
+              : 'bg-gradient-to-br from-white/12 via-white/6 to-white/2 shadow-inner'
+          )}
         />
 
         {isFocused && (
@@ -431,7 +295,10 @@ export function TahoeNumberInput({
         )}
 
         <div
-          className={`absolute inset-0 rounded-full pointer-events-none transition-all duration-200 ${isFocused ? 'bg-gradient-to-r from-blue-500/5 to-indigo-500/5' : ''}`}
+          className={combineStyles(
+            'absolute inset-0 rounded-full pointer-events-none transition-all duration-200',
+            isFocused ? 'bg-gradient-to-r from-blue-500/5 to-indigo-500/5' : ''
+          )}
         />
       </div>
 

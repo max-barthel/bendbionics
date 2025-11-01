@@ -2,11 +2,9 @@ import React from 'react';
 import { combineStyles, getTahoeGlassStyles } from '../../styles/tahoe-utils';
 import LoadingSpinner from './LoadingSpinner';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
-  readonly variant?: ButtonVariant;
   readonly size?: ButtonSize;
   readonly children: React.ReactNode;
   readonly onClick?: () => void;
@@ -16,8 +14,14 @@ interface ButtonProps {
   readonly className?: string;
 }
 
+/**
+ * Button - Generic button component with Tahoe glass styling
+ *
+ * For primary actions with blue gradient, use PrimaryButton.
+ * For icon-only buttons, use IconButton.
+ * For close buttons in modals, use CloseButton.
+ */
 function Button({
-  variant: _variant = 'primary',
   size = 'md',
   children,
   onClick,

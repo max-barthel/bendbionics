@@ -7,13 +7,14 @@ import {
   useState,
 } from 'react';
 import { robotAPI, type PCCParams } from '../../../api/client';
+import { type User } from '../../../api/auth';
 import { ControlIcon, RobotIcon } from '../../../components/icons';
 import { TabPanel, Tabs } from '../../../components/ui';
-import { type RobotConfiguration, type User } from '../../../types/robot';
+import { type RobotConfiguration } from '../../../types/robot';
 import { validateRobotConfiguration } from '../../../utils/formValidation';
 import { useConfigurationLoader } from '../../presets/hooks/useConfigurationLoader';
 import { ErrorDisplay } from '../../shared/components/ErrorDisplay';
-import { useErrorHandler } from '../../shared/hooks/useErrorHandler';
+import { useUnifiedErrorHandler } from '../../shared/hooks/useUnifiedErrorHandler';
 import { useRobotState } from '../hooks/useRobotState';
 import { ControlTab } from './tabs/ControlTab';
 import { RobotSetupTab } from './tabs/RobotSetupTab';
@@ -211,7 +212,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('setup');
 
-    const { error, showError, hideError } = useErrorHandler();
+    const { error, showError, hideError } = useUnifiedErrorHandler();
     useConfigurationLoader(initialConfiguration as Record<string, unknown> | undefined);
 
     const handleSubmit = useCallback(async () => {

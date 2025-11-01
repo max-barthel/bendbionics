@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedErrorHandler } from '../../features/shared/hooks/useUnifiedErrorHandler';
 import { useAuth } from '../../providers';
-import { Button, Input, Typography } from '../ui';
+import { Input, PrimaryButton, Typography } from '../ui';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
@@ -151,15 +151,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
           setPassword={setPassword}
         />
 
-        <Button
+        <PrimaryButton
           type="submit"
-          variant="primary"
-          size="lg"
-          className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
+          className="w-full"
           disabled={isLoading}
         >
           {isLoading ? 'Signing in...' : 'Sign In'}
-        </Button>
+        </PrimaryButton>
       </form>
 
       <LoginFormFooter onSwitchToRegister={onSwitchToRegister} />
