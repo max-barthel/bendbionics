@@ -1,5 +1,5 @@
-import { toggleButtonVariants } from '../../styles/design-tokens';
-import { combineStyles } from '../../styles/tahoe-utils';
+import { toggleButtonVariants } from '@/styles/design-tokens';
+import { combineStyles } from '@/styles/tahoe-utils';
 
 interface ToggleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   readonly isOpen?: boolean;

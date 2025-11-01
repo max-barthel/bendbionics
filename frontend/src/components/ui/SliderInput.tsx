@@ -1,5 +1,5 @@
 import React from 'react';
-import { combineStyles, getTahoeGlassStyles } from '../../styles/tahoe-utils';
+import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
 import NumberInput from './NumberInput';
 
 // Constants

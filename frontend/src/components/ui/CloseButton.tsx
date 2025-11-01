@@ -1,4 +1,4 @@
-import { combineStyles, getTahoeGlassStyles } from '../../styles/tahoe-utils';
+import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
 
 interface CloseButtonProps {
   readonly onClick: () => void;

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { BendingIcon, RotationIcon, UploadIcon } from '../../../../components/icons';
-import { PrimaryButton, Typography } from '../../../../components/ui';
-import { AngleControlPanel } from '../../../shared/components/AngleControlPanel';
-import { CollapsibleSection } from '../../../shared/components/CollapsibleSection';
-import { type RobotState } from '../../hooks/useRobotState';
+import { BendingIcon, RotationIcon, UploadIcon } from '@/components/icons';
+import { PrimaryButton, Typography } from '@/components/ui';
+import { AngleControlPanel } from '@/features/shared/components/AngleControlPanel';
+import { CollapsibleSection } from '@/features/shared/components/CollapsibleSection';
+import type { RobotState } from '@/types/robot';
 
 interface ControlTabProps {
   onShowPresetManager?: () => void;

@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
-import Visualizer3D from '../../features/visualization/components/Visualizer3D';
-import { tahoeGlass } from '../../styles/design-tokens';
-import { LoadingSpinner, Typography } from '../ui';
+import Visualizer3D from '@/features/visualization/components/Visualizer3D';
+import { tahoeGlass } from '@/styles/design-tokens';
+import { LoadingSpinner, Typography } from '@/components/ui';
 import type { AppState } from './UserMenu/types';
 
 // Lazy load heavy component

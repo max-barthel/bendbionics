@@ -1,9 +1,8 @@
 import { useCallback } from 'react';
-import { DEFAULT_TIMEOUT, PRESET_LOAD_DELAY } from '../../constants/app';
-import type { RobotState } from '../../features/robot-config/hooks/useRobotState';
-import type { RobotConfiguration } from '../../types/robot';
-import { createRobotStateFromConfiguration } from '../../utils/app-helpers';
-import logger, { LogContext } from '../../utils/logger';
+import { DEFAULT_TIMEOUT, PRESET_LOAD_DELAY } from '@/constants/app';
+import type { RobotConfiguration, RobotState } from '@/types/robot';
+import { createRobotStateFromConfiguration } from '@/utils/app-helpers';
+import logger, { LogContext } from '@/utils/logger';
 
 function handlePresetLoadingCompletion(
   configuration: RobotConfiguration,

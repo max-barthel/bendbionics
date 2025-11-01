@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import type { TendonConfig } from '../../../api/client';
+import type { TendonConfig } from '@/api/client';
 import {
   NumberInput,
   SliderInput,
   SubsectionTitle,
   UnitSelector,
-} from '../../../components/ui';
+} from '@/components/ui';
 
 type LengthUnit = 'mm' | 'cm' | 'm';
 

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Typography } from '../../../components/ui';
-import TahoeGlass from '../../../components/ui/TahoeGlass';
+import { Typography } from '@/components/ui';
+import TahoeGlass from '@/components/ui/TahoeGlass';
 
 type CoordinateUnit = 'mm' | 'cm' | 'm';
 

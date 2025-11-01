@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { NumberInput, Typography, UnitSelector } from '../../../components/ui';
-import type { AngleUnit, LengthUnit } from '../../../constants/unitConversions';
+import { NumberInput, Typography, UnitSelector } from '@/components/ui';
+import type { AngleUnit, LengthUnit } from '@/constants/unitConversions';
 import {
   convertFromSI,
   convertToSI,
   getDefaultUnit,
   getUnits,
-} from '../../../utils/unitConversions';
+} from '@/utils/unitConversions';
 
 type UnitMode = 'angle' | 'length';
 

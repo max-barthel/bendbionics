@@ -1,6 +1,6 @@
+import { Button, Typography } from '@/components/ui';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Typography } from '../ui';
 import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
 
@@ -29,7 +29,6 @@ export const AuthPage: React.FC = () => {
             <div className="h-6"></div>
 
             <Button
-              variant="outline"
               onClick={() => navigate('/')}
               className="mb-4 border border-gray-300 shadow-sm transition-all duration-300 hover:scale-105 rounded-full bg-white hover:bg-gray-50"
             >

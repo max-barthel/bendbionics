@@ -1,15 +1,15 @@
 import { Route, Routes } from 'react-router-dom';
 
 // Feature imports
-import ErrorBoundary from './components/ErrorBoundary';
-import { LoadingScreen, MainAppLayout } from './components/app';
-import { AuthPage } from './components/auth/AuthPage';
-import { EmailVerification } from './components/auth/EmailVerification';
-import { useAppHandlers } from './hooks/app/useAppHandlers';
-import { useAppInitialization } from './hooks/app/useAppInitialization';
-import { useAppState } from './hooks/app/useAppState';
-import { usePresetLoading } from './hooks/app/usePresetLoading';
-import { AuthProvider } from './providers';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { LoadingScreen, MainAppLayout } from '@/components/app';
+import { AuthPage } from '@/components/auth/AuthPage';
+import { EmailVerification } from '@/components/auth/EmailVerification';
+import { useAppHandlers } from '@/hooks/app/useAppHandlers';
+import { useAppInitialization } from '@/hooks/app/useAppInitialization';
+import { useAppState } from '@/hooks/app/useAppState';
+import { usePresetLoading } from '@/hooks/app/usePresetLoading';
+import { AuthProvider } from '@/providers';
 
 function AppContent() {
   const appState = useAppState();

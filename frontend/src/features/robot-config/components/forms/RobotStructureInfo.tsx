@@ -8,7 +8,7 @@ interface RobotStructureInfoProps {
  * This component provides helpful information about how the robot structure
  * is organized based on the number of segments selected.
  */
-export function RobotStructureInfo({ segments }: RobotStructureInfoProps) {
+export function RobotStructureInfo({ segments }: Readonly<RobotStructureInfoProps>) {
   return (
     <div className="text-sm text-neutral-600 bg-neutral-50 p-3 rounded-lg">
       <p className="font-medium mb-1">Robot Structure:</p>

@@ -3,7 +3,7 @@ import {
   combineStyles,
   getFloatingLabelStyles,
   getTahoeGlassStyles,
-} from '../../styles/tahoe-utils';
+} from '@/styles/tahoe-utils';
 
 type InputType = 'text' | 'number' | 'password' | 'email';
 type InputSize = 'sm' | 'md' | 'lg';

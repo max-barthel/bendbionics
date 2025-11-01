@@ -1,14 +1,5 @@
 import { useCallback, useState } from 'react';
-
-// HTTP status codes for error handling
-const HTTP_STATUS = {
-  BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  CONFLICT: 409,
-  INTERNAL_SERVER_ERROR: 500,
-} as const;
+import { HTTP_STATUS } from '../../../constants/httpStatus';
 
 export type ErrorType = 'network' | 'validation' | 'server' | 'auth' | 'unknown';
 
@@ -78,99 +69,187 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
     });
   }, []);
 
+  // Type guard for error objects
+  type ApiErrorData = {
+    detail?: string | Array<{ loc: string[]; msg: string; type: string }>;
+    message?: string;
+  };
+
+  type ApiError = Error & {
+    code?: string;
+    response?: {
+      status: number;
+      data?: ApiErrorData;
+    };
+  };
+
+  const isApiError = (error: unknown): error is ApiError => {
+    return error instanceof Error || (typeof error === 'object' && error !== null);
+  };
+
+  // Extract error message from response data
+  const extractErrorMessage = (
+    data?: ApiErrorData,
+    fallback: string = 'An unexpected error occurred. Please try again.'
+  ): string => {
+    if (!data) {
+      return fallback;
+    }
+
+    if (data.detail) {
+      if (typeof data.detail === 'string') {
+        return data.detail;
+      }
+      if (Array.isArray(data.detail)) {
+        const messages = data.detail
+          .map(
+            (item: { loc: string[]; msg: string; type: string }) =>
+              `${item.loc.join('.')}: ${item.msg}`
+          )
+          .join(', ');
+        return `Validation error: ${messages}`;
+      }
+    }
+    if (data.message) {
+      return data.message;
+    }
+    return fallback;
+  };
+
+  // Handle network errors
+  const handleNetworkError = (err: ApiError) => {
+    if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+      showError(
+        'network',
+        'Request timed out. Please check your connection and try again.'
+      );
+      return true;
+    }
+    if (!err.response) {
+      showError(
+        'network',
+        'Unable to connect to server. Please check your connection.'
+      );
+      return true;
+    }
+    return false;
+  };
+
+  // Handle server errors
+  const handleServerError = (err: ApiError): boolean => {
+    const status = err.response?.status;
+    if (status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
+      showError(
+        'server',
+        'Server error occurred. Please try again later or contact support.'
+      );
+      return true;
+    }
+    if (status === HTTP_STATUS.NOT_FOUND) {
+      showError('server', 'Service not found. Please check if the backend is running.');
+      return true;
+    }
+    return false;
+  };
+
+  // Handle validation errors
+  const handleValidationError = (err: ApiError): boolean => {
+    const status = err.response?.status;
+    if (
+      status === HTTP_STATUS.BAD_REQUEST ||
+      status === HTTP_STATUS.UNPROCESSABLE_ENTITY
+    ) {
+      const defaultMessage =
+        'Invalid parameters provided. Please check your input values.';
+      const message = extractErrorMessage(err.response?.data, defaultMessage);
+      showError('validation', message);
+      return true;
+    }
+    return false;
+  };
+
+  // Handle authentication errors
+  const handleAuthErrorByStatus = (err: ApiError): boolean => {
+    const status = err.response?.status;
+    if (status === HTTP_STATUS.UNAUTHORIZED) {
+      showError(
+        'auth',
+        'Authentication failed. Please check your credentials and try again.'
+      );
+      return true;
+    }
+    if (status === HTTP_STATUS.FORBIDDEN) {
+      showError(
+        'auth',
+        "Access denied. You don't have permission to perform this action."
+      );
+      return true;
+    }
+    return false;
+  };
+
   // Helper function to handle API errors consistently
   const handleApiError = useCallback(
     (err: unknown, context?: string) => {
       const contextSuffix = context ? ` in ${context}` : '';
       console.error(`API Error${contextSuffix}:`, err);
 
-      // Type guard for error objects
-      const isError = (
-        error: unknown
-      ): error is Error & {
-        code?: string;
-        response?: { status: number; data?: { detail?: string } };
-      } => {
-        return error instanceof Error || (typeof error === 'object' && error !== null);
-      };
-
-      if (!isError(err)) {
+      if (!isApiError(err)) {
         showError('unknown', 'An unexpected error occurred. Please try again.');
         return;
       }
 
-      // Network errors
-      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-        showError(
-          'network',
-          'Request timed out. Please check your connection and try again.'
-        );
-      } else if (!err.response) {
-        showError(
-          'network',
-          'Unable to connect to server. Please check your connection.'
-        );
-      }
-      // Server errors
-      else if (err.response?.status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
-        showError(
-          'server',
-          'Server error occurred. Please try again later or contact support.'
-        );
-      } else if (err.response?.status === HTTP_STATUS.NOT_FOUND) {
-        showError(
-          'server',
-          'Service not found. Please check if the backend is running.'
-        );
-      }
-      // Validation errors
-      else if (err.response?.status === HTTP_STATUS.BAD_REQUEST) {
-        showError(
-          'validation',
-          err.response?.data?.detail ??
-            'Invalid parameters provided. Please check your input values.'
-        );
-      }
-      // Authentication errors
-      else if (err.response?.status === HTTP_STATUS.UNAUTHORIZED) {
-        showError(
-          'auth',
-          'Authentication failed. Please check your credentials and try again.'
-        );
-      } else if (err.response?.status === HTTP_STATUS.FORBIDDEN) {
-        showError(
-          'auth',
-          "Access denied. You don't have permission to perform this action."
-        );
-      }
-      // Unknown errors
-      else {
-        showError(
-          'unknown',
-          err.response?.data?.detail ??
-            err.message ??
-            'An unexpected error occurred. Please try again.'
-        );
-      }
+      // Try to handle by error category (early returns reduce nesting)
+      if (handleNetworkError(err)) return;
+      if (handleServerError(err)) return;
+      if (handleValidationError(err)) return;
+      if (handleAuthErrorByStatus(err)) return;
+
+      // Handle unknown errors with message extraction
+      const errorMessage = extractErrorMessage(
+        err.response?.data,
+        err.message || 'An unexpected error occurred. Please try again.'
+      );
+      showError('unknown', errorMessage);
     },
     [showError]
   );
+
+  // Handle auth-specific status codes
+  const handleAuthSpecificError = (err: ApiError): boolean => {
+    const status = err.response?.status;
+    if (status === HTTP_STATUS.UNAUTHORIZED) {
+      showError(
+        'auth',
+        'Invalid username or password. Please check your credentials and try again.'
+      );
+      return true;
+    }
+    if (status === HTTP_STATUS.BAD_REQUEST) {
+      const detail = err.response?.data?.detail;
+      const message =
+        typeof detail === 'string'
+          ? detail
+          : 'Account is not active. Please contact support.';
+      showError('auth', message);
+      return true;
+    }
+    if (status === HTTP_STATUS.CONFLICT) {
+      showError(
+        'auth',
+        'An account with this username already exists. Please try logging in instead.'
+      );
+      return true;
+    }
+    return false;
+  };
 
   // Helper function to handle authentication-specific errors
   const handleAuthError = useCallback(
     (err: unknown) => {
       console.error('Authentication Error:', err);
 
-      // Type guard for error objects
-      const isError = (
-        error: unknown
-      ): error is Error & {
-        response?: { status: number; data?: { detail?: string } };
-      } => {
-        return error instanceof Error || (typeof error === 'object' && error !== null);
-      };
-
-      if (!isError(err)) {
+      if (!isApiError(err)) {
         showError(
           'unknown',
           'An unexpected authentication error occurred. Please try again.'
@@ -178,22 +257,7 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
         return;
       }
 
-      if (err.response?.status === HTTP_STATUS.UNAUTHORIZED) {
-        showError(
-          'auth',
-          'Invalid username or password. Please check your credentials and try again.'
-        );
-      } else if (err.response?.status === HTTP_STATUS.BAD_REQUEST) {
-        showError(
-          'auth',
-          err.response?.data?.detail ?? 'Account is not active. Please contact support.'
-        );
-      } else if (err.response?.status === HTTP_STATUS.CONFLICT) {
-        showError(
-          'auth',
-          'An account with this username already exists. Please try logging in instead.'
-        );
-      } else {
+      if (!handleAuthSpecificError(err)) {
         handleApiError(err, 'authentication');
       }
     },

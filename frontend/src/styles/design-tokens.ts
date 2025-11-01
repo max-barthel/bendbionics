@@ -162,6 +162,14 @@ export const buttonVariants = {
 
   // Primary button text style
   primaryText: 'text-sm font-medium text-gray-900',
+
+  // Outline button variant (white background with border)
+  outline:
+    'border border-gray-300 bg-white/80 backdrop-blur-sm hover:bg-white/90 rounded-full transition-all duration-300 hover:scale-105',
+
+  // Solid button variant (blue gradient)
+  solid:
+    'bg-gradient-to-br from-blue-500/25 to-indigo-500/25 backdrop-blur-xl border border-blue-400/30 shadow-lg hover:scale-105 rounded-full transition-all duration-300 shadow-blue-500/20',
 } as const;
 
 // Toggle Button Variants
@@ -236,6 +244,129 @@ export const unitSelectorVariants = {
     'absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner',
 } as const;
 
+// Modal Variants
+export const modalVariants = {
+  // Modal backdrop overlay
+  backdrop:
+    'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4',
+
+  // Modal content container (standard white)
+  content:
+    'bg-white border border-gray-200 rounded-2xl shadow-2xl w-full max-h-[80vh] overflow-hidden relative',
+
+  // Modal content with Tahoe glass effect
+  contentGlass: 'bg-white/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl',
+} as const;
+
+// Slider Variants
+export const sliderVariants = {
+  // Slider track base styles
+  track:
+    'w-full h-2 appearance-none cursor-pointer rounded-full bg-white/20 backdrop-blur-xl border-2 border-white/40 shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-400/50',
+
+  // Webkit slider thumb base (common styles)
+  thumbBase:
+    'appearance-none h-5 w-5 rounded-full cursor-pointer border-2 border-white/50 transition-all duration-300 hover:scale-110 bg-gradient-to-br from-blue-500/90 to-indigo-600/90 shadow-lg shadow-blue-500/30',
+
+  // Webkit slider thumb pseudo-selector classes
+  webkitThumb:
+    '[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white/50 [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-300 [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:bg-gradient-to-br [&::-webkit-slider-thumb]:from-blue-500/90 [&::-webkit-slider-thumb]:to-indigo-600/90 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-500/30',
+
+  // Mozilla slider thumb pseudo-selector classes
+  mozThumb:
+    '[&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white/50 [&::-moz-range-thumb]:shadow-lg [&::-moz-range-thumb]:bg-gradient-to-br [&::-moz-range-thumb]:from-blue-500/90 [&::-moz-range-thumb]:to-indigo-600/90',
+
+  // Combined slider input styles (track + webkit + moz)
+  input:
+    'w-full h-2 appearance-none cursor-pointer rounded-full bg-white/20 backdrop-blur-xl border-2 border-white/40 shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-400/50 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white/50 [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-300 [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:bg-gradient-to-br [&::-webkit-slider-thumb]:from-blue-500/90 [&::-webkit-slider-thumb]:to-indigo-600/90 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-500/30 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white/50 [&::-moz-range-thumb]:shadow-lg [&::-moz-range-thumb]:bg-gradient-to-br [&::-moz-range-thumb]:from-blue-500/90 [&::-moz-range-thumb]:to-indigo-600/90',
+} as const;
+
+// Tab Variants
+export const tabVariants = {
+  // Tab container (similar to unit selector)
+  container:
+    'flex bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border border-white/20 rounded-full p-1 shadow-2xl shadow-black/5 gap-1',
+
+  // Active tab button
+  buttonActive:
+    'relative w-24 h-8 flex items-center justify-center flex-1 text-xs font-medium rounded-full transition-colors duration-200 border-2 bg-blue-500/20 text-gray-900 border-blue-400/50',
+
+  // Inactive tab button
+  buttonInactive:
+    'relative w-24 h-8 flex items-center justify-center flex-1 text-xs font-medium rounded-full transition-colors duration-200 border-2 text-gray-600 hover:text-gray-800 hover:bg-white/20 border-transparent',
+
+  // Active tab inner gradient overlay
+  buttonActiveOverlay:
+    'absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner',
+} as const;
+
+// Error Alert Variants
+export const errorAlertVariants = {
+  // Validation error (amber/yellow)
+  validation: {
+    container: 'bg-amber-50 border-amber-400 text-amber-800',
+    icon: 'text-amber-400',
+    button: 'text-amber-500 hover:bg-amber-100 focus:ring-amber-500',
+  },
+
+  // Network error (blue)
+  network: {
+    container: 'bg-blue-50 border-blue-400 text-blue-800',
+    icon: 'text-blue-400',
+    button: 'text-blue-500 hover:bg-blue-100 focus:ring-blue-500',
+  },
+
+  // Server error (red)
+  server: {
+    container: 'bg-red-50 border-red-400 text-red-800',
+    icon: 'text-red-400',
+    button: 'text-red-500 hover:bg-red-100 focus:ring-red-500',
+  },
+
+  // Unknown/Generic error (gray)
+  unknown: {
+    container: 'bg-gray-50 border-gray-400 text-gray-800',
+    icon: 'text-gray-400',
+    button: 'text-gray-500 hover:bg-gray-100 focus:ring-gray-500',
+  },
+
+  // Error alert container base
+  containerBase: 'p-4 rounded-lg border-l-4',
+
+  // Error alert button base
+  buttonBase:
+    'inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2',
+
+  // Error alert with Tahoe glass effect (for Profile component)
+  tahoeGlass: {
+    red: 'bg-red-50/80 backdrop-blur-sm border border-red-200/50 rounded-xl',
+  },
+} as const;
+
+// Form Message Variants (for FormMessage component)
+export const messageVariants = {
+  // Standard error message
+  error: 'mb-4 p-3 bg-red-50 border border-red-200 rounded-md',
+
+  // Error message with Tahoe glass effect
+  errorGlass: 'mb-4 p-3 bg-red-50/80 backdrop-blur-sm border border-red-200/50 rounded-xl',
+
+  // Standard success message
+  success: 'mb-4 p-3 bg-green-50 border border-green-200 rounded-md',
+
+  // Success message with Tahoe glass effect (called successShadow in component)
+  successShadow: 'mb-4 p-3 bg-green-50/80 backdrop-blur-sm border border-green-200/50 rounded-xl',
+
+  // Message text styling
+  messageText: 'text-sm font-medium',
+
+  // Error icon container
+  errorIcon: 'flex-shrink-0',
+
+  // Error icon SVG styling
+  errorIconSvg: 'h-5 w-5 text-red-400',
+} as const;
+
 // Type definitions for better TypeScript support
 export type TahoeGlassVariant = keyof typeof tahoeGlass;
 export type ShadowVariant = keyof typeof shadows;
@@ -249,3 +380,8 @@ export type ToggleButtonVariant = keyof typeof toggleButtonVariants;
 export type PanelVariant = keyof typeof panelVariants;
 export type TableCellVariant = keyof typeof tableCellVariants;
 export type UnitSelectorVariant = keyof typeof unitSelectorVariants;
+export type ModalVariant = keyof typeof modalVariants;
+export type SliderVariant = keyof typeof sliderVariants;
+export type TabVariant = keyof typeof tabVariants;
+export type ErrorAlertVariant = keyof typeof errorAlertVariants;
+export type MessageVariant = keyof typeof messageVariants;

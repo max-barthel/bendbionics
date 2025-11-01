@@ -1,5 +1,5 @@
-import { buttonVariants } from '../../styles/design-tokens';
-import { combineStyles } from '../../styles/tahoe-utils';
+import { buttonVariants } from '@/styles/design-tokens';
+import { combineStyles } from '@/styles/tahoe-utils';
 
 interface PrimaryButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   readonly children: React.ReactNode;

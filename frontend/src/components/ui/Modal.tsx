@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { combineStyles } from '../../styles/tahoe-utils';
+import { combineStyles } from '@/styles/tahoe-utils';
 import { CloseButton } from './CloseButton';
 
 interface ModalProps {

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUnifiedErrorHandler } from '../../features/shared/hooks/useUnifiedErrorHandler';
-import { useAuth } from '../../providers';
-import { Input, PrimaryButton, Typography } from '../ui';
+import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
+import { useAuth } from '@/providers';
+import { Input, PrimaryButton, Typography } from '@/components/ui';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { combineStyles, getTahoeGlassStyles } from '../../styles/tahoe-utils';
+import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
 
 // Constants
 const DEFAULT_PRECISION = 3;

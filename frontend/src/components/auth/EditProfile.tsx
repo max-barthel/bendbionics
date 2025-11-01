@@ -1,7 +1,7 @@
+import { Button, Input, Typography } from '@/components/ui';
+import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
+import { useAuth } from '@/providers/AuthProvider';
 import { useState } from 'react';
-import { useUnifiedErrorHandler } from '../../features/shared/hooks/useUnifiedErrorHandler';
-import { useAuth } from '../../providers/AuthProvider';
-import { Button, Input, Typography } from '../ui';
 
 interface EditProfileProps {
   onCancel: () => void;
@@ -219,7 +219,6 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
       <div className="flex space-x-3 pt-4">
         <Button
           type="button"
-          variant="outline"
           onClick={onCancel}
           disabled={isUpdating}
           className="flex-1 border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
@@ -228,7 +227,6 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
         </Button>
         <Button
           type="submit"
-          variant="outline"
           disabled={isUpdating}
           className="flex-1 border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
         >

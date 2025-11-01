@@ -3,10 +3,10 @@ import type { ThreeEvent } from '@react-three/fiber';
 import { Canvas } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-import { PrimaryButton } from '../../../components/ui';
-import { VISUALIZATION_CONSTANTS } from '../../../constants/visualization';
-import { buttonVariants } from '../../../styles/design-tokens';
-import { getTendonColor } from '../../../utils/tendonColors';
+import { PrimaryButton } from '@/components/ui';
+import { VISUALIZATION_CONSTANTS } from '@/constants/visualization';
+import { buttonVariants } from '@/styles/design-tokens';
+import { getTendonColor } from '@/utils/tendonColors';
 import { CoordinateTooltip } from './CoordinateTooltip';
 import { TendonResultsPanel } from './TendonResultsPanel';
 

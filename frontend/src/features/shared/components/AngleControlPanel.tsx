@@ -4,16 +4,16 @@ import {
   SliderInput,
   SubsectionTitle,
   UnitSelector,
-} from '../../../components/ui';
-import { panelVariants } from '../../../styles/design-tokens';
-import { combineStyles } from '../../../styles/tahoe-utils';
+} from '@/components/ui';
+import { panelVariants } from '@/styles/design-tokens';
+import { combineStyles } from '@/styles/tahoe-utils';
 import {
   MAX_ANGLE_DEGREES,
   MAX_ANGLE_RADIANS,
   convertFromSI,
   convertToSI,
   getUnits,
-} from '../../../utils/unitConversions';
+} from '@/utils/unitConversions';
 
 interface AngleControlPanelProps {
   values: number[];

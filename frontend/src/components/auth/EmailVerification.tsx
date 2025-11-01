@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { authAPI } from '../../api/auth';
-import { useAuth } from '../../providers/AuthProvider';
-import { PrimaryButton } from '../ui';
-import Button from '../ui/Button';
-import Typography from '../ui/Typography';
+import { authAPI } from '@/api/auth';
+import { useAuth } from '@/providers/AuthProvider';
+import { PrimaryButton } from '@/components/ui';
+import Button from '@/components/ui/Button';
+import Typography from '@/components/ui/Typography';
 
 interface VerificationState {
   status: 'verifying' | 'success' | 'error' | 'expired' | 'already_verified';

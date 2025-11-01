@@ -1,4 +1,4 @@
-import TahoeGlass from '../../ui/TahoeGlass';
+import TahoeGlass from '@/components/ui/TahoeGlass';
 import { UserAvatarIcon } from './UserAvatarIcon';
 import type { AppState } from './types';
 
