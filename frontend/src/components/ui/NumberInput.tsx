@@ -1,24 +1,23 @@
-import React from 'react';
 import { TahoeNumberInput } from './TahoeNumberInput';
 
 // Constants
 const DEFAULT_PRECISION = 3;
 
 interface NumberInputProps {
-  value: number;
-  onChange: (value: number) => void;
-  min?: number;
-  max?: number;
-  step?: number; // Note: step is accepted but handled by precision
-  precision?: number;
-  placeholder?: string;
-  label?: string;
-  id?: string;
-  className?: string;
-  disabled?: boolean;
-  size?: 'sm' | 'md' | 'lg';
-  onBlur?: () => void;
-  'data-testid'?: string;
+  readonly value: number;
+  readonly onChange: (value: number) => void;
+  readonly min?: number;
+  readonly max?: number;
+  readonly step?: number; // Note: step is accepted but handled by precision
+  readonly precision?: number;
+  readonly placeholder?: string;
+  readonly label?: string;
+  readonly id?: string;
+  readonly className?: string;
+  readonly disabled?: boolean;
+  readonly size?: 'sm' | 'md' | 'lg';
+  readonly onBlur?: () => void;
+  readonly 'data-testid'?: string;
 }
 
 /**
@@ -30,7 +29,7 @@ interface NumberInputProps {
  *
  * Now supports all features in a single component.
  */
-const NumberInput: React.FC<NumberInputProps> = ({
+function NumberInput({
   value,
   onChange,
   min,
@@ -45,7 +44,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
   size = 'md',
   onBlur,
   'data-testid': dataTestId,
-}) => {
+}: Readonly<NumberInputProps>) {
   // If step is provided but not precision, derive precision from step
   const effectivePrecision =
     precision ?? (step ? Math.max(0, -Math.log10(step)) : DEFAULT_PRECISION);
@@ -83,6 +82,6 @@ const NumberInput: React.FC<NumberInputProps> = ({
   }
 
   return inputElement;
-};
+}
 
 export default NumberInput;

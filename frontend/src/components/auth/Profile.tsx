@@ -1,8 +1,8 @@
+import { ExclamationTriangleIcon, TrashIcon, UserIcon } from '@/components/icons';
+import { Button, Modal, Typography } from '@/components/ui';
+import { useAuth } from '@/providers/AuthProvider';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../providers/AuthProvider';
-import { ExclamationTriangleIcon, TrashIcon, UserIcon } from '../icons';
-import { Button, Modal, Typography } from '../ui';
 import { EditProfile } from './EditProfile';
 
 // Delete confirmation component
@@ -44,7 +44,6 @@ const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
     )}
     <div className="flex space-x-3">
       <Button
-        variant="outline"
         onClick={onCancel}
         disabled={isDeleting}
         className="flex-1 border border-gray-300 bg-white/80 backdrop-blur-sm hover:bg-white/90 hover:scale-105 transition-all duration-300 rounded-full py-3"
@@ -52,7 +51,6 @@ const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
         Cancel
       </Button>
       <Button
-        variant="outline"
         onClick={onConfirm}
         disabled={isDeleting}
         className="flex-1 border border-red-300 bg-red-50/80 backdrop-blur-sm hover:bg-red-100/90 text-red-600 hover:text-red-700 hover:scale-105 transition-all duration-300 rounded-full py-3"
@@ -187,7 +185,6 @@ export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
 
             <div className="space-y-4">
               <Button
-                variant="outline"
                 onClick={() => setIsEditing(true)}
                 className="w-full border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
               >
@@ -195,7 +192,6 @@ export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
               </Button>
 
               <Button
-                variant="outline"
                 onClick={handleLogout}
                 className="w-full border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
               >
@@ -203,7 +199,6 @@ export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
               </Button>
 
               <Button
-                variant="outline"
                 onClick={confirmDelete}
                 className="w-full border border-red-300 bg-red-50 hover:scale-105 text-red-600 hover:text-red-700 transition-all duration-300 rounded-full py-3"
               >

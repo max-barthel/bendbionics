@@ -1,12 +1,12 @@
 import { useCallback, useRef } from 'react';
-import type { FormTabsRef } from '../../features/robot-config/components/FormTabs';
-import { useAutoLoadPreset } from '../../hooks/app/useAutoLoadPreset';
+import type { FormTabsRef } from '@/features/robot-config/components/FormTabs';
+import { useAutoLoadPreset } from '@/hooks/app/useAutoLoadPreset';
 import { AppModals } from './AppModals';
 import { Sidebar, SidebarToggle } from './Sidebar';
 import { UserMenu } from './UserMenu';
 import { Visualizer3DWrapper } from './Visualizer3DWrapper';
 import type { AppState } from './UserMenu/types';
-import type { RobotConfiguration } from '../../types/robot';
+import type { RobotConfiguration } from '@/types/robot';
 
 interface MainAppLayoutProps {
   readonly appState: AppState;

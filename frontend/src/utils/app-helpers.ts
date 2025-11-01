@@ -5,8 +5,8 @@ import {
   DEFAULT_SEGMENTS,
   DEFAULT_TENDON_COUNT,
   DEFAULT_TENDON_RADIUS,
-} from '../constants/app';
-import type { RobotConfiguration } from '../types/robot';
+} from '@/constants/app';
+import type { RobotConfiguration } from '@/types/robot';
 
 // Helper function to create array with default values
 export function createArrayWithDefaults(length: number, defaultValue: number): number[] {

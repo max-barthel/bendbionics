@@ -1,7 +1,7 @@
-import type { FormTabsRef } from '../../../features/robot-config/components/FormTabs';
-import FormTabs from '../../../features/robot-config/components/FormTabs';
-import type { RobotConfiguration } from '../../../types/robot';
-import TahoeGlass from '../../ui/TahoeGlass';
+import type { FormTabsRef } from '@/features/robot-config/components/FormTabs';
+import FormTabs from '@/features/robot-config/components/FormTabs';
+import type { RobotConfiguration } from '@/types/robot';
+import TahoeGlass from '@/components/ui/TahoeGlass';
 import type { AppState } from '../UserMenu/types';
 
 interface SidebarProps {

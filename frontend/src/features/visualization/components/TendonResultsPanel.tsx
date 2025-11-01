@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { PanelContainer, ToggleButton, Typography } from '../../../components/ui';
-import { tableCellVariants, unitSelectorVariants } from '../../../styles/design-tokens';
-import { combineStyles } from '../../../styles/tahoe-utils';
-import { getTendonColorClasses } from '../../../utils/tendonColors';
-import { convertFromSI } from '../../../utils/unitConversions';
+import { PanelContainer, ToggleButton, Typography } from '@/components/ui';
+import { tableCellVariants, unitSelectorVariants } from '@/styles/design-tokens';
+import { combineStyles } from '@/styles/tahoe-utils';
+import { getTendonColorClasses } from '@/utils/tendonColors';
+import { convertFromSI } from '@/utils/unitConversions';
 
 // Constants for dynamic height calculations
 const HEIGHT_CONSTANTS = {

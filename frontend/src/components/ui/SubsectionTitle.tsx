@@ -1,17 +1,16 @@
-import React from 'react';
 import Typography from './Typography';
 
 interface SubsectionTitleProps {
-  title: string;
-  description?: string;
-  className?: string;
+  readonly title: string;
+  readonly description?: string;
+  readonly className?: string;
 }
 
-export const SubsectionTitle: React.FC<SubsectionTitleProps> = ({
+export function SubsectionTitle({
   title,
   description,
   className = '',
-}) => {
+}: Readonly<SubsectionTitleProps>) {
   return (
     <div className={`space-y-1 ${className}`}>
       <Typography variant="h5" color="primary">
@@ -24,4 +23,4 @@ export const SubsectionTitle: React.FC<SubsectionTitleProps> = ({
       )}
     </div>
   );
-};
+}

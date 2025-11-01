@@ -1,5 +1,5 @@
-import { PrimaryButton } from '../../../components/ui';
-import { buttonVariants } from '../../../styles/design-tokens';
+import { PrimaryButton } from '@/components/ui';
+import { buttonVariants } from '@/styles/design-tokens';
 import type { AppState } from './types';
 
 interface SignInButtonProps {

@@ -1,21 +1,15 @@
 import { useCallback, useRef, useState } from 'react';
-import { robotAPI, type PCCParams } from '../../../api/client';
-import { validateRobotConfiguration } from '../../../utils/formValidation';
-import { useUnifiedErrorHandler } from '../../shared/hooks/useUnifiedErrorHandler';
+import { robotAPI, type PCCParams } from '@/api/client';
+import { validateRobotConfiguration } from '@/utils/formValidation';
+import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
 import { useRobotState } from './useRobotState';
+import { HTTP_STATUS } from '@/constants/httpStatus';
 
 // Progress and timeout constants
 const PROGRESS_CONFIG = {
   INITIAL: 15,
   COMPLETE: 90,
   FINAL: 200,
-} as const;
-
-// HTTP status codes
-const HTTP_STATUS = {
-  BAD_REQUEST: 400,
-  NOT_FOUND: 404,
-  INTERNAL_SERVER_ERROR: 500,
 } as const;
 
 export interface FormSubmissionResult {

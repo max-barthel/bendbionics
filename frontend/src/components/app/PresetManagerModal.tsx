@@ -1,6 +1,6 @@
-import { PresetManager } from '../../features/presets/components/presets/PresetManager';
-import type { RobotConfiguration } from '../../types/robot';
-import { Modal } from '../ui';
+import { PresetManager } from '@/features/presets/components/presets/PresetManager';
+import type { RobotConfiguration } from '@/types/robot';
+import { Modal } from '@/components/ui';
 import type { AppState } from './UserMenu/types';
 
 interface PresetManagerModalProps {

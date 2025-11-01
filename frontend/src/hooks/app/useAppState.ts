@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { AppState } from '../../components/app/UserMenu/types';
-import { useRobotState } from '../../features/robot-config/hooks/useRobotState';
-import { useAuth } from '../../providers/AuthProvider';
-import type { RobotConfiguration } from '../../types/robot';
+import type { AppState } from '@/components/app/UserMenu/types';
+import { useRobotState } from '@/features/robot-config/hooks/useRobotState';
+import { useAuth } from '@/providers/AuthProvider';
+import type { RobotConfiguration } from '@/types/robot';
 
 export function useAppState(): AppState {
   const { user, isLoading, logout } = useAuth();

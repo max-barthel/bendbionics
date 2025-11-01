@@ -5,7 +5,7 @@ import {
   type PCCParams,
   type PCCResponse,
   type RetryConfig,
-} from '../../../api/client';
+} from '@/api/client';
 
 interface UseRetryAPIState<T> {
   data: T | null;

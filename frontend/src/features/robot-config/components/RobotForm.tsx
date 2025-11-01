@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { Card, SliderInput } from '../../../components/ui';
-import { DEFAULT_CONFIG } from '../../../constants/app';
+import { Card, SliderInput } from '@/components/ui';
+import { DEFAULT_CONFIG } from '@/constants/app';
 import { useFormSubmission } from '../hooks/useFormSubmission';
-import { useRobotState, type RobotState } from '../hooks/useRobotState';
+import { useRobotState } from '../hooks/useRobotState';
+import type { RobotState } from '@/types/robot';
 import ArrayInputGroup from './ArrayInputGroup';
 import { FormErrorDisplay, FormHeader, RobotStructureInfo } from './forms';
 

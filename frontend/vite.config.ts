@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 import { analyzer } from 'vite-bundle-analyzer';
@@ -30,6 +31,19 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins,
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+        '@/components': path.resolve(__dirname, './src/components'),
+        '@/utils': path.resolve(__dirname, './src/utils'),
+        '@/types': path.resolve(__dirname, './src/types'),
+        '@/api': path.resolve(__dirname, './src/api'),
+        '@/hooks': path.resolve(__dirname, './src/hooks'),
+        '@/features': path.resolve(__dirname, './src/features'),
+        '@/styles': path.resolve(__dirname, './src/styles'),
+        '@/constants': path.resolve(__dirname, './src/constants'),
+      },
+    },
     optimizeDeps:
       process.env.CI === 'true'
         ? {

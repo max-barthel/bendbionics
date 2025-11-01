@@ -16,7 +16,7 @@ export function FormActions({
   onSubmit,
   loading = false,
   disabled = false,
-}: FormActionsProps) {
+}: Readonly<FormActionsProps>) {
   return (
     <div>
       <SubmitButton onClick={onSubmit} loading={loading} disabled={disabled} />

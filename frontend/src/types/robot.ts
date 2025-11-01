@@ -1,4 +1,16 @@
-import { type RobotState } from '../features/robot-config/hooks/useRobotState';
+// Robot State interface - represents the current state of robot configuration
+export interface RobotState {
+  segments: number;
+  bendingAngles: number[];
+  rotationAngles: number[];
+  backboneLengths: number[];
+  couplingLengths: number[];
+  discretizationSteps: number;
+  tendonConfig?: {
+    count: number;
+    radius: number;
+  };
+}
 
 // Define robot configuration type
 export interface RobotConfiguration extends Partial<RobotState> {

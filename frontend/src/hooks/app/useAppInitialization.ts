@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { INITIALIZATION_DELAY } from '../../constants/app';
-import logger, { LogContext } from '../../utils/logger';
+import { INITIALIZATION_DELAY } from '@/constants/app';
+import logger, { LogContext } from '@/utils/logger';
 
 export function useAppInitialization(
   setIsInitializing: (value: boolean) => void

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { HTTP_STATUS } from '../constants/httpStatus';
 
 // Define the PCCParams type to match backend
 export interface PCCParams {
@@ -63,17 +64,6 @@ export interface RetryConfig {
   retryableStatusCodes: number[];
   retryableErrors: string[];
 }
-
-// HTTP status codes
-const HTTP_STATUS = {
-  REQUEST_TIMEOUT: 408,
-  TOO_MANY_REQUESTS: 429,
-  INTERNAL_SERVER_ERROR: 500,
-  BAD_GATEWAY: 502,
-  SERVICE_UNAVAILABLE: 503,
-  GATEWAY_TIMEOUT: 504,
-  UNAUTHORIZED: 401,
-} as const;
 
 // Retry configuration constants
 const RETRY_CONFIG = {

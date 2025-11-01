@@ -1,5 +1,5 @@
-import { PrimaryButton } from '../../../components/ui';
-import { combineStyles } from '../../../styles/tahoe-utils';
+import { PrimaryButton } from '@/components/ui';
+import { combineStyles } from '@/styles/tahoe-utils';
 
 type SubmitButtonProps = {
   readonly onClick: () => void;

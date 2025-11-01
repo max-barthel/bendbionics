@@ -1,5 +1,5 @@
 import React from 'react';
-import { CloseIcon, ErrorIcon } from '../../../components/icons';
+import { CloseIcon, ErrorIcon } from '@/components/icons';
 
 interface ErrorDisplayProps {
   message: string;

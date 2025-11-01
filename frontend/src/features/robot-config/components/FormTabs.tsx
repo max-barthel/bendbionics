@@ -6,15 +6,15 @@ import {
   useRef,
   useState,
 } from 'react';
-import { robotAPI, type PCCParams } from '../../../api/client';
-import { type User } from '../../../api/auth';
-import { ControlIcon, RobotIcon } from '../../../components/icons';
-import { TabPanel, Tabs } from '../../../components/ui';
-import { type RobotConfiguration } from '../../../types/robot';
-import { validateRobotConfiguration } from '../../../utils/formValidation';
-import { useConfigurationLoader } from '../../presets/hooks/useConfigurationLoader';
-import { ErrorDisplay } from '../../shared/components/ErrorDisplay';
-import { useUnifiedErrorHandler } from '../../shared/hooks/useUnifiedErrorHandler';
+import { robotAPI, type PCCParams } from '@/api/client';
+import { type User } from '@/api/auth';
+import { ControlIcon, RobotIcon } from '@/components/icons';
+import { TabPanel, Tabs } from '@/components/ui';
+import { type RobotConfiguration } from '@/types/robot';
+import { validateRobotConfiguration } from '@/utils/formValidation';
+import { useConfigurationLoader } from '@/features/presets/hooks/useConfigurationLoader';
+import { ErrorDisplay } from '@/features/shared/components/ErrorDisplay';
+import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
 import { useRobotState } from '../hooks/useRobotState';
 import { ControlTab } from './tabs/ControlTab';
 import { RobotSetupTab } from './tabs/RobotSetupTab';

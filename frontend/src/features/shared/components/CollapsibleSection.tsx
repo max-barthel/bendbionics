@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
-import { ChevronDownIcon } from '../../../components/icons';
-import { Typography } from '../../../components/ui';
+import { ChevronDownIcon } from '@/components/icons';
+import { Typography } from '@/components/ui';
 
 interface CollapsibleSectionProps {
   title: string;

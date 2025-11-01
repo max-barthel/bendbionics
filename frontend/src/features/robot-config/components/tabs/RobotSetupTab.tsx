@@ -5,12 +5,12 @@ import {
   RobotIcon,
   TendonIcon,
   UploadIcon,
-} from '../../../../components/icons';
-import { PrimaryButton, SliderInput, SubsectionTitle, Typography } from '../../../../components/ui';
-import { buttonVariants } from '../../../../styles/design-tokens';
-import { CollapsibleSection } from '../../../shared/components/CollapsibleSection';
-import { TendonConfigPanel } from '../../../visualization/components/TendonConfigPanel';
-import { type RobotState } from '../../hooks/useRobotState';
+} from '@/components/icons';
+import { PrimaryButton, SliderInput, SubsectionTitle, Typography } from '@/components/ui';
+import { buttonVariants } from '@/styles/design-tokens';
+import { CollapsibleSection } from '@/features/shared/components/CollapsibleSection';
+import { TendonConfigPanel } from '@/features/visualization/components/TendonConfigPanel';
+import type { RobotState } from '@/types/robot';
 import ArrayInputGroup from '../ArrayInputGroup';
 
 interface RobotSetupTabProps {

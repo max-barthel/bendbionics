@@ -1,23 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
+import type { RobotState } from '@/types/robot';
 
 // Default configuration constants
 const DEFAULT_VALUES = {
   BACKBONE_LENGTH: 0.07,
   COUPLING_LENGTH: 0.03,
 } as const;
-
-export interface RobotState {
-  segments: number;
-  bendingAngles: number[];
-  rotationAngles: number[];
-  backboneLengths: number[];
-  couplingLengths: number[];
-  discretizationSteps: number;
-  tendonConfig?: {
-    count: number;
-    radius: number;
-  };
-}
 
 export function useRobotState() {
   const [state, setState] = useState<RobotState>(() => {

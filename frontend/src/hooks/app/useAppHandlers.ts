@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import type { AppState } from '../../components/app/UserMenu/types';
-import type { RobotConfiguration } from '../../types/robot';
+import type { AppState } from '@/components/app/UserMenu/types';
+import type { RobotConfiguration } from '@/types/robot';
 
 export function useAppHandlers(
   appState: AppState,

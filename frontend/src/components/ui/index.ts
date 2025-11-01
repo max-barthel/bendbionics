@@ -3,6 +3,7 @@ export { default as Badge } from './Badge';
 export { default as Button } from './Button';
 export { default as Card } from './Card';
 export { CloseButton } from './CloseButton';
+export { FormMessage } from './FormMessage';
 export { IconButton } from './IconButton';
 export { default as Input } from './Input';
 export { default as LoadingOverlay } from './LoadingOverlay';

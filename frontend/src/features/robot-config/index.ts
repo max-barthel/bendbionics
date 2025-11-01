@@ -30,4 +30,5 @@ export type {
   FormSubmissionResult,
   UseFormSubmissionOptions,
 } from './hooks/useFormSubmission';
-export type { RobotState } from './hooks/useRobotState';
+// RobotState is now in @/types/robot, re-export for backwards compatibility
+export type { RobotState } from '@/types/robot';

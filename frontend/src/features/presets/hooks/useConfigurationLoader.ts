@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useRobotState } from '../../robot-config/hooks/useRobotState';
+import { useRobotState } from '@/features/robot-config/hooks/useRobotState';
 
 // Constants for default values
 const DEFAULT_VALUES = {

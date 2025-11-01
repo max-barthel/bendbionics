@@ -5,25 +5,11 @@ import {
   presetAPI,
   type CreatePresetRequest,
   type Preset,
-} from '../../../../api/auth';
-import { Button, Input, PrimaryButton, Typography } from '../../../../components/ui';
-import { useAuth } from '../../../../providers';
-
-// Constants for error messages
-const ERROR_MESSAGES = {
-  AUTH_REQUIRED: 'Authentication required. Please sign in again.',
-  LOAD_FAILED: 'Failed to load presets. Please try again.',
-  SAVE_FAILED: 'Failed to save preset',
-  DELETE_FAILED: 'Failed to delete preset',
-  UPDATE_FAILED: 'Failed to update preset',
-} as const;
-
-// HTTP status codes
-const HTTP_STATUS = {
-  FORBIDDEN: 403,
-  NOT_FOUND: 404,
-  INTERNAL_SERVER_ERROR: 500,
-} as const;
+} from '@/api/auth';
+import { Button, Input, PrimaryButton, Typography } from '@/components/ui';
+import { useAuth } from '@/providers';
+import { ERROR_MESSAGES } from '@/constants/errorMessages';
+import { HTTP_STATUS } from '@/constants/httpStatus';
 
 // Type guard for error with response
 const isErrorWithResponse = (

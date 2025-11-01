@@ -1,5 +1,5 @@
-import { panelVariants } from '../../styles/design-tokens';
-import { combineStyles } from '../../styles/tahoe-utils';
+import { panelVariants } from '@/styles/design-tokens';
+import { combineStyles } from '@/styles/tahoe-utils';
 
 interface PanelContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   readonly children: React.ReactNode;

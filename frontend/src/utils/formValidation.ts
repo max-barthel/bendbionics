@@ -1,4 +1,4 @@
-import { type RobotState } from '../features/robot-config/hooks/useRobotState';
+import type { RobotState } from '@/types/robot';
 
 // Helper function to validate backbone array lengths
 const validateBackboneLengths = (
