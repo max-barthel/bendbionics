@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { numberInputSizeClasses, type ComponentSize } from '@/styles/design-tokens';
 import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
+import React, { useEffect, useState } from 'react';
 
 // Constants
 const DEFAULT_PRECISION = 3;
 const FLOATING_POINT_TOLERANCE = 1e-10;
-
-// Types
-type Size = 'sm' | 'md' | 'lg';
 
 interface TahoeNumberInputProps {
   value: number;
@@ -17,18 +15,9 @@ interface TahoeNumberInputProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
-  size?: Size;
+  size?: ComponentSize;
   onBlur?: () => void;
   'data-testid'?: string;
-}
-
-// Helper function to get size classes
-function getSizeClasses(size: Size) {
-  return {
-    sm: 'px-4 py-2 text-xs',
-    md: 'px-5 py-2.5 text-sm',
-    lg: 'px-6 py-3 text-base',
-  }[size];
 }
 
 // Helper function to process input value
@@ -170,7 +159,7 @@ function InputField({
   readonly placeholder: string | undefined;
   readonly disabled: boolean;
   readonly dataTestId: string | undefined;
-  readonly size: Size;
+  readonly size: ComponentSize;
   readonly isFocused: boolean;
 }) {
   return (
@@ -186,7 +175,7 @@ function InputField({
       data-testid={dataTestId}
       className={combineStyles(
         'w-full bg-transparent border-0 outline-none text-gray-900 placeholder-gray-500/70 font-medium pr-4 transition-all duration-300',
-        getSizeClasses(size),
+        numberInputSizeClasses[size],
         '[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]',
         isFocused ? 'placeholder-gray-400/60' : ''
       )}

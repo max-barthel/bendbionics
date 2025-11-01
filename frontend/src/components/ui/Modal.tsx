@@ -1,5 +1,10 @@
-import type { ReactNode } from 'react';
+import {
+  modalSizeClasses,
+  modalVariants,
+  type ExtendedComponentSize,
+} from '@/styles/design-tokens';
 import { combineStyles } from '@/styles/tahoe-utils';
+import type { ReactNode } from 'react';
 import { CloseButton } from './CloseButton';
 
 interface ModalProps {
@@ -7,18 +12,11 @@ interface ModalProps {
   readonly onClose: () => void;
   readonly children: ReactNode;
   readonly title?: string;
-  readonly size?: 'sm' | 'md' | 'lg' | 'xl';
+  readonly size?: ExtendedComponentSize;
   readonly showCloseButton?: boolean;
   readonly className?: string;
   readonly contentClassName?: string;
 }
-
-const sizeClasses = {
-  sm: 'max-w-md',
-  md: 'max-w-lg',
-  lg: 'max-w-2xl',
-  xl: 'max-w-4xl',
-} as const;
 
 /**
  * Modal - Reusable modal component with Tahoe glass styling
@@ -40,14 +38,11 @@ export function Modal({
     return null;
   }
 
-  const backdropClasses = combineStyles(
-    'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4',
-    className
-  );
+  const backdropClasses = combineStyles(modalVariants.backdrop, className);
 
   const contentClasses = combineStyles(
-    'bg-white border border-gray-200 rounded-2xl shadow-2xl w-full max-h-[80vh] overflow-hidden relative',
-    sizeClasses[size],
+    modalVariants.content,
+    modalSizeClasses[size],
     contentClassName
   );
 

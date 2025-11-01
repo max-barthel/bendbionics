@@ -1,12 +1,14 @@
-import React from 'react';
+import {
+  containerSizeClasses,
+  type ExtendedComponentSize,
+  type TahoeGlassVariant,
+} from '@/styles/design-tokens';
 import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
-
-type TahoeGlassVariant = 'base' | 'enhanced' | 'subtle' | 'strong';
-type TahoeGlassSize = 'sm' | 'md' | 'lg' | 'xl';
+import React from 'react';
 
 interface TahoeGlassProps extends React.HTMLAttributes<HTMLElement> {
   readonly variant?: TahoeGlassVariant;
-  readonly size?: TahoeGlassSize;
+  readonly size?: ExtendedComponentSize;
   readonly children: React.ReactNode;
   readonly as?: keyof React.JSX.IntrinsicElements;
 }
@@ -37,17 +39,9 @@ function TahoeGlass({
     'glass' // hover state
   );
 
-  // Size-based padding
-  const sizeClasses = {
-    sm: 'px-2 py-1',
-    md: 'px-4 py-2',
-    lg: 'px-6 py-3',
-    xl: 'px-8 py-4',
-  };
-
   const classes = combineStyles(
     tahoeGlassClasses,
-    sizeClasses[size],
+    containerSizeClasses[size],
     onClick ? 'cursor-pointer' : '',
     className
   );

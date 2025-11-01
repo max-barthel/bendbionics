@@ -1,9 +1,14 @@
+import {
+  closeButtonSizeClasses,
+  iconSizeClasses,
+  type ComponentSize,
+} from '@/styles/design-tokens';
 import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
 
 interface CloseButtonProps {
   readonly onClick: () => void;
   readonly 'aria-label': string;
-  readonly size?: 'sm' | 'md' | 'lg';
+  readonly size?: ComponentSize;
   readonly className?: string;
 }
 
@@ -28,22 +33,10 @@ export function CloseButton({
     'glass' // hover state
   );
 
-  const sizeClasses = {
-    sm: 'p-1',
-    md: 'p-1.5',
-    lg: 'p-2',
-  };
-
-  const iconSizeClasses = {
-    sm: 'w-3 h-3',
-    md: 'w-4 h-4',
-    lg: 'w-5 h-5',
-  };
-
   const classes = combineStyles(
     'absolute top-4 right-4 z-10',
     glassClasses,
-    sizeClasses[size],
+    closeButtonSizeClasses[size],
     'hover:scale-105',
     className
   );

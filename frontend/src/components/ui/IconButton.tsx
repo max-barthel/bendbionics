@@ -1,12 +1,13 @@
-import type { ReactNode } from 'react';
+import { iconButtonSizeClasses, type ComponentSize } from '@/styles/design-tokens';
 import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
+import type { ReactNode } from 'react';
 
 interface IconButtonProps {
   readonly onClick?: () => void;
   readonly children: ReactNode;
   readonly 'aria-label': string;
   readonly variant?: 'glass' | 'outline' | 'solid';
-  readonly size?: 'sm' | 'md' | 'lg';
+  readonly size?: ComponentSize;
   readonly className?: string;
   readonly disabled?: boolean;
   readonly type?: 'button' | 'submit' | 'reset';
@@ -27,12 +28,6 @@ export function IconButton({
   disabled = false,
   type = 'button',
 }: Readonly<IconButtonProps>) {
-  const sizeClasses = {
-    sm: 'p-1.5',
-    md: 'p-2',
-    lg: 'p-3',
-  };
-
   let variantClasses = '';
   if (variant === 'glass') {
     const glassClasses = getTahoeGlassStyles(
@@ -61,7 +56,7 @@ export function IconButton({
 
   const classes = combineStyles(
     variantClasses,
-    sizeClasses[size],
+    iconButtonSizeClasses[size],
     disabled ? 'opacity-50 cursor-not-allowed' : '',
     className
   );

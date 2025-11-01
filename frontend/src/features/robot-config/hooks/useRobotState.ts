@@ -1,11 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { DEFAULT_BACKBONE_LENGTH, DEFAULT_COUPLING_LENGTH } from '@/constants/app';
 import type { RobotState } from '@/types/robot';
-
-// Default configuration constants
-const DEFAULT_VALUES = {
-  BACKBONE_LENGTH: 0.07,
-  COUPLING_LENGTH: 0.03,
-} as const;
+import { useCallback, useEffect, useState } from 'react';
 
 export function useRobotState() {
   const [state, setState] = useState<RobotState>(() => {
@@ -17,19 +12,19 @@ export function useRobotState() {
           bendingAngles: [0, 0, 0, 0, 0],
           rotationAngles: [0, 0, 0, 0, 0],
           backboneLengths: [
-            DEFAULT_VALUES.BACKBONE_LENGTH,
-            DEFAULT_VALUES.BACKBONE_LENGTH,
-            DEFAULT_VALUES.BACKBONE_LENGTH,
-            DEFAULT_VALUES.BACKBONE_LENGTH,
-            DEFAULT_VALUES.BACKBONE_LENGTH,
+            DEFAULT_BACKBONE_LENGTH,
+            DEFAULT_BACKBONE_LENGTH,
+            DEFAULT_BACKBONE_LENGTH,
+            DEFAULT_BACKBONE_LENGTH,
+            DEFAULT_BACKBONE_LENGTH,
           ],
           couplingLengths: [
-            DEFAULT_VALUES.COUPLING_LENGTH,
-            DEFAULT_VALUES.COUPLING_LENGTH,
-            DEFAULT_VALUES.COUPLING_LENGTH,
-            DEFAULT_VALUES.COUPLING_LENGTH,
-            DEFAULT_VALUES.COUPLING_LENGTH,
-            DEFAULT_VALUES.COUPLING_LENGTH,
+            DEFAULT_COUPLING_LENGTH,
+            DEFAULT_COUPLING_LENGTH,
+            DEFAULT_COUPLING_LENGTH,
+            DEFAULT_COUPLING_LENGTH,
+            DEFAULT_COUPLING_LENGTH,
+            DEFAULT_COUPLING_LENGTH,
           ],
           discretizationSteps: 1000,
           tendonConfig: {

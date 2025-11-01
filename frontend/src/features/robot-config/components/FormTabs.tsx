@@ -1,3 +1,12 @@
+import { type User } from '@/api/auth';
+import { robotAPI, type PCCParams } from '@/api/client';
+import { ControlIcon, RobotIcon } from '@/components/icons';
+import { TabPanel, Tabs } from '@/components/ui';
+import { useConfigurationLoader } from '@/features/presets/hooks/useConfigurationLoader';
+import { ErrorDisplay } from '@/features/shared/components/ErrorDisplay';
+import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
+import { type RobotConfiguration } from '@/types/robot';
+import { validateRobotConfiguration } from '@/utils/formValidation';
 import {
   forwardRef,
   useCallback,
@@ -6,15 +15,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { robotAPI, type PCCParams } from '@/api/client';
-import { type User } from '@/api/auth';
-import { ControlIcon, RobotIcon } from '@/components/icons';
-import { TabPanel, Tabs } from '@/components/ui';
-import { type RobotConfiguration } from '@/types/robot';
-import { validateRobotConfiguration } from '@/utils/formValidation';
-import { useConfigurationLoader } from '@/features/presets/hooks/useConfigurationLoader';
-import { ErrorDisplay } from '@/features/shared/components/ErrorDisplay';
-import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
 import { useRobotState } from '../hooks/useRobotState';
 import { ControlTab } from './tabs/ControlTab';
 import { RobotSetupTab } from './tabs/RobotSetupTab';
@@ -106,61 +106,6 @@ const handleRegularComputation = async (
   onResult(result.data.segments || [], configuration);
 };
 
-// Helper function to handle errors
-const handleComputationError = (
-  err: unknown,
-  showError: (type: 'validation' | 'server', message: string) => void
-) => {
-  const error = err as {
-    response?: {
-      status?: number;
-      data?: {
-        detail?: string | Array<{ loc: string[]; msg: string; type: string }>;
-        message?: string;
-      };
-    };
-    message?: string;
-  };
-
-  // Handle validation errors (422) with better formatting
-  if (
-    error.response?.status === 422 &&
-    error.response.data &&
-    Array.isArray(error.response.data.detail)
-  ) {
-    const validationErrors = error.response.data.detail
-      .map(
-        (err: { loc: string[]; msg: string; type: string }) =>
-          `${err.loc.join('.')}: ${err.msg}`
-      )
-      .join(', ');
-    showError('validation', `Validation error: ${validationErrors}`);
-    return;
-  }
-
-  // Handle different error detail types
-  let errorMessage = 'Computation failed';
-
-  if (error.response?.data?.detail) {
-    if (typeof error.response.data.detail === 'string') {
-      errorMessage = error.response.data.detail;
-    } else if (Array.isArray(error.response.data.detail)) {
-      errorMessage = error.response.data.detail
-        .map(
-          (err: { loc: string[]; msg: string; type: string }) =>
-            `${err.loc.join('.')}: ${err.msg}`
-        )
-        .join(', ');
-    }
-  } else if (error.response?.data?.message) {
-    errorMessage = error.response.data.message;
-  } else if (error.message) {
-    errorMessage = error.message;
-  }
-
-  showError('server', errorMessage);
-};
-
 // Type guard for API response with result
 const isApiResponseWithResult = (
   response: unknown
@@ -212,7 +157,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('setup');
 
-    const { error, showError, hideError } = useUnifiedErrorHandler();
+    const { error, showError, hideError, handleApiError } = useUnifiedErrorHandler();
     useConfigurationLoader(initialConfiguration as Record<string, unknown> | undefined);
 
     const handleSubmit = useCallback(async () => {
@@ -232,7 +177,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
           await handleRegularComputation(params, robotState, onResult);
         }
       } catch (err: unknown) {
-        handleComputationError(err, showError);
+        handleApiError(err, 'computation');
       } finally {
         setLoading(false);
       }

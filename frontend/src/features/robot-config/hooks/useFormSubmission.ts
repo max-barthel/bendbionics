@@ -1,9 +1,8 @@
-import { useCallback, useRef, useState } from 'react';
 import { robotAPI, type PCCParams } from '@/api/client';
-import { validateRobotConfiguration } from '@/utils/formValidation';
 import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
+import { validateRobotConfiguration } from '@/utils/formValidation';
+import { useCallback, useRef, useState } from 'react';
 import { useRobotState } from './useRobotState';
-import { HTTP_STATUS } from '@/constants/httpStatus';
 
 // Progress and timeout constants
 const PROGRESS_CONFIG = {
@@ -40,7 +39,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
   const [computationProgress, setComputationProgress] = useState(0);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { error, showError, hideError } = useUnifiedErrorHandler();
+  const { error, showError, hideError, handleApiError } = useUnifiedErrorHandler();
 
   const handleSubmit = useCallback(async (): Promise<boolean> => {
     hideError();
@@ -104,43 +103,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
       onResult?.(submissionResult);
       return true;
     } catch (err: unknown) {
-      console.error('Failed to submit:', err);
-
-      // Determine error type and show appropriate message
-      const error = err as {
-        code?: string;
-        message?: string;
-        response?: { status: number };
-      };
-      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-        showError(
-          'network',
-          'Request timed out. Please check your connection and try again.'
-        );
-      } else if (error.response?.status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
-        showError(
-          'server',
-          'Server error occurred. Please try again later or contact support.'
-        );
-      } else if (error.response?.status === HTTP_STATUS.BAD_REQUEST) {
-        showError(
-          'validation',
-          'Invalid parameters provided. Please check your input values.'
-        );
-      } else if (error.response?.status === HTTP_STATUS.NOT_FOUND) {
-        showError(
-          'server',
-          'Service not found. Please check if the backend is running.'
-        );
-      } else if (error.response === undefined) {
-        showError(
-          'network',
-          'Unable to connect to server. Please check your connection.'
-        );
-      } else {
-        showError('unknown', 'An unexpected error occurred. Please try again.');
-      }
-
+      handleApiError(err, 'form submission');
       return false;
     } finally {
       clearInterval(progressInterval);
@@ -148,7 +111,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
       setComputationProgress(0);
       onLoadingChange?.(false);
     }
-  }, [robotState, showError, hideError, onResult, onLoadingChange]);
+  }, [robotState, showError, hideError, handleApiError, onResult, onLoadingChange]);
 
   // Debounced auto-compute entrypoint: validate and compute if not already loading
   const computeIfValid = useCallback(async (): Promise<boolean> => {
