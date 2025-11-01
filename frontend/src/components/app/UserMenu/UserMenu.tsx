@@ -1,6 +1,6 @@
 import { SignedInUserMenu } from './SignedInUserMenu';
 import { SignInButton } from './SignInButton';
-import type { AppState } from './types';
+import type { AppState } from '@/types/app';
 
 interface UserMenuProps {
   readonly appState: AppState;

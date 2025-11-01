@@ -1,5 +1,5 @@
 import { buttonSizeClasses, type ComponentSize } from '@/styles/design-tokens';
-import { combineStyles, getTahoeGlassStyles } from '@/styles/tahoe-utils';
+import { combineStyles, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 import React from 'react';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -36,14 +36,7 @@ function Button({
   const baseClasses = hasCustomTextColor ? 'font-medium' : 'font-medium text-gray-800';
 
   // All variants use the same Tahoe glass styling (as per original design)
-  const tahoeGlassClasses = getTahoeGlassStyles(
-    'base', // glass variant
-    'glass', // shadow variant
-    'full', // border radius
-    'standard', // transition
-    'white', // focus state
-    'glass' // hover state
-  );
+  const tahoeGlassClasses = getTahoeGlassPreset('button');
 
   const isDisabled = disabled || loading;
   const classes = combineStyles(

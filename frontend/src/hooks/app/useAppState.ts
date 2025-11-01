@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { AppState } from '@/components/app/UserMenu/types';
+import type { AppState } from '@/types/app';
 import { useRobotState } from '@/features/robot-config/hooks/useRobotState';
 import { useAuth } from '@/providers/AuthProvider';
 import type { RobotConfiguration } from '@/types/robot';

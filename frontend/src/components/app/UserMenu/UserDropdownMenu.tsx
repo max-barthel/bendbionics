@@ -1,6 +1,6 @@
 import TahoeGlass from '@/components/ui/TahoeGlass';
 import { UserAvatarIcon } from './UserAvatarIcon';
-import type { AppState } from './types';
+import type { AppState } from '@/types/app';
 
 interface UserDropdownMenuProps {
   readonly appState: AppState;
