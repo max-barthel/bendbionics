@@ -83,6 +83,9 @@ export const hoverStates = {
   // Subtle hover for inputs
   subtle: 'hover:bg-white/3 hover:shadow-lg',
 
+  // Menu item hover (for dropdowns and menus)
+  menu: 'hover:bg-white/30',
+
   // Scale hover for buttons
   scale: 'hover:scale-105',
 

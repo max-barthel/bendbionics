@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { modalVariants } from '@/styles/design-tokens';
 import { authAPI } from '@/api/auth';
 import { useAuth } from '@/providers/AuthProvider';
 import { PrimaryButton } from '@/components/ui';
@@ -188,7 +189,7 @@ export const EmailVerification: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md mx-auto">
-        <div className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl p-8 text-center">
+        <div className={`${modalVariants.contentGlass} p-8 text-center`}>
           {getStatusIcon()}
 
           <Typography variant="h2" className={`mb-4 ${getStatusColor()}`}>
