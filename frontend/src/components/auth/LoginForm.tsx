@@ -1,24 +1,15 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { FormField, FormMessage, PrimaryButton } from '@/components/ui';
 import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
 import { useAuth } from '@/providers';
-import { FormField, FormMessage, PrimaryButton, Typography } from '@/components/ui';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthFormContainer } from './AuthFormContainer';
+import { AuthFormFooter } from './AuthFormFooter';
+import { AuthFormHeader } from './AuthFormHeader';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
 }
-
-const LoginFormHeader: React.FC = () => (
-  <div className="text-center mb-6">
-    <Typography variant="h2" color="primary" className="mb-2 text-gray-800">
-      Welcome Back
-    </Typography>
-    <Typography variant="body" color="gray" className="text-gray-600">
-      Sign in to your account
-    </Typography>
-  </div>
-);
-
 
 const LoginFormFields: React.FC<{
   username: string;
@@ -45,22 +36,6 @@ const LoginFormFields: React.FC<{
       placeholder="Enter your password"
     />
   </>
-);
-
-const LoginFormFooter: React.FC<{
-  onSwitchToRegister: () => void;
-}> = ({ onSwitchToRegister }) => (
-  <div className="mt-6 text-center">
-    <Typography variant="body" color="gray" className="text-gray-600">
-      Don't have an account?{' '}
-      <button
-        onClick={onSwitchToRegister}
-        className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"
-      >
-        Sign up
-      </button>
-    </Typography>
-  </div>
 );
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
@@ -91,8 +66,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white border border-gray-200 rounded-2xl shadow-sm">
-      <LoginFormHeader />
+    <AuthFormContainer>
+      <AuthFormHeader title="Welcome Back" description="Sign in to your account" />
 
       <form
         onSubmit={e => {
@@ -111,16 +86,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
           setPassword={setPassword}
         />
 
-        <PrimaryButton
-          type="submit"
-          className="w-full"
-          disabled={isLoading}
-        >
+        <PrimaryButton type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? 'Signing in...' : 'Sign In'}
         </PrimaryButton>
       </form>
 
-      <LoginFormFooter onSwitchToRegister={onSwitchToRegister} />
-    </div>
+      <AuthFormFooter
+        promptText="Don't have an account?"
+        switchText="Sign up"
+        onSwitch={onSwitchToRegister}
+      />
+    </AuthFormContainer>
   );
 };
