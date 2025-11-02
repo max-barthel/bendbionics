@@ -1,3 +1,4 @@
+import { DEBOUNCE_DELAYS } from '@/constants/timing';
 import type { RobotState } from '@/types/robot';
 
 // Helper function to validate backbone array lengths
@@ -94,7 +95,7 @@ export const validateRobotConfiguration = async (
   robotState: RobotState,
   showError: (type: 'validation', message: string) => void
 ): Promise<boolean> => {
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await new Promise(resolve => setTimeout(resolve, DEBOUNCE_DELAYS.FORM_SUBMIT));
 
   const backboneLengths = [
     robotState.bendingAngles.length,

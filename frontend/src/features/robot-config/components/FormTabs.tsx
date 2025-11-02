@@ -1,11 +1,15 @@
-import { type User } from '@/api/auth';
-import { robotAPI, type PCCParams } from '@/api/client';
 import { ControlIcon, RobotIcon } from '@/components/icons';
 import { TabPanel, Tabs } from '@/components/ui';
+import { DEBOUNCE_DELAYS, STATE_SYNC_DELAYS } from '@/constants/timing';
 import { useConfigurationLoader } from '@/features/presets/hooks/useConfigurationLoader';
+import {
+  createPCCParams,
+  handleRegularComputation,
+  handleTendonComputation,
+} from '@/features/robot-config/utils/computation-helpers';
 import { ErrorDisplay } from '@/features/shared/components/ErrorDisplay';
 import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
-import { type RobotConfiguration } from '@/types/robot';
+import type { RobotConfiguration, User } from '@/types';
 import { validateRobotConfiguration } from '@/utils/formValidation';
 import {
   forwardRef,
@@ -18,120 +22,6 @@ import {
 import { useRobotState } from '../hooks/useRobotState';
 import { ControlTab } from './tabs/ControlTab';
 import { RobotSetupTab } from './tabs/RobotSetupTab';
-
-// Helper function to create PCC parameters
-const createPCCParams = (
-  robotState: ReturnType<typeof useRobotState>[0]
-): PCCParams => ({
-  bending_angles: robotState.bendingAngles,
-  rotation_angles: robotState.rotationAngles,
-  backbone_lengths: robotState.backboneLengths,
-  coupling_lengths: robotState.couplingLengths,
-  discretization_steps: robotState.discretizationSteps,
-  ...(robotState.tendonConfig && { tendon_config: robotState.tendonConfig }),
-});
-
-// Helper function to create base robot configuration
-const createBaseConfiguration = (
-  robotState: ReturnType<typeof useRobotState>[0]
-): Omit<RobotConfiguration, 'tendonAnalysis'> => ({
-  segments: robotState.segments,
-  bendingAngles: robotState.bendingAngles,
-  rotationAngles: robotState.rotationAngles,
-  backboneLengths: robotState.backboneLengths,
-  couplingLengths: robotState.couplingLengths,
-  discretizationSteps: robotState.discretizationSteps,
-  ...(robotState.tendonConfig && { tendonConfig: robotState.tendonConfig }),
-});
-
-// Helper function to extract tendon analysis data
-const extractTendonAnalysis = (result: unknown) => {
-  if (!isApiResponseWithResult(result)) return undefined;
-
-  const { actuation_commands, coupling_data, tendon_analysis } = result.data.result;
-
-  if (!actuation_commands || !coupling_data || !tendon_analysis) return undefined;
-
-  return {
-    actuation_commands: actuation_commands as Record<
-      string,
-      {
-        length_change_m: number;
-        pull_direction: string;
-        magnitude: number;
-      }
-    >,
-    coupling_data: coupling_data as {
-      positions: number[][];
-      orientations: number[][][];
-    },
-    tendon_analysis: tendon_analysis as {
-      routing_points: number[][][];
-      segment_lengths: number[][];
-      total_lengths: number[][];
-      length_changes: number[][];
-      segment_length_changes: number[][];
-    },
-  };
-};
-
-// Helper function to handle tendon computation
-const handleTendonComputation = async (
-  params: PCCParams,
-  robotState: ReturnType<typeof useRobotState>[0],
-  onResult: (segments: number[][][], configuration: RobotConfiguration) => void
-) => {
-  const result = await robotAPI.computePCCWithTendons(params);
-  const segments = isApiResponseWithResult(result)
-    ? result.data.result.robot_positions
-    : [];
-  const tendonAnalysis = extractTendonAnalysis(result);
-
-  const configuration: RobotConfiguration = {
-    ...createBaseConfiguration(robotState),
-    ...(tendonAnalysis && { tendonAnalysis }),
-  };
-
-  onResult(segments, configuration);
-};
-
-// Helper function to handle regular PCC computation
-const handleRegularComputation = async (
-  params: PCCParams,
-  robotState: ReturnType<typeof useRobotState>[0],
-  onResult: (segments: number[][][], configuration: RobotConfiguration) => void
-) => {
-  const result = await robotAPI.computePCC(params);
-  const configuration = createBaseConfiguration(robotState);
-  onResult(result.data.segments || [], configuration);
-};
-
-// Type guard for API response with result
-const isApiResponseWithResult = (
-  response: unknown
-): response is {
-  data: {
-    result: {
-      robot_positions: number[][][];
-      segments?: number[][][];
-      actuation_commands?: Record<string, unknown>;
-      coupling_data?: unknown;
-      tendon_analysis?: unknown;
-    };
-  };
-} => {
-  return (
-    response !== null &&
-    typeof response === 'object' &&
-    'data' in response &&
-    response.data !== null &&
-    typeof response.data === 'object' &&
-    'result' in response.data &&
-    response.data.result !== null &&
-    typeof response.data.result === 'object' &&
-    'robot_positions' in response.data.result
-  );
-};
 
 type FormTabsProps = {
   onResult: (segments: number[][][], configuration: RobotConfiguration) => void;
@@ -214,7 +104,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
         if (!loading) {
           void handleSubmitRef.current();
         }
-      }, 100);
+      }, STATE_SYNC_DELAYS.CONFIGURATION_LOADER);
       return () => clearTimeout(timer);
     }, [initialConfiguration, loading]);
 
@@ -227,7 +117,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
         }
         timer = setTimeout(() => {
           void handleSubmit();
-        }, 250);
+        }, DEBOUNCE_DELAYS.FIELD_COMMIT);
       };
     })();
 

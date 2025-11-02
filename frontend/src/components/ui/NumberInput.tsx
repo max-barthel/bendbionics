@@ -1,3 +1,4 @@
+import type { ComponentSize } from '@/styles/design-tokens';
 import { TahoeNumberInput } from './TahoeNumberInput';
 
 // Constants
@@ -15,7 +16,7 @@ interface NumberInputProps {
   readonly id?: string;
   readonly className?: string;
   readonly disabled?: boolean;
-  readonly size?: 'sm' | 'md' | 'lg';
+  readonly size?: ComponentSize;
   readonly onBlur?: () => void;
   readonly 'data-testid'?: string;
 }
