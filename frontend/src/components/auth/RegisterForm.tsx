@@ -1,4 +1,5 @@
 import { Button, FormField, FormMessage, PrimaryButton } from '@/components/ui';
+import { useAuthForm } from '@/features/auth';
 import { useFormFields, useUnifiedErrorHandler } from '@/features/shared';
 import { useAuth } from '@/providers';
 import { validatePassword, validatePasswordMatch } from '@/utils/passwordValidation';
@@ -7,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { AuthFormContainer } from './AuthFormContainer';
 import { AuthFormFooter } from './AuthFormFooter';
 import { AuthFormHeader } from './AuthFormHeader';
-import { useAuthForm } from './hooks/useAuthForm';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;

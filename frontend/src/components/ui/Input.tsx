@@ -1,11 +1,8 @@
 import { useInputBehavior } from '@/features/shared';
 import { inputSizeClasses, type ComponentSize } from '@/styles/design-tokens';
-import {
-  combineStyles,
-  getFloatingLabelStyles,
-  getTahoeGlassPreset,
-} from '@/styles/tahoe-utils';
+import { cn, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 import React, { useId } from 'react';
+import { FloatingLabel, useFloatingLabel } from './FloatingLabel';
 
 type InputType = 'text' | 'number' | 'password' | 'email';
 
@@ -33,7 +30,7 @@ function getInputClasses(size: ComponentSize, error?: string, className?: string
   const baseClasses = 'text-gray-800 placeholder:text-gray-500 bg-gray-50';
   const tahoeGlassClasses = getTahoeGlassPreset('input');
   const errorClasses = error ? 'border-red-400/50 focus:ring-red-400/50' : '';
-  return combineStyles(
+  return cn(
     baseClasses,
     tahoeGlassClasses,
     inputSizeClasses[size],
@@ -55,34 +52,6 @@ function handleInputChange(
   } else {
     onChange(val);
   }
-}
-
-// Floating label component
-function FloatingLabel({
-  label,
-  id,
-  shouldFloat,
-}: {
-  readonly label: string;
-  readonly id?: string;
-  readonly shouldFloat: boolean;
-}) {
-  return (
-    <label
-      htmlFor={id}
-      className={combineStyles(
-        'absolute left-3 pointer-events-none transition-all duration-200',
-        shouldFloat
-          ? combineStyles(
-              'top-0 transform -translate-y-1/2 text-xs text-gray-600',
-              getFloatingLabelStyles(true)
-            )
-          : 'top-1/2 transform -translate-y-1/2 text-sm text-gray-600'
-      )}
-    >
-      {label}
-    </label>
-  );
 }
 
 // Custom hook for input state and styling
@@ -109,12 +78,6 @@ function useInputStateAndStyling(
   };
 }
 
-// Custom hook for input value and float logic
-function useInputValueAndFloat(value: string | number, isFocused: boolean) {
-  const hasValue = value !== '' && value !== undefined && value !== null;
-  const shouldFloat = isFocused || hasValue;
-  return { hasValue, shouldFloat };
-}
 
 function Input({
   type = 'text',
@@ -144,7 +107,7 @@ function Input({
     onFocus,
     onBlur
   );
-  const { shouldFloat } = useInputValueAndFloat(value, isFocused);
+  const { shouldFloat } = useFloatingLabel(value, isFocused);
 
   return (
     <div className="w-full relative">
@@ -161,7 +124,7 @@ function Input({
         min={min}
         max={max}
         step={step}
-        className={combineStyles('w-full', classes, label ? 'pt-3' : '')}
+        className={cn('w-full', classes, label ? 'pt-3' : '')}
       />
       {label && <FloatingLabel label={label} id={inputId} shouldFloat={shouldFloat} />}
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}

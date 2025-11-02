@@ -1,7 +1,7 @@
 import { ExclamationTriangleIcon, TrashIcon, UserIcon } from '@/components/icons';
 import { Button, FormMessage, Modal, Typography } from '@/components/ui';
 import { useAuth } from '@/providers/AuthProvider';
-import { buttonVariants } from '@/styles/design-tokens';
+import { buttonVariants, modalVariants } from '@/styles/design-tokens';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EditProfile } from './EditProfile';
@@ -24,7 +24,7 @@ const DeleteConfirmation: React.FC<DeleteConfirmationProps> = ({
     isOpen={true}
     onClose={onCancel}
     size="sm"
-    contentClassName="bg-white/90 backdrop-blur-2xl border-white/50"
+    contentClassName={modalVariants.contentGlassStrong}
   >
     <div className="flex items-center mb-4">
       <ExclamationTriangleIcon className="h-6 w-6 text-red-500 mr-3" />

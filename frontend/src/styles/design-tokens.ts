@@ -360,6 +360,10 @@ export const modalVariants = {
   // Modal content with Tahoe glass effect
   contentGlass:
     'bg-white/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl',
+
+  // Modal content with stronger glass effect (for delete confirmations)
+  contentGlassStrong:
+    'bg-white/90 backdrop-blur-2xl border border-white/50 rounded-2xl shadow-xl',
 } as const;
 
 // Slider Variants
@@ -402,6 +406,17 @@ export const tabVariants = {
   // Active tab inner gradient overlay
   buttonActiveOverlay:
     'absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner',
+} as const;
+
+// Error Boundary Button Variants
+export const errorBoundaryVariants = {
+  // Primary action button (retry, reload)
+  primaryButton:
+    'w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
+
+  // Secondary action button (report bug, cancel)
+  secondaryButton:
+    'w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
 } as const;
 
 // Error Alert Variants

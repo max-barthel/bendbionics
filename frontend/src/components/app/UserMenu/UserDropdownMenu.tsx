@@ -9,7 +9,7 @@ export function UserDropdownMenu() {
 
   return (
     <TahoeGlass className="absolute top-full right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible">
-      <div className="p-3 border-b border-white/20">
+      <div className={combineStyles('p-3 border-b border-white/20')}>
         <div className="flex items-center gap-2">
           <UserAvatarIcon size="w-8 h-8" />
           <div>

@@ -1,10 +1,6 @@
-import {
-  buttonVariants,
-  iconButtonSizeClasses,
-  type ComponentSize,
-} from '@/styles/design-tokens';
-import { combineStyles, getTahoeGlassPreset } from '@/styles/tahoe-utils';
+import { type ComponentSize } from '@/styles/design-tokens';
 import type { ReactNode } from 'react';
+import Button from './Button';
 
 interface IconButtonProps {
   readonly onClick?: () => void;
@@ -20,7 +16,8 @@ interface IconButtonProps {
 /**
  * IconButton - Reusable icon button component with Tahoe glass styling
  *
- * Eliminates duplicate icon button patterns (sidebar toggle, user menu buttons, etc.)
+ * @deprecated Use Button with variant="icon" and iconVariant prop instead.
+ * This component is kept for backward compatibility.
  */
 export function IconButton({
   onClick,
@@ -32,33 +29,18 @@ export function IconButton({
   disabled = false,
   type = 'button',
 }: Readonly<IconButtonProps>) {
-  let variantClasses = '';
-  if (variant === 'glass') {
-    const glassClasses = getTahoeGlassPreset('enhancedButton');
-    variantClasses = combineStyles(glassClasses, 'hover:scale-105');
-  } else if (variant === 'outline') {
-    variantClasses = buttonVariants.outline;
-  } else {
-    // solid variant
-    variantClasses = buttonVariants.solid;
-  }
-
-  const classes = combineStyles(
-    variantClasses,
-    iconButtonSizeClasses[size],
-    disabled ? 'opacity-50 cursor-not-allowed' : '',
-    className
-  );
-
   return (
-    <button
-      type={type}
-      onClick={onClick}
+    <Button
+      variant="icon"
+      iconVariant={variant}
+      size={size}
+      {...(onClick && { onClick })}
       disabled={disabled}
-      className={classes}
+      type={type}
+      className={className}
       aria-label={ariaLabel}
     >
       {children}
-    </button>
+    </Button>
   );
 }
