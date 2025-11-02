@@ -1,4 +1,4 @@
-import { Input, PrimaryButton, Typography } from '@/components/ui';
+import { Button, Input, Typography } from '@/components/ui';
 
 interface PresetFormProps {
   readonly presetName: string;
@@ -64,9 +64,9 @@ export function PresetForm({
             {error}
           </Typography>
         )}
-        <PrimaryButton onClick={onSave} disabled={isLoading} className="w-full">
+        <Button variant="primary" onClick={onSave} disabled={isLoading} className="w-full">
           {isLoading ? 'Saving...' : 'Save Preset'}
-        </PrimaryButton>
+        </Button>
       </div>
     </div>
   );

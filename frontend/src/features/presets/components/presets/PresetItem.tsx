@@ -1,6 +1,6 @@
-import { Button, Input, PrimaryButton, Typography } from '@/components/ui';
-import type { Preset } from '@/api/auth';
+import { Button, Input, Typography } from '@/components/ui';
 import { buttonVariants } from '@/styles/design-tokens';
+import type { Preset } from '@/types';
 
 interface PresetItemProps {
   readonly preset: Preset;
@@ -69,9 +69,13 @@ export function PresetItem({
             />
           </div>
           <div className="flex gap-2">
-            <PrimaryButton onClick={() => onSaveEdit(preset.id)} disabled={isLoading}>
+            <Button
+              variant="primary"
+              onClick={() => onSaveEdit(preset.id)}
+              disabled={isLoading}
+            >
               {isLoading ? 'Saving...' : 'Save'}
-            </PrimaryButton>
+            </Button>
             <Button
               size="sm"
               onClick={onCancelEdit}
@@ -130,4 +134,3 @@ export function PresetItem({
     </div>
   );
 }
-

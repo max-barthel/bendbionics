@@ -9,10 +9,8 @@
 // Buttons & Interactive Elements
 // ========================================
 export { default as Button } from './Button';
-export { PrimaryButton } from './PrimaryButton';
-export { IconButton } from './IconButton';
-export { ToggleButton } from './ToggleButton';
-export { CloseButton } from './CloseButton';
+// Deprecated: PrimaryButton, IconButton, ToggleButton, CloseButton
+// Use Button with variant="primary", variant="icon", variant="toggle", variant="close" instead
 
 // ========================================
 // Form Controls & Inputs

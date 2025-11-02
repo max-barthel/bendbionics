@@ -3,7 +3,7 @@ import {
   type ExtendedComponentSize,
   type TahoeGlassVariant,
 } from '@/styles/design-tokens';
-import { combineStyles, getTahoeGlassPreset } from '@/styles/tahoe-utils';
+import { cn, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 import React from 'react';
 
 interface TahoeGlassProps extends React.HTMLAttributes<HTMLElement> {
@@ -32,7 +32,7 @@ function TahoeGlass({
   // Get Tahoe glass styling based on variant using container preset
   const tahoeGlassClasses = getTahoeGlassPreset('container', variant);
 
-  const classes = combineStyles(
+  const classes = cn(
     tahoeGlassClasses,
     containerSizeClasses[size],
     onClick ? 'cursor-pointer' : '',

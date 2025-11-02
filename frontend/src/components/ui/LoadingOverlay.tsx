@@ -1,4 +1,4 @@
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 import LoadingSpinner from './LoadingSpinner';
 
 interface LoadingOverlayProps {
@@ -22,7 +22,7 @@ function LoadingOverlay({
         backdrop ? 'bg-black bg-opacity-50' : ''
       }`}
     >
-      <div className={combineStyles('bg-white rounded-lg p-8 shadow-xl flex flex-col items-center')}>
+      <div className={cn('bg-white rounded-lg p-8 shadow-xl flex flex-col items-center')}>
         <LoadingSpinner size="lg" color="primary" className="mb-4" />
         <p className="text-gray-700 font-medium">{message}</p>
       </div>

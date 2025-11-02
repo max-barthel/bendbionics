@@ -1,6 +1,6 @@
 import React from 'react';
 import { sliderVariants } from '@/styles/design-tokens';
-import { combineStyles, getTahoeGlassPreset } from '@/styles/tahoe-utils';
+import { cn, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 import NumberInput from './NumberInput';
 
 // Constants
@@ -27,7 +27,7 @@ function RangeDisplay({ min, max }: { readonly min: number; readonly max: number
 
   return (
     <div
-      className={combineStyles(
+      className={cn(
         'text-xs text-gray-600 px-3 py-1.5 bg-gradient-to-br from-white/15 to-white/5 shadow-lg',
         rangeDisplayClasses
       )}
@@ -98,7 +98,7 @@ function SliderInput({
   const sliderId = `slider-${label ? label.toLowerCase().split(/\s+/).join('-') : 'input'}`;
 
   return (
-    <div className={combineStyles('space-y-4', className)}>
+    <div className={cn('space-y-4', className)}>
       {label && (
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-800">{label}</span>

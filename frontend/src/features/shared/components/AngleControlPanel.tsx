@@ -6,7 +6,7 @@ import {
   UnitSelector,
 } from '@/components/ui';
 import { panelVariants } from '@/styles/design-tokens';
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 import {
   MAX_ANGLE_DEGREES,
   MAX_ANGLE_RADIANS,
@@ -55,7 +55,7 @@ export const AngleControlPanel: React.FC<AngleControlPanelProps> = ({
           className="flex flex-wrap gap-2 text-xs"
         >
           {values.map((value, index) => {
-            const segmentButtonClasses = combineStyles(
+            const segmentButtonClasses = cn(
               'w-[calc(50%-4px)] h-16 flex flex-col justify-center flex-shrink-0 p-3 rounded-xl cursor-pointer',
               selectedSegment === index
                 ? panelVariants.segmentSelected

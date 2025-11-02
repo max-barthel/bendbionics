@@ -1,4 +1,4 @@
-import { PrimaryButton } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { useAppState } from '@/providers';
 import { buttonVariants } from '@/styles/design-tokens';
 
@@ -6,7 +6,8 @@ export function SignInButton() {
   const appState = useAppState();
 
   return (
-    <PrimaryButton
+    <Button
+      variant="primary"
       onClick={() => appState.navigate('/auth')}
       className="relative z-[60] px-4 py-2"
     >
@@ -19,6 +20,6 @@ export function SignInButton() {
         />
       </svg>
       <span className={buttonVariants.primaryText}>Sign In</span>
-    </PrimaryButton>
+    </Button>
   );
 }

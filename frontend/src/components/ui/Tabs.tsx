@@ -1,6 +1,6 @@
 import React from 'react';
 import { tabVariants } from '@/styles/design-tokens';
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 
 interface Tab {
   id: string;
@@ -17,12 +17,12 @@ interface TabsProps {
 
 export function Tabs({ tabs, activeTab, onTabChange, className = '' }: TabsProps) {
   return (
-    <div className={combineStyles(tabVariants.container, className)}>
+    <div className={cn(tabVariants.container, className)}>
       {tabs.map(tab => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={combineStyles(
+          className={cn(
             activeTab === tab.id ? tabVariants.buttonActive : tabVariants.buttonInactive
           )}
           aria-label={`${tab.label} tab`}

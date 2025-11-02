@@ -1,4 +1,4 @@
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 
 interface SkeletonLoaderProps {
   type?: 'text' | 'input' | 'button' | 'card';
@@ -52,7 +52,7 @@ function SkeletonLoader({
       case 'card':
         return (
           <div
-            className={combineStyles(
+            className={cn(
               'p-6 bg-white rounded-lg border border-gray-200',
               className
             )}

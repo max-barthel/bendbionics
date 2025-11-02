@@ -1,5 +1,5 @@
 import { panelVariants } from '@/styles/design-tokens';
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 
 interface PanelContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   readonly children: React.ReactNode;
@@ -23,7 +23,7 @@ export function PanelContainer({
     variant === 'segmentSelector'
       ? panelVariants.segmentSelector
       : panelVariants.container;
-  const classes = combineStyles(variantClass, className);
+  const classes = cn(variantClass, className);
 
   return (
     <div className={classes} {...restProps}>

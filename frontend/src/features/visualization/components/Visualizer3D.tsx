@@ -1,12 +1,12 @@
+import { Button } from '@/components/ui';
+import { VISUALIZATION_CONSTANTS } from '@/constants/visualization';
+import { buttonVariants } from '@/styles/design-tokens';
+import { getTendonColor } from '@/utils/tendonColors';
 import { Line, OrbitControls, Sphere } from '@react-three/drei';
 import type { ThreeEvent } from '@react-three/fiber';
 import { Canvas } from '@react-three/fiber';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
-import { PrimaryButton } from '@/components/ui';
-import { VISUALIZATION_CONSTANTS } from '@/constants/visualization';
-import { buttonVariants } from '@/styles/design-tokens';
-import { getTendonColor } from '@/utils/tendonColors';
 import { CoordinateTooltip } from './CoordinateTooltip';
 import { TendonResultsPanel } from './TendonResultsPanel';
 
@@ -495,7 +495,8 @@ function Visualizer3D({
             </Canvas>
 
             {/* Reset Button */}
-            <PrimaryButton
+            <Button
+              variant="primary"
               onClick={resetView}
               className={`absolute top-4 px-4 py-2 z-50 ${
                 sidebarCollapsed ? 'left-4' : 'left-[calc(384px+16px)]'
@@ -517,7 +518,7 @@ function Visualizer3D({
                 </svg>
                 <span className={buttonVariants.primaryText}>Reset View</span>
               </div>
-            </PrimaryButton>
+            </Button>
 
             {/* Tendon Results Panel */}
             {tendonAnalysis && (

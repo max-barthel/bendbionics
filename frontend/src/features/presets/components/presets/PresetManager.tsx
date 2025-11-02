@@ -1,5 +1,5 @@
 import type { Preset } from '@/types';
-import { PrimaryButton, Typography } from '@/components/ui';
+import { Button, Typography } from '@/components/ui';
 import { usePresetManager } from '@/features/presets/hooks/usePresetManager';
 import { PresetForm } from './PresetForm';
 import { PresetList } from './PresetList';
@@ -56,9 +56,9 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
         </div>
 
         <div className="space-y-4">
-          <PrimaryButton onClick={() => navigate('/auth')}>
+          <Button variant="primary" onClick={() => navigate('/auth')}>
             Sign In to Save Presets
-          </PrimaryButton>
+          </Button>
           <div className="mt-4">
             <Typography variant="body" color="gray" className="text-sm text-gray-600">
               You can still use the app without signing in!
@@ -81,9 +81,9 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
       </div>
 
       <div className="flex justify-center mb-6">
-        <PrimaryButton onClick={() => setShowSaveForm(!showSaveForm)}>
+        <Button variant="primary" onClick={() => setShowSaveForm(!showSaveForm)}>
           {showSaveForm ? 'Cancel' : 'Save Current Configuration'}
-        </PrimaryButton>
+        </Button>
       </div>
 
       {showSaveForm && (

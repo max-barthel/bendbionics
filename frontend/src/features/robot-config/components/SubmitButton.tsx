@@ -1,5 +1,5 @@
-import { PrimaryButton } from '@/components/ui';
-import { combineStyles } from '@/styles/tahoe-utils';
+import { Button } from '@/components/ui';
+import { cn } from '@/styles/tahoe-utils';
 
 type SubmitButtonProps = {
   readonly onClick: () => void;
@@ -13,12 +13,13 @@ function SubmitButton({
   loading = false,
 }: SubmitButtonProps) {
   return (
-    <PrimaryButton
+    <Button
+      variant="primary"
       data-testid="submit-button"
       aria-label={loading ? 'computing' : 'compute'}
       onClick={onClick}
       disabled={disabled || loading}
-      className={combineStyles(
+      className={cn(
         'w-full max-w-xs px-4 py-2 justify-center',
         loading ? 'scale-[0.98]' : ''
       )}
@@ -26,7 +27,7 @@ function SubmitButton({
       <span className="text-sm font-medium text-gray-900">
         {loading ? 'Processing...' : 'Compute'}
       </span>
-    </PrimaryButton>
+    </Button>
   );
 }
 

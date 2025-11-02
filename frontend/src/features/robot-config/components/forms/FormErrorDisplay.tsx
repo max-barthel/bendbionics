@@ -1,4 +1,4 @@
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 import { errorAlertVariants } from '@/styles/design-tokens';
 
 type ErrorType = 'network' | 'validation' | 'server' | 'auth' | 'unknown';
@@ -101,7 +101,7 @@ export function FormErrorDisplay({
   const styles = getErrorStyles(error.type);
 
   return (
-    <div className={combineStyles(errorAlertVariants.containerBase, styles.container)}>
+    <div className={cn(errorAlertVariants.containerBase, styles.container)}>
       <div className="flex items-start">
         <div className="flex-shrink-0">{getErrorIcon(error.type)}</div>
         <div className="ml-3 flex-1">
@@ -113,7 +113,7 @@ export function FormErrorDisplay({
             onClick={onClose}
             aria-label="Close error message"
             title="Close error message"
-            className={combineStyles(errorAlertVariants.buttonBase, styles.button)}
+            className={cn(errorAlertVariants.buttonBase, styles.button)}
           >
             <svg
               className="h-5 w-5"

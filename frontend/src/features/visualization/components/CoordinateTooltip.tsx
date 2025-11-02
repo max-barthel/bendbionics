@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { tahoeGlass, unitSelectorVariants } from '@/styles/design-tokens';
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 import { Typography } from '@/components/ui';
 import TahoeGlass from '@/components/ui/TahoeGlass';
 
@@ -192,7 +192,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
 
             {/* Unit selector - not selectable */}
             <div
-              className={combineStyles(
+              className={cn(
                 unitSelectorVariants.container,
                 'select-none',
                 // Override with lighter variant for coordinate tooltip
@@ -221,7 +221,7 @@ export const CoordinateTooltip: React.FC<CoordinateTooltipProps> = ({
 
             {/* Coordinate values - selectable rows, right-aligned values */}
             <div
-              className={combineStyles(
+              className={cn(
                 'w-full rounded-lg p-2 hover:bg-white/4 transition-colors outline-none focus:outline-none select-text',
                 tahoeGlass.base
               )}

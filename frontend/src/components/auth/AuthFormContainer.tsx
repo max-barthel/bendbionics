@@ -1,4 +1,4 @@
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 import type { ReactNode } from 'react';
 
 interface AuthFormContainerProps {
@@ -20,7 +20,7 @@ export function AuthFormContainer({
   // Note: Auth forms use white background rather than glass effect for readability
   const baseClasses =
     'w-full max-w-md mx-auto p-6 bg-white border border-gray-200 rounded-2xl shadow-sm';
-  const classes = combineStyles(baseClasses, className);
+  const classes = cn(baseClasses, className);
 
   return <div className={classes}>{children}</div>;
 }

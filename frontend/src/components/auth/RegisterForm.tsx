@@ -1,4 +1,4 @@
-import { Button, FormField, FormMessage, PrimaryButton } from '@/components/ui';
+import { Button, FormField, FormMessage } from '@/components/ui';
 import { useAuthForm } from '@/features/auth';
 import { useFormFields, useUnifiedErrorHandler } from '@/features/shared';
 import { useAuth } from '@/providers';
@@ -170,9 +170,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
           setConfirmPassword={confirmPasswordField.setValue}
         />
 
-        <PrimaryButton type="submit" className="w-full" disabled={isLoading}>
+        <Button variant="primary" type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? 'Creating account...' : 'Create Account'}
-        </PrimaryButton>
+        </Button>
       </form>
 
       <AuthFormFooter
