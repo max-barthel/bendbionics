@@ -1,5 +1,5 @@
 import { FormField, FormMessage, PrimaryButton } from '@/components/ui';
-import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
+import { useAsyncOperation, useUnifiedErrorHandler } from '@/features/shared';
 import { useAuth } from '@/providers';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -43,26 +43,27 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Use unified error handler
-  const { error, hideError, handleAuthError } = useUnifiedErrorHandler();
+  // Create separate error handler for auth-specific errors
+  const errorHandler = useUnifiedErrorHandler();
+
+  const { isLoading, error, execute } = useAsyncOperation({
+    onSuccess: () => {
+      // Redirect to main app after successful login
+      navigate('/');
+    },
+    onError: err => {
+      // Use auth-specific error handling for login
+      errorHandler.handleAuthError(err);
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    hideError();
-    setIsLoading(true);
 
-    try {
+    await execute(async () => {
       await login({ username, password });
-      // Redirect to main app after successful login
-      navigate('/');
-    } catch (err: unknown) {
-      // Use unified error handler for consistent error handling
-      handleAuthError(err);
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   return (

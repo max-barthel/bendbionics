@@ -1,3 +1,5 @@
+import type { TendonConfig } from './tendon';
+
 // Robot State interface - represents the current state of robot configuration
 export interface RobotState {
   segments: number;
@@ -6,10 +8,7 @@ export interface RobotState {
   backboneLengths: number[];
   couplingLengths: number[];
   discretizationSteps: number;
-  tendonConfig?: {
-    count: number;
-    radius: number;
-  };
+  tendonConfig?: TendonConfig;
 }
 
 // Define robot configuration type
@@ -36,6 +35,3 @@ export interface RobotConfiguration extends Partial<RobotState> {
     };
   };
 }
-
-// Re-export User type from API for convenience
-export type { User } from '../api/auth';

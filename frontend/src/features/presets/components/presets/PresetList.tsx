@@ -1,5 +1,5 @@
 import { FormMessage, Typography } from '@/components/ui';
-import type { Preset } from '@/api/auth';
+import type { Preset } from '@/types';
 import { PresetItem } from './PresetItem';
 
 interface PresetListProps {
