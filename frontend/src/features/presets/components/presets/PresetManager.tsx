@@ -1,6 +1,6 @@
-import type { Preset } from '@/types';
 import { Button, Typography } from '@/components/ui';
 import { usePresetManager } from '@/features/presets/hooks/usePresetManager';
+import type { Preset } from '@/types';
 import { PresetForm } from './PresetForm';
 import { PresetList } from './PresetList';
 
@@ -56,9 +56,15 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
         </div>
 
         <div className="space-y-4">
-          <Button variant="primary" onClick={() => navigate('/auth')}>
-            Sign In to Save Presets
-          </Button>
+          <div className="flex justify-center">
+            <Button
+              variant="primary"
+              onClick={() => navigate('/auth')}
+              className="px-6 py-3"
+            >
+              Sign In to Save Presets
+            </Button>
+          </div>
           <div className="mt-4">
             <Typography variant="body" color="gray" className="text-sm text-gray-600">
               You can still use the app without signing in!

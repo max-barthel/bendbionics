@@ -78,7 +78,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
           setPassword={passwordField.setValue}
         />
 
-        <Button variant="primary" type="submit" className="w-full" disabled={isLoading}>
+        <Button
+          variant="primary"
+          type="submit"
+          className="w-full py-3 justify-center"
+          disabled={isLoading}
+        >
           {isLoading ? 'Signing in...' : 'Sign In'}
         </Button>
       </form>
