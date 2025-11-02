@@ -1,28 +1,38 @@
-import { buttonVariants } from '@/styles/design-tokens';
-import { combineStyles } from '@/styles/tahoe-utils';
+import Button from './Button';
 
-interface PrimaryButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface PrimaryButtonProps {
   readonly children: React.ReactNode;
   readonly className?: string;
+  readonly onClick?: () => void;
+  readonly disabled?: boolean;
+  readonly type?: 'button' | 'submit' | 'reset';
+  readonly 'aria-label'?: string;
 }
 
 /**
  * PrimaryButton - Reusable primary button with blue gradient styling
  *
- * Extracted from SignInButton, RobotSetupTab, and other components
- * to eliminate hardcoded style duplication.
+ * @deprecated Use Button with variant="primary" instead.
+ * This component is kept for backward compatibility.
  */
 export function PrimaryButton({
   children,
   className = '',
-  ...restProps
+  onClick,
+  disabled,
+  type,
+  'aria-label': ariaLabel,
 }: Readonly<PrimaryButtonProps>) {
-  const classes = combineStyles(buttonVariants.primary, className);
-
   return (
-    <button className={classes} {...restProps}>
+    <Button
+      variant="primary"
+      className={className}
+      {...(onClick && { onClick })}
+      {...(disabled !== undefined && { disabled })}
+      {...(type && { type })}
+      {...(ariaLabel && { 'aria-label': ariaLabel })}
+    >
       {children}
-      <div className="absolute inset-0 rounded-full pointer-events-none z-0 bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
-    </button>
+    </Button>
   );
 }

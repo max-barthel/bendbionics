@@ -1,7 +1,8 @@
 import { useInputBehavior } from '@/features/shared';
 import { numberInputSizeClasses, type ComponentSize } from '@/styles/design-tokens';
-import { combineStyles, getTahoeGlassPreset } from '@/styles/tahoe-utils';
+import { cn, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 import React, { useEffect, useState } from 'react';
+import { FloatingLabel } from './FloatingLabel';
 
 // Constants
 const DEFAULT_PRECISION = 3;
@@ -60,19 +61,6 @@ function processInputValue(
   return null;
 }
 
-// Floating label component
-function FloatingLabel({ placeholder }: { readonly placeholder: string }) {
-  return (
-    <div
-      className={combineStyles(
-        'absolute -top-3 left-3 px-2 text-xs font-medium text-gray-700 transition-all duration-300',
-        getTahoeGlassPreset('numberInputDisplay', undefined, false)
-      )}
-    >
-      {placeholder}
-    </div>
-  );
-}
 
 // Custom hook for input state management
 function useTahoeInputState(value: number) {
@@ -181,7 +169,7 @@ function InputField({
       placeholder={placeholder}
       disabled={disabled}
       data-testid={dataTestId}
-      className={combineStyles(
+      className={cn(
         'w-full bg-transparent border-0 outline-none text-gray-900 placeholder-gray-500/70 font-medium pr-4 transition-all duration-300',
         numberInputSizeClasses[size],
         '[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]',
@@ -260,9 +248,9 @@ export function TahoeNumberInput({
   } = useTahoeNumberInput(value, onChange, min, max, precision, onBlur);
 
   return (
-    <div className={combineStyles('relative group', className)}>
+    <div className={cn('relative group', className)}>
       <div
-        className={combineStyles(
+        className={cn(
           'relative transition-all duration-300 ease-out',
           tahoeGlassClasses,
           disabled ? 'opacity-50 cursor-not-allowed' : ''
@@ -282,7 +270,7 @@ export function TahoeNumberInput({
         />
 
         <div
-          className={combineStyles(
+          className={cn(
             'absolute inset-0 rounded-full pointer-events-none transition-all duration-500',
             isFocused
               ? 'bg-gradient-to-br from-white/15 via-white/8 to-white/3 shadow-inner'
@@ -295,14 +283,16 @@ export function TahoeNumberInput({
         )}
 
         <div
-          className={combineStyles(
+          className={cn(
             'absolute inset-0 rounded-full pointer-events-none transition-all duration-200',
             isFocused ? 'bg-gradient-to-r from-blue-500/5 to-indigo-500/5' : ''
           )}
         />
       </div>
 
-      {isFocused && placeholder && <FloatingLabel placeholder={placeholder} />}
+      {isFocused && placeholder && (
+        <FloatingLabel label={placeholder} shouldFloat={true} variant="tahoe" />
+      )}
     </div>
   );
 }

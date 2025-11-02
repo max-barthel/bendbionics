@@ -1,3 +1,4 @@
+import { errorBoundaryVariants } from '@/styles/design-tokens';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import logger, { LogContext } from '../utils/logger';
 
@@ -212,7 +213,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         {this.retryCount < this.maxRetries && (
           <button
             onClick={this.handleRetry}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className={errorBoundaryVariants.primaryButton}
           >
             Try Again ({this.maxRetries - this.retryCount} attempts left)
           </button>
@@ -220,14 +221,14 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
         <button
           onClick={this.handleReload}
-          className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className={errorBoundaryVariants.secondaryButton}
         >
           Reload Page
         </button>
 
         <button
           onClick={this.handleReportBug}
-          className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className={errorBoundaryVariants.secondaryButton}
         >
           Report Bug
         </button>

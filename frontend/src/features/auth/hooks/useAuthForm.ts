@@ -145,3 +145,4 @@ export function useAuthForm<TResult = void>(
     hideError,
   };
 }
+

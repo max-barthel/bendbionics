@@ -1,3 +1,4 @@
+import { cn } from '@/styles/tahoe-utils';
 import React from 'react';
 
 interface TableProps {
@@ -39,7 +40,7 @@ function TableHead({ children, className = '' }: Readonly<TableHeadProps>) {
 
 function TableBody({ children, className = '' }: Readonly<TableBodyProps>) {
   return (
-    <tbody className={`bg-white divide-y divide-gray-200 ${className}`}>
+    <tbody className={cn('bg-white divide-y divide-gray-200', className)}>
       {children}
     </tbody>
   );

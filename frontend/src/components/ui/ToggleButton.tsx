@@ -1,49 +1,40 @@
-import { toggleButtonVariants } from '@/styles/design-tokens';
-import { combineStyles } from '@/styles/tahoe-utils';
+import Button from './Button';
 
-interface ToggleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ToggleButtonProps {
   readonly isOpen?: boolean;
   readonly direction?: 'up-down' | 'left-right';
   readonly className?: string;
+  readonly onClick?: () => void;
+  readonly disabled?: boolean;
+  readonly type?: 'button' | 'submit' | 'reset';
+  readonly 'aria-label'?: string;
 }
 
 /**
  * ToggleButton - Reusable toggle button for panels
  *
- * Extracted from TendonResultsPanel and other components
- * to eliminate hardcoded style duplication.
+ * @deprecated Use Button with variant="toggle" instead.
+ * This component is kept for backward compatibility.
  */
 export function ToggleButton({
   isOpen = false,
   direction = 'up-down',
   className = '',
-  ...restProps
+  onClick,
+  disabled,
+  type,
+  'aria-label': ariaLabel,
 }: Readonly<ToggleButtonProps>) {
-  const classes = combineStyles(toggleButtonVariants.panelToggle, className);
-
-  // Determine arrow direction based on isOpen and direction prop
-  let arrowPath: string;
-  if (direction === 'up-down') {
-    arrowPath = isOpen ? 'M19 9l-7 7-7-7' : 'M5 15l7-7 7 7'; // Up (close) or Down (open)
-  } else {
-    arrowPath = isOpen ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'; // Left (close) or Right (open)
-  }
-
   return (
-    <button className={classes} {...restProps}>
-      <svg
-        className={toggleButtonVariants.panelToggleIcon}
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d={arrowPath}
-        />
-      </svg>
-    </button>
+    <Button
+      variant="toggle"
+      isOpen={isOpen}
+      direction={direction}
+      className={className}
+      {...(onClick && { onClick })}
+      {...(disabled !== undefined && { disabled })}
+      {...(type && { type })}
+      {...(ariaLabel && { 'aria-label': ariaLabel })}
+    />
   );
 }

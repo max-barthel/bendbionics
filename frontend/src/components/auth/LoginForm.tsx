@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthFormContainer } from './AuthFormContainer';
 import { AuthFormFooter } from './AuthFormFooter';
 import { AuthFormHeader } from './AuthFormHeader';
-import { useAuthForm } from './hooks/useAuthForm';
+import { useAuthForm } from '@/features/auth';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
