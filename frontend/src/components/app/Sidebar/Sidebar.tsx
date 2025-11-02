@@ -19,7 +19,7 @@ export function Sidebar({ formTabsRef }: Readonly<SidebarProps>) {
       }`}
     >
       <TahoeGlass
-        className="h-full w-96 rounded-r-2xl shadow-2xl p-0 mr-4"
+        className="h-full w-96 rounded-r-2xl p-0 mr-4"
         variant="strong"
         size="sm"
         style={{

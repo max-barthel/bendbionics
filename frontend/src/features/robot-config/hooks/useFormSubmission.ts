@@ -1,15 +1,10 @@
 import { robotAPI, type PCCParams } from '@/api/client';
+import { useAsyncOperation } from '@/features/shared/hooks/useAsyncOperation';
+import { useProgressTracking } from '@/features/shared/hooks/useProgressTracking';
 import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
 import { validateRobotConfiguration } from '@/utils/formValidation';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 import { useRobotState } from './useRobotState';
-
-// Progress and timeout constants
-const PROGRESS_CONFIG = {
-  INITIAL: 15,
-  COMPLETE: 90,
-  FINAL: 200,
-} as const;
 
 export interface FormSubmissionResult {
   segments: number[][][];
@@ -24,22 +19,34 @@ export interface UseFormSubmissionOptions {
 /**
  * Custom hook for handling robot form submission with unified validation and error handling
  *
+ * Refactored to use useAsyncOperation internally for consistent error handling.
+ * Progress tracking is handled separately via useProgressTracking hook.
+ *
  * This hook consolidates all form submission logic including:
  * - Validation using the unified validation system
  * - API calls to both PCC and tendon endpoints
- * - Error handling with consistent patterns
- * - Loading state management
- * - Progress tracking
+ * - Error handling with consistent patterns via useAsyncOperation
+ * - Loading state management via useAsyncOperation
+ * - Progress tracking via useProgressTracking
  */
 export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
   const { onResult, onLoadingChange } = options;
   const [robotState] = useRobotState();
-  const [loading, setLoading] = useState(false);
-  const [validating] = useState(false);
-  const [computationProgress, setComputationProgress] = useState(0);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { error, showError, hideError, handleApiError } = useUnifiedErrorHandler();
+  const { showError } = useUnifiedErrorHandler();
+
+  const { isLoading, error, execute, hideError } = useAsyncOperation<FormSubmissionResult>({
+    onSuccess: result => {
+      onResult?.(result);
+    },
+    onStart: () => {
+      onLoadingChange?.(true);
+    },
+  });
+
+  // Track progress based on loading state
+  const { progress: computationProgress, setProgressComplete } = useProgressTracking(isLoading);
 
   const handleSubmit = useCallback(async (): Promise<boolean> => {
     hideError();
@@ -49,19 +56,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
       return false;
     }
 
-    setLoading(true);
-    setComputationProgress(0);
-    onLoadingChange?.(true);
-
-    // Simulate progress for better UX
-    const progressInterval = setInterval(() => {
-      setComputationProgress(prev => {
-        const newProgress = prev + Math.random() * PROGRESS_CONFIG.INITIAL;
-        return Math.min(newProgress, PROGRESS_CONFIG.COMPLETE);
-      });
-    }, PROGRESS_CONFIG.FINAL);
-
-    try {
+    const result = await execute(async () => {
       const params: PCCParams = {
         bending_angles: robotState.bendingAngles,
         rotation_angles: robotState.rotationAngles,
@@ -72,17 +67,18 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
       };
 
       // Use tendon endpoint if tendon configuration is provided
-      let result;
-      let segments;
+      let apiResult;
+      let segments: number[][][];
       if (robotState.tendonConfig) {
-        result = await robotAPI.computePCCWithTendons(params);
-        segments = result.result.robot_positions;
+        apiResult = await robotAPI.computePCCWithTendons(params);
+        segments = apiResult.result.robot_positions;
       } else {
-        result = await robotAPI.computePCC(params);
-        segments = result.data.segments;
+        apiResult = await robotAPI.computePCC(params);
+        segments = apiResult.data.segments;
       }
 
-      setComputationProgress(100);
+      // Mark progress as complete before returning
+      setProgressComplete();
 
       // Create configuration object to pass back
       const configuration = {
@@ -95,27 +91,24 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
         tendonConfig: robotState.tendonConfig,
       };
 
-      const submissionResult: FormSubmissionResult = {
-        segments: segments,
+      return {
+        segments,
         configuration,
       };
+    });
 
-      onResult?.(submissionResult);
-      return true;
-    } catch (err: unknown) {
-      handleApiError(err, 'form submission');
-      return false;
-    } finally {
-      clearInterval(progressInterval);
-      setLoading(false);
-      setComputationProgress(0);
+    if (result) {
       onLoadingChange?.(false);
+      return true;
     }
-  }, [robotState, showError, hideError, handleApiError, onResult, onLoadingChange]);
+
+    onLoadingChange?.(false);
+    return false;
+  }, [robotState, showError, hideError, execute, onResult, onLoadingChange]);
 
   // Debounced auto-compute entrypoint: validate and compute if not already loading
   const computeIfValid = useCallback(async (): Promise<boolean> => {
-    if (loading) {
+    if (isLoading) {
       return false;
     }
 
@@ -129,12 +122,12 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
         resolve(ok);
       }, 200);
     });
-  }, [handleSubmit, loading]);
+  }, [handleSubmit, isLoading]);
 
   return {
     // State
-    loading,
-    validating,
+    loading: isLoading,
+    validating: false,
     computationProgress,
     error,
 

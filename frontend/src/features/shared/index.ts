@@ -17,8 +17,13 @@ export {
   useRobotSettings,
 } from './hooks/useLocalStorage';
 export { useRetryAPI } from './hooks/useRetryAPI';
+export { useProgressTracking } from './hooks/useProgressTracking';
 export { useUnifiedErrorHandler } from './hooks/useUnifiedErrorHandler';
 export { useAsyncOperation } from './hooks/useAsyncOperation';
+export { useFormFields } from './hooks/useFormFields';
+export { useToggle } from './hooks/useToggle';
+export { useModal } from './hooks/useModal';
+export { useInputBehavior } from './hooks/useInputBehavior';
 
 // Re-export types from hooks
 export type {

@@ -1,11 +1,11 @@
 import { FormField, FormMessage, PrimaryButton } from '@/components/ui';
-import { useAsyncOperation, useUnifiedErrorHandler } from '@/features/shared';
+import { useFormFields } from '@/features/shared';
 import { useAuth } from '@/providers';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthFormContainer } from './AuthFormContainer';
 import { AuthFormFooter } from './AuthFormFooter';
 import { AuthFormHeader } from './AuthFormHeader';
+import { useAuthForm } from './hooks/useAuthForm';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
@@ -14,8 +14,8 @@ interface LoginFormProps {
 const LoginFormFields: React.FC<{
   username: string;
   password: string;
-  setUsername: (value: string) => void;
-  setPassword: (value: string) => void;
+  setUsername: (value: string | number) => void;
+  setPassword: (value: string | number) => void;
 }> = ({ username, password, setUsername, setPassword }) => (
   <>
     <FormField
@@ -23,7 +23,7 @@ const LoginFormFields: React.FC<{
       label="Username"
       type="text"
       value={username}
-      onChange={(value: string | number) => setUsername(String(value))}
+      onChange={setUsername}
       placeholder="Enter your username"
     />
 
@@ -32,7 +32,7 @@ const LoginFormFields: React.FC<{
       label="Password"
       type="password"
       value={password}
-      onChange={(value: string | number) => setPassword(String(value))}
+      onChange={setPassword}
       placeholder="Enter your password"
     />
   </>
@@ -41,50 +41,41 @@ const LoginFormFields: React.FC<{
 export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
 
-  // Create separate error handler for auth-specific errors
-  const errorHandler = useUnifiedErrorHandler();
+  // Manage form fields with useFormFields hook
+  const fields = useFormFields([
+    { name: 'username', initialValue: '' },
+    { name: 'password', initialValue: '' },
+  ]);
 
-  const { isLoading, error, execute } = useAsyncOperation({
+  const usernameField = fields.getFieldByName('username')!;
+  const passwordField = fields.getFieldByName('password')!;
+
+  // Use useAuthForm hook for consistent auth form handling
+  const { isLoading, error, handleSubmit } = useAuthForm({
+    onSubmit: async () => {
+      const values = fields.getValues();
+      await login({ username: values['username'], password: values['password'] });
+    },
     onSuccess: () => {
       // Redirect to main app after successful login
       navigate('/');
     },
-    onError: err => {
-      // Use auth-specific error handling for login
-      errorHandler.handleAuthError(err);
-    },
   });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    await execute(async () => {
-      await login({ username, password });
-    });
-  };
 
   return (
     <AuthFormContainer>
       <AuthFormHeader title="Welcome Back" description="Sign in to your account" />
 
-      <form
-        onSubmit={e => {
-          e.preventDefault();
-          void handleSubmit(e);
-        }}
-        className="space-y-4"
-      >
+      <form onSubmit={handleSubmit} className="space-y-4">
         {error.visible && (
           <FormMessage message={error.message} type="error" variant="standard" />
         )}
         <LoginFormFields
-          username={username}
-          password={password}
-          setUsername={setUsername}
-          setPassword={setPassword}
+          username={usernameField.value}
+          password={passwordField.value}
+          setUsername={usernameField.setValue}
+          setPassword={passwordField.setValue}
         />
 
         <PrimaryButton type="submit" className="w-full" disabled={isLoading}>
