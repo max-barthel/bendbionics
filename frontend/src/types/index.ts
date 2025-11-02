@@ -8,9 +8,23 @@
 // App types
 export type { AppState } from './app';
 
-// Robot types
+// Auth domain types
+export type { Preset, User } from './auth';
+
+// Robot domain types
 export type { RobotConfiguration, RobotState } from './robot';
 
-// User types (re-exported from API)
-export type { User } from './robot';
+// Tendon domain types
+export type { TendonConfig } from './tendon';
+
+// API types (request/response structures)
+export type {
+  AuthResponse,
+  CreatePresetRequest,
+  LoginRequest,
+  RegisterRequest,
+  RegisterResponse,
+  UpdatePresetRequest,
+  UpdateProfileRequest,
+} from './api';
 

@@ -1,4 +1,4 @@
-import type { Preset } from '@/api/auth';
+import type { Preset } from '@/types';
 import { PrimaryButton, Typography } from '@/components/ui';
 import { usePresetManager } from '@/features/presets/hooks/usePresetManager';
 import { PresetForm } from './PresetForm';

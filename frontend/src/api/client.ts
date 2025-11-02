@@ -1,3 +1,4 @@
+import type { TendonConfig } from '@/types';
 import axios from 'axios';
 import { HTTP_STATUS } from '../constants/httpStatus';
 
@@ -9,12 +10,6 @@ export interface PCCParams {
   coupling_lengths: number[];
   discretization_steps: number;
   tendon_config?: TendonConfig;
-}
-
-// Define tendon configuration types
-export interface TendonConfig {
-  count: number;
-  radius: number;
 }
 
 // Define the API response type

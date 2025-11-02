@@ -1,6 +1,7 @@
 import { Button, FormField, FormMessage, PrimaryButton } from '@/components/ui';
-import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
+import { useAsyncOperation, useUnifiedErrorHandler } from '@/features/shared';
 import { useAuth } from '@/providers';
+import { validatePassword, validatePasswordMatch } from '@/utils/passwordValidation';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthFormContainer } from './AuthFormContainer';
@@ -81,53 +82,42 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState('');
 
-  // Use unified error handler
-  const { error, showError, hideError, handleAuthError } = useUnifiedErrorHandler();
+  // Use unified error handler for validation errors (shown before async operation)
+  const { showError } = useUnifiedErrorHandler();
+
+  // Use async operation hook for the actual registration
+  const { isLoading, error, execute } = useAsyncOperation<{ message: string }>({
+    onSuccess: result => {
+      // Use the message from the backend (environment-aware)
+      setSuccess(result.message);
+    },
+    onStart: () => {
+      setSuccess('');
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    hideError();
-    setSuccess('');
 
     // Validate passwords match
-    if (password !== confirmPassword) {
-      showError('validation', 'Passwords do not match');
+    const matchValidation = validatePasswordMatch(password, confirmPassword);
+    if (!matchValidation.isValid && matchValidation.error) {
+      showError('validation', matchValidation.error);
       return;
     }
 
     // Validate password strength
-    const MIN_PASSWORD_LENGTH = 8;
-    const MAX_PASSWORD_BYTES = 72; // bcrypt limit
-
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      showError('validation', 'Password must be at least 8 characters long');
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid && passwordValidation.error) {
+      showError('validation', passwordValidation.error);
       return;
     }
 
-    // Check for bcrypt 72-byte limit
-    if (new TextEncoder().encode(password).length > MAX_PASSWORD_BYTES) {
-      showError(
-        'validation',
-        'Password is too long. Please use a password with 72 characters or less.'
-      );
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await register({ username, email, password });
-      // Use the message from the backend (environment-aware)
-      setSuccess(response.message);
-    } catch (err: unknown) {
-      // Use unified error handler for consistent error handling
-      handleAuthError(err);
-    } finally {
-      setIsLoading(false);
-    }
+    await execute(async () => {
+      return await register({ username, email, password });
+    });
   };
 
   return (

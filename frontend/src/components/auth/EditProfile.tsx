@@ -1,7 +1,8 @@
 import { Button, Input, Typography } from '@/components/ui';
-import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
+import { useAsyncOperation, useUnifiedErrorHandler } from '@/features/shared';
 import { useAuth } from '@/providers/AuthProvider';
 import { buttonVariants } from '@/styles/design-tokens';
+import { validatePassword, validatePasswordMatch } from '@/utils/passwordValidation';
 import { useState } from 'react';
 
 interface EditProfileProps {
@@ -18,36 +19,46 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isUpdating, setIsUpdating] = useState(false);
 
-  // Use unified error handler
-  const { error, showError, hideError, handleAuthError } = useUnifiedErrorHandler();
+  // Use unified error handler for validation errors (shown before async operation)
+  const { showError } = useUnifiedErrorHandler();
+
+  // Use async operation hook for the actual profile update
+  const {
+    isLoading: isUpdating,
+    error,
+    execute,
+  } = useAsyncOperation({
+    onSuccess: () => {
+      // If email was changed, show verification message
+      let message = 'Profile updated successfully!';
+      if (email !== user?.email) {
+        message =
+          'Profile updated! Please check the server logs for your verification link.';
+      }
+      onSuccess(message);
+    },
+  });
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    hideError();
 
     // Validate password confirmation if changing password
-    if (newPassword && newPassword !== confirmPassword) {
-      showError('validation', 'New passwords do not match');
-      return;
-    }
-
-    // Validate password strength if changing password
     if (newPassword) {
-      const MIN_PASSWORD_LENGTH = 8;
-      const MAX_PASSWORD_BYTES = 72; // bcrypt limit
-
-      if (newPassword.length < MIN_PASSWORD_LENGTH) {
-        showError('validation', 'New password must be at least 8 characters long');
+      const matchValidation = validatePasswordMatch(
+        newPassword,
+        confirmPassword,
+        'New passwords'
+      );
+      if (!matchValidation.isValid && matchValidation.error) {
+        showError('validation', matchValidation.error);
         return;
       }
 
-      if (new TextEncoder().encode(newPassword).length > MAX_PASSWORD_BYTES) {
-        showError(
-          'validation',
-          'New password is too long. Please use 72 characters or less.'
-        );
+      // Validate password strength
+      const passwordValidation = validatePassword(newPassword, 'New password');
+      if (!passwordValidation.isValid && passwordValidation.error) {
+        showError('validation', passwordValidation.error);
         return;
       }
     }
@@ -67,9 +78,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
       return;
     }
 
-    setIsUpdating(true);
-
-    try {
+    await execute(async () => {
       const updateData: {
         username?: string;
         email?: string;
@@ -90,20 +99,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
       }
 
       await updateProfile(updateData);
-
-      // If email was changed, show verification message
-      let message = 'Profile updated successfully!';
-      if (email !== user?.email) {
-        message =
-          'Profile updated! Please check the server logs for your verification link.';
-      }
-
-      onSuccess(message);
-    } catch (err: unknown) {
-      handleAuthError(err);
-    } finally {
-      setIsUpdating(false);
-    }
+    });
   };
 
   return (

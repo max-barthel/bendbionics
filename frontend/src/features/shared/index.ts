@@ -18,6 +18,7 @@ export {
 } from './hooks/useLocalStorage';
 export { useRetryAPI } from './hooks/useRetryAPI';
 export { useUnifiedErrorHandler } from './hooks/useUnifiedErrorHandler';
+export { useAsyncOperation } from './hooks/useAsyncOperation';
 
 // Re-export types from hooks
 export type {
@@ -25,3 +26,7 @@ export type {
   ErrorType,
   UseUnifiedErrorHandlerOptions,
 } from './hooks/useUnifiedErrorHandler';
+export type {
+  UseAsyncOperationOptions,
+  UseAsyncOperationReturn,
+} from './hooks/useAsyncOperation';

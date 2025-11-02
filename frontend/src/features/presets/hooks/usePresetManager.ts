@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  authAPI,
-  presetAPI,
-  type CreatePresetRequest,
-  type Preset,
-} from '@/api/auth';
+import type { CreatePresetRequest, Preset } from '@/types';
+import { authAPI, presetAPI } from '@/api/auth';
 import { useAuth } from '@/providers';
 import { ERROR_MESSAGES } from '@/constants/errorMessages';
 import { HTTP_STATUS } from '@/constants/httpStatus';

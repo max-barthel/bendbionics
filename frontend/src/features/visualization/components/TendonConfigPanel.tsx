@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { TendonConfig } from '@/api/client';
+import type { TendonConfig } from '@/types';
 import {
   NumberInput,
   SliderInput,
