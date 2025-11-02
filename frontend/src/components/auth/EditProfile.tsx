@@ -1,6 +1,7 @@
 import { Button, Input, Typography } from '@/components/ui';
 import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
 import { useAuth } from '@/providers/AuthProvider';
+import { buttonVariants } from '@/styles/design-tokens';
 import { useState } from 'react';
 
 interface EditProfileProps {
@@ -216,19 +217,21 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
         </div>
       </div>
 
-      <div className="flex space-x-3 pt-4">
+      <div className="flex gap-2 pt-4">
         <Button
           type="button"
+          size="sm"
           onClick={onCancel}
           disabled={isUpdating}
-          className="flex-1 border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
+          className={buttonVariants.delete}
         >
           Cancel
         </Button>
         <Button
           type="submit"
+          size="sm"
           disabled={isUpdating}
-          className="flex-1 border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
+          className={buttonVariants.load}
         >
           {isUpdating ? 'Saving...' : 'Save Changes'}
         </Button>

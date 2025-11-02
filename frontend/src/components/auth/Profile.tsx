@@ -61,7 +61,7 @@ interface ProfileProps {
 }
 
 export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
-  const { user, logout, deleteAccount, refreshUser } = useAuth();
+  const { user, deleteAccount, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -73,12 +73,6 @@ export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
   useEffect(() => {
     refreshUser();
   }, [refreshUser]);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-    onClose();
-  };
 
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
@@ -178,24 +172,19 @@ export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="flex gap-2">
               <Button
+                size="sm"
                 onClick={() => setIsEditing(true)}
-                className={`w-full ${buttonVariants.outline} py-3`}
+                className={buttonVariants.edit}
               >
                 Edit Profile
               </Button>
 
               <Button
-                onClick={handleLogout}
-                className={`w-full ${buttonVariants.outline} py-3`}
-              >
-                Sign Out
-              </Button>
-
-              <Button
+                size="sm"
                 onClick={confirmDelete}
-                className={`w-full ${buttonVariants.delete} py-3`}
+                className={buttonVariants.delete}
               >
                 <div className="flex items-center justify-center gap-2">
                   <TrashIcon className="w-4 h-4" />
