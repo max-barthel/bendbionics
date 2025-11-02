@@ -1,24 +1,15 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Button, FormField, FormMessage, PrimaryButton } from '@/components/ui';
 import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
 import { useAuth } from '@/providers';
-import { Button, FormField, FormMessage, PrimaryButton, Typography } from '@/components/ui';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthFormContainer } from './AuthFormContainer';
+import { AuthFormFooter } from './AuthFormFooter';
+import { AuthFormHeader } from './AuthFormHeader';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
 }
-
-const RegisterFormHeader: React.FC = () => (
-  <div className="text-center mb-6">
-    <Typography variant="h2" color="primary" className="mb-2 text-gray-800">
-      Create Account
-    </Typography>
-    <Typography variant="body" color="gray" className="text-gray-600">
-      Join the BendBionics community
-    </Typography>
-  </div>
-);
-
 
 const RegisterFormFields: React.FC<{
   username: string;
@@ -83,22 +74,6 @@ const RegisterFormFields: React.FC<{
   </>
 );
 
-const RegisterFormFooter: React.FC<{ onSwitchToLogin: () => void }> = ({
-  onSwitchToLogin,
-}) => (
-  <div className="mt-6 text-center">
-    <Typography variant="body" color="gray" className="text-gray-600">
-      Already have an account?{' '}
-      <button
-        onClick={onSwitchToLogin}
-        className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"
-      >
-        Sign in
-      </button>
-    </Typography>
-  </div>
-);
-
 export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -156,8 +131,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white border border-gray-200 rounded-2xl shadow-sm">
-      <RegisterFormHeader />
+    <AuthFormContainer>
+      <AuthFormHeader
+        title="Create Account"
+        description="Join the BendBionics community"
+      />
 
       <form
         onSubmit={e => {
@@ -196,7 +174,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
         </PrimaryButton>
       </form>
 
-      <RegisterFormFooter onSwitchToLogin={onSwitchToLogin} />
-    </div>
+      <AuthFormFooter
+        promptText="Already have an account?"
+        switchText="Sign in"
+        onSwitch={onSwitchToLogin}
+      />
+    </AuthFormContainer>
   );
 };

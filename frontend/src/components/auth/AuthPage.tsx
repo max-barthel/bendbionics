@@ -1,6 +1,7 @@
 import { Button, Typography } from '@/components/ui';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthFormContainer } from './AuthFormContainer';
 import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
 
@@ -15,7 +16,7 @@ export const AuthPage: React.FC = () => {
     >
       <div className="w-full max-w-md space-y-8 relative z-10">
         <div className="text-center">
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6">
+          <AuthFormContainer className="mb-6">
             <Typography variant="h1" color="primary" className="mb-2 text-gray-800">
               BendBionics
             </Typography>
@@ -34,7 +35,7 @@ export const AuthPage: React.FC = () => {
             >
               ← Back to App (Continue as Guest)
             </Button>
-          </div>
+          </AuthFormContainer>
         </div>
 
         {isLogin ? (
