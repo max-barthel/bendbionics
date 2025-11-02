@@ -1,4 +1,4 @@
-import { FormField, FormMessage, PrimaryButton } from '@/components/ui';
+import { Button, FormField, FormMessage } from '@/components/ui';
 import { useFormFields } from '@/features/shared';
 import { useAuth } from '@/providers';
 import { useNavigate } from 'react-router-dom';
@@ -78,9 +78,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
           setPassword={passwordField.setValue}
         />
 
-        <PrimaryButton type="submit" className="w-full" disabled={isLoading}>
+        <Button variant="primary" type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? 'Signing in...' : 'Sign In'}
-        </PrimaryButton>
+        </Button>
       </form>
 
       <AuthFormFooter

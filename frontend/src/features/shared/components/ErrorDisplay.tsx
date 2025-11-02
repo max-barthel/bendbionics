@@ -1,6 +1,6 @@
 import { CloseIcon, ErrorIcon } from '@/components/icons';
 import { errorAlertVariants } from '@/styles/design-tokens';
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 import React from 'react';
 
 interface ErrorDisplayProps {
@@ -19,7 +19,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ message, onClose }) 
 
   return (
     <div
-      className={combineStyles(
+      className={cn(
         'mx-6 mt-4 flex-shrink-0',
         errorAlertVariants.containerBase,
         serverErrorStyles.container
@@ -36,7 +36,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ message, onClose }) 
           type="button"
           onClick={onClose}
           aria-label="Close error message"
-          className={combineStyles(
+          className={cn(
             errorAlertVariants.buttonBase,
             serverErrorStyles.button
           )}

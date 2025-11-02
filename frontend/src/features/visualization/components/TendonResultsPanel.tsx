@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { PanelContainer, ToggleButton, Typography } from '@/components/ui';
+import { Button, PanelContainer, Typography } from '@/components/ui';
 import { tableCellVariants, unitSelectorVariants } from '@/styles/design-tokens';
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 import { getTendonColorClasses } from '@/utils/tendonColors';
 import { convertFromSI } from '@/utils/unitConversions';
 
@@ -307,7 +307,8 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
 
   if (!tendonAnalysis?.actuation_commands) {
     return (
-      <ToggleButton
+      <Button
+        variant="toggle"
         onClick={onToggle}
         className="fixed top-1/2 right-4 transform -translate-y-1/2"
         aria-label="Show tendon results"
@@ -321,7 +322,8 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     <>
       {/* Simple Toggle Button (when folded) */}
       {!isVisible && firstTendonEntry && (
-        <ToggleButton
+        <Button
+          variant="toggle"
           onClick={onToggle}
           className="fixed bottom-8 right-42"
           aria-label="Show tendon results"
@@ -331,7 +333,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
 
       {/* Bottom-Right Panel */}
       <div
-        className={combineStyles(
+        className={cn(
           'fixed bottom-0 transition-all duration-500 ease-in-out z-40',
           isVisible ? 'translate-y-0 opacity-100' : 'h-0 translate-y-full opacity-0'
         )}
@@ -361,7 +363,8 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
           <div className="flex flex-col h-full">
             {/* Close Button - positioned over content */}
             {isVisible && (
-              <ToggleButton
+              <Button
+                variant="toggle"
                 onClick={onToggle}
                 className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10"
                 aria-label={isVisible ? 'Hide tendon results' : 'Show tendon results'}
@@ -407,7 +410,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                       <thead>
                         <tr>
                           <th
-                            className={combineStyles(
+                            className={cn(
                               'w-18',
                               tableCellVariants.headerFirst
                             )}
@@ -419,7 +422,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                             return (
                               <th
                                 key={tendonId}
-                                className={combineStyles(
+                                className={cn(
                                   'w-20',
                                   tableCellVariants.header
                                 )}
@@ -443,7 +446,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                             return (
                               <tr key={segmentKey}>
                                 <td
-                                  className={combineStyles(
+                                  className={cn(
                                     'w-16',
                                     tableCellVariants.bodyFirst
                                   )}
@@ -454,7 +457,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                                   (tendonLengths, tendonIndex) => (
                                     <td
                                       key={`tendon-${tendonIndex}-segment-${segmentIndex + 1}`}
-                                      className={combineStyles(
+                                      className={cn(
                                         'w-20',
                                         tableCellVariants.body
                                       )}
@@ -472,7 +475,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                         {/* Totals Row */}
                         <tr className="border-t-2 border-gray-300/60">
                           <td
-                            className={combineStyles(
+                            className={cn(
                               'w-16',
                               tableCellVariants.bodyFirst
                             )}
@@ -494,7 +497,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                             return (
                               <td
                                 key={tendonId}
-                                className={combineStyles(
+                                className={cn(
                                   'w-20',
                                   tableCellVariants.total
                                 )}

@@ -6,7 +6,7 @@ import {
   TendonIcon,
   UploadIcon,
 } from '@/components/icons';
-import { PrimaryButton, SliderInput, SubsectionTitle, Typography } from '@/components/ui';
+import { Button, SliderInput, SubsectionTitle, Typography } from '@/components/ui';
 import { buttonVariants } from '@/styles/design-tokens';
 import { CollapsibleSection } from '@/features/shared/components/CollapsibleSection';
 import { TendonConfigPanel } from '@/features/visualization/components/TendonConfigPanel';
@@ -47,7 +47,8 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
           <br />
           Then save as a preset.
         </Typography>
-        <PrimaryButton
+        <Button
+          variant="primary"
           onClick={() => onShowPresetManager?.()}
           className="w-full mt-6 px-4 py-2 justify-center"
         >
@@ -55,7 +56,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
             <UploadIcon className="w-4 h-4" />
             <span className={buttonVariants.primaryText}>Preset Manager</span>
           </div>
-        </PrimaryButton>
+        </Button>
       </div>
 
       {/* Segments - Most Important */}

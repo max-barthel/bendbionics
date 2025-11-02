@@ -1,5 +1,5 @@
 import { unitSelectorVariants } from '@/styles/design-tokens';
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 
 interface UnitSelectorProps<T extends string> {
   readonly units: readonly T[];
@@ -17,7 +17,7 @@ export function UnitSelector<T extends string>({
   ariaLabel,
 }: UnitSelectorProps<T>) {
   return (
-    <div className={combineStyles(unitSelectorVariants.container, className)}>
+    <div className={cn(unitSelectorVariants.container, className)}>
       {units.map(unit => (
         <button
           key={unit}

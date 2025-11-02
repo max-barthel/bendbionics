@@ -1,14 +1,15 @@
-import { IconButton } from '@/components/ui';
+import { Button } from '@/components/ui';
 import { useAppState } from '@/providers';
 
 export function SidebarToggle() {
   const appState = useAppState();
 
   return (
-    <IconButton
+    <Button
+      variant="icon"
+      iconVariant="glass"
       onClick={appState.toggleSidebar}
       aria-label={appState.sidebarCollapsed ? 'Show parameters' : 'Hide parameters'}
-      variant="glass"
       size="md"
       className={`fixed top-1/2 transform -translate-y-1/2 z-50 ${
         appState.sidebarCollapsed
@@ -29,6 +30,6 @@ export function SidebarToggle() {
           d={appState.sidebarCollapsed ? 'M9 5l7 7-7 7' : 'M15 19l-7-7 7-7'}
         />
       </svg>
-    </IconButton>
+    </Button>
   );
 }

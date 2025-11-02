@@ -3,9 +3,9 @@ import {
   modalVariants,
   type ExtendedComponentSize,
 } from '@/styles/design-tokens';
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 import type { ReactNode } from 'react';
-import { CloseButton } from './CloseButton';
+import Button from './Button';
 
 interface ModalProps {
   readonly isOpen: boolean;
@@ -38,9 +38,9 @@ export function Modal({
     return null;
   }
 
-  const backdropClasses = combineStyles(modalVariants.backdrop, className);
+  const backdropClasses = cn(modalVariants.backdrop, className);
 
-  const contentClasses = combineStyles(
+  const contentClasses = cn(
     modalVariants.content,
     modalSizeClasses[size],
     contentClassName
@@ -49,7 +49,9 @@ export function Modal({
   return (
     <div className={backdropClasses}>
       <div className={contentClasses}>
-        {showCloseButton && <CloseButton onClick={onClose} aria-label="Close modal" />}
+        {showCloseButton && (
+          <Button variant="close" onClick={onClose} aria-label="Close modal" />
+        )}
         {title && (
           <div className="p-6 pb-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-800">{title}</h2>

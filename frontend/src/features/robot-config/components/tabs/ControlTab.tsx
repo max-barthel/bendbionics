@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BendingIcon, RotationIcon, UploadIcon } from '@/components/icons';
-import { PrimaryButton, Typography } from '@/components/ui';
+import { Button, Typography } from '@/components/ui';
 import { AngleControlPanel } from '@/features/shared/components/AngleControlPanel';
 import { CollapsibleSection } from '@/features/shared/components/CollapsibleSection';
 import type { RobotState } from '@/types/robot';
@@ -37,7 +37,8 @@ export const ControlTab: React.FC<ControlTabProps> = ({
         <Typography variant="body" color="gray" className="text-sm mb-12">
           Adjust angles to control movement
         </Typography>
-        <PrimaryButton
+        <Button
+          variant="primary"
           onClick={() => onShowPresetManager?.()}
           className="w-full mt-6 px-4 py-2 justify-center"
         >
@@ -45,7 +46,7 @@ export const ControlTab: React.FC<ControlTabProps> = ({
             <UploadIcon className="w-4 h-4" />
             Preset Manager
           </div>
-        </PrimaryButton>
+        </Button>
       </div>
 
       {/* Bending Angles - Main Control */}

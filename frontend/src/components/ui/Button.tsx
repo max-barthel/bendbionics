@@ -7,7 +7,7 @@ import {
   toggleButtonVariants,
   type ComponentSize,
 } from '@/styles/design-tokens';
-import { combineStyles, getTahoeGlassPreset } from '@/styles/tahoe-utils';
+import { cn, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 import React from 'react';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -78,7 +78,7 @@ function Button({
 
   // Handle variant-specific logic
   if (variant === 'primary') {
-    const classes = combineStyles(buttonVariants.primary, className);
+    const classes = cn(buttonVariants.primary, className);
     return (
       <button type={type} onClick={onClick} disabled={isDisabled} className={classes}>
         {children}
@@ -93,14 +93,14 @@ function Button({
     let variantClasses = '';
     if (iconVariant === 'glass') {
       const glassClasses = getTahoeGlassPreset('enhancedButton');
-      variantClasses = combineStyles(glassClasses, 'hover:scale-105');
+      variantClasses = cn(glassClasses, 'hover:scale-105');
     } else if (iconVariant === 'outline') {
       variantClasses = buttonVariants.outline;
     } else {
       variantClasses = buttonVariants.solid;
     }
 
-    const classes = combineStyles(
+    const classes = cn(
       variantClasses,
       iconButtonSizeClasses[size],
       disabled ? 'opacity-50 cursor-not-allowed' : '',
@@ -122,7 +122,7 @@ function Button({
 
   if (variant === 'toggle') {
     const { isOpen = false, direction = 'up-down' } = restProps as ToggleButtonProps;
-    const classes = combineStyles(toggleButtonVariants.panelToggle, className);
+    const classes = cn(toggleButtonVariants.panelToggle, className);
 
     // Determine arrow direction
     let arrowPath: string;
@@ -160,7 +160,7 @@ function Button({
 
   if (variant === 'close') {
     const glassClasses = getTahoeGlassPreset('enhancedButton');
-    const classes = combineStyles(
+    const classes = cn(
       'absolute top-4 right-4 z-10',
       glassClasses,
       closeButtonSizeClasses[size],
@@ -177,7 +177,7 @@ function Button({
         aria-label={ariaLabel ?? 'Close'}
       >
         <svg
-          className={combineStyles(
+          className={cn(
             iconSizeClasses[size],
             'text-gray-600 transition-transform duration-300'
           )}
@@ -200,7 +200,7 @@ function Button({
   const hasCustomTextColor = className.includes('text-');
   const baseClasses = hasCustomTextColor ? 'font-medium' : 'font-medium text-gray-800';
   const tahoeGlassClasses = getTahoeGlassPreset('button');
-  const classes = combineStyles(
+  const classes = cn(
     baseClasses,
     tahoeGlassClasses,
     buttonSizeClasses[size],

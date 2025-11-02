@@ -1,5 +1,5 @@
 import { hoverStates } from '@/styles/design-tokens';
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 import TahoeGlass from '@/components/ui/TahoeGlass';
 import { useAppState } from '@/providers';
 import { UserAvatarIcon } from './UserAvatarIcon';
@@ -9,7 +9,7 @@ export function UserDropdownMenu() {
 
   return (
     <TahoeGlass className="absolute top-full right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible">
-      <div className={combineStyles('p-3 border-b border-white/20')}>
+      <div className={cn('p-3 border-b border-white/20')}>
         <div className="flex items-center gap-2">
           <UserAvatarIcon size="w-8 h-8" />
           <div>
@@ -23,7 +23,7 @@ export function UserDropdownMenu() {
       <div className="p-1">
         <button
           onClick={() => appState.setShowUserSettings(true)}
-          className={combineStyles(
+          className={cn(
             'w-full text-left px-3 py-2 text-sm text-gray-700 rounded-lg transition-colors',
             hoverStates.menu
           )}
@@ -35,7 +35,7 @@ export function UserDropdownMenu() {
             appState.logout();
             appState.navigate('/');
           }}
-          className={combineStyles(
+          className={cn(
             'w-full text-left px-3 py-2 text-sm text-gray-700 rounded-lg transition-colors',
             hoverStates.menu
           )}

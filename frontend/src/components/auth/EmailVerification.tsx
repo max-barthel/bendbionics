@@ -3,8 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { modalVariants } from '@/styles/design-tokens';
 import { authAPI } from '@/api/auth';
 import { useAuth } from '@/providers/AuthProvider';
-import { PrimaryButton } from '@/components/ui';
-import Button from '@/components/ui/Button';
+import { Button } from '@/components/ui';
 import Typography from '@/components/ui/Typography';
 
 interface VerificationState {
@@ -207,17 +206,17 @@ export const EmailVerification: React.FC = () => {
           <div className="space-y-3">
             {(verificationState.status === 'success' ||
               verificationState.status === 'already_verified') && (
-              <PrimaryButton onClick={handleContinue} className="w-full">
+              <Button variant="primary" onClick={handleContinue} className="w-full">
                 Continue to Sign In
-              </PrimaryButton>
+              </Button>
             )}
 
             {(verificationState.status === 'error' ||
               verificationState.status === 'expired') && (
               <>
-                <PrimaryButton onClick={handleResendVerification} className="w-full">
+                <Button variant="primary" onClick={handleResendVerification} className="w-full">
                   Request New Verification Email
-                </PrimaryButton>
+                </Button>
 
                 <Button onClick={handleContinue} size="lg" className="w-full">
                   Back to Sign In

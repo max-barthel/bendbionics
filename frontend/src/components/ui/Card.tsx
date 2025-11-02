@@ -1,6 +1,6 @@
 import React from 'react';
 import { shadows } from '@/styles/design-tokens';
-import { combineStyles } from '@/styles/tahoe-utils';
+import { cn } from '@/styles/tahoe-utils';
 import TahoeGlass from './TahoeGlass';
 
 type CardProps = {
@@ -9,7 +9,7 @@ type CardProps = {
 };
 
 function Card({ children, className = '' }: CardProps) {
-  const classes = combineStyles('p-8', shadows.glass, className);
+  const classes = cn('p-8', shadows.glass, className);
 
   return (
     <TahoeGlass data-testid="card" className={classes} variant="enhanced" size="lg">
