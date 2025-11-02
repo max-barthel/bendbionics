@@ -1,10 +1,11 @@
+import { useInputBehavior } from '@/features/shared';
 import { inputSizeClasses, type ComponentSize } from '@/styles/design-tokens';
 import {
   combineStyles,
   getFloatingLabelStyles,
   getTahoeGlassPreset,
 } from '@/styles/tahoe-utils';
-import React, { useId, useState } from 'react';
+import React, { useId } from 'react';
 
 type InputType = 'text' | 'number' | 'password' | 'email';
 
@@ -84,38 +85,28 @@ function FloatingLabel({
   );
 }
 
-// Custom hook for input state
-function useInputState() {
-  const [isFocused, setIsFocused] = useState(false);
-  return { isFocused, setIsFocused };
-}
-
-// Custom hook for input focus handlers
-function useInputFocusHandlers(
-  setIsFocused: (focused: boolean) => void,
-  onFocus?: () => void,
-  onBlur?: () => void
-) {
-  const handleFocus = () => {
-    setIsFocused(true);
-    onFocus?.();
-  };
-  const handleBlur = () => {
-    setIsFocused(false);
-    onBlur?.();
-  };
-  return { handleFocus, handleBlur };
-}
-
 // Custom hook for input state and styling
 function useInputStateAndStyling(
   size: ComponentSize,
   error?: string,
-  className?: string
+  className?: string,
+  onFocus?: () => void,
+  onBlur?: () => void
 ) {
-  const { isFocused, setIsFocused } = useInputState();
+  // Build options object conditionally to satisfy exactOptionalPropertyTypes
+  const behaviorOptions: Parameters<typeof useInputBehavior>[0] = {
+    ...(onFocus && { onFocus }),
+    ...(onBlur && { onBlur }),
+  };
+  const inputBehavior = useInputBehavior(behaviorOptions);
   const classes = getInputClasses(size, error, className);
-  return { isFocused, setIsFocused, classes };
+  return {
+    isFocused: inputBehavior.isFocused,
+    setIsFocused: inputBehavior.setIsFocused,
+    classes,
+    handleFocus: inputBehavior.handleFocus,
+    handleBlur: inputBehavior.handleBlur,
+  };
 }
 
 // Custom hook for input value and float logic
@@ -146,13 +137,10 @@ function Input({
   // Ensure label is correctly associated even if no id is passed in
   const reactGeneratedId = useId();
   const inputId = id ?? `input-${reactGeneratedId}`;
-  const { isFocused, setIsFocused, classes } = useInputStateAndStyling(
+  const { isFocused, classes, handleFocus, handleBlur } = useInputStateAndStyling(
     size,
     error,
-    className
-  );
-  const { handleFocus, handleBlur } = useInputFocusHandlers(
-    setIsFocused,
+    className,
     onFocus,
     onBlur
   );

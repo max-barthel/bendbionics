@@ -1,5 +1,5 @@
 import { Button, FormField, FormMessage, PrimaryButton } from '@/components/ui';
-import { useAsyncOperation, useUnifiedErrorHandler } from '@/features/shared';
+import { useFormFields, useUnifiedErrorHandler } from '@/features/shared';
 import { useAuth } from '@/providers';
 import { validatePassword, validatePasswordMatch } from '@/utils/passwordValidation';
 import { useState } from 'react';
@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthFormContainer } from './AuthFormContainer';
 import { AuthFormFooter } from './AuthFormFooter';
 import { AuthFormHeader } from './AuthFormHeader';
+import { useAuthForm } from './hooks/useAuthForm';
 
 interface RegisterFormProps {
   onSwitchToLogin: () => void;
@@ -17,10 +18,10 @@ const RegisterFormFields: React.FC<{
   email: string;
   password: string;
   confirmPassword: string;
-  setUsername: (value: string) => void;
-  setEmail: (value: string) => void;
-  setPassword: (value: string) => void;
-  setConfirmPassword: (value: string) => void;
+  setUsername: (value: string | number) => void;
+  setEmail: (value: string | number) => void;
+  setPassword: (value: string | number) => void;
+  setConfirmPassword: (value: string | number) => void;
 }> = ({
   username,
   email,
@@ -37,7 +38,7 @@ const RegisterFormFields: React.FC<{
       label="Username"
       type="text"
       value={username}
-      onChange={(value: string | number) => setUsername(String(value))}
+      onChange={setUsername}
       placeholder="Choose a username"
       required
     />
@@ -47,7 +48,7 @@ const RegisterFormFields: React.FC<{
       label="Email"
       type="email"
       value={email}
-      onChange={(value: string | number) => setEmail(String(value))}
+      onChange={setEmail}
       placeholder="your.email@example.com"
       required
     />
@@ -57,7 +58,7 @@ const RegisterFormFields: React.FC<{
       label="Password"
       type="password"
       value={password}
-      onChange={(value: string | number) => setPassword(String(value))}
+      onChange={setPassword}
       placeholder="Enter your password"
       required
       helperText="Must be at least 8 characters long"
@@ -68,7 +69,7 @@ const RegisterFormFields: React.FC<{
       label="Confirm Password"
       type="password"
       value={confirmPassword}
-      onChange={(value: string | number) => setConfirmPassword(String(value))}
+      onChange={setConfirmPassword}
       placeholder="Confirm your password"
       required
     />
@@ -78,17 +79,55 @@ const RegisterFormFields: React.FC<{
 export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Manage form fields with useFormFields hook
+  const fields = useFormFields([
+    { name: 'username', initialValue: '' },
+    { name: 'email', initialValue: '' },
+    { name: 'password', initialValue: '' },
+    { name: 'confirmPassword', initialValue: '' },
+  ]);
+
+  const usernameField = fields.getFieldByName('username')!;
+  const emailField = fields.getFieldByName('email')!;
+  const passwordField = fields.getFieldByName('password')!;
+  const confirmPasswordField = fields.getFieldByName('confirmPassword')!;
 
   // Use unified error handler for validation errors (shown before async operation)
   const { showError } = useUnifiedErrorHandler();
 
-  // Use async operation hook for the actual registration
-  const { isLoading, error, execute } = useAsyncOperation<{ message: string }>({
+  // Use useAuthForm hook for consistent auth form handling
+  const { isLoading, error, handleSubmit } = useAuthForm<{ message: string }>({
+    onSubmit: async () => {
+      const values = fields.getValues();
+      return await register({
+        username: values['username'] ?? '',
+        email: values['email'] ?? '',
+        password: values['password'] ?? '',
+      });
+    },
+    validate: () => {
+      const values = fields.getValues();
+
+      // Validate passwords match
+      const password = values['password'] ?? '';
+      const confirmPassword = values['confirmPassword'] ?? '';
+      const matchValidation = validatePasswordMatch(password, confirmPassword);
+      if (!matchValidation.isValid && matchValidation.error) {
+        showError('validation', matchValidation.error);
+        return false;
+      }
+
+      // Validate password strength
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid && passwordValidation.error) {
+        showError('validation', passwordValidation.error);
+        return false;
+      }
+
+      return true;
+    },
     onSuccess: result => {
       // Use the message from the backend (environment-aware)
       setSuccess(result.message);
@@ -98,28 +137,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate passwords match
-    const matchValidation = validatePasswordMatch(password, confirmPassword);
-    if (!matchValidation.isValid && matchValidation.error) {
-      showError('validation', matchValidation.error);
-      return;
-    }
-
-    // Validate password strength
-    const passwordValidation = validatePassword(password);
-    if (!passwordValidation.isValid && passwordValidation.error) {
-      showError('validation', passwordValidation.error);
-      return;
-    }
-
-    await execute(async () => {
-      return await register({ username, email, password });
-    });
-  };
-
   return (
     <AuthFormContainer>
       <AuthFormHeader
@@ -127,13 +144,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
         description="Join the BendBionics community"
       />
 
-      <form
-        onSubmit={e => {
-          e.preventDefault();
-          void handleSubmit(e);
-        }}
-        className="space-y-4"
-      >
+      <form onSubmit={handleSubmit} className="space-y-4">
         {error.visible && (
           <FormMessage message={error.message} type="error" variant="standard" />
         )}
@@ -149,14 +160,14 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
         )}
 
         <RegisterFormFields
-          username={username}
-          email={email}
-          password={password}
-          confirmPassword={confirmPassword}
-          setUsername={setUsername}
-          setEmail={setEmail}
-          setPassword={setPassword}
-          setConfirmPassword={setConfirmPassword}
+          username={usernameField.value}
+          email={emailField.value}
+          password={passwordField.value}
+          confirmPassword={confirmPasswordField.value}
+          setUsername={usernameField.setValue}
+          setEmail={emailField.setValue}
+          setPassword={passwordField.setValue}
+          setConfirmPassword={confirmPasswordField.setValue}
         />
 
         <PrimaryButton type="submit" className="w-full" disabled={isLoading}>

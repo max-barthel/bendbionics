@@ -1,3 +1,4 @@
+import { useInputBehavior } from '@/features/shared';
 import { numberInputSizeClasses, type ComponentSize } from '@/styles/design-tokens';
 import { combineStyles, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 import React, { useEffect, useState } from 'react';
@@ -74,23 +75,31 @@ function FloatingLabel({ placeholder }: { readonly placeholder: string }) {
 }
 
 // Custom hook for input state management
-function useInputState(value: number) {
+function useTahoeInputState(value: number) {
   const [inputValue, setInputValue] = useState(value.toString());
-  const [isFocused, setIsFocused] = useState(false);
+  const inputBehavior = useInputBehavior();
 
   useEffect(() => {
-    if (!isFocused) {
+    if (!inputBehavior.isFocused) {
       setInputValue(value.toString());
     }
-  }, [value, isFocused]);
+  }, [value, inputBehavior.isFocused]);
 
-  return { inputValue, setInputValue, isFocused, setIsFocused };
+  return {
+    inputValue,
+    setInputValue,
+    isFocused: inputBehavior.isFocused,
+    setIsFocused: inputBehavior.setIsFocused,
+    handleFocus: inputBehavior.handleFocus,
+    handleBlur: inputBehavior.handleBlur,
+  };
 }
 
 // Input handlers hook
-function useInputHandlers(params: {
+function useTahoeInputHandlers(params: {
   setInputValue: React.Dispatch<React.SetStateAction<string>>;
-  setIsFocused: React.Dispatch<React.SetStateAction<boolean>>;
+  handleFocus: () => void;
+  handleBlur: () => void;
   value: number;
   onChange: (value: number) => void;
   min: number | undefined;
@@ -98,8 +107,17 @@ function useInputHandlers(params: {
   precision: number;
   onBlur?: () => void;
 }) {
-  const { setInputValue, setIsFocused, value, onChange, min, max, precision, onBlur } =
-    params;
+  const {
+    setInputValue,
+    handleFocus: baseHandleFocus,
+    handleBlur: baseHandleBlur,
+    value,
+    onChange,
+    min,
+    max,
+    precision,
+    onBlur,
+  } = params;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -111,7 +129,7 @@ function useInputHandlers(params: {
   };
 
   const handleBlur = (inputValue: string) => {
-    setIsFocused(false);
+    baseHandleBlur();
     if (inputValue === '' || inputValue === '-') {
       setInputValue(value.toString());
     }
@@ -119,15 +137,13 @@ function useInputHandlers(params: {
     onBlur?.();
   };
 
-  const handleFocus = () => setIsFocused(true);
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.currentTarget.blur();
     }
   };
 
-  return { handleInputChange, handleBlur, handleFocus, handleKeyDown };
+  return { handleInputChange, handleBlur, handleFocus: baseHandleFocus, handleKeyDown };
 }
 
 // Input field component
@@ -184,18 +200,28 @@ function useTahoeNumberInput(
   precision: number = DEFAULT_PRECISION,
   onBlur?: () => void
 ) {
-  const { inputValue, setInputValue, isFocused, setIsFocused } = useInputState(value);
+  const {
+    inputValue,
+    setInputValue,
+    isFocused,
+    handleFocus: baseHandleFocus,
+    handleBlur: baseHandleBlur,
+  } = useTahoeInputState(value);
+
+  // Build options object conditionally to satisfy exactOptionalPropertyTypes
+  const handlerParams: Parameters<typeof useTahoeInputHandlers>[0] = {
+    setInputValue,
+    handleFocus: baseHandleFocus,
+    handleBlur: baseHandleBlur,
+    value,
+    onChange,
+    min,
+    max,
+    precision,
+    ...(onBlur && { onBlur }),
+  };
   const { handleInputChange, handleBlur, handleFocus, handleKeyDown } =
-    useInputHandlers({
-      setInputValue,
-      setIsFocused,
-      value,
-      onChange,
-      min,
-      max,
-      precision,
-      ...(onBlur && { onBlur }),
-    });
+    useTahoeInputHandlers(handlerParams);
 
   const tahoeGlassClasses = getTahoeGlassPreset('numberInputField');
 

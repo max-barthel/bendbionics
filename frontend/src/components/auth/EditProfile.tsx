@@ -1,9 +1,12 @@
 import { Button, Input, Typography } from '@/components/ui';
-import { useAsyncOperation, useUnifiedErrorHandler } from '@/features/shared';
+import {
+  useAsyncOperation,
+  useFormFields,
+  useUnifiedErrorHandler,
+} from '@/features/shared';
 import { useAuth } from '@/providers/AuthProvider';
 import { buttonVariants } from '@/styles/design-tokens';
 import { validatePassword, validatePasswordMatch } from '@/utils/passwordValidation';
-import { useState } from 'react';
 
 interface EditProfileProps {
   onCancel: () => void;
@@ -13,12 +16,20 @@ interface EditProfileProps {
 export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess }) => {
   const { user, updateProfile } = useAuth();
 
-  // Edit form state
-  const [username, setUsername] = useState(user?.username || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  // Manage form fields with useFormFields hook
+  const fields = useFormFields([
+    { name: 'username', initialValue: user?.username || '' },
+    { name: 'email', initialValue: user?.email || '' },
+    { name: 'currentPassword', initialValue: '' },
+    { name: 'newPassword', initialValue: '' },
+    { name: 'confirmPassword', initialValue: '' },
+  ]);
+
+  const usernameField = fields.getFieldByName('username')!;
+  const emailField = fields.getFieldByName('email')!;
+  const currentPasswordField = fields.getFieldByName('currentPassword')!;
+  const newPasswordField = fields.getFieldByName('newPassword')!;
+  const confirmPasswordField = fields.getFieldByName('confirmPassword')!;
 
   // Use unified error handler for validation errors (shown before async operation)
   const { showError } = useUnifiedErrorHandler();
@@ -32,7 +43,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
     onSuccess: () => {
       // If email was changed, show verification message
       let message = 'Profile updated successfully!';
-      if (email !== user?.email) {
+      if (emailField.value !== user?.email) {
         message =
           'Profile updated! Please check the server logs for your verification link.';
       }
@@ -42,6 +53,15 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const values = fields.getValues();
+
+    // Extract values with defaults to avoid undefined issues
+    const newPassword = values['newPassword'] ?? '';
+    const confirmPassword = values['confirmPassword'] ?? '';
+    const currentPassword = values['currentPassword'] ?? '';
+    const username = values['username'] ?? '';
+    const email = values['email'] ?? '';
 
     // Validate password confirmation if changing password
     if (newPassword) {
@@ -123,8 +143,8 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
         <Input
           id="username"
           type="text"
-          value={username}
-          onChange={(value: string | number) => setUsername(String(value))}
+          value={usernameField.value}
+          onChange={usernameField.setValue}
           placeholder="Enter username"
           className="w-full"
         />
@@ -137,12 +157,12 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
         <Input
           id="email"
           type="email"
-          value={email}
-          onChange={(value: string | number) => setEmail(String(value))}
+          value={emailField.value}
+          onChange={emailField.setValue}
           placeholder="Enter email"
           className="w-full"
         />
-        {email !== user?.email && (
+        {emailField.value !== user?.email && (
           <p className="text-xs text-orange-600 mt-1">
             Changing email will require re-verification
           </p>
@@ -165,14 +185,14 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
             <Input
               id="newPassword"
               type="password"
-              value={newPassword}
-              onChange={(value: string | number) => setNewPassword(String(value))}
+              value={newPasswordField.value}
+              onChange={newPasswordField.setValue}
               placeholder="Enter new password"
               className="w-full"
             />
           </div>
 
-          {newPassword && (
+          {newPasswordField.value && (
             <div>
               <label
                 htmlFor="confirmPassword"
@@ -183,8 +203,8 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
               <Input
                 id="confirmPassword"
                 type="password"
-                value={confirmPassword}
-                onChange={(value: string | number) => setConfirmPassword(String(value))}
+                value={confirmPasswordField.value}
+                onChange={confirmPasswordField.setValue}
                 placeholder="Confirm new password"
                 className="w-full"
               />
@@ -204,8 +224,8 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
           <Input
             id="currentPassword"
             type="password"
-            value={currentPassword}
-            onChange={(value: string | number) => setCurrentPassword(String(value))}
+            value={currentPasswordField.value}
+            onChange={currentPasswordField.setValue}
             placeholder="Enter current password to confirm"
             className="w-full"
           />

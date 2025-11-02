@@ -6,28 +6,39 @@ import {
   type PCCResponse,
   type RetryConfig,
 } from '@/api/client';
+import type { ErrorState } from './useUnifiedErrorHandler';
+import { useAsyncOperation } from './useAsyncOperation';
 
 interface UseRetryAPIState<T> {
   data: T | null;
-  loading: boolean;
-  error: string | null;
 }
 
 interface UseRetryAPIReturn<T> extends UseRetryAPIState<T> {
+  loading: boolean;
+  error: ErrorState;
   execute: (params: PCCParams, retryConfig?: Partial<RetryConfig>) => Promise<T | null>;
   reset: () => void;
 }
 
 /**
  * Hook for making PCC API calls with retry logic
+ *
+ * Refactored to use useAsyncOperation internally for consistent error handling
+ * via useUnifiedErrorHandler. This ensures all async operations follow the same
+ * error handling patterns.
  */
 export function useRetryAPI<T = PCCResponse>(
   initialRetryConfig?: Partial<RetryConfig>
 ): UseRetryAPIReturn<T> {
-  const [state, setState] = useState<UseRetryAPIState<T>>({
-    data: null,
-    loading: false,
-    error: null,
+  const [data, setData] = useState<T | null>(null);
+
+  const { isLoading, error, execute: executeAsync, hideError } = useAsyncOperation<T>({
+    onSuccess: result => {
+      setData(result as T);
+    },
+    onStart: () => {
+      // Clear data on new execution attempt
+    },
   });
 
   const execute = useCallback(
@@ -37,49 +48,24 @@ export function useRetryAPI<T = PCCResponse>(
     ): Promise<T | null> => {
       const config = { ...defaultRetryConfig, ...initialRetryConfig, ...retryConfig };
 
-      setState(prev => ({
-        ...prev,
-        loading: true,
-        error: null,
-      }));
+      const result = await executeAsync(async () => {
+        return (await robotAPI.computePCC(params, config)) as T;
+      });
 
-      try {
-        const result = await robotAPI.computePCC(params, config);
-        setState(prev => ({
-          ...prev,
-          data: result as T,
-          loading: false,
-          error: null,
-        }));
-        return result as T;
-      } catch (error: unknown) {
-        const errorMessage =
-          (error as { response?: { data?: { detail?: string } }; message?: string })
-            ?.response?.data?.detail ??
-          (error as { response?: { data?: { detail?: string } }; message?: string })
-            ?.message ??
-          'An error occurred';
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: errorMessage,
-        }));
-        return null;
-      }
+      return result ?? null;
     },
-    [initialRetryConfig]
+    [executeAsync, initialRetryConfig]
   );
 
   const reset = useCallback(() => {
-    setState({
-      data: null,
-      loading: false,
-      error: null,
-    });
-  }, []);
+    setData(null);
+    hideError();
+  }, [hideError]);
 
   return {
-    ...state,
+    data,
+    loading: isLoading,
+    error,
     execute,
     reset,
   };

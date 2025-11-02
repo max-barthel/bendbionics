@@ -14,8 +14,15 @@ export interface UseAuthFormOptions<TResult = void> {
   /**
    * Optional validation function called before submission
    * Should return true if validation passes, false otherwise
+   * Can also return a Promise<boolean> for async validation
    */
-  readonly validate?: () => boolean;
+  readonly validate?: () => boolean | Promise<boolean>;
+
+  /**
+   * Optional validation error handler (for showing validation errors before async operation)
+   * If provided, validation errors will be shown via this handler instead of blocking submission
+   */
+  readonly onValidationError?: (error: string) => void;
 
   /**
    * Success callback invoked after successful submission
@@ -86,12 +93,13 @@ export function useAuthForm<TResult = void>(
   const {
     onSubmit,
     validate,
+    onValidationError,
     onSuccess,
     onStart,
     useAuthErrorHandler = true,
   } = options;
 
-  // Create separate error handler for auth-specific errors
+  // Create separate error handler for auth-specific errors and validation
   const errorHandler = useUnifiedErrorHandler();
 
   // Build options object conditionally to satisfy exactOptionalPropertyTypes
@@ -113,13 +121,21 @@ export function useAuthForm<TResult = void>(
       e.preventDefault();
 
       // Run validation if provided
-      if (validate && !validate()) {
-        return;
+      if (validate) {
+        const validationResult = await Promise.resolve(validate());
+        if (!validationResult) {
+          // If validation fails and onValidationError is provided, use it
+          // Otherwise, validation failure just blocks submission
+          if (onValidationError) {
+            onValidationError('Validation failed. Please check your input.');
+          }
+          return;
+        }
       }
 
       await execute(onSubmit);
     },
-    [validate, execute, onSubmit]
+    [validate, onValidationError, execute, onSubmit]
   );
 
   return {
