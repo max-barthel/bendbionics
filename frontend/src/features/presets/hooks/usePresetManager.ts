@@ -1,24 +1,10 @@
+import { authAPI, presetAPI } from '@/api/auth';
+import { ERROR_MESSAGES } from '@/constants/errorMessages';
+import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
+import { useAuth } from '@/providers';
+import type { CreatePresetRequest, Preset } from '@/types';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { CreatePresetRequest, Preset } from '@/types';
-import { authAPI, presetAPI } from '@/api/auth';
-import { useAuth } from '@/providers';
-import { ERROR_MESSAGES } from '@/constants/errorMessages';
-import { HTTP_STATUS } from '@/constants/httpStatus';
-
-// Type guard for error with response
-const isErrorWithResponse = (
-  error: unknown
-): error is { response: { status: number; data?: unknown } } => {
-  return (
-    error !== null &&
-    typeof error === 'object' &&
-    'response' in error &&
-    error.response !== null &&
-    typeof error.response === 'object' &&
-    'status' in error.response
-  );
-};
 
 export function usePresetManager(currentConfiguration: Record<string, unknown>) {
   const { user } = useAuth();
@@ -34,20 +20,47 @@ export function usePresetManager(currentConfiguration: Record<string, unknown>) 
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
 
+  // Use unified error handler for API errors
+  const { handleApiError } = useUnifiedErrorHandler({
+    autoHide: false, // Manual control of error display
+    onError: errorState => {
+      // Set loadError when unified handler detects an error
+      // This maintains backward compatibility with existing components
+      if (errorState.visible && errorState.message) {
+        setLoadError(errorState.message);
+      }
+    },
+  });
+
+  // Helper to extract error message from error object
+  const extractErrorMessage = (err: unknown): string => {
+    const errorObj = err as {
+      response?: { status?: number; data?: { detail?: string } };
+      message?: string;
+    };
+    if (errorObj.response?.data?.detail) {
+      return typeof errorObj.response.data.detail === 'string'
+        ? errorObj.response.data.detail
+        : String(errorObj.response.data.detail);
+    }
+    return errorObj.message ?? 'An unexpected error occurred';
+  };
+
   const loadPresets = useCallback(async () => {
     if (!user) {
       return;
     }
 
     setIsLoading(true);
+    setLoadError('');
     try {
       // Test authentication first
       try {
         await authAPI.getCurrentUser();
         // Authentication successful
-      } catch {
+      } catch (err: unknown) {
         // Authentication failed
-        setLoadError('Authentication failed. Please sign in again.');
+        handleApiError(err, 'authentication');
         return;
       }
 
@@ -55,20 +68,15 @@ export function usePresetManager(currentConfiguration: Record<string, unknown>) 
       // Presets loaded successfully
       setPresets(userPresets);
       setLoadError(''); // Clear any previous errors
-    } catch (error: unknown) {
-      // Handle 403 Forbidden - user might not be properly authenticated
-      if (
-        isErrorWithResponse(error) &&
-        error.response.status === HTTP_STATUS.FORBIDDEN
-      ) {
-        setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
-      } else {
-        setLoadError(ERROR_MESSAGES.LOAD_FAILED);
-      }
+    } catch (err: unknown) {
+      handleApiError(err, 'loading presets');
+      // Extract message directly as fallback (unified handler's onError sets loadError asynchronously)
+      const errorMessage = extractErrorMessage(err);
+      setLoadError(errorMessage || ERROR_MESSAGES.LOAD_FAILED);
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, handleApiError]);
 
   useEffect(() => {
     if (user) {
@@ -104,19 +112,22 @@ export function usePresetManager(currentConfiguration: Record<string, unknown>) 
       setShowSaveForm(false);
       void loadPresets(); // Reload presets
     } catch (err: unknown) {
-      const error = err as {
-        response?: { status: number; data?: { detail?: string } };
-      };
-      // Handle 403 Forbidden - user might not be properly authenticated
-      if (error.response?.status === HTTP_STATUS.FORBIDDEN) {
-        setError(ERROR_MESSAGES.AUTH_REQUIRED);
-      } else {
-        setError(error.response?.data?.detail ?? ERROR_MESSAGES.SAVE_FAILED);
-      }
+      handleApiError(err, 'saving preset');
+      // Extract error message for save form display
+      const errorMessage = extractErrorMessage(err);
+      setError(errorMessage || ERROR_MESSAGES.SAVE_FAILED);
     } finally {
       setIsLoading(false);
     }
-  }, [user, presetName, presetDescription, currentConfiguration, navigate, loadPresets]);
+  }, [
+    user,
+    presetName,
+    presetDescription,
+    currentConfiguration,
+    navigate,
+    loadPresets,
+    handleApiError,
+  ]);
 
   const handleEditPreset = useCallback((preset: Preset) => {
     setEditingPreset(preset.id);
@@ -155,37 +166,15 @@ export function usePresetManager(currentConfiguration: Record<string, unknown>) 
         setEditName('');
         setEditDescription('');
       } catch (err: unknown) {
-        const error = err as {
-          response?: { status: number };
-          message?: string;
-        };
-
-        // Handle different error types
-        if (
-          isErrorWithResponse(error) &&
-          error.response.status === HTTP_STATUS.FORBIDDEN
-        ) {
-          setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
-        } else if (
-          isErrorWithResponse(error) &&
-          error.response.status === HTTP_STATUS.NOT_FOUND
-        ) {
-          setLoadError('Preset not found. It may have been deleted.');
-        } else if (
-          isErrorWithResponse(error) &&
-          error.response.status === HTTP_STATUS.INTERNAL_SERVER_ERROR
-        ) {
-          setLoadError('Server error. Please try again later.');
-        } else {
-          setLoadError(
-            `Failed to update preset: ${(error as { message?: string }).message || 'Unknown error'}`
-          );
-        }
+        handleApiError(err, 'updating preset');
+        // Extract error message directly (unified handler's onError sets loadError asynchronously)
+        const errorMessage = extractErrorMessage(err);
+        setLoadError(`Failed to update preset: ${errorMessage}`);
       } finally {
         setIsLoading(false);
       }
     },
-    [editName, editDescription, loadPresets]
+    [editName, editDescription, loadPresets, handleApiError]
   );
 
   const handleDeletePreset = useCallback(
@@ -210,37 +199,15 @@ export function usePresetManager(currentConfiguration: Record<string, unknown>) 
         // Reload presets to update the list
         void loadPresets();
       } catch (err: unknown) {
-        const error = err as {
-          response?: { status: number };
-          message?: string;
-        };
-
-        // Handle different error types
-        if (
-          isErrorWithResponse(error) &&
-          error.response.status === HTTP_STATUS.FORBIDDEN
-        ) {
-          setLoadError(ERROR_MESSAGES.AUTH_REQUIRED);
-        } else if (
-          isErrorWithResponse(error) &&
-          error.response.status === HTTP_STATUS.NOT_FOUND
-        ) {
-          setLoadError('Preset not found. It may have already been deleted.');
-        } else if (
-          isErrorWithResponse(error) &&
-          error.response.status === HTTP_STATUS.INTERNAL_SERVER_ERROR
-        ) {
-          setLoadError('Server error. Please try again later.');
-        } else {
-          setLoadError(
-            `Failed to delete preset: ${(error as { message?: string }).message || 'Unknown error'}`
-          );
-        }
+        handleApiError(err, 'deleting preset');
+        // Extract error message directly (unified handler's onError sets loadError asynchronously)
+        const errorMessage = extractErrorMessage(err);
+        setLoadError(`Failed to delete preset: ${errorMessage}`);
       } finally {
         setIsLoading(false);
       }
     },
-    [user, navigate, loadPresets]
+    [user, navigate, loadPresets, handleApiError]
   );
 
   return {
@@ -274,4 +241,3 @@ export function usePresetManager(currentConfiguration: Record<string, unknown>) 
     navigate,
   };
 }
-
