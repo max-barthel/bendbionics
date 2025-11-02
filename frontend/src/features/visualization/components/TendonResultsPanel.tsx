@@ -1,16 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, PanelContainer, Typography } from '@/components/ui';
 import { tableCellVariants, unitSelectorVariants } from '@/styles/design-tokens';
 import { cn } from '@/styles/tahoe-utils';
 import { getTendonColorClasses } from '@/utils/tendonColors';
 import { convertFromSI } from '@/utils/unitConversions';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // Constants for dynamic height calculations
 const HEIGHT_CONSTANTS = {
   TENDON_CARD_HEIGHT: 80,
   PADDING: 100,
   MIN_HEIGHT: 200,
-  MAX_HEIGHT: 800,
+  MAX_HEIGHT_FACTOR: 0.9, // 90% of viewport height
+  BOTTOM_MARGIN: 16, // Margin from bottom of viewport to avoid scrollbar
+  RIGHT_MARGIN: 16, // Margin from right edge of viewport to avoid scrollbar
 } as const;
 
 type TendonResultsPanelProps = {
@@ -48,6 +50,12 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
 }) => {
   const [unit, setUnit] = useState<LengthUnit>('mm');
   const [panelWidth, setPanelWidth] = useState(384); // Default width (w-96 = 384px)
+  const [panelHeight, setPanelHeight] = useState(400); // Default height
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    currentPanelHeightRef.current = panelHeight;
+  }, [panelHeight]);
   const [isResizing, setIsResizing] = useState(false);
   const [hasHorizontalScroll, setHasHorizontalScroll] = useState(false);
   const [optimalWidth, setOptimalWidth] = useState(384); // Width where no scroll is needed
@@ -55,6 +63,8 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const isAutoAdjustingRef = useRef(false);
+  const isMeasuringHeightRef = useRef(false);
+  const currentPanelHeightRef = useRef(400);
   const lastTendonCountRef = useRef(0);
   const lastSegmentCountRef = useRef(0);
 
@@ -68,6 +78,79 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     const sign = converted >= 0 ? '+' : '';
     return `${sign}${converted.toFixed(2)}`;
   };
+
+  // Measure and update panel height based on table content
+  const measureContentHeight = useCallback(() => {
+    // Prevent recursive updates
+    if (isMeasuringHeightRef.current || !contentRef.current || !isVisible) return;
+
+    isMeasuringHeightRef.current = true;
+
+    // Use requestAnimationFrame to batch DOM reads/writes and prevent loops
+    requestAnimationFrame(() => {
+      if (!contentRef.current) {
+        isMeasuringHeightRef.current = false;
+        return;
+      }
+
+      // Measure the actual table element instead of the scrollable container
+      const table = contentRef.current.querySelector('table');
+      if (!table) {
+        isMeasuringHeightRef.current = false;
+        return;
+      }
+
+      // Get the actual rendered height of the table
+      const tableHeight = table.getBoundingClientRect().height;
+
+      // Get the unit selector height (the div above the table)
+      const unitSelector = contentRef.current.querySelector(
+        '.flex.items-center.justify-between'
+      );
+      const unitSelectorHeight = unitSelector
+        ? unitSelector.getBoundingClientRect().height
+        : 0;
+
+      // Add padding: content container has p-4 pl-6 pb-6
+      // Top padding: 16px (p-4)
+      // Bottom padding: 24px (pb-6)
+      // Space between unit selector and table: ~16px (space-y-4)
+      const topPadding = 16;
+      const bottomPadding = 24;
+      const spacing = 16;
+      const panelContainerPadding = 16; // PanelContainer padding/borders
+      const closeButtonSpace = 12; // Space for toggle button
+
+      const calculatedHeight =
+        unitSelectorHeight +
+        spacing +
+        tableHeight +
+        topPadding +
+        bottomPadding +
+        panelContainerPadding +
+        closeButtonSpace;
+
+      // Calculate max height based on viewport (90% of window height) minus bottom margin
+      const maxHeight =
+        window.innerHeight * HEIGHT_CONSTANTS.MAX_HEIGHT_FACTOR -
+        HEIGHT_CONSTANTS.BOTTOM_MARGIN;
+
+      // Apply min/max constraints
+      const clampedHeight = Math.min(
+        Math.max(calculatedHeight, HEIGHT_CONSTANTS.MIN_HEIGHT),
+        maxHeight
+      );
+
+      // Only update if height changed significantly (threshold to prevent loops)
+      const heightDifference = Math.abs(currentPanelHeightRef.current - clampedHeight);
+      if (heightDifference > 2) {
+        currentPanelHeightRef.current = clampedHeight;
+        setPanelHeight(clampedHeight);
+      }
+
+      isMeasuringHeightRef.current = false;
+    });
+  }, [isVisible]);
 
   // Simple scroll check without debouncing to avoid infinite loops
   const checkHorizontalScroll = useCallback(() => {
@@ -120,10 +203,14 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     (e: MouseEvent) => {
       if (!isResizing || !panelRef.current) return;
 
-      const newWidth = window.innerWidth - e.clientX;
+      // Account for right margin when calculating width
+      const newWidth = window.innerWidth - e.clientX - HEIGHT_CONSTANTS.RIGHT_MARGIN;
       const minWidth = 360;
-      // Use optimal width as max, but don't exceed 80% of screen width
-      const maxWidth = Math.min(optimalWidth, window.innerWidth * 0.8);
+      // Use optimal width as max, but don't exceed 80% of screen width minus right margin
+      const maxWidth = Math.min(
+        optimalWidth,
+        window.innerWidth * 0.8 - HEIGHT_CONSTANTS.RIGHT_MARGIN
+      );
 
       // Always allow resizing within bounds
       if (newWidth >= minWidth && newWidth <= maxWidth) {
@@ -146,19 +233,20 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     setIsResizing(false);
   }, [checkHorizontalScroll]);
 
-  // Check for horizontal scroll on mount and when tendon analysis changes
+  // Check for horizontal scroll and measure height on mount and when tendon analysis changes
   useEffect(() => {
     if (tendonAnalysis && isVisible) {
       // Use setTimeout to ensure DOM is fully rendered
       const timer = setTimeout(() => {
         checkHorizontalScroll();
+        measureContentHeight();
       }, 100);
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [tendonAnalysis, isVisible, checkHorizontalScroll]);
+  }, [tendonAnalysis, isVisible, checkHorizontalScroll, measureContentHeight]);
 
-  // Add ResizeObserver to detect when table content changes
+  // Add ResizeObserver to detect when table content changes (both width and height)
   useEffect(() => {
     if (!contentRef.current || !isVisible) return;
 
@@ -168,6 +256,8 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
 
     resizeObserverRef.current = new ResizeObserver(() => {
       checkHorizontalScroll();
+      // Also measure height when table size changes
+      measureContentHeight();
     });
 
     // Observe the content container and any tables
@@ -182,17 +272,18 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
         resizeObserverRef.current.disconnect();
       }
     };
-  }, [checkHorizontalScroll, isVisible]);
+  }, [checkHorizontalScroll, measureContentHeight, isVisible]);
 
-  // Check on window resize
+  // Check on window resize (both width and height)
   useEffect(() => {
     const handleResize = () => {
       checkHorizontalScroll();
+      measureContentHeight();
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [checkHorizontalScroll]);
+  }, [checkHorizontalScroll, measureContentHeight]);
 
   // Calculate current tendon and segment counts
   const currentTendonCount =
@@ -240,7 +331,10 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
       const calculatedOptimalWidth = Math.max(tableWidth + contentPadding, 360);
 
       const minWidth = 360;
-      const maxAllowed = Math.min(calculatedOptimalWidth, window.innerWidth * 0.8);
+      const maxAllowed = Math.min(
+        calculatedOptimalWidth,
+        window.innerWidth * 0.8 - HEIGHT_CONSTANTS.RIGHT_MARGIN
+      );
       const clamped = Math.max(minWidth, Math.min(maxAllowed, calculatedOptimalWidth));
 
       // Always update to match table size (small threshold to avoid infinite loops)
@@ -290,18 +384,34 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     [tendonAnalysis?.actuation_commands]
   );
 
-  const totalTendons = tendonEntries.length;
+  // Measure height when content structure changes (tendon/segment counts)
+  useEffect(() => {
+    if (!contentRef.current || !isVisible || !tendonAnalysis) return;
 
-  // Memoize dynamic height calculation
-  const dynamicHeight = useMemo(() => {
-    return Math.min(
-      Math.max(
-        totalTendons * HEIGHT_CONSTANTS.TENDON_CARD_HEIGHT + HEIGHT_CONSTANTS.PADDING,
-        HEIGHT_CONSTANTS.MIN_HEIGHT
-      ),
-      HEIGHT_CONSTANTS.MAX_HEIGHT
-    );
-  }, [totalTendons]);
+    // Update refs when counts change
+    const tendonCountChanged = currentTendonCount !== lastTendonCountRef.current;
+    const segmentCountChanged = currentSegmentCount !== lastSegmentCountRef.current;
+
+    if (tendonCountChanged || segmentCountChanged) {
+      lastTendonCountRef.current = currentTendonCount;
+      lastSegmentCountRef.current = currentSegmentCount;
+    }
+
+    // Measure after DOM updates when structure changes
+    const timer = setTimeout(() => {
+      measureContentHeight();
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [
+    tendonAnalysis,
+    isVisible,
+    currentTendonCount,
+    currentSegmentCount,
+    measureContentHeight,
+  ]);
 
   const firstTendonEntry = tendonEntries[0];
 
@@ -339,9 +449,10 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
         )}
         style={{
           width: `${panelWidth}px`,
-          height: isVisible ? `${dynamicHeight}px` : '0',
-          maxHeight: isVisible ? `${dynamicHeight}px` : '0',
-          right: 0,
+          height: isVisible ? `${panelHeight}px` : '0',
+          maxHeight: isVisible ? `${panelHeight}px` : '0',
+          right: `${HEIGHT_CONSTANTS.RIGHT_MARGIN}px`,
+          bottom: `${HEIGHT_CONSTANTS.BOTTOM_MARGIN}px`,
           willChange: isResizing ? 'width' : 'auto',
         }}
         ref={panelRef}
@@ -372,10 +483,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
               />
             )}
             {/* Content */}
-            <div
-              ref={contentRef}
-              className="flex-1 overflow-y-auto p-4 pl-6 pb-6 min-h-0"
-            >
+            <div ref={contentRef} className="flex-1 p-4 pl-6 pb-6 overflow-x-auto">
               <div className="space-y-4">
                 {/* Unit Selection */}
                 <div className="flex items-center justify-between mb-4">
@@ -406,15 +514,19 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                 {/* Tendon Length Changes Table */}
                 {tendonAnalysis?.tendon_analysis?.segment_length_changes && (
                   <div className="overflow-x-auto flex justify-end">
-                    <table className="w-auto border-collapse table-fixed">
+                    <table
+                      className="border-collapse table-fixed"
+                      style={{ width: 'auto' }}
+                    >
+                      <colgroup>
+                        <col style={{ width: '80px' }} />
+                        {tendonEntries.map(([tendonId]) => (
+                          <col key={`col-${tendonId}`} style={{ width: '90px' }} />
+                        ))}
+                      </colgroup>
                       <thead>
                         <tr>
-                          <th
-                            className={cn(
-                              'w-18',
-                              tableCellVariants.headerFirst
-                            )}
-                          >
+                          <th className={cn(tableCellVariants.headerFirst)}>
                             <span className="text-lg font-bold text-gray-600">Δ</span>
                           </th>
                           {tendonEntries.map(([tendonId]) => {
@@ -422,10 +534,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                             return (
                               <th
                                 key={tendonId}
-                                className={cn(
-                                  'w-20',
-                                  tableCellVariants.header
-                                )}
+                                className={cn(tableCellVariants.header)}
                               >
                                 <div className="flex items-center justify-center gap-2">
                                   <div
@@ -445,22 +554,14 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                             const segmentKey = `segment-${segmentIndex + 1}`;
                             return (
                               <tr key={segmentKey}>
-                                <td
-                                  className={cn(
-                                    'w-16',
-                                    tableCellVariants.bodyFirst
-                                  )}
-                                >
+                                <td className={cn(tableCellVariants.bodyFirst)}>
                                   Seg {segmentIndex + 1}
                                 </td>
                                 {tendonAnalysis.tendon_analysis?.segment_length_changes.map(
                                   (tendonLengths, tendonIndex) => (
                                     <td
                                       key={`tendon-${tendonIndex}-segment-${segmentIndex + 1}`}
-                                      className={cn(
-                                        'w-20',
-                                        tableCellVariants.body
-                                      )}
+                                      className={cn(tableCellVariants.body)}
                                     >
                                       {formatLengthChange(
                                         tendonLengths[segmentIndex + 1] ?? 0,
@@ -474,14 +575,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                           })}
                         {/* Totals Row */}
                         <tr className="border-t-2 border-gray-300/60">
-                          <td
-                            className={cn(
-                              'w-16',
-                              tableCellVariants.bodyFirst
-                            )}
-                          >
-                            Total
-                          </td>
+                          <td className={cn(tableCellVariants.bodyFirst)}>Total</td>
                           {tendonEntries.map(([tendonId], tendonIndex) => {
                             // Calculate sum of segments starting from index 1
                             const segmentLengthChanges =
@@ -497,10 +591,7 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                             return (
                               <td
                                 key={tendonId}
-                                className={cn(
-                                  'w-20',
-                                  tableCellVariants.total
-                                )}
+                                className={cn(tableCellVariants.total)}
                               >
                                 {formatLength(totalFromSegments, unit)}
                               </td>

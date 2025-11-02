@@ -170,7 +170,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
           setConfirmPassword={confirmPasswordField.setValue}
         />
 
-        <Button variant="primary" type="submit" className="w-full" disabled={isLoading}>
+        <Button
+          variant="primary"
+          type="submit"
+          className="w-full py-3 justify-center"
+          disabled={isLoading}
+        >
           {isLoading ? 'Creating account...' : 'Create Account'}
         </Button>
       </form>
