@@ -121,7 +121,7 @@ function Button({
   }
 
   if (variant === 'toggle') {
-    const { isOpen = false, direction = 'up-down' } = restProps as ToggleButtonProps;
+    const { isOpen = false, direction = 'up-down', ...toggleRestProps } = restProps as ToggleButtonProps;
     const classes = cn(toggleButtonVariants.panelToggle, className);
 
     // Determine arrow direction
@@ -139,7 +139,7 @@ function Button({
         disabled={isDisabled}
         className={classes}
         aria-label={ariaLabel}
-        {...restProps}
+        {...toggleRestProps}
       >
         <svg
           className={toggleButtonVariants.panelToggleIcon}
