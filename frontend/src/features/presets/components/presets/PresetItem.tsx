@@ -15,6 +15,7 @@ interface PresetItemProps {
   readonly onSaveEdit: (presetId: number) => void;
   readonly onCancelEdit: () => void;
   readonly onDelete: (presetId: number) => void;
+  readonly isPublic?: boolean;
 }
 
 export function PresetItem({
@@ -30,9 +31,10 @@ export function PresetItem({
   onSaveEdit,
   onCancelEdit,
   onDelete,
+  isPublic = false,
 }: Readonly<PresetItemProps>) {
   return (
-    <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
+    <div className="p-6 bg-white/95 backdrop-blur-sm border border-gray-200/80 rounded-xl shadow-2xl shadow-black/10 hover:shadow-2xl hover:shadow-black/15 transition-all duration-300 transform-gpu hover:-translate-y-0.5">
       {isEditing ? (
         // Edit form
         <div className="space-y-4">
@@ -68,11 +70,12 @@ export function PresetItem({
               className="w-full"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-between">
             <Button
-              variant="primary"
+              size="sm"
               onClick={() => onSaveEdit(preset.id)}
               disabled={isLoading}
+              className={buttonVariants.load}
             >
               {isLoading ? 'Saving...' : 'Save'}
             </Button>
@@ -80,7 +83,7 @@ export function PresetItem({
               size="sm"
               onClick={onCancelEdit}
               disabled={isLoading}
-              className={buttonVariants.cancel}
+              className={buttonVariants.delete}
             >
               Cancel
             </Button>
@@ -103,7 +106,14 @@ export function PresetItem({
           </div>
           <div className="flex flex-col items-end gap-2 ml-4">
             <Typography variant="body" color="gray" className="text-sm opacity-75">
-              Created: {new Date(preset.created_at).toLocaleDateString()}
+              Created:{' '}
+              {(() => {
+                const date = new Date(preset.created_at);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}.${month}.${year}`;
+              })()}
             </Typography>
             <div className="flex gap-2">
               <Button
@@ -113,20 +123,24 @@ export function PresetItem({
               >
                 Load
               </Button>
-              <Button
-                size="sm"
-                onClick={() => onEdit(preset)}
-                className={buttonVariants.edit}
-              >
-                Edit
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => onDelete(preset.id)}
-                className={buttonVariants.delete}
-              >
-                Delete
-              </Button>
+              {!isPublic && (
+                <>
+                  <Button
+                    size="sm"
+                    onClick={() => onEdit(preset)}
+                    className={buttonVariants.edit}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => onDelete(preset.id)}
+                    className={buttonVariants.delete}
+                  >
+                    Delete
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>

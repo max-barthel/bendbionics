@@ -233,7 +233,15 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
         </div>
       </div>
 
-      <div className="flex gap-2 pt-4">
+      <div className="flex gap-2 pt-4 justify-between">
+        <Button
+          type="submit"
+          size="sm"
+          disabled={isUpdating}
+          className={buttonVariants.load}
+        >
+          {isUpdating ? 'Saving...' : 'Save Changes'}
+        </Button>
         <Button
           type="button"
           size="sm"
@@ -242,14 +250,6 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
           className={buttonVariants.delete}
         >
           Cancel
-        </Button>
-        <Button
-          type="submit"
-          size="sm"
-          disabled={isUpdating}
-          className={buttonVariants.load}
-        >
-          {isUpdating ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>
     </form>

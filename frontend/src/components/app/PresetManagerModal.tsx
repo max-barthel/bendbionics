@@ -15,7 +15,7 @@ export function PresetManagerModal({
     <Modal
       isOpen={appState.showPresetManager}
       onClose={() => appState.setShowPresetManager(false)}
-      size="lg"
+      size="md"
     >
       <PresetManager
         currentConfiguration={appState.currentConfiguration as Record<string, unknown>}

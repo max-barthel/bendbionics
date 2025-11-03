@@ -1,4 +1,5 @@
 import { Button, Input, Typography } from '@/components/ui';
+import { buttonVariants } from '@/styles/design-tokens';
 
 interface PresetFormProps {
   readonly presetName: string;
@@ -8,6 +9,7 @@ interface PresetFormProps {
   readonly onNameChange: (value: string) => void;
   readonly onDescriptionChange: (value: string) => void;
   readonly onSave: () => void;
+  readonly onCancel: () => void;
 }
 
 export function PresetForm({
@@ -18,6 +20,7 @@ export function PresetForm({
   onNameChange,
   onDescriptionChange,
   onSave,
+  onCancel,
 }: Readonly<PresetFormProps>) {
   return (
     <div className="mb-6 p-6 bg-white border border-gray-200 rounded-xl space-y-4 shadow-sm">
@@ -64,9 +67,24 @@ export function PresetForm({
             {error}
           </Typography>
         )}
-        <Button variant="primary" onClick={onSave} disabled={isLoading} className="w-full">
-          {isLoading ? 'Saving...' : 'Save Preset'}
-        </Button>
+        <div className="flex gap-2 justify-between">
+          <Button
+            size="sm"
+            onClick={onSave}
+            disabled={isLoading}
+            className={buttonVariants.load}
+          >
+            {isLoading ? 'Saving...' : 'Save Preset'}
+          </Button>
+          <Button
+            size="sm"
+            onClick={onCancel}
+            disabled={isLoading}
+            className={buttonVariants.delete}
+          >
+            Cancel
+          </Button>
+        </div>
       </div>
     </div>
   );
