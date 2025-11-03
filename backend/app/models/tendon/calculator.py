@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 
 import numpy as np
 
+from .eyelet_math import compute_eyelets_from_origin
 from .types import TendonConfig
 
 
@@ -26,49 +27,26 @@ class TendonCalculator:
             config: Tendon configuration parameters
         """
         self.config = config
-        self._generate_tendon_positions()
-
-    def _generate_tendon_positions(self):
-        """Generate the angular positions of tendons around the coupling
-        element."""
-        # Distribute tendons evenly around the circumference
-        angles = np.linspace(0, 2 * np.pi, self.config.count, endpoint=False)
-
-        # Calculate x, y positions for each tendon at the specified radius
-        self.tendon_positions = []
-        for angle in angles:
-            x = self.config.radius * np.cos(angle)
-            y = self.config.radius * np.sin(angle)
-            z = 0.0  # No vertical offset
-            self.tendon_positions.append(np.array([x, y, z]))
 
     def calculate_tendon_lengths(
         self,
-        coupling_positions: List[np.ndarray],
-        coupling_orientations: List[np.ndarray],
+        coupling_transforms: List[np.ndarray],
     ) -> Dict[str, Any]:
         """
-        Calculate tendon lengths based on coupling element data.
+        Calculate tendon lengths based on coupling element transformation matrices.
 
         Args:
-            coupling_positions: List of 3D positions for each coupling element
-            coupling_orientations: List of 3x3 rotation matrices for each
-            coupling element
+            coupling_transforms: List of 4x4 homogeneous transformation matrices
+                                for each coupling element
 
         Returns:
             Dictionary with tendon analysis results
         """
-        if len(coupling_positions) != len(coupling_orientations):
-            msg = "Positions and orientations must have same length"
-            raise ValueError(msg)
-
-        num_elements = len(coupling_positions)
+        num_elements = len(coupling_transforms)
         num_tendons = self.config.count
 
         # Calculate tendon routing points in global coordinates
-        routing_points = self._calculate_routing_points(
-            coupling_positions, coupling_orientations
-        )
+        routing_points = self._calculate_routing_points(coupling_transforms)
 
         # Calculate tendon lengths between consecutive coupling elements
         segment_lengths = np.zeros((num_tendons, num_elements - 1))
@@ -90,7 +68,7 @@ class TendonCalculator:
         # Calculate length changes (how much each tendon needs to be pulled)
         # Reference is the straight configuration - calculate segment-by-segment deltas
         reference_segment_lengths = self._calculate_reference_segment_lengths(
-            coupling_positions
+            coupling_transforms
         )
 
         # Calculate segment length changes: bent - reference
@@ -117,41 +95,46 @@ class TendonCalculator:
 
     def _calculate_routing_points(
         self,
-        coupling_positions: List[np.ndarray],
-        coupling_orientations: List[np.ndarray],
+        coupling_transforms: List[np.ndarray],
     ) -> np.ndarray:
         """
         Calculate the global 3D positions of tendon routing points.
 
+        Uses the new eyelet math to compute eyelet transformation matrices
+        from each coupling element, then extracts positions.
+
         Args:
-            coupling_positions: List of coupling element positions
-            coupling_orientations: List of coupling element orientations
+            coupling_transforms: List of 4x4 transformation matrices for each
+                                coupling element
 
         Returns:
             Array of routing points for each coupling element and tendon
+            Shape: (num_elements, num_tendons, 3)
         """
-        num_elements = len(coupling_positions)
-        num_tendons = len(self.tendon_positions)
+        num_elements = len(coupling_transforms)
+        num_tendons = self.config.count
 
         routing_points = np.zeros((num_elements, num_tendons, 3))
 
         for i in range(num_elements):
-            position = coupling_positions[i]
-            orientation = coupling_orientations[i]
+            origin_matrix = coupling_transforms[i]
 
+            # Compute eyelet transformation matrices using new eyelet math
+            eyelet_matrices = compute_eyelets_from_origin(
+                origin_matrix, num_tendons, self.config.radius
+            )
+
+            # Extract positions from eyelet transformation matrices
             for j in range(num_tendons):
-                # Get local tendon position
-                local_pos = self.tendon_positions[j]
-
-                # Transform to global coordinates using rotation matrix
-                global_pos = position + orientation @ local_pos
-                routing_points[i, j] = global_pos
+                # Position is stored in translation vector
+                # (first 3 elements of last column)
+                routing_points[i, j] = eyelet_matrices[j][:3, 3]
 
         return routing_points
 
     def _calculate_reference_segment_lengths(
         self,
-        coupling_positions: List[np.ndarray],
+        coupling_transforms: List[np.ndarray],
     ) -> np.ndarray:
         """
         Calculate reference tendon segment lengths for straight configuration.
@@ -161,17 +144,20 @@ class TendonCalculator:
         coupling elements.
 
         Args:
-            coupling_positions: List of coupling element positions
+            coupling_transforms: List of 4x4 transformation matrices for
+                                 coupling elements
 
         Returns:
             Array of reference segment lengths for each tendon and segment
         """
-        num_elements = len(coupling_positions)
+        from app.utils.math_tools import homogeneous_matrix
+
+        num_elements = len(coupling_transforms)
         num_tendons = self.config.count
 
-        # Create straight configuration positions
+        # Create straight configuration transformation matrices
         # All coupling elements at x=0, y=0, with increasing z based on actual geometry
-        straight_positions = []
+        straight_transforms = []
         cumulative_z = 0.0
 
         for i in range(num_elements):
@@ -181,20 +167,21 @@ class TendonCalculator:
                 cumulative_z = 0.0
             else:
                 # Calculate z-distance from previous coupling element
-                prev_pos = coupling_positions[i - 1]
-                curr_pos = coupling_positions[i]
+                prev_pos = coupling_transforms[i - 1][:3, 3]
+                curr_pos = coupling_transforms[i][:3, 3]
                 z_distance = np.linalg.norm(curr_pos - prev_pos)
                 cumulative_z += z_distance
 
-            straight_positions.append(np.array([0.0, 0.0, cumulative_z]))
-
-        # Create identity orientations (no rotation for straight configuration)
-        straight_orientations = [np.eye(3) for _ in range(num_elements)]
+            # Create identity rotation (no rotation for straight configuration)
+            identity_rotation = np.eye(3)
+            straight_position = np.array([0.0, 0.0, cumulative_z])
+            straight_transform = homogeneous_matrix(
+                identity_rotation, straight_position
+            )
+            straight_transforms.append(straight_transform)
 
         # Calculate routing points for straight configuration
-        straight_routing_points = self._calculate_routing_points(
-            straight_positions, straight_orientations
-        )
+        straight_routing_points = self._calculate_routing_points(straight_transforms)
 
         # Calculate segment lengths between consecutive coupling elements
         reference_segment_lengths = np.zeros((num_tendons, num_elements - 1))
