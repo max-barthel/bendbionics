@@ -114,16 +114,18 @@ export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
     <>
       <Modal isOpen={true} onClose={onClose} size="sm">
         {/* Header */}
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200 flex-shrink-0">
             <UserIcon className="w-8 h-8 text-gray-600" />
           </div>
-          <Typography variant="h3" color="primary" className="mb-2 text-gray-800">
-            {isEditing ? 'Edit Profile' : 'Profile'}
-          </Typography>
-          <Typography variant="body" color="gray" className="text-gray-600">
-            {isEditing ? 'Update your account information' : 'Manage your account'}
-          </Typography>
+          <div className="flex flex-col">
+            <Typography variant="h3" color="primary" className="text-gray-800">
+              {isEditing ? 'Edit Profile' : 'Profile'}
+            </Typography>
+            <Typography variant="body" color="gray" className="text-gray-600">
+              {isEditing ? 'Update your account information' : 'Manage your account'}
+            </Typography>
+          </div>
         </div>
 
         {/* Success Message */}
@@ -172,24 +174,34 @@ export const Profile: React.FC<ProfileProps> = ({ onClose }) => {
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                onClick={() => setIsEditing(true)}
-                className={buttonVariants.edit}
-              >
-                Edit Profile
-              </Button>
+            <div className="flex gap-2 justify-between">
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  className={buttonVariants.edit}
+                >
+                  Edit Profile
+                </Button>
+
+                <Button
+                  size="sm"
+                  onClick={confirmDelete}
+                  className={buttonVariants.delete}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <TrashIcon className="w-4 h-4" />
+                    Delete Account
+                  </div>
+                </Button>
+              </div>
 
               <Button
                 size="sm"
-                onClick={confirmDelete}
-                className={buttonVariants.delete}
+                onClick={onClose}
+                className={buttonVariants.outline}
               >
-                <div className="flex items-center justify-center gap-2">
-                  <TrashIcon className="w-4 h-4" />
-                  Delete Account
-                </div>
+                Cancel
               </Button>
             </div>
           </>

@@ -1,6 +1,9 @@
 import { authAPI, presetAPI } from '@/api/auth';
 import { ERROR_MESSAGES } from '@/constants/errorMessages';
-import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
+import {
+  useUnifiedErrorHandler,
+  type ErrorState,
+} from '@/features/shared/hooks/useUnifiedErrorHandler';
 import { useAuth } from '@/providers';
 import type { CreatePresetRequest, Preset } from '@/types';
 import { useCallback, useEffect, useState } from 'react';
@@ -10,7 +13,9 @@ export function usePresetManager(currentConfiguration: Record<string, unknown>) 
   const { user } = useAuth();
   const navigate = useNavigate();
   const [presets, setPresets] = useState<Preset[]>([]);
+  const [publicPresets, setPublicPresets] = useState<Preset[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingPublic, setIsLoadingPublic] = useState(false);
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [presetName, setPresetName] = useState('');
   const [presetDescription, setPresetDescription] = useState('');
@@ -20,16 +25,19 @@ export function usePresetManager(currentConfiguration: Record<string, unknown>) 
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
 
+  // Memoize the onError callback to prevent infinite loops
+  const handleErrorCallback = useCallback((errorState: ErrorState) => {
+    // Set loadError when unified handler detects an error
+    // This maintains backward compatibility with existing components
+    if (errorState.visible && errorState.message) {
+      setLoadError(errorState.message);
+    }
+  }, []);
+
   // Use unified error handler for API errors
   const { handleApiError } = useUnifiedErrorHandler({
     autoHide: false, // Manual control of error display
-    onError: errorState => {
-      // Set loadError when unified handler detects an error
-      // This maintains backward compatibility with existing components
-      if (errorState.visible && errorState.message) {
-        setLoadError(errorState.message);
-      }
-    },
+    onError: handleErrorCallback,
   });
 
   // Helper to extract error message from error object
@@ -66,7 +74,11 @@ export function usePresetManager(currentConfiguration: Record<string, unknown>) 
 
       const userPresets = await presetAPI.getUserPresets();
       // Presets loaded successfully
-      setPresets(userPresets);
+      // Sort presets from newest to oldest
+      const sortedPresets = [...userPresets].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setPresets(sortedPresets);
       setLoadError(''); // Clear any previous errors
     } catch (err: unknown) {
       handleApiError(err, 'loading presets');
@@ -78,11 +90,31 @@ export function usePresetManager(currentConfiguration: Record<string, unknown>) 
     }
   }, [user, handleApiError]);
 
+  const loadPublicPresets = useCallback(async () => {
+    setIsLoadingPublic(true);
+    try {
+      const publicPresetsData = await presetAPI.getPublicPresets();
+      // Sort presets from newest to oldest
+      const sortedPublicPresets = [...publicPresetsData].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setPublicPresets(sortedPublicPresets);
+    } catch (err: unknown) {
+      // Silently fail for public presets - don't show error to user
+      console.error('Failed to load public presets:', err);
+      setPublicPresets([]);
+    } finally {
+      setIsLoadingPublic(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
       void loadPresets();
     }
-  }, [user, loadPresets]);
+    // Always load public presets, regardless of auth status
+    void loadPublicPresets();
+  }, [user, loadPresets, loadPublicPresets]);
 
   const handleSavePreset = useCallback(async () => {
     if (!user) {
@@ -213,7 +245,9 @@ export function usePresetManager(currentConfiguration: Record<string, unknown>) 
   return {
     // State
     presets,
+    publicPresets,
     isLoading,
+    isLoadingPublic,
     showSaveForm,
     presetName,
     presetDescription,
