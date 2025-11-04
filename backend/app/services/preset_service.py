@@ -118,6 +118,17 @@ def update_preset(
     return save_and_refresh(session, preset)
 
 
+def delete_preset(session: Session, preset: Preset) -> None:
+    """Delete a preset.
+
+    Args:
+        session: Database session
+        preset: Preset instance to delete
+    """
+    session.delete(preset)
+    session.commit()
+
+
 def preset_to_response(preset: Preset) -> PresetResponse:
     """Convert Preset model to PresetResponse DTO."""
     return PresetResponse(

@@ -10,6 +10,9 @@ from app.services.preset_service import (
     create_preset as create_preset_service,
 )
 from app.services.preset_service import (
+    delete_preset as delete_preset_service,
+)
+from app.services.preset_service import (
     get_preset_for_user,
     get_user_preset_by_id,
     preset_to_response,
@@ -130,8 +133,7 @@ async def delete_preset(
     if not preset:
         raise NotFoundError(PRESET_NOT_FOUND_MSG)
 
-    session.delete(preset)
-    session.commit()
+    delete_preset_service(session, preset)
 
     return success_response(
         data={"deleted_id": preset_id}, message="Preset deleted successfully"

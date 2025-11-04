@@ -5,7 +5,10 @@ from app.api.responses import success_response
 from app.models.pcc.model import compute_pcc
 from app.models.pcc.pcc_model import compute_pcc_with_tendons
 from app.models.pcc.types import PCCParams
-from app.utils.serialization import convert_result_to_serializable
+from app.utils.serialization import (
+    convert_result_to_serializable,
+    convert_robot_positions,
+)
 
 router = APIRouter()
 
@@ -14,7 +17,7 @@ router = APIRouter()
 async def run_pcc(params: PCCParams):
     """Compute PCC (Piecewise Constant Curvature) robot configuration."""
     result = compute_pcc(params)
-    result_serializable = [[point.tolist() for point in segment] for segment in result]
+    result_serializable = convert_robot_positions(result)
 
     return success_response(
         data={"segments": result_serializable},
