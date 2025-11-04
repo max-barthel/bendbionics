@@ -1,16 +1,12 @@
 import React from 'react';
 
 interface AlertProps {
-  children: React.ReactNode;
-  variant?: 'success' | 'warning' | 'error' | 'info';
-  className?: string;
+  readonly children: React.ReactNode;
+  readonly variant?: 'success' | 'warning' | 'error' | 'info';
+  readonly className?: string;
 }
 
-const Alert: React.FC<AlertProps> = ({
-  children,
-  variant = 'info',
-  className = '',
-}) => {
+function Alert({ children, variant = 'info', className = '' }: Readonly<AlertProps>) {
   const baseClasses = 'p-4 rounded-full border-l-4';
 
   const variantClasses = {

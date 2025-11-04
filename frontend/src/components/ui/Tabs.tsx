@@ -1,4 +1,6 @@
 import React from 'react';
+import { tabVariants } from '@/styles/design-tokens';
+import { cn } from '@/styles/tahoe-utils';
 
 interface Tab {
   id: string;
@@ -15,18 +17,14 @@ interface TabsProps {
 
 export function Tabs({ tabs, activeTab, onTabChange, className = '' }: TabsProps) {
   return (
-    <div
-      className={`flex bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border border-white/20 rounded-full p-1 shadow-2xl shadow-black/5 gap-1 ${className}`}
-    >
+    <div className={cn(tabVariants.container, className)}>
       {tabs.map(tab => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`relative w-24 h-8 flex items-center justify-center flex-1 text-xs font-medium rounded-full transition-colors duration-200 border-2 ${
-            activeTab === tab.id
-              ? 'bg-blue-500/20 text-gray-900 border-blue-400/50'
-              : 'text-gray-600 hover:text-gray-800 hover:bg-white/20 border-transparent'
-          }`}
+          className={cn(
+            activeTab === tab.id ? tabVariants.buttonActive : tabVariants.buttonInactive
+          )}
           aria-label={`${tab.label} tab`}
         >
           <div className="flex items-center justify-center gap-1.5">
@@ -34,7 +32,7 @@ export function Tabs({ tabs, activeTab, onTabChange, className = '' }: TabsProps
             <span className="text-xs font-medium">{tab.label}</span>
           </div>
           {activeTab === tab.id && (
-            <div className="absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
+            <div className={tabVariants.buttonActiveOverlay} />
           )}
         </button>
       ))}

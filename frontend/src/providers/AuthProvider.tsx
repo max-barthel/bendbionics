@@ -1,3 +1,11 @@
+import { authAPI } from '@/api/auth';
+import type {
+  LoginRequest,
+  RegisterRequest,
+  RegisterResponse,
+  UpdateProfileRequest,
+  User,
+} from '@/types';
 import {
   createContext,
   useCallback,
@@ -7,14 +15,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  authAPI,
-  type LoginRequest,
-  type RegisterRequest,
-  type RegisterResponse,
-  type UpdateProfileRequest,
-  type User,
-} from '../api/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -37,7 +37,11 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface AuthProviderProps {
+  readonly children: React.ReactNode;
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
@@ -219,4 +223,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Always provide the context, even if there are errors
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+}

@@ -1,17 +1,33 @@
+import { CloseIcon, ErrorIcon } from '@/components/icons';
+import { errorAlertVariants } from '@/styles/design-tokens';
+import { cn } from '@/styles/tahoe-utils';
 import React from 'react';
-import { CloseIcon, ErrorIcon } from '../../../components/icons';
 
 interface ErrorDisplayProps {
   message: string;
   onClose: () => void;
 }
 
+/**
+ * ErrorDisplay - Simple error display component with Tahoe glass styling
+ *
+ * Uses design tokens for consistent error styling across the app.
+ * For more complex error displays with types, use FormErrorDisplay.
+ */
 export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ message, onClose }) => {
+  const serverErrorStyles = errorAlertVariants.server;
+
   return (
-    <div className="mx-6 mt-4 p-4 border-l-4 bg-red-50 border-red-400 text-red-800 flex-shrink-0">
+    <div
+      className={cn(
+        'mx-6 mt-4 flex-shrink-0',
+        errorAlertVariants.containerBase,
+        serverErrorStyles.container
+      )}
+    >
       <div className="flex items-start">
         <div className="flex-shrink-0">
-          <ErrorIcon className="h-5 w-5 text-red-400" />
+          <ErrorIcon className={`h-5 w-5 ${serverErrorStyles.icon}`} />
         </div>
         <div className="ml-3 flex-1">
           <p className="text-sm font-medium">{message}</p>
@@ -20,7 +36,10 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ message, onClose }) 
           type="button"
           onClick={onClose}
           aria-label="Close error message"
-          className="text-red-500 hover:bg-red-100 focus:ring-red-500 inline-flex rounded-full p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2"
+          className={cn(
+            errorAlertVariants.buttonBase,
+            serverErrorStyles.button
+          )}
         >
           <CloseIcon className="h-5 w-5" />
         </button>

@@ -1,5 +1,5 @@
+import { getTendonColor, getTendonColorClasses } from '@/utils/tendonColors';
 import { describe, expect, it } from 'vitest';
-import { getTendonColor, getTendonColorClasses } from '../tendonColors';
 
 describe('tendonColors', () => {
   describe('getTendonColor', () => {

@@ -5,6 +5,8 @@
  * with dynamic effects and consistent patterns.
  */
 
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 import {
   borderRadius,
   borders,
@@ -16,6 +18,7 @@ import {
   shadows,
   styleCombinations,
   tahoeGlass,
+  tahoeGlassPresets,
   transitions,
   type BorderRadiusVariant,
   type FocusStateVariant,
@@ -51,6 +54,52 @@ export function getTahoeGlassStyles(
   }
 
   return styles.join(' ');
+}
+
+/**
+ * Get Tahoe glass styles using a preset
+ * This simplifies common style combinations used across components
+ */
+export function getTahoeGlassPreset(
+  preset: keyof typeof tahoeGlassPresets,
+  glassVariantOverride?: TahoeGlassVariant,
+  includeDisabled: boolean = true
+): string {
+  const presetConfig = tahoeGlassPresets[preset];
+
+  // Handle container preset which doesn't have a fixed glassVariant
+  if (preset === 'container') {
+    if (!glassVariantOverride) {
+      throw new Error(
+        "Container preset requires a glassVariantOverride parameter since it doesn't have a fixed glass variant"
+      );
+    }
+    return getTahoeGlassStyles(
+      glassVariantOverride,
+      presetConfig.shadowVariant,
+      presetConfig.borderRadiusVariant,
+      presetConfig.transitionVariant,
+      presetConfig.focusVariant,
+      presetConfig.hoverVariant,
+      includeDisabled
+    );
+  }
+
+  // For other presets, use the preset's glassVariant unless overridden
+  // TypeScript doesn't narrow the union type, so we use 'in' to check
+  const glassVariant =
+    glassVariantOverride ||
+    ('glassVariant' in presetConfig ? presetConfig.glassVariant : 'base');
+
+  return getTahoeGlassStyles(
+    glassVariant,
+    presetConfig.shadowVariant,
+    presetConfig.borderRadiusVariant,
+    presetConfig.transitionVariant,
+    presetConfig.focusVariant,
+    presetConfig.hoverVariant,
+    includeDisabled
+  );
 }
 
 /**
@@ -143,10 +192,26 @@ export function getFloatingLabelStyles(shouldFloat: boolean) {
 }
 
 /**
- * Combine multiple style classes with proper spacing
+ * Combine multiple style classes with proper Tailwind class merging
+ *
+ * Uses clsx for conditional classes and tailwind-merge to intelligently
+ * merge conflicting Tailwind classes (e.g., last class wins).
+ *
+ * @example
+ * cn('px-2 py-1', 'px-4') // Returns 'py-1 px-4' (px-4 overrides px-2)
+ * cn('bg-red-500', className && 'bg-blue-500') // Conditionally applies class
  */
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
+}
+
+/**
+ * @deprecated Use `cn` instead. This function is kept for backward compatibility.
+ * Combines multiple style classes with proper spacing (legacy implementation).
+ */
+// NOSONAR - Intentionally deprecated signature for backward compatibility during migration to cn()
 export function combineStyles(...styles: (string | undefined | null)[]): string {
-  return styles.filter(Boolean).join(' ');
+  return cn(...styles);
 }
 
 /**

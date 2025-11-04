@@ -1,12 +1,13 @@
+import { errorBoundaryVariants } from '@/styles/design-tokens';
+import logger, { LogContext } from '@/utils/logger';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import logger, { LogContext } from '../utils/logger';
 
 // Constants for error ID generation
 const RADIX_BASE = 36;
 const RANDOM_STRING_START = 2;
 const RANDOM_STRING_LENGTH = 9;
 
-interface Props {
+interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
@@ -14,18 +15,18 @@ interface Props {
   enableReporting?: boolean;
 }
 
-interface State {
+interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
   errorId: string | null;
 }
 
-class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   private retryCount = 0;
   readonly maxRetries = 3;
 
-  constructor(props: Props) {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
       hasError: false,
@@ -35,7 +36,7 @@ class ErrorBoundary extends Component<Props, State> {
     };
   }
 
-  static getDerivedStateFromError(error: Error): Partial<State> {
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     const errorId = `error_${Date.now()}_${Math.random().toString(RADIX_BASE).substring(RANDOM_STRING_START, RANDOM_STRING_LENGTH)}`;
 
     return {
@@ -212,7 +213,7 @@ class ErrorBoundary extends Component<Props, State> {
         {this.retryCount < this.maxRetries && (
           <button
             onClick={this.handleRetry}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className={errorBoundaryVariants.primaryButton}
           >
             Try Again ({this.maxRetries - this.retryCount} attempts left)
           </button>
@@ -220,14 +221,14 @@ class ErrorBoundary extends Component<Props, State> {
 
         <button
           onClick={this.handleReload}
-          className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className={errorBoundaryVariants.secondaryButton}
         >
           Reload Page
         </button>
 
         <button
           onClick={this.handleReportBug}
-          className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className={errorBoundaryVariants.secondaryButton}
         >
           Report Bug
         </button>

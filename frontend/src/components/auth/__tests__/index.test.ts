@@ -1,5 +1,5 @@
+import { AuthPage, LoginForm, RegisterForm } from '@/components/auth';
 import { describe, expect, it } from 'vitest';
-import { AuthPage, LoginForm, RegisterForm } from '../index';
 
 describe('auth/index.ts', () => {
   it('exports AuthPage', () => {

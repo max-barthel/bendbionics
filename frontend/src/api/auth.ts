@@ -1,68 +1,15 @@
-import { type RobotConfiguration } from '../types/robot';
+import type {
+  AuthResponse,
+  CreatePresetRequest,
+  LoginRequest,
+  Preset,
+  RegisterRequest,
+  RegisterResponse,
+  UpdatePresetRequest,
+  UpdateProfileRequest,
+  User,
+} from '@/types';
 import { client } from './client';
-
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  is_active: boolean;
-  email_verified: boolean;
-  created_at: string;
-}
-
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  username: string;
-  email: string;
-  password: string;
-}
-
-export interface UpdateProfileRequest {
-  username?: string;
-  email?: string;
-  current_password?: string;
-  new_password?: string;
-}
-
-export interface AuthResponse {
-  access_token: string;
-  token_type: string;
-  user: User;
-}
-
-export interface Preset {
-  id: number;
-  name: string;
-  description?: string;
-  is_public: boolean;
-  configuration: RobotConfiguration;
-  created_at: string;
-  updated_at: string;
-  user_id: number;
-}
-
-export interface CreatePresetRequest {
-  name: string;
-  description?: string;
-  is_public: boolean;
-  configuration: RobotConfiguration;
-}
-
-export interface UpdatePresetRequest {
-  name?: string;
-  description?: string;
-  is_public?: boolean;
-  configuration?: RobotConfiguration;
-}
-
-export interface RegisterResponse {
-  user: User;
-  message: string;
-}
 
 // Authentication API
 export const authAPI = {

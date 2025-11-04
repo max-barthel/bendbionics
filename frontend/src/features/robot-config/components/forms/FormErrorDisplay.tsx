@@ -1,3 +1,6 @@
+import { cn } from '@/styles/tahoe-utils';
+import { errorAlertVariants } from '@/styles/design-tokens';
+
 type ErrorType = 'network' | 'validation' | 'server' | 'auth' | 'unknown';
 
 interface ErrorState {
@@ -28,29 +31,13 @@ export function FormErrorDisplay({
   const getErrorStyles = (type: ErrorType) => {
     switch (type) {
       case 'validation':
-        return {
-          container: 'bg-amber-50 border-amber-400 text-amber-800',
-          icon: 'text-amber-400',
-          button: 'text-amber-500 hover:bg-amber-100 focus:ring-amber-500',
-        };
+        return errorAlertVariants.validation;
       case 'network':
-        return {
-          container: 'bg-blue-50 border-blue-400 text-blue-800',
-          icon: 'text-blue-400',
-          button: 'text-blue-500 hover:bg-blue-100 focus:ring-blue-500',
-        };
+        return errorAlertVariants.network;
       case 'server':
-        return {
-          container: 'bg-red-50 border-red-400 text-red-800',
-          icon: 'text-red-400',
-          button: 'text-red-500 hover:bg-red-100 focus:ring-red-500',
-        };
+        return errorAlertVariants.server;
       default:
-        return {
-          container: 'bg-gray-50 border-gray-400 text-gray-800',
-          icon: 'text-gray-400',
-          button: 'text-gray-500 hover:bg-gray-100 focus:ring-gray-500',
-        };
+        return errorAlertVariants.unknown;
     }
   };
 
@@ -114,7 +101,7 @@ export function FormErrorDisplay({
   const styles = getErrorStyles(error.type);
 
   return (
-    <div className={`p-4 rounded-lg border-l-4 ${styles.container}`}>
+    <div className={cn(errorAlertVariants.containerBase, styles.container)}>
       <div className="flex items-start">
         <div className="flex-shrink-0">{getErrorIcon(error.type)}</div>
         <div className="ml-3 flex-1">
@@ -126,7 +113,7 @@ export function FormErrorDisplay({
             onClick={onClose}
             aria-label="Close error message"
             title="Close error message"
-            className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${styles.button}`}
+            className={cn(errorAlertVariants.buttonBase, styles.button)}
           >
             <svg
               className="h-5 w-5"

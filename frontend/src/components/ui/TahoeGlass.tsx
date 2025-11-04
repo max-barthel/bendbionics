@@ -1,12 +1,14 @@
+import {
+  containerSizeClasses,
+  type ExtendedComponentSize,
+  type TahoeGlassVariant,
+} from '@/styles/design-tokens';
+import { cn, getTahoeGlassPreset } from '@/styles/tahoe-utils';
 import React from 'react';
-import { combineStyles, getTahoeGlassStyles } from '../../styles/tahoe-utils';
-
-type TahoeGlassVariant = 'base' | 'enhanced' | 'subtle' | 'strong';
-type TahoeGlassSize = 'sm' | 'md' | 'lg' | 'xl';
 
 interface TahoeGlassProps extends React.HTMLAttributes<HTMLElement> {
   readonly variant?: TahoeGlassVariant;
-  readonly size?: TahoeGlassSize;
+  readonly size?: ExtendedComponentSize;
   readonly children: React.ReactNode;
   readonly as?: keyof React.JSX.IntrinsicElements;
 }
@@ -27,27 +29,12 @@ function TahoeGlass({
   as: Component = 'div',
   ...restProps
 }: TahoeGlassProps) {
-  // Get Tahoe glass styling based on variant
-  const tahoeGlassClasses = getTahoeGlassStyles(
-    variant, // glass variant
-    'glass', // shadow variant
-    'large', // border radius
-    'standard', // transition
-    'white', // focus state
-    'glass' // hover state
-  );
+  // Get Tahoe glass styling based on variant using container preset
+  const tahoeGlassClasses = getTahoeGlassPreset('container', variant);
 
-  // Size-based padding
-  const sizeClasses = {
-    sm: 'px-2 py-1',
-    md: 'px-4 py-2',
-    lg: 'px-6 py-3',
-    xl: 'px-8 py-4',
-  };
-
-  const classes = combineStyles(
+  const classes = cn(
     tahoeGlassClasses,
-    sizeClasses[size],
+    containerSizeClasses[size],
     onClick ? 'cursor-pointer' : '',
     className
   );

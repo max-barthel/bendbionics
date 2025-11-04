@@ -1,10 +1,10 @@
+import App from '@/App';
 import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import type { MockedFunction } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import App from '../App';
 
 // Define the auth context type for testing
 interface AuthContextType {
@@ -13,27 +13,59 @@ interface AuthContextType {
   logout: () => void;
 }
 
-// Mock the lazy-loaded Visualizer3D component
-vi.mock('../components/Visualizer3D', () => ({
+// Mock the Visualizer3D component
+vi.mock('../features/visualization/components/Visualizer3D', () => ({
   default: vi.fn(() => <div data-testid="visualizer-3d">3D Visualizer</div>),
 }));
 
 // Mock the AuthProvider and useAuth hook
 vi.mock('../providers', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  AppStateProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   useAuth: vi.fn(),
+  useAppState: vi.fn(() => ({
+    user: null,
+    isLoading: false,
+    logout: vi.fn(),
+    navigate: vi.fn(),
+    segments: [],
+    setSegments: vi.fn(),
+    currentConfiguration: {},
+    setCurrentConfiguration: vi.fn(),
+    setRobotState: vi.fn(),
+    isInitializing: false,
+    setIsInitializing: vi.fn(),
+    loading: false,
+    setLoading: vi.fn(),
+    sidebarCollapsed: false,
+    setSidebarCollapsed: vi.fn(),
+    showPresetManager: false,
+    setShowPresetManager: vi.fn(),
+    showTendonResults: false,
+    setShowTendonResults: vi.fn(),
+    showUserSettings: false,
+    setShowUserSettings: vi.fn(),
+    isLoadingPreset: false,
+    setIsLoadingPreset: vi.fn(),
+    presetLoadKey: 0,
+    setPresetLoadKey: vi.fn(),
+    handleFormResult: vi.fn(),
+    handleLoadPreset: vi.fn(),
+    handleShowPresetManager: vi.fn(),
+    toggleSidebar: vi.fn(),
+  })),
 }));
 
 // Mock the FormTabs component
-vi.mock('../components/FormTabs', () => ({
-  default: vi.fn(({ onResult, user, onLoadPreset, navigate }) => (
+vi.mock('../features/robot-config/components/FormTabs', () => ({
+  default: vi.fn(({ onResult, onLoadPreset }) => (
     <div data-testid="form-tabs">
       <button onClick={() => onResult([[1, 2, 3]], { test: 'config' })}>
         Submit Form
       </button>
       <button onClick={() => onLoadPreset({ preset: 'test' })}>Load Preset</button>
-      <button onClick={() => navigate('/auth')}>Navigate to Auth</button>
-      {user ? <span>User: {user.username}</span> : <span>No user</span>}
     </div>
   )),
 }));
@@ -41,6 +73,13 @@ vi.mock('../components/FormTabs', () => ({
 // Mock the AuthPage component
 vi.mock('../components/auth/AuthPage', () => ({
   AuthPage: () => <div data-testid="auth-page">Auth Page</div>,
+}));
+
+// Mock EmailVerification component
+vi.mock('../components/auth/EmailVerification', () => ({
+  EmailVerification: () => (
+    <div data-testid="email-verification">Email Verification</div>
+  ),
 }));
 
 // Mock the UI components
@@ -93,6 +132,20 @@ vi.mock('../components/ui', () => ({
       {children}
     </div>
   ),
+  Modal: ({
+    isOpen,
+    children,
+    onClose,
+  }: {
+    isOpen: boolean;
+    children?: React.ReactNode;
+    onClose?: () => void;
+  }) =>
+    isOpen ? (
+      <div data-testid="modal" onClick={onClose}>
+        {children}
+      </div>
+    ) : null,
   Button: ({
     children,
     onClick,
@@ -443,8 +496,8 @@ describe('App', () => {
 
       renderApp();
 
-      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
-      expect(screen.getByText('Loading BendBionics')).toBeInTheDocument();
+      // LoadingScreen component renders LoadingSpinner and text
+      expect(screen.getByText('Loading BendBionics App')).toBeInTheDocument();
       expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
     });
 

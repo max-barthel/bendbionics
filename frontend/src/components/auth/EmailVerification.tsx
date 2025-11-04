@@ -1,9 +1,10 @@
+import { authAPI } from '@/api/auth';
+import { Button } from '@/components/ui';
+import Typography from '@/components/ui/Typography';
+import { useAuth } from '@/providers/AuthProvider';
+import { modalVariants } from '@/styles/design-tokens';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { authAPI } from '../../api/auth';
-import { useAuth } from '../../providers/AuthProvider';
-import Button from '../ui/Button';
-import Typography from '../ui/Typography';
 
 interface VerificationState {
   status: 'verifying' | 'success' | 'error' | 'expired' | 'already_verified';
@@ -185,9 +186,9 @@ export const EmailVerification: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md mx-auto">
-        <div className="bg-white/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl p-8 text-center">
+        <div className={`${modalVariants.contentGlass} p-8 text-center`}>
           {getStatusIcon()}
 
           <Typography variant="h2" className={`mb-4 ${getStatusColor()}`}>
@@ -206,10 +207,9 @@ export const EmailVerification: React.FC = () => {
             {(verificationState.status === 'success' ||
               verificationState.status === 'already_verified') && (
               <Button
-                onClick={handleContinue}
                 variant="primary"
-                size="lg"
-                className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
+                onClick={handleContinue}
+                className="mx-auto px-8 py-2"
               >
                 Continue to Sign In
               </Button>
@@ -219,20 +219,14 @@ export const EmailVerification: React.FC = () => {
               verificationState.status === 'expired') && (
               <>
                 <Button
-                  onClick={handleResendVerification}
                   variant="primary"
-                  size="lg"
-                  className="w-full backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
+                  onClick={handleResendVerification}
+                  className="w-full"
                 >
                   Request New Verification Email
                 </Button>
 
-                <Button
-                  onClick={handleContinue}
-                  variant="secondary"
-                  size="lg"
-                  className="w-full"
-                >
+                <Button onClick={handleContinue} size="lg" className="w-full">
                   Back to Sign In
                 </Button>
               </>

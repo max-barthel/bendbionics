@@ -1,4 +1,4 @@
-import SubmitButton from '../SubmitButton';
+import SubmitButton from '@/features/robot-config/components/SubmitButton';
 
 interface FormActionsProps {
   readonly onSubmit: () => void;
@@ -16,7 +16,7 @@ export function FormActions({
   onSubmit,
   loading = false,
   disabled = false,
-}: FormActionsProps) {
+}: Readonly<FormActionsProps>) {
   return (
     <div>
       <SubmitButton onClick={onSubmit} loading={loading} disabled={disabled} />

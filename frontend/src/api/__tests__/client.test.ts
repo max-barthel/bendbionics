@@ -1,8 +1,8 @@
+import { robotAPI } from '@/api/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { robotAPI } from '../client';
 
 // Mock the tauri client
-vi.mock('../tauri-client', () => ({
+vi.mock('@/api/tauri-client', () => ({
   tauriClient: {
     post: vi.fn(),
     get: vi.fn(),
@@ -10,8 +10,8 @@ vi.mock('../tauri-client', () => ({
 }));
 
 // Mock the robotAPI to avoid the retry mechanism in tests
-vi.mock('../client', async () => {
-  const actual = await vi.importActual('../client');
+vi.mock('@/api/client', async () => {
+  const actual = await vi.importActual('@/api/client');
   return {
     ...actual,
     robotAPI: {
@@ -29,12 +29,18 @@ describe('robotAPI', () => {
 
   it('computes robot configuration successfully', async () => {
     const mockResponse = {
-      segments: [
-        [
-          [1, 2, 3],
-          [4, 5, 6],
+      success: true,
+      data: {
+        segments: [
+          [
+            [1, 2, 3],
+            [4, 5, 6],
+          ],
         ],
-      ],
+      },
+      message: 'Computation successful',
+      timestamp: new Date().toISOString(),
+      request_id: 'test-request-id',
     };
 
     vi.mocked(robotAPI.computePCC).mockResolvedValueOnce(mockResponse);
@@ -84,12 +90,18 @@ describe('robotAPI', () => {
 
   it('validates input parameters', async () => {
     const mockResponse = {
-      segments: [
-        [
-          [1, 2, 3],
-          [4, 5, 6],
+      success: true,
+      data: {
+        segments: [
+          [
+            [1, 2, 3],
+            [4, 5, 6],
+          ],
         ],
-      ],
+      },
+      message: 'Computation successful',
+      timestamp: new Date().toISOString(),
+      request_id: 'test-request-id',
     };
 
     vi.mocked(robotAPI.computePCC).mockResolvedValueOnce(mockResponse);
@@ -109,7 +121,13 @@ describe('robotAPI', () => {
 
   it('handles empty arrays gracefully', async () => {
     const mockResponse = {
-      segments: [],
+      success: true,
+      data: {
+        segments: [],
+      },
+      message: 'Computation successful',
+      timestamp: new Date().toISOString(),
+      request_id: 'test-request-id',
     };
 
     vi.mocked(robotAPI.computePCC).mockResolvedValueOnce(mockResponse);

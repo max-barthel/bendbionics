@@ -1,25 +1,56 @@
+/**
+ * UI Components Index
+ *
+ * Centralized exports for all UI components, organized by category.
+ * All components use named exports for better tree-shaking.
+ */
+
+// ========================================
+// Buttons & Interactive Elements
+// ========================================
+export { default as Button } from './Button';
+// Deprecated: PrimaryButton, IconButton, ToggleButton, CloseButton
+// Use Button with variant="primary", variant="icon", variant="toggle", variant="close" instead
+
+// ========================================
+// Form Controls & Inputs
+// ========================================
+export { default as Input } from './Input';
+export { default as NumberInput } from './NumberInput';
+export { TahoeNumberInput } from './TahoeNumberInput';
+export { default as SliderInput } from './SliderInput';
+export { FormField } from './FormField';
+export { FloatingLabel, useFloatingLabel } from './FloatingLabel';
+export { UnitSelector } from './UnitSelector';
+
+// ========================================
+// Layout & Containers
+// ========================================
+export { default as Card } from './Card';
+export { PanelContainer } from './PanelContainer';
+export { Modal } from './Modal';
+export { default as Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './Table';
+export { TabPanel, Tabs } from './Tabs';
+
+// ========================================
+// Feedback & Status
+// ========================================
 export { default as Alert } from './Alert';
 export { default as Badge } from './Badge';
-export { default as Button } from './Button';
-export { default as Card } from './Card';
-export { default as Input } from './Input';
-export { default as LoadingOverlay } from './LoadingOverlay';
-export { default as LoadingSpinner } from './LoadingSpinner';
+export { FormMessage } from './FormMessage';
 export { default as Notification } from './Notification';
-export { default as NumberInput } from './NumberInput';
+export { default as LoadingSpinner } from './LoadingSpinner';
+export { default as LoadingOverlay } from './LoadingOverlay';
 export { default as ProgressIndicator } from './ProgressIndicator';
 export { default as SkeletonLoader } from './SkeletonLoader';
-export { default as SliderInput } from './SliderInput';
-export { SubsectionTitle } from './SubsectionTitle';
-export {
-  default as Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './Table';
-export { TabPanel, Tabs } from './Tabs';
-export { TahoeNumberInput } from './TahoeNumberInput';
+
+// ========================================
+// Typography & Text
+// ========================================
 export { default as Typography } from './Typography';
-export { UnitSelector } from './UnitSelector';
+export { SubsectionTitle } from './SubsectionTitle';
+
+// ========================================
+// Special Components
+// ========================================
+export { default as TahoeGlass } from './TahoeGlass';

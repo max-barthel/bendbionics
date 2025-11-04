@@ -83,6 +83,9 @@ export const hoverStates = {
   // Subtle hover for inputs
   subtle: 'hover:bg-white/3 hover:shadow-lg',
 
+  // Menu item hover (for dropdowns and menus)
+  menu: 'hover:bg-white/30',
+
   // Scale hover for buttons
   scale: 'hover:scale-105',
 
@@ -94,6 +97,86 @@ export const hoverStates = {
 export const disabledStates = {
   // Standard disabled state
   standard: 'disabled:opacity-50 disabled:cursor-not-allowed',
+} as const;
+
+// Tahoe Glass Style Presets
+// Common parameter combinations used across components to reduce repetition
+export const tahoeGlassPresets = {
+  // Standard button/glass component style
+  // Used in: Button, TahoeGlass
+  button: {
+    glassVariant: 'base' as const,
+    shadowVariant: 'glass' as const,
+    borderRadiusVariant: 'full' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'white' as const,
+    hoverVariant: 'glass' as const,
+  },
+
+  // Enhanced button/icon style
+  // Used in: IconButton, CloseButton
+  enhancedButton: {
+    glassVariant: 'enhanced' as const,
+    shadowVariant: 'glass' as const,
+    borderRadiusVariant: 'full' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'white' as const,
+    hoverVariant: 'glass' as const,
+  },
+
+  // Input field style
+  // Used in: Input
+  input: {
+    glassVariant: 'base' as const,
+    shadowVariant: 'subtle' as const,
+    borderRadiusVariant: 'full' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'blue' as const,
+    hoverVariant: 'subtle' as const,
+  },
+
+  // Number input display style
+  // Used in: TahoeNumberInput (display)
+  numberInputDisplay: {
+    glassVariant: 'base' as const,
+    shadowVariant: 'subtle' as const,
+    borderRadiusVariant: 'medium' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'white' as const,
+    hoverVariant: 'glass' as const,
+  },
+
+  // Number input field style
+  // Used in: TahoeNumberInput (input)
+  numberInputField: {
+    glassVariant: 'subtle' as const,
+    shadowVariant: 'subtle' as const,
+    borderRadiusVariant: 'full' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'blue' as const,
+    hoverVariant: 'subtle' as const,
+  },
+
+  // Slider input range display style
+  // Used in: SliderInput
+  sliderRange: {
+    glassVariant: 'subtle' as const,
+    shadowVariant: 'glass' as const,
+    borderRadiusVariant: 'full' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'white' as const,
+    hoverVariant: 'glass' as const,
+  },
+
+  // Large container style (used in TahoeGlass with variant)
+  // Note: This is a base preset, glassVariant is passed as prop
+  container: {
+    shadowVariant: 'glass' as const,
+    borderRadiusVariant: 'large' as const,
+    transitionVariant: 'standard' as const,
+    focusVariant: 'white' as const,
+    hoverVariant: 'glass' as const,
+  },
 } as const;
 
 // Pre-composed Style Combinations
@@ -154,6 +237,322 @@ export const borders = {
   blueFocusSubtle: '1px solid rgba(59,130,246,0.3)',
 } as const;
 
+// Button Variants
+export const buttonVariants = {
+  // Primary button with blue gradient (extracted from SignInButton, RobotSetupTab, etc.)
+  primary:
+    'flex items-center justify-center gap-2 backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20',
+
+  // Primary button text style
+  primaryText: 'text-sm font-medium text-gray-900',
+
+  // Outline button variant (white background with border)
+  outline:
+    'border border-gray-300 bg-white/80 backdrop-blur-sm hover:bg-white/90 rounded-full transition-all duration-300 hover:scale-105',
+
+  // Solid button variant (blue gradient)
+  solid:
+    'bg-gradient-to-br from-blue-500/25 to-indigo-500/25 backdrop-blur-xl border border-blue-400/30 shadow-lg hover:scale-105 rounded-full transition-all duration-300 shadow-blue-500/20',
+
+  // Cancel/Neutral button variant (white/neutral, from PresetManager)
+  cancel:
+    'backdrop-blur-xl border border-white/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-white/18 to-white/8 shadow-black/10',
+
+  // Load button variant (green, from PresetManager)
+  load: 'backdrop-blur-xl border border-green-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-green-500/25 to-green-600/25 shadow-green-500/20',
+
+  // Edit button variant (yellow, from PresetManager)
+  edit: 'backdrop-blur-xl border border-yellow-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-yellow-500/25 to-yellow-600/25 shadow-yellow-500/20',
+
+  // Delete button variant (red, from PresetManager)
+  delete:
+    'backdrop-blur-xl border border-red-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-red-500/25 to-red-600/25 shadow-red-500/20',
+} as const;
+
+// Toggle Button Variants
+export const toggleButtonVariants = {
+  // Standard toggle button for panels (extracted from TendonResultsPanel)
+  panelToggle:
+    'bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1.5 shadow-2xl hover:bg-white/10 hover:shadow-2xl transition-all duration-300 ease-in-out z-50 hover:scale-105',
+
+  // Toggle button icon style
+  panelToggleIcon: 'w-4 h-4 text-gray-600 transition-transform duration-300',
+} as const;
+
+// Panel/Container Variants
+export const panelVariants = {
+  // Standard panel container (for TendonResultsPanel, etc.)
+  container:
+    'bg-white/2 backdrop-blur-sm border border-white/5 rounded-tl-2xl shadow-2xl shadow-black/10',
+
+  // Segment selector container (from AngleControlPanel)
+  segmentSelector:
+    'bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-2 shadow-2xl shadow-black/5',
+
+  // Selected segment button
+  segmentSelected:
+    'bg-gradient-to-br from-blue-500/25 to-indigo-500/25 text-gray-900 shadow-lg border border-blue-400/30 shadow-blue-500/10',
+
+  // Unselected segment button
+  segmentUnselected: 'text-gray-600 hover:text-gray-800 hover:bg-white/20',
+} as const;
+
+// Table Cell Variants
+export const tableCellVariants = {
+  // Standard table header cell
+  header:
+    'px-3 py-2 text-center text-sm font-medium text-gray-700 bg-white/10 border border-white/20',
+
+  // Standard table body cell
+  body: 'px-3 py-2 text-sm text-center text-gray-600 bg-white/5 border border-white/20',
+
+  // Table header cell with border radius (first column)
+  headerFirst:
+    'px-3 py-2 text-center text-sm font-medium text-gray-700 bg-white/10 border border-white/20 rounded-tl-lg',
+
+  // Table body cell with border radius (first column, bottom)
+  bodyFirst:
+    'px-3 py-2 text-sm font-medium text-gray-700 bg-white/10 border border-white/20 rounded-bl-lg',
+
+  // Bold/Total row cell
+  total:
+    'px-3 py-2 text-sm font-bold text-center text-gray-800 bg-white/15 border border-white/20',
+
+  // Bold/Total row cell (header)
+  totalHeader:
+    'px-3 py-2 text-sm font-bold text-gray-800 bg-white/15 border border-white/20',
+} as const;
+
+// Unit Selector Variants
+export const unitSelectorVariants = {
+  // Container for unit selector buttons
+  container: 'flex bg-white/10 border border-white/20 rounded-full p-1 shadow-lg gap-1',
+
+  // Selected unit button
+  buttonSelected:
+    'relative flex-1 h-7 px-3 flex items-center justify-center text-xs font-medium rounded-full transition-colors duration-200 border-2 bg-blue-500/30 text-gray-900 border-blue-400/50',
+
+  // Unselected unit button
+  buttonUnselected:
+    'relative flex-1 h-7 px-3 flex items-center justify-center text-xs font-medium rounded-full transition-colors duration-200 border-2 text-gray-600 hover:text-gray-800 hover:bg-white/30 border-transparent',
+
+  // Selected button inner gradient overlay
+  buttonSelectedOverlay:
+    'absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner',
+} as const;
+
+// Background Gradients
+export const backgroundGradients = {
+  // Main app background gradient (from MainAppLayout)
+  appBackground: 'bg-gradient-to-br from-gray-200 to-gray-300',
+} as const;
+
+// Modal Variants
+export const modalVariants = {
+  // Modal backdrop overlay
+  backdrop:
+    'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4',
+
+  // Modal content container (standard white)
+  content:
+    'bg-white border border-gray-200 rounded-2xl shadow-2xl w-full max-h-[80vh] overflow-hidden relative',
+
+  // Modal content with Tahoe glass effect
+  contentGlass:
+    'bg-white/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl',
+
+  // Modal content with stronger glass effect (for delete confirmations)
+  contentGlassStrong:
+    'bg-white/90 backdrop-blur-2xl border border-white/50 rounded-2xl shadow-xl',
+} as const;
+
+// Slider Variants
+export const sliderVariants = {
+  // Slider track base styles
+  track:
+    'w-full h-2 appearance-none cursor-pointer rounded-full bg-white/20 backdrop-blur-xl border-2 border-white/40 shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-400/50',
+
+  // Webkit slider thumb base (common styles)
+  thumbBase:
+    'appearance-none h-5 w-5 rounded-full cursor-pointer border-2 border-white/50 transition-all duration-300 hover:scale-110 bg-gradient-to-br from-blue-500/90 to-indigo-600/90 shadow-lg shadow-blue-500/30',
+
+  // Webkit slider thumb pseudo-selector classes
+  webkitThumb:
+    '[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white/50 [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-300 [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:bg-gradient-to-br [&::-webkit-slider-thumb]:from-blue-500/90 [&::-webkit-slider-thumb]:to-indigo-600/90 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-500/30',
+
+  // Mozilla slider thumb pseudo-selector classes
+  mozThumb:
+    '[&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white/50 [&::-moz-range-thumb]:shadow-lg [&::-moz-range-thumb]:bg-gradient-to-br [&::-moz-range-thumb]:from-blue-500/90 [&::-moz-range-thumb]:to-indigo-600/90',
+
+  // Combined slider input styles (track + webkit + moz)
+  input:
+    'w-full h-2 appearance-none cursor-pointer rounded-full bg-white/20 backdrop-blur-xl border-2 border-white/40 shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-400/50 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white/50 [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-300 [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:bg-gradient-to-br [&::-webkit-slider-thumb]:from-blue-500/90 [&::-webkit-slider-thumb]:to-indigo-600/90 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-500/30 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white/50 [&::-moz-range-thumb]:shadow-lg [&::-moz-range-thumb]:bg-gradient-to-br [&::-moz-range-thumb]:from-blue-500/90 [&::-moz-range-thumb]:to-indigo-600/90',
+} as const;
+
+// Tab Variants
+export const tabVariants = {
+  // Tab container (similar to unit selector)
+  container:
+    'flex bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-xl border border-white/20 rounded-full p-1 shadow-2xl shadow-black/5 gap-1',
+
+  // Active tab button
+  buttonActive:
+    'relative w-24 h-8 flex items-center justify-center flex-1 text-xs font-medium rounded-full transition-colors duration-200 border-2 bg-blue-500/20 text-gray-900 border-blue-400/50',
+
+  // Inactive tab button
+  buttonInactive:
+    'relative w-24 h-8 flex items-center justify-center flex-1 text-xs font-medium rounded-full transition-colors duration-200 border-2 text-gray-600 hover:text-gray-800 hover:bg-white/20 border-transparent',
+
+  // Active tab inner gradient overlay
+  buttonActiveOverlay:
+    'absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner',
+} as const;
+
+// Error Boundary Button Variants
+export const errorBoundaryVariants = {
+  // Primary action button (retry, reload)
+  primaryButton:
+    'w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
+
+  // Secondary action button (report bug, cancel)
+  secondaryButton:
+    'w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
+} as const;
+
+// Error Alert Variants
+export const errorAlertVariants = {
+  // Validation error (amber/yellow)
+  validation: {
+    container: 'bg-amber-50 border-amber-400 text-amber-800',
+    icon: 'text-amber-400',
+    button: 'text-amber-500 hover:bg-amber-100 focus:ring-amber-500',
+  },
+
+  // Network error (blue)
+  network: {
+    container: 'bg-blue-50 border-blue-400 text-blue-800',
+    icon: 'text-blue-400',
+    button: 'text-blue-500 hover:bg-blue-100 focus:ring-blue-500',
+  },
+
+  // Server error (red)
+  server: {
+    container: 'bg-red-50 border-red-400 text-red-800',
+    icon: 'text-red-400',
+    button: 'text-red-500 hover:bg-red-100 focus:ring-red-500',
+  },
+
+  // Unknown/Generic error (gray)
+  unknown: {
+    container: 'bg-gray-50 border-gray-400 text-gray-800',
+    icon: 'text-gray-400',
+    button: 'text-gray-500 hover:bg-gray-100 focus:ring-gray-500',
+  },
+
+  // Error alert container base
+  containerBase: 'p-4 rounded-lg border-l-4',
+
+  // Error alert button base
+  buttonBase:
+    'inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2',
+
+  // Error alert with Tahoe glass effect (for Profile component)
+  tahoeGlass: {
+    red: 'bg-red-50/80 backdrop-blur-sm border border-red-200/50 rounded-xl',
+  },
+} as const;
+
+// Form Message Variants (for FormMessage component)
+export const messageVariants = {
+  // Standard error message
+  error: 'mb-4 p-3 bg-red-50 border border-red-200 rounded-md',
+
+  // Error message with Tahoe glass effect
+  errorGlass:
+    'mb-4 p-3 bg-red-50/80 backdrop-blur-sm border border-red-200/50 rounded-xl',
+
+  // Standard success message
+  success: 'mb-4 p-3 bg-green-50 border border-green-200 rounded-md',
+
+  // Success message with Tahoe glass effect (called successShadow in component)
+  successShadow:
+    'mb-4 p-3 bg-green-50/80 backdrop-blur-sm border border-green-200/50 rounded-xl',
+
+  // Message text styling
+  messageText: 'text-sm font-medium',
+
+  // Error icon container
+  errorIcon: 'flex-shrink-0',
+
+  // Error icon SVG styling
+  errorIconSvg: 'h-5 w-5 text-red-400',
+} as const;
+
+// Size Type Definitions
+export type ComponentSize = 'sm' | 'md' | 'lg';
+export type ExtendedComponentSize = 'sm' | 'md' | 'lg' | 'xl';
+
+// Button Size Classes
+export const buttonSizeClasses = {
+  // Button component sizes (with text sizing)
+  sm: 'px-3 py-1.5 text-sm',
+  md: 'px-4 py-2 text-sm',
+  lg: 'px-6 py-3 text-base',
+} as const;
+
+// Input Size Classes
+export const inputSizeClasses = {
+  // Standard input sizes (Input.tsx pattern)
+  sm: 'pl-4 pr-2 py-2 text-sm',
+  md: 'px-3 py-2.5 text-sm',
+  lg: 'px-4 py-3 text-base',
+} as const;
+
+// Number Input Size Classes
+export const numberInputSizeClasses = {
+  // TahoeNumberInput sizes (slightly different from standard input)
+  sm: 'px-4 py-2 text-xs',
+  md: 'px-5 py-2.5 text-sm',
+  lg: 'px-6 py-3 text-base',
+} as const;
+
+// Icon Button Size Classes (padding only)
+export const iconButtonSizeClasses = {
+  sm: 'p-1.5',
+  md: 'p-2',
+  lg: 'p-3',
+} as const;
+
+// Close Button Size Classes (smaller padding)
+export const closeButtonSizeClasses = {
+  sm: 'p-1',
+  md: 'p-1.5',
+  lg: 'p-2',
+} as const;
+
+// Icon Size Classes (for SVG icons in buttons)
+export const iconSizeClasses = {
+  sm: 'w-3 h-3',
+  md: 'w-4 h-4',
+  lg: 'w-5 h-5',
+} as const;
+
+// Container Size Classes (for TahoeGlass and similar containers)
+export const containerSizeClasses = {
+  sm: 'px-2 py-1',
+  md: 'px-4 py-2',
+  lg: 'px-6 py-3',
+  xl: 'px-8 py-4',
+} as const;
+
+// Modal Size Classes
+export const modalSizeClasses = {
+  sm: 'max-w-md',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+} as const;
+
 // Type definitions for better TypeScript support
 export type TahoeGlassVariant = keyof typeof tahoeGlass;
 export type ShadowVariant = keyof typeof shadows;
@@ -162,3 +561,13 @@ export type TransitionVariant = keyof typeof transitions;
 export type FocusStateVariant = keyof typeof focusStates;
 export type HoverStateVariant = keyof typeof hoverStates;
 export type StyleCombinationVariant = keyof typeof styleCombinations;
+export type ButtonVariant = keyof typeof buttonVariants;
+export type ToggleButtonVariant = keyof typeof toggleButtonVariants;
+export type PanelVariant = keyof typeof panelVariants;
+export type TableCellVariant = keyof typeof tableCellVariants;
+export type UnitSelectorVariant = keyof typeof unitSelectorVariants;
+export type ModalVariant = keyof typeof modalVariants;
+export type SliderVariant = keyof typeof sliderVariants;
+export type TabVariant = keyof typeof tabVariants;
+export type ErrorAlertVariant = keyof typeof errorAlertVariants;
+export type MessageVariant = keyof typeof messageVariants;

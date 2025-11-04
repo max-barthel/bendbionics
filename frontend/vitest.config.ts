@@ -4,13 +4,27 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 const dirname =
-  typeof __dirname !== 'undefined'
-    ? __dirname
-    : path.dirname(fileURLToPath(import.meta.url));
+  typeof __dirname === 'undefined'
+    ? path.dirname(fileURLToPath(import.meta.url))
+    : __dirname;
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(dirname, './src'),
+      '@/components': path.resolve(dirname, './src/components'),
+      '@/utils': path.resolve(dirname, './src/utils'),
+      '@/types': path.resolve(dirname, './src/types'),
+      '@/api': path.resolve(dirname, './src/api'),
+      '@/hooks': path.resolve(dirname, './src/hooks'),
+      '@/features': path.resolve(dirname, './src/features'),
+      '@/styles': path.resolve(dirname, './src/styles'),
+      '@/constants': path.resolve(dirname, './src/constants'),
+      '@/providers': path.resolve(dirname, './src/providers'),
+    },
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],

@@ -1,18 +1,11 @@
+import { Card, SliderInput } from '@/components/ui';
+import { DEFAULT_CONFIG } from '@/constants/app';
+import { useFormSubmission } from '@/features/robot-config/hooks/useFormSubmission';
+import { useRobotState } from '@/features/robot-config/hooks/useRobotState';
+import type { RobotState } from '@/types/robot';
 import { useEffect } from 'react';
-import { Card, SliderInput } from '../../../components/ui';
-import { useFormSubmission } from '../hooks/useFormSubmission';
-import { useRobotState, type RobotState } from '../hooks/useRobotState';
 import ArrayInputGroup from './ArrayInputGroup';
 import { FormErrorDisplay, FormHeader, RobotStructureInfo } from './forms';
-
-// Default configuration constants
-const DEFAULT_CONFIG = {
-  SEGMENTS: 5,
-  BENDING_ANGLE: 0.628319, // ~36 degrees in radians
-  BACKBONE_LENGTH: 0.07,
-  COUPLING_LENGTH: 0.03,
-  DISCRETIZATION_STEPS: 1000,
-} as const;
 
 // Error types are now handled by the useFormSubmission hook
 

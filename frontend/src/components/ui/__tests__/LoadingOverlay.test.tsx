@@ -1,7 +1,6 @@
+import LoadingOverlay from '@/components/ui/LoadingOverlay';
 import { render, screen } from '@testing-library/react';
-import React from 'react';
 import { describe, expect, it } from 'vitest';
-import LoadingOverlay from '../LoadingOverlay';
 
 describe('LoadingOverlay', () => {
   it('renders nothing when not visible', () => {

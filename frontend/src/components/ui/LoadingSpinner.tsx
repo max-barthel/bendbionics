@@ -1,5 +1,7 @@
+import type { ComponentSize } from '@/styles/design-tokens';
+
 interface LoadingSpinnerProps {
-  readonly size?: 'sm' | 'md' | 'lg';
+  readonly size?: ComponentSize;
   readonly color?: 'primary' | 'white' | 'gray';
   readonly className?: string;
 }
