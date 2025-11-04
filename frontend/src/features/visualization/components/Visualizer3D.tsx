@@ -152,38 +152,6 @@ function Visualizer3D({
     return [...lineElements, ...clickablePoints];
   }, [segments, handleObjectClick]);
 
-  // Helper function to extract rotation matrix components
-  const extractRotationMatrix = (orientation: number[][]) => {
-    return {
-      r11: Number(orientation[0]?.[0]) || 1,
-      r12: Number(orientation[0]?.[1]) || 0,
-      r13: Number(orientation[0]?.[2]) || 0,
-      r21: Number(orientation[1]?.[0]) || 0,
-      r22: Number(orientation[1]?.[1]) || 1,
-      r23: Number(orientation[1]?.[2]) || 0,
-      r31: Number(orientation[2]?.[0]) || 0,
-      r32: Number(orientation[2]?.[1]) || 0,
-      r33: Number(orientation[2]?.[2]) || 1,
-    };
-  };
-
-  // Helper function to transform local coordinates to global
-  const transformToGlobal = (
-    localX: number,
-    localY: number,
-    localZ: number,
-    x: number,
-    y: number,
-    z: number,
-    matrix: ReturnType<typeof extractRotationMatrix>
-  ) => {
-    return {
-      globalX: x + matrix.r11 * localX + matrix.r12 * localY + matrix.r13 * localZ,
-      globalY: y + matrix.r21 * localX + matrix.r22 * localY + matrix.r23 * localZ,
-      globalZ: z + matrix.r31 * localX + matrix.r32 * localY + matrix.r33 * localZ,
-    };
-  };
-
   // Helper function to check if tendon is active
   const isTendonActive = (
     tendonId: string,
@@ -198,33 +166,26 @@ function Visualizer3D({
   };
 
   // Helper function to create tendon eyelets for a coupling point
+  // Uses routing_points directly from backend (no calculations)
   const createTendonEyelets = (
     couplingPos: number[],
     couplingIndex: number,
-    orientation: number[][],
-    tendonCount: number,
-    radius: number
+    routingPoints: number[][],
+    tendonCount: number
   ) => {
     const elements: React.ReactElement[] = [];
     const x = Number(couplingPos[0]) || 0;
     const y = Number(couplingPos[1]) || 0;
     const z = Number(couplingPos[2]) || 0;
-    const matrix = extractRotationMatrix(orientation);
 
+    // Use routing_points directly from backend (no calculations)
     for (let i = 0; i < tendonCount; i++) {
-      const angle = (2 * Math.PI * i) / tendonCount;
-      const localX = radius * Math.cos(angle);
-      const localY = radius * Math.sin(angle);
-      const localZ = 0;
-      const { globalX, globalY, globalZ } = transformToGlobal(
-        localX,
-        localY,
-        localZ,
-        x,
-        y,
-        z,
-        matrix
-      );
+      const eyeletPos = routingPoints[i];
+      if (!eyeletPos || eyeletPos.length < 3) continue;
+
+      const eyeletX = Number(eyeletPos[0]) || 0;
+      const eyeletY = Number(eyeletPos[1]) || 0;
+      const eyeletZ = Number(eyeletPos[2]) || 0;
 
       // Create eyelet sphere and tendon connection line
       elements.push(
@@ -235,7 +196,7 @@ function Visualizer3D({
             VISUALIZATION_CONSTANTS.SPHERE_SEGMENTS,
             VISUALIZATION_CONSTANTS.SPHERE_RINGS,
           ]}
-          position={[globalX, globalY, globalZ]}
+          position={[eyeletX, eyeletY, eyeletZ]}
           onClick={handleObjectClick}
         >
           <meshBasicMaterial color="#000000" />
@@ -243,7 +204,7 @@ function Visualizer3D({
         <Line
           key={`tendon-line-${couplingIndex}-${i}`}
           points={[
-            [globalX, globalY, globalZ],
+            [eyeletX, eyeletY, eyeletZ],
             [x, y, z],
           ]}
           color="#9ca3af"
@@ -316,9 +277,8 @@ function Visualizer3D({
     }
 
     const elements: React.ReactElement[] = [];
-    const { count: tendonCount, radius } = tendonConfig;
-    const { positions: couplingPositions, orientations: couplingOrientations } =
-      tendonAnalysis.coupling_data;
+    const { count: tendonCount } = tendonConfig;
+    const { positions: couplingPositions } = tendonAnalysis.coupling_data;
 
     // Create clickable spheres at coupling center points (start, mid, end)
     for (const [couplingIndex, couplingPos] of couplingPositions.entries()) {
@@ -346,20 +306,23 @@ function Visualizer3D({
       );
     }
 
-    // Create tendon eyelets for each coupling point
+    // Create tendon eyelets for each coupling point using routing_points from backend
+    const routingPoints = tendonAnalysis.tendon_analysis?.routing_points || [];
     for (const [couplingIndex, couplingPos] of couplingPositions.entries()) {
       if (couplingPos.length < 3) continue;
 
-      const orientation = couplingOrientations[couplingIndex];
-      if (!orientation || orientation.length < 3) continue;
+      // Get routing_points for this coupling element (directly from backend)
+      const couplingRoutingPoints = routingPoints[couplingIndex];
+      if (!couplingRoutingPoints || couplingRoutingPoints.length === 0) {
+        continue;
+      }
 
       elements.push(
         ...createTendonEyelets(
           couplingPos,
           couplingIndex,
-          orientation,
-          tendonCount,
-          radius
+          couplingRoutingPoints,
+          tendonCount
         )
       );
     }

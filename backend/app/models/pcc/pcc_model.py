@@ -10,6 +10,7 @@ from typing import Any, Dict, List
 import numpy as np
 
 from app.models.tendon.engine import RobotModelInterface
+from app.utils.math_tools import homogeneous_matrix
 
 from .model import compute_pcc
 from .types import PCCParams
@@ -49,26 +50,187 @@ class PCCRobotModel(RobotModelInterface):
         self, robot_positions: List[List[np.ndarray]]
     ) -> Dict[str, List]:
         """
-        Extract coupling element data from PCC robot positions.
+        Extract coupling element transformation matrices from PCC robot positions.
+
+        This method recomputes the transformation chain to get accurate orientations
+        from the accumulated transformation matrices, not just from direction vectors.
 
         Args:
             robot_positions: List of robot segment positions from PCC model
 
         Returns:
-            Dictionary with coupling positions and orientations
+            Dictionary with coupling transformation matrices (4x4 homogeneous matrices)
+            Maintains backward compatibility by also returning separate positions
+            and orientations.
         """
+        if not hasattr(self, "bending_angles"):
+            return self._get_coupling_elements_from_directions(robot_positions)
+
+        return self._compute_coupling_elements_from_transforms(robot_positions)
+
+    def _compute_coupling_elements_from_transforms(
+        self, robot_positions: List[List[np.ndarray]]
+    ) -> Dict[str, List]:
+        """Compute coupling elements by reconstructing transformation chain."""
+        coupling_transforms = []
+        coupling_positions = []
+        coupling_orientations = []
+        transform_matrix = np.eye(4)
+        coupling_lengths = self.coupling_lengths
+
+        # Add base coupling element
+        self._add_base_coupling(
+            coupling_transforms, coupling_positions, coupling_orientations
+        )
+
+        # Process first coupling if present
+        if self._has_first_coupling(robot_positions):
+            transform_matrix = self._process_first_coupling(
+                robot_positions[0],
+                coupling_lengths[0],
+                transform_matrix,
+                coupling_transforms,
+                coupling_positions,
+                coupling_orientations,
+            )
+
+        # Process remaining segments
+        backbone_index = 0
+        coupling_index = 1
+        for segment in robot_positions[1:]:
+            if len(segment) == 2:
+                transform_matrix = self._process_coupling_segment(
+                    segment,
+                    coupling_lengths,
+                    coupling_index,
+                    transform_matrix,
+                    coupling_transforms,
+                    coupling_positions,
+                    coupling_orientations,
+                )
+                coupling_index += 1
+            else:
+                transform_matrix = self._process_backbone_segment(
+                    segment, backbone_index, transform_matrix
+                )
+                backbone_index += 1
+
+        return {
+            "transforms": coupling_transforms,
+            "positions": coupling_positions,
+            "orientations": coupling_orientations,
+        }
+
+    def _add_base_coupling(
+        self,
+        coupling_transforms: List[np.ndarray],
+        coupling_positions: List[np.ndarray],
+        coupling_orientations: List[np.ndarray],
+    ) -> None:
+        """Add base coupling element at origin."""
+        base_transform = homogeneous_matrix(np.eye(3), np.array([0.0, 0.0, 0.0]))
+        coupling_transforms.append(base_transform)
+        coupling_positions.append(np.array([0.0, 0.0, 0.0]))
+        coupling_orientations.append(np.eye(3))
+
+    def _has_first_coupling(self, robot_positions: List[List[np.ndarray]]) -> bool:
+        """Check if first segment is a coupling element."""
+        return len(robot_positions) > 0 and len(robot_positions[0]) == 2
+
+    def _process_first_coupling(
+        self,
+        segment: List[np.ndarray],
+        coupling_length: float,
+        transform_matrix: np.ndarray,
+        coupling_transforms: List[np.ndarray],
+        coupling_positions: List[np.ndarray],
+        coupling_orientations: List[np.ndarray],
+    ) -> np.ndarray:
+        """Process the first coupling segment."""
+        from .transformations import transformation_matrix_coupling
+
+        coupling_middle = (segment[0] + segment[1]) / 2
+        t_coupling = transformation_matrix_coupling(coupling_length)
+        transform_matrix = transform_matrix @ t_coupling
+
+        coupling_transform = homogeneous_matrix(
+            transform_matrix[:3, :3].copy(), coupling_middle
+        )
+        coupling_transforms.append(coupling_transform)
+        coupling_positions.append(coupling_middle.copy())
+        coupling_orientations.append(transform_matrix[:3, :3].copy())
+
+        return transform_matrix
+
+    def _process_coupling_segment(
+        self,
+        segment: List[np.ndarray],
+        coupling_lengths: List[float],
+        coupling_index: int,
+        transform_matrix: np.ndarray,
+        coupling_transforms: List[np.ndarray],
+        coupling_positions: List[np.ndarray],
+        coupling_orientations: List[np.ndarray],
+    ) -> np.ndarray:
+        """Process a coupling segment."""
+        from .transformations import transformation_matrix_coupling
+
+        coupling_middle = (segment[0] + segment[1]) / 2
+        coupling_transform = homogeneous_matrix(
+            transform_matrix[:3, :3].copy(), coupling_middle
+        )
+        coupling_transforms.append(coupling_transform)
+        coupling_positions.append(coupling_middle.copy())
+        coupling_orientations.append(transform_matrix[:3, :3].copy())
+
+        if coupling_index < len(coupling_lengths):
+            t_coupling = transformation_matrix_coupling(
+                coupling_lengths[coupling_index]
+            )
+            transform_matrix = transform_matrix @ t_coupling
+
+        return transform_matrix
+
+    def _process_backbone_segment(
+        self,
+        segment: List[np.ndarray],
+        backbone_index: int,
+        transform_matrix: np.ndarray,
+    ) -> np.ndarray:
+        """Process a backbone segment."""
+        from .transformations import transformation_matrix_backbone
+
+        if backbone_index >= len(self.bending_angles):
+            return transform_matrix
+
+        theta = self.bending_angles[backbone_index]
+        phi = self.rotation_angles[backbone_index]
+        l_bb = self.backbone_lengths[backbone_index]
+        steps = len(segment)
+
+        t_bb = transformation_matrix_backbone(theta, phi, l_bb, steps)
+        for t_step in t_bb:
+            transform_matrix = transform_matrix @ t_step
+
+        return transform_matrix
+
+    def _get_coupling_elements_from_directions(
+        self, robot_positions: List[List[np.ndarray]]
+    ) -> Dict[str, List]:
+        """Fallback method using direction vectors (old implementation)."""
+        coupling_transforms = []
         coupling_positions = []
         coupling_orientations = []
         segment_index = 0
-
-        # The robot_positions structure alternates between:
-        # - Backbone segments (multiple points)
-        # - Coupling elements (2 points: start and end)
 
         current_position = np.array([0.0, 0.0, 0.0])
         current_orientation = np.eye(3)
 
         # Add base coupling element
+        base_transform = homogeneous_matrix(
+            current_orientation.copy(), current_position.copy()
+        )
+        coupling_transforms.append(base_transform)
         coupling_positions.append(current_position.copy())
         coupling_orientations.append(current_orientation.copy())
 
@@ -77,29 +239,26 @@ class PCCRobotModel(RobotModelInterface):
                 # This is a coupling element
                 start_pos = segment[0]
                 end_pos = segment[1]
-
-                # Use the MIDDLE of the coupling, not the end
                 coupling_middle = (start_pos + end_pos) / 2
 
-                # Update current position and orientation
                 direction = end_pos - start_pos
                 if np.linalg.norm(direction) > 1e-6:
-                    # Calculate orientation based on direction
                     z_axis = direction / np.linalg.norm(direction)
                     current_orientation = self._create_orientation_from_direction(
                         z_axis, segment_index
                     )
 
                 current_position = coupling_middle
+                current_transform = homogeneous_matrix(
+                    current_orientation.copy(), current_position.copy()
+                )
+                coupling_transforms.append(current_transform)
                 coupling_positions.append(current_position.copy())
                 coupling_orientations.append(current_orientation.copy())
                 segment_index += 1
 
             else:
-                # This is a backbone segment - update orientation based on
-                # curvature
                 if len(segment) > 1:
-                    # Calculate average direction of the curved segment
                     segment_direction = segment[-1] - segment[0]
                     if np.linalg.norm(segment_direction) > 1e-6:
                         z_axis = segment_direction / np.linalg.norm(segment_direction)
@@ -108,6 +267,7 @@ class PCCRobotModel(RobotModelInterface):
                         )
 
         return {
+            "transforms": coupling_transforms,
             "positions": coupling_positions,
             "orientations": coupling_orientations,
         }

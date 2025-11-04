@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, List, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.utils.timezone import now_utc
+
 if TYPE_CHECKING:
     from .preset import Preset
 
@@ -21,8 +23,8 @@ class User(UserBase, table=True):
     email_verification_token_expires: Optional[datetime] = Field(default=None)
     password_reset_token: Optional[str] = Field(default=None, index=True)
     password_reset_token_expires: Optional[datetime] = Field(default=None)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=now_utc)
+    updated_at: datetime = Field(default_factory=now_utc)
 
     # Relationships
     presets: List["Preset"] = Relationship(back_populates="user")
