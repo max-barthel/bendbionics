@@ -18,6 +18,16 @@ ssh bendbionics
 sudo shutdown now
 ```
 
+## System Updates
+
+```bash
+# Update package lists and upgrade all packages
+sudo apt update && sudo apt upgrade -y
+
+# Update security patches only
+sudo apt update && sudo apt upgrade -y --only-upgrade
+```
+
 ## Server Management
 
 ### View Application Logs
