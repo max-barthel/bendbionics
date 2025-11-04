@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from sqlmodel import Session, select
 
-from app.models.preset import Preset
+from app.models.preset import Preset, PresetResponse
 
 
 def get_preset_by_id(session: Session, preset_id: int) -> Optional[Preset]:
@@ -54,3 +54,17 @@ def get_user_preset_by_id(
     return session.exec(
         select(Preset).where((Preset.id == preset_id) & (Preset.user_id == user_id))
     ).first()
+
+
+def preset_to_response(preset: Preset) -> PresetResponse:
+    """Convert Preset model to PresetResponse DTO."""
+    return PresetResponse(
+        id=preset.id,
+        name=preset.name,
+        description=preset.description,
+        is_public=preset.is_public,
+        configuration=preset.config_dict,
+        created_at=preset.created_at,
+        updated_at=preset.updated_at,
+        user_id=preset.user_id,
+    )

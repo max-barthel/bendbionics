@@ -1,10 +1,11 @@
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlmodel import Session, select
+from fastapi import APIRouter, Depends, Query
+from sqlmodel import Session
 
 from app.api.responses import (
     AuthenticationError,
+    AuthorizationError,
     ValidationError,
     created_response,
     success_response,
@@ -24,7 +25,6 @@ from app.models import (
     User,
     UserCreate,
     UserLogin,
-    UserResponse,
     UserUpdate,
 )
 from app.services.db_helpers import save_and_refresh
@@ -37,9 +37,14 @@ from app.services.token_service import (
 from app.services.user_service import (
     check_email_available,
     check_username_available,
+    delete_user_account,
     get_user_by_email,
     get_user_by_reset_token,
-    get_user_by_verification_token,
+    user_to_response,
+    verify_user_email,
+)
+from app.services.user_service import (
+    update_user_profile as update_user_profile_service,
 )
 from app.utils.email import email_service
 from app.utils.logging import LogContext, default_logger
@@ -86,14 +91,7 @@ async def register(user_data: UserCreate, session: Session = Depends(get_session
         to_email=user_data.email, username=user_data.username, token=verification_token
     )
 
-    user_response = UserResponse(
-        id=user.id,
-        username=user.username,
-        email=user.email,
-        is_active=user.is_active,
-        email_verified=user.email_verified,
-        created_at=user.created_at,
-    )
+    user_response = user_to_response(user)
 
     if settings.email_verification_enabled:
         message = (
@@ -143,14 +141,7 @@ async def get_current_user_info(
     current_user: User = Depends(get_current_user),  # NOSONAR
 ):
     """Get current user information"""
-    user_response = UserResponse(
-        id=current_user.id,
-        username=current_user.username,
-        email=current_user.email,
-        is_active=current_user.is_active,
-        email_verified=current_user.email_verified,
-        created_at=current_user.created_at,
-    )
+    user_response = user_to_response(current_user)
 
     return success_response(
         data=user_response.model_dump(mode="json"),
@@ -165,74 +156,28 @@ async def update_user_profile(
     session: Session = Depends(get_session),  # NOSONAR
 ):
     """Update user profile (username, email, password)"""
-    from app.auth import verify_password
+    from app.auth import get_password_hash, verify_password
 
-    # If changing password or sensitive info, require current password
-    if user_data.new_password or user_data.username or user_data.email:
-        if not user_data.current_password:
-            raise ValidationError(
-                message="Current password required to update profile",
-                details={"field": "current_password"},
-            )
+    # Update user profile using service
+    updated_user, verification_token = update_user_profile_service(
+        session=session,
+        user=current_user,
+        update_data=user_data,
+        verify_password_func=verify_password,
+        get_password_hash_func=get_password_hash,
+        generate_verification_token_func=generate_verification_token,
+        validate_and_get_token_expiry_func=validate_and_get_token_expiry,
+    )
 
-        # Verify current password
-        if not verify_password(
-            user_data.current_password, current_user.hashed_password
-        ):
-            raise AuthenticationError(message="Current password is incorrect")
-
-    # Update username if provided
-    if user_data.username and user_data.username != current_user.username:
-        # Check if username is already taken
-        if not check_username_available(session, user_data.username, current_user.id):
-            raise ValidationError(
-                message="Username already taken",
-                details={"field": "username", "value": user_data.username},
-            )
-        current_user.username = user_data.username
-
-    # Update email if provided
-    if user_data.email and user_data.email != current_user.email:
-        # Check if email is already registered
-        if not check_email_available(session, user_data.email, current_user.id):
-            raise ValidationError(
-                message="Email already registered",
-                details={"field": "email", "value": user_data.email},
-            )
-        current_user.email = user_data.email
-        # Reset email verification when email changes
-        current_user.email_verified = False
-
-        # Generate new verification token
-        verification_token = generate_verification_token()
-        token_expires = validate_and_get_token_expiry("verification")
-        current_user.email_verification_token = verification_token
-        current_user.email_verification_token_expires = token_expires
-
-        # Send verification email to new address
+    # Send verification email if email was changed
+    if verification_token:
         await email_service.send_verification_email(
-            to_email=user_data.email,
-            username=current_user.username,
+            to_email=updated_user.email,
+            username=updated_user.username,
             token=verification_token,
         )
 
-    # Update password if provided
-    if user_data.new_password:
-        current_user.hashed_password = get_password_hash(user_data.new_password)
-
-    # Update timestamp
-    current_user.updated_at = now_utc_naive()
-
-    save_and_refresh(session, current_user)
-
-    user_response = UserResponse(
-        id=current_user.id,
-        username=current_user.username,
-        email=current_user.email,
-        is_active=current_user.is_active,
-        email_verified=current_user.email_verified,
-        created_at=current_user.created_at,
-    )
+    user_response = user_to_response(updated_user)
 
     return success_response(
         data=user_response.model_dump(mode="json"),
@@ -246,20 +191,7 @@ async def delete_account(
     session: Session = Depends(get_session),  # NOSONAR
 ):
     """Delete the current user's account and all associated data"""
-
-    # Delete all presets associated with the user
-    from app.models import Preset
-
-    user_presets = session.exec(
-        select(Preset).where(Preset.user_id == current_user.id)
-    ).all()
-
-    for preset in user_presets:
-        session.delete(preset)
-
-    # Delete the user account
-    session.delete(current_user)
-    session.commit()
+    delete_user_account(session, current_user)
 
     return success_response(message="Account deleted successfully")
 
@@ -279,58 +211,23 @@ async def verify_email(
     )
 
     try:
-        user = get_user_by_verification_token(session, token)
+        user = verify_user_email(session, token)
         default_logger.info(
             LogContext.API,
-            "Database query completed successfully",
-            {},
+            f"Email verified for user: {user.username}",
+            {"username": user.username},
             "API",
-            "db_query",
+            "email_verification",
         )
-    except Exception as e:
-        default_logger.error(
+    except ValidationError as e:
+        default_logger.info(
             LogContext.API,
-            f"Database query failed: {e}",
+            f"Email verification failed: {e.message}",
             {"error": str(e)},
             "API",
-            "db_error",
+            "email_verification",
         )
         raise
-
-    if not user:
-        default_logger.info(
-            LogContext.API, "User not found for token", {}, "API", "email_verification"
-        )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification token"
-        )
-
-    default_logger.info(
-        LogContext.API,
-        f"User found: {user.username}",
-        {"username": user.username},
-        "API",
-        "email_verification",
-    )
-
-    # Ensure the token expiry is timezone-naive before checking
-    token_expires = user.email_verification_token_expires
-    if token_expires and token_expires.tzinfo is not None:
-        token_expires = token_expires.replace(tzinfo=None)
-
-    if is_token_expired(token_expires):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Verification token has expired",
-        )
-
-    # Mark email as verified
-    user.email_verified = True
-    user.email_verification_token = None
-    user.email_verification_token_expires = None
-    user.updated_at = now_utc_naive()
-
-    save_and_refresh(session, user)
 
     return success_response(
         data={"email_verified": True}, message="Email verified successfully"
@@ -410,14 +307,10 @@ async def reset_password(
     user = get_user_by_reset_token(session, request.token)
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid reset token"
-        )
+        raise ValidationError(message="Invalid reset token")
 
     if is_token_expired(user.password_reset_token_expires):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Reset token has expired"
-        )
+        raise ValidationError(message="Reset token has expired")
 
     # Update password
     user.hashed_password = get_password_hash(request.new_password)
@@ -464,7 +357,6 @@ async def debug_email_sending(to_email: str, session: Session = Depends(get_sess
             data={"email_sent": False, "to": to_email},
             message="Test email failed - check server logs for details",
         )
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="Debug endpoint only available in development mode",
+    raise AuthorizationError(
+        message="Debug endpoint only available in development mode"
     )
