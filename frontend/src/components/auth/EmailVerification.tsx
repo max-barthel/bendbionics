@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { modalVariants } from '@/styles/design-tokens';
 import { authAPI } from '@/api/auth';
-import { useAuth } from '@/providers/AuthProvider';
 import { Button } from '@/components/ui';
 import Typography from '@/components/ui/Typography';
+import { useAuth } from '@/providers/AuthProvider';
+import { modalVariants } from '@/styles/design-tokens';
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface VerificationState {
   status: 'verifying' | 'success' | 'error' | 'expired' | 'already_verified';
@@ -186,7 +186,7 @@ export const EmailVerification: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md mx-auto">
         <div className={`${modalVariants.contentGlass} p-8 text-center`}>
           {getStatusIcon()}
@@ -206,7 +206,11 @@ export const EmailVerification: React.FC = () => {
           <div className="space-y-3">
             {(verificationState.status === 'success' ||
               verificationState.status === 'already_verified') && (
-              <Button variant="primary" onClick={handleContinue} className="w-full">
+              <Button
+                variant="primary"
+                onClick={handleContinue}
+                className="mx-auto px-8 py-2"
+              >
                 Continue to Sign In
               </Button>
             )}
@@ -214,7 +218,11 @@ export const EmailVerification: React.FC = () => {
             {(verificationState.status === 'error' ||
               verificationState.status === 'expired') && (
               <>
-                <Button variant="primary" onClick={handleResendVerification} className="w-full">
+                <Button
+                  variant="primary"
+                  onClick={handleResendVerification}
+                  className="w-full"
+                >
                   Request New Verification Email
                 </Button>
 

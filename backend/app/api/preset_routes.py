@@ -1,13 +1,24 @@
 import json
 
 from fastapi import APIRouter, Depends
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.api.responses import NotFoundError, created_response, success_response
 from app.auth import get_current_user
 from app.database import get_session
 from app.models import Preset, PresetCreate, PresetResponse, PresetUpdate
 from app.models.user import User
+from app.services.db_helpers import save_and_refresh
+from app.services.preset_service import (
+    get_preset_for_user,
+    get_user_preset_by_id,
+)
+from app.services.preset_service import (
+    get_public_presets as get_public_presets_service,
+)
+from app.services.preset_service import (
+    get_user_presets as get_user_presets_service,
+)
 
 router = APIRouter(prefix="/presets", tags=["presets"])
 
@@ -45,9 +56,7 @@ async def create_preset(
         user_id=current_user.id,
     )
 
-    session.add(preset)
-    session.commit()
-    session.refresh(preset)
+    save_and_refresh(session, preset)
 
     return created_response(
         data=preset_to_response(preset).model_dump(mode="json"),
@@ -62,9 +71,7 @@ async def get_user_presets(
 ):
     """Get all presets for the current user"""
 
-    presets = session.exec(
-        select(Preset).where(Preset.user_id == current_user.id)
-    ).all()
+    presets = get_user_presets_service(session, current_user.id)
 
     preset_responses = [preset_to_response(preset) for preset in presets]
 
@@ -77,7 +84,7 @@ async def get_user_presets(
 @router.get("/public")
 async def get_public_presets(session: Session = Depends(get_session)):
     """Get all public presets"""
-    presets = session.exec(select(Preset).where(Preset.is_public.is_(True))).all()
+    presets = get_public_presets_service(session)
 
     preset_responses = [preset_to_response(preset) for preset in presets]
 
@@ -95,12 +102,7 @@ async def get_preset(
 ):
     """Get a specific preset by ID"""
 
-    preset = session.exec(
-        select(Preset).where(
-            (Preset.id == preset_id)
-            & ((Preset.user_id == current_user.id) | Preset.is_public.is_(True))
-        )
-    ).first()
+    preset = get_preset_for_user(session, preset_id, current_user.id)
 
     if not preset:
         raise NotFoundError(PRESET_NOT_FOUND_MSG)
@@ -120,11 +122,7 @@ async def update_preset(
 ):
     """Update a preset"""
 
-    preset = session.exec(
-        select(Preset).where(
-            (Preset.id == preset_id) & (Preset.user_id == current_user.id)
-        )
-    ).first()
+    preset = get_user_preset_by_id(session, preset_id, current_user.id)
 
     if not preset:
         raise NotFoundError(PRESET_NOT_FOUND_MSG)
@@ -139,9 +137,7 @@ async def update_preset(
     if preset_data.configuration is not None:
         preset.configuration = json.dumps(preset_data.configuration)
 
-    session.add(preset)
-    session.commit()
-    session.refresh(preset)
+    save_and_refresh(session, preset)
 
     return success_response(
         data=preset_to_response(preset).model_dump(mode="json"),
@@ -157,11 +153,7 @@ async def delete_preset(
 ):
     """Delete a preset"""
 
-    preset = session.exec(
-        select(Preset).where(
-            (Preset.id == preset_id) & (Preset.user_id == current_user.id)
-        )
-    ).first()
+    preset = get_user_preset_by_id(session, preset_id, current_user.id)
 
     if not preset:
         raise NotFoundError(PRESET_NOT_FOUND_MSG)

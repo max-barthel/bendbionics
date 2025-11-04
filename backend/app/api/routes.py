@@ -24,9 +24,22 @@ async def run_pcc(params: PCCParams):
             message="PCC computation completed successfully",
         )
     except Exception as e:
+        # Convert any exception to ComputationError for middleware handling
         raise ComputationError(
             message="PCC computation failed", details={"error": str(e)}
-        )
+        ) from e
+
+
+@router.options("/pcc")
+async def options_pcc():
+    """Handle CORS preflight requests.
+
+    Note: CORS middleware should handle OPTIONS requests, but FastAPI requires
+    an explicit route handler to avoid 405 errors. The middleware will add
+    CORS headers to this response.
+    """
+    # Return empty response - CORS middleware will add headers after this handler
+    return Response(status_code=200)
 
 
 @router.post("/pcc-with-tendons")
@@ -42,20 +55,8 @@ async def run_pcc_with_tendons(params: PCCParams):
             message="PCC with tendons computation completed successfully",
         )
     except Exception as e:
+        # Convert any exception to ComputationError for middleware handling
         raise ComputationError(
             message="PCC with tendons computation failed",
             details={"error": str(e)},
-        )
-
-
-@router.options("/pcc")
-async def options_pcc():
-    """Handle CORS preflight requests."""
-    return Response(
-        status_code=200,
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type",
-        },
-    )
+        ) from e

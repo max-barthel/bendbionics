@@ -27,6 +27,11 @@ def set_postgresql_timezone(dbapi_connection, connection_record):
 
 
 def get_session():
-    """Get database session"""
+    """Get database session.
+
+    The session is automatically closed when the request completes.
+    Commits should be called explicitly in route handlers.
+    Rollbacks happen automatically on exceptions.
+    """
     with Session(engine) as session:
         yield session

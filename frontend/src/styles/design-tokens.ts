@@ -241,7 +241,7 @@ export const borders = {
 export const buttonVariants = {
   // Primary button with blue gradient (extracted from SignInButton, RobotSetupTab, etc.)
   primary:
-    'flex items-center gap-2 backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20',
+    'flex items-center justify-center gap-2 backdrop-blur-xl border border-blue-400/30 shadow-lg transition-all duration-300 hover:scale-105 rounded-full bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20',
 
   // Primary button text style
   primaryText: 'text-sm font-medium text-gray-900',

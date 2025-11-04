@@ -11,8 +11,18 @@ class TestMainRoutes:
 
     def setup_method(self):
         """Setup test client."""
+        from app.api.middleware import CORSMiddleware
+
         app = FastAPI()
         app.include_router(router)
+        # Add CORS middleware for OPTIONS request testing
+        # Use ["*"] to match test expectations
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            allow_headers=["*"],
+        )
         self.client = TestClient(app)
 
     @patch("app.api.routes.compute_pcc_with_tendons")
