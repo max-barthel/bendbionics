@@ -44,12 +44,14 @@ class TestDatabaseOperations:
         session = next(session_gen)
 
         try:
-            # Create a test user with unique username
+            # Create a test user with unique username and email
             import time
 
             unique_username = f"testuser_db_{int(time.time())}"
+            unique_email = f"testuser_db_{int(time.time())}@example.com"
             user = User(
                 username=unique_username,
+                email=unique_email,
                 hashed_password=get_password_hash("testpassword"),
                 is_active=True,
             )
@@ -85,7 +87,6 @@ class TestDatabaseOperations:
                 username="testuser_preset_2",
                 email="test_preset_2@example.com",
                 hashed_password=get_password_hash("testpassword"),
-                is_local=False,
                 is_active=True,
             )
             session.add(user)
@@ -138,12 +139,15 @@ class TestDatabaseOperations:
         session = next(session_gen)
 
         try:
-            # Create a test user
+            # Create a test user with unique email to avoid conflicts
+            import time
+
+            unique_email = f"test_rel_2_{int(time.time())}@example.com"
+            unique_username = f"testuser_rel_2_{int(time.time())}"
             user = User(
-                username="testuser_rel_2",
-                email="test_rel_2@example.com",
+                username=unique_username,
+                email=unique_email,
                 hashed_password=get_password_hash("testpassword"),
-                is_local=False,
                 is_active=True,
             )
             session.add(user)
@@ -178,12 +182,22 @@ class TestDatabaseOperations:
             ).all()
             assert len(user_presets) == 2
 
-            # Query public presets
+            # Verify user's presets have correct public/private status
+            user_public_presets = [p for p in user_presets if p.is_public is True]
+            user_private_presets = [p for p in user_presets if p.is_public is False]
+            assert len(user_public_presets) == 1
+            assert len(user_private_presets) == 1
+            assert user_public_presets[0].name == "Preset 2 DB"
+            assert user_private_presets[0].name == "Preset 1 DB"
+
+            # Query public presets (may include presets from other users)
             public_presets = session.exec(
                 select(Preset).where(Preset.is_public.is_(True))
             ).all()
-            assert len(public_presets) == 1
-            assert public_presets[0].name == "Preset 2 DB"
+            # Verify that the user's public preset is in the results
+            assert any(
+                p.name == "Preset 2 DB" and p.user_id == user.id for p in public_presets
+            )
 
             # Clean up
             session.delete(preset1)

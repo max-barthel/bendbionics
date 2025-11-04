@@ -1,13 +1,13 @@
 import json
 
 from fastapi import APIRouter, Depends
-from fastapi.security import HTTPAuthorizationCredentials
 from sqlmodel import Session, select
 
 from app.api.responses import NotFoundError, created_response, success_response
-from app.auth import get_current_user, security
+from app.auth import get_current_user
 from app.database import get_session
 from app.models import Preset, PresetCreate, PresetResponse, PresetUpdate
+from app.models.user import User
 
 router = APIRouter(prefix="/presets", tags=["presets"])
 
@@ -15,14 +15,27 @@ router = APIRouter(prefix="/presets", tags=["presets"])
 PRESET_NOT_FOUND_MSG = "Preset not found"
 
 
+def preset_to_response(preset: Preset) -> PresetResponse:
+    """Convert Preset model to PresetResponse DTO."""
+    return PresetResponse(
+        id=preset.id,
+        name=preset.name,
+        description=preset.description,
+        is_public=preset.is_public,
+        configuration=preset.config_dict,
+        created_at=preset.created_at,
+        updated_at=preset.updated_at,
+        user_id=preset.user_id,
+    )
+
+
 @router.post("/")
 async def create_preset(
     preset_data: PresetCreate,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
     """Create a new preset for the current user"""
-    current_user = get_current_user(credentials, session)
 
     preset = Preset(
         name=preset_data.name,
@@ -36,51 +49,28 @@ async def create_preset(
     session.commit()
     session.refresh(preset)
 
-    preset_response = PresetResponse(
-        id=preset.id,
-        name=preset.name,
-        description=preset.description,
-        is_public=preset.is_public,
-        configuration=preset.config_dict,
-        created_at=preset.created_at,
-        updated_at=preset.updated_at,
-        user_id=preset.user_id,
-    )
-
     return created_response(
-        data=preset_response.model_dump(mode="json"),
+        data=preset_to_response(preset).model_dump(mode="json"),
         message="Preset created successfully",
     )
 
 
 @router.get("/")
 async def get_user_presets(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
     """Get all presets for the current user"""
-    current_user = get_current_user(credentials, session)
 
     presets = session.exec(
         select(Preset).where(Preset.user_id == current_user.id)
     ).all()
 
-    preset_responses = [
-        PresetResponse(
-            id=preset.id,
-            name=preset.name,
-            description=preset.description,
-            is_public=preset.is_public,
-            configuration=preset.config_dict,
-            created_at=preset.created_at,
-            updated_at=preset.updated_at,
-            user_id=preset.user_id,
-        )
-        for preset in presets
-    ]
+    preset_responses = [preset_to_response(preset) for preset in presets]
 
     return success_response(
-        data=preset_responses, message="User presets retrieved successfully"
+        data=[pr.model_dump(mode="json") for pr in preset_responses],
+        message="User presets retrieved successfully",
     )
 
 
@@ -89,33 +79,21 @@ async def get_public_presets(session: Session = Depends(get_session)):
     """Get all public presets"""
     presets = session.exec(select(Preset).where(Preset.is_public.is_(True))).all()
 
-    preset_responses = [
-        PresetResponse(
-            id=preset.id,
-            name=preset.name,
-            description=preset.description,
-            is_public=preset.is_public,
-            configuration=preset.config_dict,
-            created_at=preset.created_at,
-            updated_at=preset.updated_at,
-            user_id=preset.user_id,
-        )
-        for preset in presets
-    ]
+    preset_responses = [preset_to_response(preset) for preset in presets]
 
     return success_response(
-        data=preset_responses, message="Public presets retrieved successfully"
+        data=[pr.model_dump(mode="json") for pr in preset_responses],
+        message="Public presets retrieved successfully",
     )
 
 
 @router.get("/{preset_id}")
 async def get_preset(
     preset_id: int,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
     """Get a specific preset by ID"""
-    current_user = get_current_user(credentials, session)
 
     preset = session.exec(
         select(Preset).where(
@@ -127,19 +105,8 @@ async def get_preset(
     if not preset:
         raise NotFoundError(PRESET_NOT_FOUND_MSG)
 
-    preset_response = PresetResponse(
-        id=preset.id,
-        name=preset.name,
-        description=preset.description,
-        is_public=preset.is_public,
-        configuration=preset.config_dict,
-        created_at=preset.created_at,
-        updated_at=preset.updated_at,
-        user_id=preset.user_id,
-    )
-
     return success_response(
-        data=preset_response.model_dump(mode="json"),
+        data=preset_to_response(preset).model_dump(mode="json"),
         message="Preset retrieved successfully",
     )
 
@@ -148,11 +115,10 @@ async def get_preset(
 async def update_preset(
     preset_id: int,
     preset_data: PresetUpdate,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
     """Update a preset"""
-    current_user = get_current_user(credentials, session)
 
     preset = session.exec(
         select(Preset).where(
@@ -177,19 +143,8 @@ async def update_preset(
     session.commit()
     session.refresh(preset)
 
-    preset_response = PresetResponse(
-        id=preset.id,
-        name=preset.name,
-        description=preset.description,
-        is_public=preset.is_public,
-        configuration=preset.config_dict,
-        created_at=preset.created_at,
-        updated_at=preset.updated_at,
-        user_id=preset.user_id,
-    )
-
     return success_response(
-        data=preset_response.model_dump(mode="json"),
+        data=preset_to_response(preset).model_dump(mode="json"),
         message="Preset updated successfully",
     )
 
@@ -197,11 +152,10 @@ async def update_preset(
 @router.delete("/{preset_id}")
 async def delete_preset(
     preset_id: int,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
     """Delete a preset"""
-    current_user = get_current_user(credentials, session)
 
     preset = session.exec(
         select(Preset).where(

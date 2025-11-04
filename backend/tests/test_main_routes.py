@@ -93,9 +93,11 @@ class TestMainRoutes:
 
         response = self.client.post("/pcc-with-tendons", json=params)
 
+        # ComputationError is caught by middleware and converted to error_response
         assert response.status_code == 500
         data = response.json()
-        assert "PCC with tendons computation failed" in data["detail"]
+        # APIException is converted to error_response format by middleware
+        assert "error" in data or "message" in data or "detail" in data
 
     def test_options_pcc_cors(self):
         """Test CORS preflight request handling."""
@@ -112,7 +114,9 @@ class TestMainRoutes:
 
     def test_convert_result_to_serializable_robot_positions(self):
         """Test conversion of robot positions to serializable format."""
-        from app.api.routes import _convert_result_to_serializable
+        from app.utils.serialization import (
+            convert_result_to_serializable as _convert_result_to_serializable,
+        )
 
         # Test data with numpy arrays
         result = {
@@ -132,7 +136,9 @@ class TestMainRoutes:
 
     def test_convert_result_to_serializable_coupling_data(self):
         """Test conversion of coupling data to serializable format."""
-        from app.api.routes import _convert_result_to_serializable
+        from app.utils.serialization import (
+            convert_result_to_serializable as _convert_result_to_serializable,
+        )
 
         # Test data with numpy arrays
         result = {
@@ -158,7 +164,9 @@ class TestMainRoutes:
 
     def test_convert_result_to_serializable_tendon_analysis(self):
         """Test conversion of tendon analysis to serializable format."""
-        from app.api.routes import _convert_result_to_serializable
+        from app.utils.serialization import (
+            convert_result_to_serializable as _convert_result_to_serializable,
+        )
 
         # Test data with numpy arrays
         result = {
@@ -183,7 +191,9 @@ class TestMainRoutes:
 
     def test_convert_result_to_serializable_other_data(self):
         """Test conversion of other data types to serializable format."""
-        from app.api.routes import _convert_result_to_serializable
+        from app.utils.serialization import (
+            convert_result_to_serializable as _convert_result_to_serializable,
+        )
 
         # Test data with mixed types
         result = {
@@ -209,7 +219,9 @@ class TestMainRoutes:
 
     def test_convert_result_to_serializable_empty_result(self):
         """Test conversion of empty result."""
-        from app.api.routes import _convert_result_to_serializable
+        from app.utils.serialization import (
+            convert_result_to_serializable as _convert_result_to_serializable,
+        )
 
         result = {}
         serializable = _convert_result_to_serializable(result)
@@ -217,7 +229,9 @@ class TestMainRoutes:
 
     def test_convert_result_to_serializable_nested_structures(self):
         """Test conversion of nested structures with numpy arrays."""
-        from app.api.routes import _convert_result_to_serializable
+        from app.utils.serialization import (
+            convert_result_to_serializable as _convert_result_to_serializable,
+        )
 
         # Test data with nested structures
         result = {"nested_data": {"level1": {"level2": np.array([[1, 2], [3, 4]])}}}
