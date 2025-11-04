@@ -5,7 +5,6 @@ This module provides consistent response formats across all API endpoints.
 It standardizes success responses, error handling, and data serialization.
 """
 
-import json
 from datetime import UTC, datetime
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
@@ -18,15 +17,6 @@ T = TypeVar("T")
 
 # Constants
 REQUEST_ID_DESCRIPTION = "Unique request identifier"
-
-
-class DateTimeEncoder(json.JSONEncoder):
-    """Custom JSON encoder to handle datetime objects."""
-
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        return super().default(obj)
 
 
 class APIResponse(BaseModel, Generic[T]):
