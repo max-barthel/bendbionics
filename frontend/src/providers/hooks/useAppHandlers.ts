@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
 import type { RobotConfiguration } from '@/types/robot';
+import { useCallback } from 'react';
 
 export function useAppHandlers(
   state: {

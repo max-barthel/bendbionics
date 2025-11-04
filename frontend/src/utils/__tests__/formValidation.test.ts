@@ -1,5 +1,5 @@
+import { validateRobotConfiguration } from '@/utils/formValidation';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { validateRobotConfiguration } from '../formValidation';
 
 describe('formValidation', () => {
   describe('validateRobotConfiguration', () => {

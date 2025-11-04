@@ -1,8 +1,7 @@
+import Card from '@/components/ui/Card';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
-import React from 'react';
 import { describe, expect, it } from 'vitest';
-import Card from '../Card';
 
 describe('Card', () => {
   describe('Rendering', () => {
@@ -55,14 +54,12 @@ describe('Card', () => {
       render(<Card>Content</Card>);
 
       const card = screen.getByTestId('card');
-      expect(card).toHaveClass(
-        'p-8',
-        'bg-white',
-        'rounded-xl',
-        'shadow-lg',
-        'border',
-        'border-neutral-200'
-      );
+      // Card uses TahoeGlass with enhanced variant, so it should have Tahoe glass styling
+      expect(card).toHaveClass('p-8'); // Card adds this
+      expect(card).toHaveClass('rounded-xl'); // From container preset
+      expect(card).toHaveClass('bg-white/5'); // From enhanced glass variant
+      expect(card).toHaveClass('backdrop-blur-md'); // From enhanced glass variant
+      expect(card).toHaveClass('border'); // From enhanced glass variant
     });
 
     it('applies custom className', () => {
@@ -76,43 +73,27 @@ describe('Card', () => {
       render(<Card className="custom-class">Content</Card>);
 
       const card = screen.getByTestId('card');
-      expect(card).toHaveClass(
-        'p-8',
-        'bg-white',
-        'rounded-xl',
-        'shadow-lg',
-        'border',
-        'border-neutral-200',
-        'custom-class'
-      );
+      expect(card).toHaveClass('p-8'); // Card adds this
+      expect(card).toHaveClass('rounded-xl'); // From container preset
+      expect(card).toHaveClass('custom-class'); // Custom class should be applied
     });
 
     it('handles empty className', () => {
       render(<Card className="">Content</Card>);
 
       const card = screen.getByTestId('card');
-      expect(card).toHaveClass(
-        'p-8',
-        'bg-white',
-        'rounded-xl',
-        'shadow-lg',
-        'border',
-        'border-neutral-200'
-      );
+      expect(card).toHaveClass('p-8'); // Card adds this
+      expect(card).toHaveClass('rounded-xl'); // From container preset
+      expect(card).toHaveClass('bg-white/5'); // From enhanced glass variant
     });
 
     it('handles undefined className', () => {
-      render(<Card className={undefined}>Content</Card>);
+      render(<Card>Content</Card>);
 
       const card = screen.getByTestId('card');
-      expect(card).toHaveClass(
-        'p-8',
-        'bg-white',
-        'rounded-xl',
-        'shadow-lg',
-        'border',
-        'border-neutral-200'
-      );
+      expect(card).toHaveClass('p-8'); // Card adds this
+      expect(card).toHaveClass('rounded-xl'); // From container preset
+      expect(card).toHaveClass('bg-white/5'); // From enhanced glass variant
     });
   });
 

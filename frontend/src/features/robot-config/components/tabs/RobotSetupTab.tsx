@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   AdvancedIcon,
   LightningIcon,
@@ -7,11 +6,12 @@ import {
   UploadIcon,
 } from '@/components/icons';
 import { Button, SliderInput, SubsectionTitle, Typography } from '@/components/ui';
-import { buttonVariants } from '@/styles/design-tokens';
+import ArrayInputGroup from '@/features/robot-config/components/ArrayInputGroup';
 import { CollapsibleSection } from '@/features/shared/components/CollapsibleSection';
 import { TendonConfigPanel } from '@/features/visualization/components/TendonConfigPanel';
+import { buttonVariants } from '@/styles/design-tokens';
 import type { RobotState } from '@/types/robot';
-import ArrayInputGroup from '../ArrayInputGroup';
+import React, { useState } from 'react';
 
 interface RobotSetupTabProps {
   onShowPresetManager?: () => void;
@@ -98,7 +98,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
             <SubsectionTitle title="Backbone Lengths" />
             <Typography
               variant="caption"
-              className="text-gray-500 text-xs break-words mb-2"
+              className="text-gray-500 text-xs wrap-break-words mb-2"
             >
               Adjust the height for each backbone
             </Typography>
@@ -115,7 +115,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
             <SubsectionTitle title="Coupling Lengths" />
             <Typography
               variant="caption"
-              className="text-gray-500 text-xs break-words mb-2"
+              className="text-gray-500 text-xs wrap-break-words mb-2"
             >
               Adjust the height for each coupling
             </Typography>

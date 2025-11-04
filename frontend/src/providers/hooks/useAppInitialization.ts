@@ -1,10 +1,8 @@
-import { useEffect } from 'react';
 import { INITIALIZATION_DELAY } from '@/constants/app';
 import logger, { LogContext } from '@/utils/logger';
+import { useEffect } from 'react';
 
-export function useAppInitialization(
-  setIsInitializing: (value: boolean) => void
-) {
+export function useAppInitialization(setIsInitializing: (value: boolean) => void) {
   useEffect(() => {
     // Test localStorage without alert
     const testKey = 'app_test';

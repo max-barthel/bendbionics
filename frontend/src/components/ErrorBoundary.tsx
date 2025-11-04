@@ -1,6 +1,6 @@
 import { errorBoundaryVariants } from '@/styles/design-tokens';
+import logger, { LogContext } from '@/utils/logger';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import logger, { LogContext } from '../utils/logger';
 
 // Constants for error ID generation
 const RADIX_BASE = 36;

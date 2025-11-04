@@ -1,4 +1,4 @@
-import { LoadingSpinner, Typography } from '../ui';
+import { LoadingSpinner, Typography } from '@/components/ui';
 
 interface LoadingScreenProps {
   readonly isLoading: boolean;

@@ -1,5 +1,5 @@
+import { HTTP_STATUS } from '@/constants/httpStatus';
 import { useCallback, useState } from 'react';
-import { HTTP_STATUS } from '../../../constants/httpStatus';
 
 export type ErrorType = 'network' | 'validation' | 'server' | 'auth' | 'unknown';
 

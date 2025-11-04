@@ -1,18 +1,11 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react';
-import { useNavigate } from 'react-router-dom';
-import type { User } from '@/api/auth';
-import type { RobotState, RobotConfiguration } from '@/types/robot';
 import { useRobotState } from '@/features/robot-config/hooks/useRobotState';
 import { useAuth } from '@/providers/AuthProvider';
-import { useAppHandlers } from '@/hooks/app/useAppHandlers';
-import { usePresetLoading } from '@/hooks/app/usePresetLoading';
-import { useAppInitialization } from '@/hooks/app/useAppInitialization';
+import type { RobotConfiguration, RobotState, User } from '@/types';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppHandlers } from './hooks/useAppHandlers';
+import { useAppInitialization } from './hooks/useAppInitialization';
+import { usePresetLoading } from './hooks/usePresetLoading';
 
 interface AppStateContextType {
   // Auth-related (from AuthProvider)
@@ -83,7 +76,9 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
 
   // Robot state
   const [segments, setSegments] = useState<number[][][]>([]);
-  const [currentConfiguration, setCurrentConfiguration] = useState<RobotConfiguration>({});
+  const [currentConfiguration, setCurrentConfiguration] = useState<RobotConfiguration>(
+    {}
+  );
   const [, setRobotState] = useRobotState();
 
   // UI state
@@ -186,4 +181,3 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
 }
-

@@ -15,7 +15,7 @@ import {
   RADIANS_TO_DEGREES,
   type AngleUnit,
   type LengthUnit,
-} from '../constants/unitConversions';
+} from '@/constants/unitConversions';
 
 // Angle conversion functions
 export const angleConversions = {
@@ -88,4 +88,4 @@ export function getDefaultUnit(mode: 'angle' | 'length'): AngleUnit | LengthUnit
 }
 
 // Export constants for use in components
-export { MAX_ANGLE_DEGREES, MAX_ANGLE_RADIANS } from '../constants/unitConversions';
+export { MAX_ANGLE_DEGREES, MAX_ANGLE_RADIANS } from '@/constants/unitConversions';
