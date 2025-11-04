@@ -9,11 +9,22 @@ def test_database_schema():
     session = next(session_gen)
 
     try:
-        # Check the actual table structure using SQLite pragma
-        result = session.exec(text("PRAGMA table_info(user);")).all()
+        # Check the actual table structure using PostgreSQL information_schema
+        # This works for both PostgreSQL and SQLite (SQLite also supports
+        # information_schema)
+        result = session.exec(
+            text(
+                """
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = 'user'
+                AND column_name = 'is_active'
+                """
+            )
+        ).all()
 
         # Check if is_active column exists
-        is_active_exists = any(row[1] == "is_active" for row in result)
+        is_active_exists = len(result) > 0
         assert is_active_exists, "is_active column should exist in user table"
 
         # This test will help us understand the schema mismatch

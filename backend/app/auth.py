@@ -79,10 +79,14 @@ def verify_token(token: str) -> Optional[TokenData]:
 
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
     session: Session = Depends(get_session),
 ) -> User:
-    """Get current user from JWT token"""
+    """Get current user from JWT token.
+
+    Can be used directly as a dependency:
+    `current_user: User = Depends(get_current_user)`
+    """
     token = credentials.credentials
     token_data = verify_token(token)
     if token_data is None:

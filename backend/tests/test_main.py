@@ -57,7 +57,7 @@ class TestMainApp:
         assert "status" in data
         assert "message" in data
         assert data["status"] == "healthy"
-        assert "BendBionics is running" in data["message"]
+        assert "BendBionics App is running" in data["message"]
 
     def test_static_files_mounting_placeholder(self):
         """Test static files mounting placeholder."""

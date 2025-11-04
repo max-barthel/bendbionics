@@ -9,7 +9,7 @@ import json
 from datetime import UTC, datetime
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -52,7 +52,7 @@ class ErrorResponse(BaseModel):
         default=None, description="Additional error details"
     )
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow, description="Error timestamp"
+        default_factory=lambda: datetime.now(UTC), description="Error timestamp"
     )
     request_id: Optional[str] = Field(default=None, description=REQUEST_ID_DESCRIPTION)
 
@@ -73,14 +73,31 @@ class PaginatedResponse(BaseModel, Generic[T]):
     request_id: Optional[str] = Field(default=None, description=REQUEST_ID_DESCRIPTION)
 
 
+# Helper function to extract request_id from Request or string
+def get_request_id(request_or_id: Optional[Request | str] = None) -> Optional[str]:
+    """Extract request_id from Request object or return string if provided."""
+    if request_or_id is None:
+        return None
+    if isinstance(request_or_id, Request):
+        return getattr(request_or_id.state, "request_id", None)
+    return request_or_id
+
+
 # Response helper functions
 def success_response(
     data: Any = None,
     message: str = "Request completed successfully",
-    request_id: Optional[str] = None,
+    request: Optional[Request | str] = None,
 ) -> JSONResponse:
-    """Create a standardized success response."""
+    """Create a standardized success response.
 
+    Args:
+        data: Response data
+        message: Human-readable message
+        request: Request object or request_id string to extract ID from
+    """
+
+    request_id = get_request_id(request)
     response = APIResponse(
         success=True, data=data, message=message, request_id=request_id
     )
@@ -91,10 +108,17 @@ def success_response(
 def created_response(
     data: Any = None,
     message: str = "Resource created successfully",
-    request_id: Optional[str] = None,
+    request: Optional[Request | str] = None,
 ) -> JSONResponse:
-    """Create a standardized created response."""
+    """Create a standardized created response.
 
+    Args:
+        data: Response data
+        message: Human-readable message
+        request: Request object or request_id string to extract ID from
+    """
+
+    request_id = get_request_id(request)
     response = APIResponse(
         success=True, data=data, message=message, request_id=request_id
     )
@@ -107,10 +131,19 @@ def error_response(
     message: str,
     status_code: int = 400,
     details: Optional[Dict[str, Any]] = None,
-    request_id: Optional[str] = None,
+    request: Optional[Request | str] = None,
 ) -> JSONResponse:
-    """Create a standardized error response."""
+    """Create a standardized error response.
 
+    Args:
+        error_type: Error type/code
+        message: Human-readable error message
+        status_code: HTTP status code
+        details: Additional error details
+        request: Request object or request_id string to extract ID from
+    """
+
+    request_id = get_request_id(request)
     response = ErrorResponse(
         error=error_type,
         message=message,
@@ -131,10 +164,20 @@ def paginated_response(
     per_page: int = 10,
     total: Optional[int] = None,
     message: Optional[str] = None,
-    request_id: Optional[str] = None,
+    request: Optional[Request | str] = None,
 ) -> JSONResponse:
-    """Create a standardized paginated response."""
+    """Create a standardized paginated response.
 
+    Args:
+        data: List of items
+        page: Current page number
+        per_page: Items per page
+        total: Total number of items
+        message: Human-readable message
+        request: Request object or request_id string to extract ID from
+    """
+
+    request_id = get_request_id(request)
     if total is None:
         total = len(data)
 

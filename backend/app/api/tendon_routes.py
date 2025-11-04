@@ -11,7 +11,7 @@ This module provides endpoints for:
 
 from fastapi import APIRouter, Depends
 
-from app.api.responses import ComputationError, success_response
+from app.api.responses import success_response
 from app.auth import get_current_user
 from app.models.pcc.pcc_model import compute_pcc_with_tendons
 from app.models.pcc.types import PCCParams
@@ -33,16 +33,10 @@ async def calculate_tendon_lengths(
     - Tendon routing points
     - Tendon lengths and required actuation
     """
-    try:
-        result = compute_pcc_with_tendons(params)
-        return success_response(
-            data=result, message="Tendon calculation completed successfully"
-        )
-    except Exception as e:
-        raise ComputationError(
-            message="Error calculating tendon lengths",
-            details={"error": str(e)},
-        )
+    result = compute_pcc_with_tendons(params)
+    return success_response(
+        data=result, message="Tendon calculation completed successfully"
+    )
 
 
 @router.post("/analyze")
@@ -57,22 +51,16 @@ async def analyze_tendon_configuration(
     - Tendon routing visualization data
     - Actuation commands for control
     """
-    try:
-        result = compute_pcc_with_tendons(params)
+    result = compute_pcc_with_tendons(params)
 
-        # Extract key information for analysis
-        analysis = {
-            "coupling_data": result.get("coupling_data", {}),
-            "tendon_analysis": result.get("tendon_analysis", {}),
-            "actuation_commands": result.get("actuation_commands", {}),
-            "tendon_config": result.get("tendon_config", {}),
-        }
+    # Extract key information for analysis
+    analysis = {
+        "coupling_data": result.get("coupling_data", {}),
+        "tendon_analysis": result.get("tendon_analysis", {}),
+        "actuation_commands": result.get("actuation_commands", {}),
+        "tendon_config": result.get("tendon_config", {}),
+    }
 
-        return success_response(
-            data=analysis, message="Tendon analysis completed successfully"
-        )
-    except Exception as e:
-        raise ComputationError(
-            message="Error analyzing tendon configuration",
-            details={"error": str(e)},
-        )
+    return success_response(
+        data=analysis, message="Tendon analysis completed successfully"
+    )

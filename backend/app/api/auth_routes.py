@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.security import HTTPAuthorizationCredentials
 from sqlmodel import Session, select
 
 from app.api.responses import (
@@ -15,7 +14,6 @@ from app.auth import (
     create_access_token,
     get_current_user,
     get_password_hash,
-    security,
 )
 from app.config import settings
 from app.database import get_session
@@ -36,7 +34,7 @@ from app.utils.email import (
     get_token_expiry,
     is_token_expired,
 )
-from app.utils.logging import logger
+from app.utils.logging import LogContext, default_logger
 from app.utils.timezone import now_utc
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -142,11 +140,9 @@ async def login(user_data: UserLogin, session: Session = Depends(get_session)):
 
 @router.get("/me")
 async def get_current_user_info(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),  # NOSONAR
 ):
     """Get current user information"""
-    current_user = get_current_user(credentials, session)
     user_response = UserResponse(
         id=current_user.id,
         username=current_user.username,
@@ -165,13 +161,11 @@ async def get_current_user_info(
 @router.put("/me")
 async def update_user_profile(
     user_data: UserUpdate,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),  # NOSONAR
+    session: Session = Depends(get_session),  # NOSONAR
 ):
     """Update user profile (username, email, password)"""
     from app.auth import verify_password
-
-    current_user = get_current_user(credentials, session)
 
     # If changing password or sensitive info, require current password
     if user_data.new_password or user_data.username or user_data.email:
@@ -256,11 +250,10 @@ async def update_user_profile(
 
 @router.delete("/account")
 async def delete_account(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),  # NOSONAR
+    session: Session = Depends(get_session),  # NOSONAR
 ):
     """Delete the current user's account and all associated data"""
-    current_user = get_current_user(credentials, session)
 
     # Delete all presets associated with the user
     from app.models import Preset
@@ -285,9 +278,13 @@ async def verify_email(
     session: Session = Depends(get_session),
 ):
     """Verify user email with token"""
-    from app.utils.logging import logger
-
-    logger.info(f"verify_email called with token: {token}")
+    default_logger.info(
+        LogContext.API,
+        f"verify_email called with token: {token[:10]}...",
+        {},
+        "API",
+        "email_verification",
+    )
 
     try:
         # Query user and convert timezone-aware datetimes to timezone-naive
@@ -302,23 +299,37 @@ async def verify_email(
                     user.email_verification_token_expires.replace(tzinfo=None)
                 )
 
-        logger.info("Database query completed successfully")
+        default_logger.info(
+            LogContext.API,
+            "Database query completed successfully",
+            {},
+            "API",
+            "db_query",
+        )
     except Exception as e:
-        logger.error(f"Database query failed: {e}")
+        default_logger.error(
+            LogContext.API,
+            f"Database query failed: {e}",
+            {"error": str(e)},
+            "API",
+            "db_error",
+        )
         raise
 
     if not user:
-        logger.info("User not found for token")
+        default_logger.info(
+            LogContext.API, "User not found for token", {}, "API", "email_verification"
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification token"
         )
 
-    logger.info(f"User found: {user.username}")
-    logger.info(
-        f"Token expires at: {user.email_verification_token_expires} (type: {type(user.email_verification_token_expires)})"
-    )
-    logger.info(
-        f"Token expires tzinfo: {getattr(user.email_verification_token_expires, 'tzinfo', 'N/A')}"
+    default_logger.info(
+        LogContext.API,
+        f"User found: {user.username}",
+        {"username": user.username},
+        "API",
+        "email_verification",
     )
 
     # Ensure the token expiry is timezone-naive before checking
@@ -449,7 +460,13 @@ async def debug_email_sending(to_email: str, session: Session = Depends(get_sess
     """Debug endpoint to test email sending (development only)"""
     # Only allow in development mode
     if settings.debug:
-        logger.info(f"🧪 Testing email sending to: {to_email}")
+        default_logger.info(
+            LogContext.API,
+            f"Testing email sending to: {to_email}",
+            {"to_email": to_email},
+            "API",
+            "debug_email",
+        )
 
         # Test sending a simple email
         success = await email_service.send_email(
