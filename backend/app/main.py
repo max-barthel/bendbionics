@@ -16,7 +16,7 @@ from app.api.routes import router as pcc_router
 from app.api.tendon_routes import router as tendon_router
 from app.config import Settings
 from app.database import create_db_and_tables
-from app.utils.logging import LogContext, default_logger
+from app.utils.startup import log_startup_info, validate_email_config
 
 settings = Settings()
 
@@ -74,55 +74,9 @@ app.include_router(tendon_router)
 @app.on_event("startup")
 async def startup_event():
     """Initialize database and validate configuration on startup"""
+    log_startup_info()
     create_db_and_tables()
-
-    # Validate Mailgun configuration
-    if settings.email_verification_enabled:
-        if not settings.mailgun_api_key or not settings.mailgun_domain:
-            default_logger.warning(
-                LogContext.GENERAL,
-                "EMAIL_VERIFICATION_ENABLED=true but Mailgun credentials are missing!",
-                {},
-                "Startup",
-                "config_warning",
-            )
-            default_logger.warning(
-                LogContext.GENERAL,
-                "Set MAILGUN_API_KEY and MAILGUN_DOMAIN environment variables",
-                {},
-                "Startup",
-                "config_warning",
-            )
-            default_logger.warning(
-                LogContext.GENERAL,
-                "Email verification will not work until credentials are configured",
-                {},
-                "Startup",
-                "config_warning",
-            )
-        else:
-            default_logger.info(
-                LogContext.GENERAL,
-                "Mailgun configuration found - email verification enabled",
-                {
-                    "domain": settings.mailgun_domain,
-                    "region": settings.mailgun_region,
-                    "from_email": settings.mailgun_from_email,
-                },
-                "Startup",
-                "config_success",
-            )
-    else:
-        default_logger.info(
-            LogContext.GENERAL,
-            (
-                "Email verification disabled - verification links will be "
-                "logged to console"
-            ),
-            {},
-            "Startup",
-            "config_info",
-        )
+    validate_email_config()
 
 
 # Mount static files for frontend

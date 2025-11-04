@@ -10,10 +10,19 @@ class TestAPIRoutes:
 
     def setup_method(self):
         """Setup test client."""
+        from app.api.middleware import CORSMiddleware
         from fastapi import FastAPI
 
         app = FastAPI()
         app.include_router(router)
+        # Add CORS middleware for OPTIONS request testing
+        # Use ["*"] to match test expectations
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            allow_headers=["*"],
+        )
         self.client = TestClient(app)
 
     def test_run_pcc_success(self):

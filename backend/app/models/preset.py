@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.utils.timezone import now_utc
+
 if TYPE_CHECKING:
     from .user import User
 
@@ -17,8 +19,8 @@ class PresetBase(SQLModel):
 
 class Preset(PresetBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=now_utc)
+    updated_at: datetime = Field(default_factory=now_utc)
 
     # Foreign key to user
     user_id: int = Field(foreign_key="user.id")
