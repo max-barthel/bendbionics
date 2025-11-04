@@ -4,8 +4,12 @@ from typing import Optional
 
 from sqlmodel import Session, select
 
+from app.api.responses import AuthenticationError, ValidationError
 from app.models.user import User, UserResponse, UserUpdate
-from app.services.preset_service import get_user_presets
+from app.services.db_helpers import save_and_refresh
+from app.services.preset_service import delete_user_presets
+from app.services.token_service import TokenType, is_token_expired
+from app.utils.timezone import now_utc_naive
 
 
 def get_user_by_username(session: Session, username: str) -> Optional[User]:
@@ -95,9 +99,7 @@ def delete_user_account(session: Session, user: User) -> None:
         user: User to delete
     """
     # Delete all presets associated with the user
-    user_presets = get_user_presets(session, user.id)
-    for preset in user_presets:
-        session.delete(preset)
+    delete_user_presets(session, user.id)
 
     # Delete the user account
     session.delete(user)
@@ -117,19 +119,11 @@ def verify_user_email(session: Session, token: str) -> User:
     Raises:
         ValidationError: If token is invalid or expired
     """
-    from app.services.db_helpers import save_and_refresh
-    from app.services.token_service import is_token_expired
-    from app.utils.timezone import now_utc_naive
-
     user = get_user_by_verification_token(session, token)
     if not user:
-        from app.api.responses import ValidationError
-
         raise ValidationError(message="Invalid verification token")
 
     if is_token_expired(user.email_verification_token_expires):
-        from app.api.responses import ValidationError
-
         raise ValidationError(message="Verification token has expired")
 
     # Mark email as verified
@@ -168,10 +162,6 @@ def update_user_profile(
         ValidationError: If validation fails
         AuthenticationError: If authentication fails
     """
-    from app.api.responses import AuthenticationError, ValidationError
-    from app.services.db_helpers import save_and_refresh
-    from app.utils.timezone import now_utc_naive
-
     verification_token = None
 
     # If changing password or sensitive info, require current password
@@ -210,7 +200,7 @@ def update_user_profile(
 
         # Generate new verification token
         verification_token = generate_verification_token_func()
-        token_expires = validate_and_get_token_expiry_func("verification")
+        token_expires = validate_and_get_token_expiry_func(TokenType.VERIFICATION)
         user.email_verification_token = verification_token
         user.email_verification_token_expires = token_expires
 

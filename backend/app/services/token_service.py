@@ -2,10 +2,18 @@
 
 import secrets
 from datetime import datetime, timedelta
-from typing import Literal, Optional
+from enum import Enum
+from typing import Optional
 
 from app.config import settings
 from app.utils.timezone import now_utc, now_utc_naive
+
+
+class TokenType(str, Enum):
+    """Token type enumeration."""
+
+    VERIFICATION = "verification"
+    RESET = "reset"
 
 
 def generate_verification_token() -> str:
@@ -50,16 +58,16 @@ def is_token_expired(expires: Optional[datetime]) -> bool:
 
 
 def validate_and_get_token_expiry(
-    token_type: Literal["verification", "reset"] = "verification",  # noqa: S107
+    token_type: TokenType = TokenType.VERIFICATION,
 ) -> datetime:
     """Get token expiry based on token type.
 
     Args:
-        token_type: Type of token ('verification' or 'reset')
+        token_type: Type of token (TokenType.VERIFICATION or TokenType.RESET)
 
     Returns:
         Token expiry datetime
     """
-    if token_type == "reset":
+    if token_type == TokenType.RESET:
         return get_token_expiry(settings.password_reset_token_expire_hours)
     return get_token_expiry(settings.email_verification_token_expire_hours)
