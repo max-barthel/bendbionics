@@ -6,12 +6,13 @@ from sqlmodel import Session
 from app.api.responses import NotFoundError, created_response, success_response
 from app.auth import get_current_user
 from app.database import get_session
-from app.models import Preset, PresetCreate, PresetResponse, PresetUpdate
+from app.models import Preset, PresetCreate, PresetUpdate
 from app.models.user import User
 from app.services.db_helpers import save_and_refresh
 from app.services.preset_service import (
     get_preset_for_user,
     get_user_preset_by_id,
+    preset_to_response,
 )
 from app.services.preset_service import (
     get_public_presets as get_public_presets_service,
@@ -24,20 +25,6 @@ router = APIRouter(prefix="/presets", tags=["presets"])
 
 # Constants
 PRESET_NOT_FOUND_MSG = "Preset not found"
-
-
-def preset_to_response(preset: Preset) -> PresetResponse:
-    """Convert Preset model to PresetResponse DTO."""
-    return PresetResponse(
-        id=preset.id,
-        name=preset.name,
-        description=preset.description,
-        is_public=preset.is_public,
-        configuration=preset.config_dict,
-        created_at=preset.created_at,
-        updated_at=preset.updated_at,
-        user_id=preset.user_id,
-    )
 
 
 @router.post("/")
