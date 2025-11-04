@@ -83,6 +83,34 @@ def get_request_id(request_or_id: Optional[Request | str] = None) -> Optional[st
     return request_or_id
 
 
+def serialize_response_data(data: Any) -> Any:
+    """Serialize response data, handling Pydantic models automatically.
+
+    Args:
+        data: Data to serialize (can be Pydantic model, dict, list, or primitive)
+
+    Returns:
+        Serialized data ready for JSON response
+    """
+    if data is None:
+        return None
+
+    # Handle Pydantic models
+    if isinstance(data, BaseModel):
+        return data.model_dump(mode="json")
+
+    # Handle lists of Pydantic models
+    if isinstance(data, list):
+        return [serialize_response_data(item) for item in data]
+
+    # Handle dicts (recursively serialize values)
+    if isinstance(data, dict):
+        return {key: serialize_response_data(value) for key, value in data.items()}
+
+    # Return primitives as-is
+    return data
+
+
 # Response helper functions
 def success_response(
     data: Any = None,
@@ -92,14 +120,15 @@ def success_response(
     """Create a standardized success response.
 
     Args:
-        data: Response data
+        data: Response data (automatically serialized if Pydantic model)
         message: Human-readable message
         request: Request object or request_id string to extract ID from
     """
 
     request_id = get_request_id(request)
+    serialized_data = serialize_response_data(data)
     response = APIResponse(
-        success=True, data=data, message=message, request_id=request_id
+        success=True, data=serialized_data, message=message, request_id=request_id
     )
 
     return JSONResponse(status_code=200, content=response.model_dump(mode="json"))
@@ -113,14 +142,15 @@ def created_response(
     """Create a standardized created response.
 
     Args:
-        data: Response data
+        data: Response data (automatically serialized if Pydantic model)
         message: Human-readable message
         request: Request object or request_id string to extract ID from
     """
 
     request_id = get_request_id(request)
+    serialized_data = serialize_response_data(data)
     response = APIResponse(
-        success=True, data=data, message=message, request_id=request_id
+        success=True, data=serialized_data, message=message, request_id=request_id
     )
 
     return JSONResponse(status_code=201, content=response.model_dump(mode="json"))
@@ -169,7 +199,7 @@ def paginated_response(
     """Create a standardized paginated response.
 
     Args:
-        data: List of items
+        data: List of items (automatically serialized if Pydantic models)
         page: Current page number
         per_page: Items per page
         total: Total number of items
@@ -181,6 +211,7 @@ def paginated_response(
     if total is None:
         total = len(data)
 
+    serialized_data = serialize_response_data(data)
     pagination = {
         "page": page,
         "per_page": per_page,
@@ -191,7 +222,7 @@ def paginated_response(
     }
 
     response = PaginatedResponse(
-        data=data,
+        data=serialized_data,
         pagination=pagination,
         message=message,
         request_id=request_id,

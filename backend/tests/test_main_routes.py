@@ -11,10 +11,12 @@ class TestMainRoutes:
 
     def setup_method(self):
         """Setup test client."""
-        from app.api.middleware import CORSMiddleware
+        from app.api.middleware import CORSMiddleware, ErrorHandlingMiddleware
 
         app = FastAPI()
         app.include_router(router)
+        # Add error handling middleware to catch exceptions
+        app.add_middleware(ErrorHandlingMiddleware)
         # Add CORS middleware for OPTIONS request testing
         # Use ["*"] to match test expectations
         app.add_middleware(

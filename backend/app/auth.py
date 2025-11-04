@@ -30,27 +30,38 @@ security = HTTPBearer()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash"""
+    """Verify a password against its hash.
+
+    Supports both pbkdf2_sha256 (new users) and bcrypt (legacy users)
+    via CryptContext, with fallback to direct bcrypt for compatibility.
+    """
+    # Try CryptContext first (handles both schemes)
     try:
         return pwd_context.verify(plain_password, hashed_password)
     except Exception:
-        # Fallback to direct bcrypt verification for bcrypt hashes
-        if hashed_password.startswith("$2b$"):
-            try:
-                return bcrypt.checkpw(
-                    plain_password.encode("utf-8"), hashed_password.encode("utf-8")
-                )
-            except Exception:
-                return False
-        return False
+        pass
+
+    # Fallback to direct bcrypt for legacy bcrypt hashes
+    if hashed_password.startswith("$2b$"):
+        try:
+            return bcrypt.checkpw(
+                plain_password.encode("utf-8"), hashed_password.encode("utf-8")
+            )
+        except Exception:
+            pass
+
+    return False
 
 
 def get_password_hash(password: str) -> str:
-    """Hash a password using bcrypt"""
+    """Hash a password using pbkdf2_sha256 (via CryptContext).
+
+    New passwords use pbkdf2_sha256. Falls back to bcrypt if CryptContext fails.
+    """
     try:
         return pwd_context.hash(password)
     except Exception:
-        # Fallback to direct bcrypt hashing
+        # Fallback to direct bcrypt hashing if CryptContext fails
         salt = bcrypt.gensalt()
         return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 

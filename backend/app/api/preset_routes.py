@@ -1,14 +1,14 @@
-import json
-
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
 from app.api.responses import NotFoundError, created_response, success_response
 from app.auth import get_current_user
 from app.database import get_session
-from app.models import Preset, PresetCreate, PresetUpdate
+from app.models import PresetCreate, PresetUpdate
 from app.models.user import User
-from app.services.db_helpers import save_and_refresh
+from app.services.preset_service import (
+    create_preset as create_preset_service,
+)
 from app.services.preset_service import (
     get_preset_for_user,
     get_user_preset_by_id,
@@ -19,6 +19,9 @@ from app.services.preset_service import (
 )
 from app.services.preset_service import (
     get_user_presets as get_user_presets_service,
+)
+from app.services.preset_service import (
+    update_preset as update_preset_service,
 )
 
 router = APIRouter(prefix="/presets", tags=["presets"])
@@ -35,18 +38,10 @@ async def create_preset(
 ):
     """Create a new preset for the current user"""
 
-    preset = Preset(
-        name=preset_data.name,
-        description=preset_data.description,
-        is_public=preset_data.is_public,
-        configuration=json.dumps(preset_data.configuration),
-        user_id=current_user.id,
-    )
-
-    save_and_refresh(session, preset)
+    preset = create_preset_service(session, preset_data, current_user.id)
 
     return created_response(
-        data=preset_to_response(preset).model_dump(mode="json"),
+        data=preset_to_response(preset),
         message="Preset created successfully",
     )
 
@@ -63,7 +58,7 @@ async def get_user_presets(
     preset_responses = [preset_to_response(preset) for preset in presets]
 
     return success_response(
-        data=[pr.model_dump(mode="json") for pr in preset_responses],
+        data=preset_responses,
         message="User presets retrieved successfully",
     )
 
@@ -76,7 +71,7 @@ async def get_public_presets(session: Session = Depends(get_session)):
     preset_responses = [preset_to_response(preset) for preset in presets]
 
     return success_response(
-        data=[pr.model_dump(mode="json") for pr in preset_responses],
+        data=preset_responses,
         message="Public presets retrieved successfully",
     )
 
@@ -95,7 +90,7 @@ async def get_preset(
         raise NotFoundError(PRESET_NOT_FOUND_MSG)
 
     return success_response(
-        data=preset_to_response(preset).model_dump(mode="json"),
+        data=preset_to_response(preset),
         message="Preset retrieved successfully",
     )
 
@@ -114,20 +109,10 @@ async def update_preset(
     if not preset:
         raise NotFoundError(PRESET_NOT_FOUND_MSG)
 
-    # Update fields if provided
-    if preset_data.name is not None:
-        preset.name = preset_data.name
-    if preset_data.description is not None:
-        preset.description = preset_data.description
-    if preset_data.is_public is not None:
-        preset.is_public = preset_data.is_public
-    if preset_data.configuration is not None:
-        preset.configuration = json.dumps(preset_data.configuration)
-
-    save_and_refresh(session, preset)
+    updated_preset = update_preset_service(session, preset, preset_data)
 
     return success_response(
-        data=preset_to_response(preset).model_dump(mode="json"),
+        data=preset_to_response(updated_preset),
         message="Preset updated successfully",
     )
 

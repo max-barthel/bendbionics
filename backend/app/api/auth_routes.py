@@ -29,6 +29,7 @@ from app.models import (
 )
 from app.services.db_helpers import save_and_refresh
 from app.services.token_service import (
+    TokenType,
     generate_password_reset_token,
     generate_verification_token,
     is_token_expired,
@@ -72,7 +73,7 @@ async def register(user_data: UserCreate, session: Session = Depends(get_session
 
     # Generate verification token
     verification_token = generate_verification_token()
-    token_expires = validate_and_get_token_expiry("verification")
+    token_expires = validate_and_get_token_expiry(TokenType.VERIFICATION)
 
     # Create new user
     hashed_password = get_password_hash(user_data.password)
@@ -105,7 +106,7 @@ async def register(user_data: UserCreate, session: Session = Depends(get_session
         )
 
     return created_response(
-        data=user_response.model_dump(mode="json"),
+        data=user_response,
         message=message,
     )
 
@@ -144,7 +145,7 @@ async def get_current_user_info(
     user_response = user_to_response(current_user)
 
     return success_response(
-        data=user_response.model_dump(mode="json"),
+        data=user_response,
         message="User information retrieved successfully",
     )
 
@@ -180,7 +181,7 @@ async def update_user_profile(
     user_response = user_to_response(updated_user)
 
     return success_response(
-        data=user_response.model_dump(mode="json"),
+        data=user_response,
         message="Profile updated successfully",
     )
 
@@ -252,7 +253,7 @@ async def resend_verification(
 
     # Generate new verification token
     verification_token = generate_verification_token()
-    token_expires = validate_and_get_token_expiry("verification")
+    token_expires = validate_and_get_token_expiry(TokenType.VERIFICATION)
 
     user.email_verification_token = verification_token
     user.email_verification_token_expires = token_expires
@@ -283,7 +284,7 @@ async def request_password_reset(
 
     # Generate password reset token
     reset_token = generate_password_reset_token()
-    token_expires = validate_and_get_token_expiry("reset")
+    token_expires = validate_and_get_token_expiry(TokenType.RESET)
 
     user.password_reset_token = reset_token
     user.password_reset_token_expires = token_expires
