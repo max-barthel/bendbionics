@@ -1,7 +1,6 @@
+import ProgressIndicator from '@/components/ui/ProgressIndicator';
 import { render, screen } from '@testing-library/react';
-import React from 'react';
 import { describe, expect, it } from 'vitest';
-import ProgressIndicator from '../ProgressIndicator';
 
 describe('ProgressIndicator', () => {
   it('renders with default message', () => {

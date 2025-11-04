@@ -2,6 +2,7 @@ import { ControlIcon, RobotIcon } from '@/components/icons';
 import { TabPanel, Tabs } from '@/components/ui';
 import { DEBOUNCE_DELAYS, STATE_SYNC_DELAYS } from '@/constants/timing';
 import { useConfigurationLoader } from '@/features/presets/hooks/useConfigurationLoader';
+import { useRobotState } from '@/features/robot-config/hooks/useRobotState';
 import {
   createPCCParams,
   handleRegularComputation,
@@ -19,7 +20,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useRobotState } from '../hooks/useRobotState';
 import { ControlTab } from './tabs/ControlTab';
 import { RobotSetupTab } from './tabs/RobotSetupTab';
 
@@ -142,10 +142,10 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
           tabs={tabs}
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          className="flex-shrink-0 mt-4"
+          className="shrink-0 mt-4"
         />
 
-        <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-white/10 to-white/5 min-h-0 scrollbar-hide relative">
+        <div className="flex-1 overflow-y-auto p-4 bg-linear-to-b from-white/10 to-white/5 min-h-0 scrollbar-hide relative">
           <TabPanel id="setup" activeTab={activeTab}>
             <RobotSetupTab
               {...(onShowPresetManager && { onShowPresetManager })}

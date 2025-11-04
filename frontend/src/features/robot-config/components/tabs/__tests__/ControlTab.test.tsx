@@ -1,18 +1,17 @@
+import { ControlTab } from '@/features/robot-config/components/tabs/ControlTab';
+import type { RobotState } from '@/types/robot';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
-import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { type RobotState } from '../../../hooks/useRobotState';
-import { ControlTab } from '../ControlTab';
 
 // Mock the components
-vi.mock('../../../shared/components/AngleControlPanel', () => ({
+vi.mock('@/features/shared/components/AngleControlPanel', () => ({
   AngleControlPanel: vi.fn(() => (
     <div data-testid="angle-control-panel">Angle Control Panel</div>
   )),
 }));
 
-vi.mock('../../../shared/components/CollapsibleSection', () => ({
+vi.mock('@/features/shared/components/CollapsibleSection', () => ({
   CollapsibleSection: vi.fn(({ children, title }) => (
     <div data-testid="collapsible-section">
       <div>{title}</div>
@@ -21,7 +20,7 @@ vi.mock('../../../shared/components/CollapsibleSection', () => ({
   )),
 }));
 
-vi.mock('../../../../components/icons', () => ({
+vi.mock('@/components/icons', () => ({
   BendingIcon: vi.fn(() => <div data-testid="bending-icon" />),
   RotationIcon: vi.fn(() => <div data-testid="rotation-icon" />),
   UploadIcon: vi.fn(() => <div data-testid="upload-icon" />),
@@ -81,11 +80,12 @@ describe('ControlTab', () => {
       <ControlTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    // Look for collapsible sections by their button elements
-    const collapsibleButtons = screen
-      .getAllByRole('button')
-      .filter(button => button.textContent?.includes('Bending Angles'));
-    expect(collapsibleButtons.length).toBeGreaterThan(0);
+    // Look for collapsible sections by their testid (from mock)
+    const collapsibleSections = screen.getAllByTestId('collapsible-section');
+    expect(collapsibleSections.length).toBeGreaterThan(0);
+    // Check that sections contain the expected titles
+    expect(screen.getByText('Bending Angles')).toBeInTheDocument();
+    expect(screen.getByText('Rotation Angles')).toBeInTheDocument();
   });
 
   it('renders angle control panels', () => {
@@ -95,7 +95,10 @@ describe('ControlTab', () => {
 
     // Look for angle control elements by their content
     expect(screen.getByText('Bending Angles')).toBeInTheDocument();
-    expect(screen.getAllByText('Select Segment to Adjust')).toHaveLength(2);
+    expect(screen.getByText('Rotation Angles')).toBeInTheDocument();
+    // AngleControlPanel is mocked, so we check for the mock testid
+    const anglePanels = screen.getAllByTestId('angle-control-panel');
+    expect(anglePanels.length).toBe(2); // One for bending, one for rotation
   });
 
   it('renders upload icon', () => {

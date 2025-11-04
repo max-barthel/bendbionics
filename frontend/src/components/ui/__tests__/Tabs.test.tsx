@@ -1,8 +1,7 @@
+import { TabPanel, Tabs } from '@/components/ui/Tabs';
 import '@testing-library/jest-dom';
 import { fireEvent, render, screen } from '@testing-library/react';
-import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { TabPanel, Tabs } from '../Tabs';
 
 describe('Tabs', () => {
   const mockOnTabChange = vi.fn();
@@ -150,9 +149,9 @@ describe('Tabs', () => {
       render(<Tabs tabs={mockTabs} activeTab="tab1" onTabChange={mockOnTabChange} />);
 
       const tabButtons = screen.getAllByRole('button');
-      tabButtons.forEach(button => {
+      for (const button of tabButtons) {
         expect(button).toBeInTheDocument();
-      });
+      }
     });
 
     it('maintains accessibility with icons', () => {

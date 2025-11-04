@@ -1,6 +1,6 @@
+import { HTTP_STATUS } from '@/constants/httpStatus';
 import type { TendonConfig } from '@/types';
 import axios from 'axios';
-import { HTTP_STATUS } from '../constants/httpStatus';
 
 // Define the PCCParams type to match backend
 export interface PCCParams {

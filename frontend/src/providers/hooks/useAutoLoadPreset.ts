@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
 import { presetAPI } from '@/api/auth';
 import { INITIALIZATION_DELAY, PRESET_LOAD_DELAY } from '@/constants/app';
 import type { RobotConfiguration } from '@/types/robot';
 import logger, { LogContext } from '@/utils/logger';
+import { useEffect, useRef } from 'react';
 
 export function useAutoLoadPreset(
   segments: number[][][],

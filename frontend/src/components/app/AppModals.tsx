@@ -1,6 +1,6 @@
-import { Profile } from '../auth/Profile';
-import { PresetManagerModal } from './PresetManagerModal';
+import { Profile } from '@/components/auth/Profile';
 import { useAppState } from '@/providers';
+import { PresetManagerModal } from './PresetManagerModal';
 
 interface AppModalsProps {
   readonly onAfterLoadPreset: () => void;

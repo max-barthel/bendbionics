@@ -1,3 +1,11 @@
+import { authAPI } from '@/api/auth';
+import type {
+  LoginRequest,
+  RegisterRequest,
+  RegisterResponse,
+  UpdateProfileRequest,
+  User,
+} from '@/types';
 import {
   createContext,
   useCallback,
@@ -7,14 +15,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  authAPI,
-  type LoginRequest,
-  type RegisterRequest,
-  type RegisterResponse,
-  type UpdateProfileRequest,
-  type User,
-} from '../api/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -223,4 +223,4 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Always provide the context, even if there are errors
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+}

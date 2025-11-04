@@ -1,5 +1,5 @@
+import { messageVariants } from '@/styles/design-tokens';
 import React from 'react';
-import { messageVariants } from '../../styles/design-tokens';
 
 interface FormMessageProps {
   readonly message: string;
@@ -28,7 +28,9 @@ export function FormMessage({
     if (type === 'error') {
       return variant === 'glass' ? messageVariants.errorGlass : messageVariants.error;
     }
-    return variant === 'glass' ? messageVariants.successShadow : messageVariants.success;
+    return variant === 'glass'
+      ? messageVariants.successShadow
+      : messageVariants.success;
   };
 
   const baseClasses = getBaseClasses();
@@ -68,4 +70,3 @@ export function FormMessage({
     </div>
   );
 }
-

@@ -1,4 +1,4 @@
-import SubmitButton from '../SubmitButton';
+import SubmitButton from '@/features/robot-config/components/SubmitButton';
 
 interface FormActionsProps {
   readonly onSubmit: () => void;

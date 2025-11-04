@@ -1,6 +1,6 @@
-import React from 'react';
 import { shadows } from '@/styles/design-tokens';
 import { cn } from '@/styles/tahoe-utils';
+import React from 'react';
 import TahoeGlass from './TahoeGlass';
 
 type CardProps = {

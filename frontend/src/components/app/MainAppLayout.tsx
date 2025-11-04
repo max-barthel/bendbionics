@@ -1,6 +1,6 @@
 import type { FormTabsRef } from '@/features/robot-config/components/FormTabs';
-import { useAutoLoadPreset } from '@/hooks/app/useAutoLoadPreset';
 import { useAppState } from '@/providers';
+import { useAutoLoadPreset } from '@/providers/hooks/useAutoLoadPreset';
 import { backgroundGradients } from '@/styles/design-tokens';
 import { useCallback, useRef } from 'react';
 import { AppModals } from './AppModals';

@@ -47,7 +47,9 @@
       "@/api/*": ["src/api/*"],
       "@/hooks/*": ["src/hooks/*"],
       "@/features/*": ["src/features/*"],
-      "@/styles/*": ["src/styles/*"]
+      "@/styles/*": ["src/styles/*"],
+      "@/constants/*": ["src/constants/*"],
+      "@/providers/*": ["src/providers/*"]
     },
 
     /* Performance */
@@ -55,14 +57,5 @@
     "tsBuildInfoFile": ".tsbuildinfo"
   },
   "include": ["src/**/*", "src/**/*.ts", "src/**/*.tsx", "src/**/*.js", "src/**/*.jsx"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    "coverage",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.ts",
-    "**/*.spec.tsx"
-  ]
+  "exclude": ["node_modules", "dist", "build", "coverage"]
 }
