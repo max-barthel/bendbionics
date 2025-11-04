@@ -1,6 +1,7 @@
 import React from 'react';
-import NumberInput from '../../features/shared/components/NumberInput';
-import { combineStyles, getTahoeGlassStyles } from '../../styles/tahoe-utils';
+import { sliderVariants } from '@/styles/design-tokens';
+import { cn, getTahoeGlassPreset } from '@/styles/tahoe-utils';
+import NumberInput from './NumberInput';
 
 // Constants
 const DEFAULT_MAX_VALUE = 2000;
@@ -22,18 +23,11 @@ type SliderInputProps = {
 
 // Range display component
 function RangeDisplay({ min, max }: { readonly min: number; readonly max: number }) {
-  const rangeDisplayClasses = getTahoeGlassStyles(
-    'subtle',
-    'glass',
-    'full',
-    'standard',
-    'white',
-    'glass'
-  );
+  const rangeDisplayClasses = getTahoeGlassPreset('sliderRange');
 
   return (
     <div
-      className={combineStyles(
+      className={cn(
         'text-xs text-gray-600 px-3 py-1.5 bg-gradient-to-br from-white/15 to-white/5 shadow-lg',
         rangeDisplayClasses
       )}
@@ -79,7 +73,7 @@ function Slider({
       {...(onBlur && { onTouchEnd: onBlur })}
       disabled={disabled}
       aria-label={label ?? 'Slider input'}
-      className={`w-full h-2 appearance-none cursor-pointer rounded-full bg-white/20 backdrop-blur-xl border-2 border-white/40 shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-400/50 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white/50 [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-300 [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:bg-gradient-to-br [&::-webkit-slider-thumb]:from-blue-500/90 [&::-webkit-slider-thumb]:to-indigo-600/90 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-blue-500/30 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white/50 [&::-moz-range-thumb]:shadow-lg [&::-moz-range-thumb]:bg-gradient-to-br [&::-moz-range-thumb]:from-blue-500/90 [&::-moz-range-thumb]:to-indigo-600/90`}
+      className={sliderVariants.input}
     />
   );
 }
@@ -104,7 +98,7 @@ function SliderInput({
   const sliderId = `slider-${label ? label.toLowerCase().split(/\s+/).join('-') : 'input'}`;
 
   return (
-    <div className={combineStyles('space-y-4', className)}>
+    <div className={cn('space-y-4', className)}>
       {label && (
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-800">{label}</span>

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { BendingIcon, RotationIcon, UploadIcon } from '../../../../components/icons';
-import { Typography } from '../../../../components/ui';
-import { AngleControlPanel } from '../../../shared/components/AngleControlPanel';
-import { CollapsibleSection } from '../../../shared/components/CollapsibleSection';
-import { type RobotState } from '../../hooks/useRobotState';
+import { BendingIcon, RotationIcon, UploadIcon } from '@/components/icons';
+import { Button, Typography } from '@/components/ui';
+import { AngleControlPanel } from '@/features/shared/components/AngleControlPanel';
+import { CollapsibleSection } from '@/features/shared/components/CollapsibleSection';
+import type { RobotState } from '@/types/robot';
 
 interface ControlTabProps {
   onShowPresetManager?: () => void;
@@ -37,16 +37,16 @@ export const ControlTab: React.FC<ControlTabProps> = ({
         <Typography variant="body" color="gray" className="text-sm mb-12">
           Adjust angles to control movement
         </Typography>
-        <button
+        <Button
+          variant="primary"
           onClick={() => onShowPresetManager?.()}
-          className="w-full mt-6 px-4 py-2 backdrop-blur-xl text-gray-900 text-sm font-medium border border-blue-400/30 shadow-lg transition-all duration-300 rounded-full hover:scale-105 relative bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
+          className="w-full mt-6 px-4 py-2 justify-center"
         >
           <div className="flex items-center justify-center gap-2">
             <UploadIcon className="w-4 h-4" />
             Preset Manager
           </div>
-          <div className="absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
-        </button>
+        </Button>
       </div>
 
       {/* Bending Angles - Main Control */}

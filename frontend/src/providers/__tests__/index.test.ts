@@ -1,5 +1,5 @@
+import { AuthProvider, useAuth } from '@/providers';
 import { describe, expect, it } from 'vitest';
-import { AuthProvider, useAuth } from '../index';
 
 describe('providers/index.ts', () => {
   it('exports AuthProvider', () => {

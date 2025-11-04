@@ -1,7 +1,12 @@
-import { useState } from 'react';
-import { useUnifiedErrorHandler } from '../../features/shared/hooks/useUnifiedErrorHandler';
-import { useAuth } from '../../providers/AuthProvider';
-import { Button, Input, Typography } from '../ui';
+import { Button, Input, Typography } from '@/components/ui';
+import {
+  useAsyncOperation,
+  useFormFields,
+  useUnifiedErrorHandler,
+} from '@/features/shared';
+import { useAuth } from '@/providers/AuthProvider';
+import { buttonVariants } from '@/styles/design-tokens';
+import { validatePassword, validatePasswordMatch } from '@/utils/passwordValidation';
 
 interface EditProfileProps {
   onCancel: () => void;
@@ -11,42 +16,69 @@ interface EditProfileProps {
 export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess }) => {
   const { user, updateProfile } = useAuth();
 
-  // Edit form state
-  const [username, setUsername] = useState(user?.username || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isUpdating, setIsUpdating] = useState(false);
+  // Manage form fields with useFormFields hook
+  const fields = useFormFields([
+    { name: 'username', initialValue: user?.username || '' },
+    { name: 'email', initialValue: user?.email || '' },
+    { name: 'currentPassword', initialValue: '' },
+    { name: 'newPassword', initialValue: '' },
+    { name: 'confirmPassword', initialValue: '' },
+  ]);
 
-  // Use unified error handler
-  const { error, showError, hideError, handleAuthError } = useUnifiedErrorHandler();
+  const usernameField = fields.getFieldByName('username')!;
+  const emailField = fields.getFieldByName('email')!;
+  const currentPasswordField = fields.getFieldByName('currentPassword')!;
+  const newPasswordField = fields.getFieldByName('newPassword')!;
+  const confirmPasswordField = fields.getFieldByName('confirmPassword')!;
+
+  // Use unified error handler for validation errors (shown before async operation)
+  const { showError } = useUnifiedErrorHandler();
+
+  // Use async operation hook for the actual profile update
+  const {
+    isLoading: isUpdating,
+    error,
+    execute,
+  } = useAsyncOperation({
+    onSuccess: () => {
+      // If email was changed, show verification message
+      let message = 'Profile updated successfully!';
+      if (emailField.value !== user?.email) {
+        message =
+          'Profile updated! Please check the server logs for your verification link.';
+      }
+      onSuccess(message);
+    },
+  });
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    hideError();
+
+    const values = fields.getValues();
+
+    // Extract values with defaults to avoid undefined issues
+    const newPassword = values['newPassword'] ?? '';
+    const confirmPassword = values['confirmPassword'] ?? '';
+    const currentPassword = values['currentPassword'] ?? '';
+    const username = values['username'] ?? '';
+    const email = values['email'] ?? '';
 
     // Validate password confirmation if changing password
-    if (newPassword && newPassword !== confirmPassword) {
-      showError('validation', 'New passwords do not match');
-      return;
-    }
-
-    // Validate password strength if changing password
     if (newPassword) {
-      const MIN_PASSWORD_LENGTH = 8;
-      const MAX_PASSWORD_BYTES = 72; // bcrypt limit
-
-      if (newPassword.length < MIN_PASSWORD_LENGTH) {
-        showError('validation', 'New password must be at least 8 characters long');
+      const matchValidation = validatePasswordMatch(
+        newPassword,
+        confirmPassword,
+        'New passwords'
+      );
+      if (!matchValidation.isValid && matchValidation.error) {
+        showError('validation', matchValidation.error);
         return;
       }
 
-      if (new TextEncoder().encode(newPassword).length > MAX_PASSWORD_BYTES) {
-        showError(
-          'validation',
-          'New password is too long. Please use 72 characters or less.'
-        );
+      // Validate password strength
+      const passwordValidation = validatePassword(newPassword, 'New password');
+      if (!passwordValidation.isValid && passwordValidation.error) {
+        showError('validation', passwordValidation.error);
         return;
       }
     }
@@ -66,9 +98,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
       return;
     }
 
-    setIsUpdating(true);
-
-    try {
+    await execute(async () => {
       const updateData: {
         username?: string;
         email?: string;
@@ -89,20 +119,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
       }
 
       await updateProfile(updateData);
-
-      // If email was changed, show verification message
-      let message = 'Profile updated successfully!';
-      if (email !== user?.email) {
-        message =
-          'Profile updated! Please check the server logs for your verification link.';
-      }
-
-      onSuccess(message);
-    } catch (err: unknown) {
-      handleAuthError(err);
-    } finally {
-      setIsUpdating(false);
-    }
+    });
   };
 
   return (
@@ -126,8 +143,8 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
         <Input
           id="username"
           type="text"
-          value={username}
-          onChange={(value: string | number) => setUsername(String(value))}
+          value={usernameField.value}
+          onChange={usernameField.setValue}
           placeholder="Enter username"
           className="w-full"
         />
@@ -140,12 +157,12 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
         <Input
           id="email"
           type="email"
-          value={email}
-          onChange={(value: string | number) => setEmail(String(value))}
+          value={emailField.value}
+          onChange={emailField.setValue}
           placeholder="Enter email"
           className="w-full"
         />
-        {email !== user?.email && (
+        {emailField.value !== user?.email && (
           <p className="text-xs text-orange-600 mt-1">
             Changing email will require re-verification
           </p>
@@ -168,14 +185,14 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
             <Input
               id="newPassword"
               type="password"
-              value={newPassword}
-              onChange={(value: string | number) => setNewPassword(String(value))}
+              value={newPasswordField.value}
+              onChange={newPasswordField.setValue}
               placeholder="Enter new password"
               className="w-full"
             />
           </div>
 
-          {newPassword && (
+          {newPasswordField.value && (
             <div>
               <label
                 htmlFor="confirmPassword"
@@ -186,8 +203,8 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
               <Input
                 id="confirmPassword"
                 type="password"
-                value={confirmPassword}
-                onChange={(value: string | number) => setConfirmPassword(String(value))}
+                value={confirmPasswordField.value}
+                onChange={confirmPasswordField.setValue}
                 placeholder="Confirm new password"
                 className="w-full"
               />
@@ -207,8 +224,8 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
           <Input
             id="currentPassword"
             type="password"
-            value={currentPassword}
-            onChange={(value: string | number) => setCurrentPassword(String(value))}
+            value={currentPasswordField.value}
+            onChange={currentPasswordField.setValue}
             placeholder="Enter current password to confirm"
             className="w-full"
           />
@@ -216,23 +233,23 @@ export const EditProfile: React.FC<EditProfileProps> = ({ onCancel, onSuccess })
         </div>
       </div>
 
-      <div className="flex space-x-3 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isUpdating}
-          className="flex-1 border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
-        >
-          Cancel
-        </Button>
+      <div className="flex gap-2 pt-4 justify-between">
         <Button
           type="submit"
-          variant="outline"
+          size="sm"
           disabled={isUpdating}
-          className="flex-1 border border-gray-300 bg-white hover:scale-105 transition-all duration-300 rounded-full py-3"
+          className={buttonVariants.load}
         >
           {isUpdating ? 'Saving...' : 'Save Changes'}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          onClick={onCancel}
+          disabled={isUpdating}
+          className={buttonVariants.delete}
+        >
+          Cancel
         </Button>
       </div>
     </form>

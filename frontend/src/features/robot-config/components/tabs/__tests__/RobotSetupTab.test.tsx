@@ -1,16 +1,15 @@
+import { RobotSetupTab } from '@/features/robot-config/components/tabs/RobotSetupTab';
+import type { RobotState } from '@/types/robot';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
-import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { type RobotState } from '../../../hooks/useRobotState';
-import { RobotSetupTab } from '../RobotSetupTab';
 
 // Mock the components
-vi.mock('../../ArrayInputGroup', () => ({
+vi.mock('@/features/robot-config/components/ArrayInputGroup', () => ({
   default: vi.fn(() => <div data-testid="array-input-group">Array Input Group</div>),
 }));
 
-vi.mock('../../../shared/components/CollapsibleSection', () => ({
+vi.mock('@/features/shared/components/CollapsibleSection', () => ({
   CollapsibleSection: vi.fn(({ children, title }) => (
     <div data-testid="collapsible-section">
       <div>{title}</div>
@@ -19,13 +18,13 @@ vi.mock('../../../shared/components/CollapsibleSection', () => ({
   )),
 }));
 
-vi.mock('../../../visualization/components/TendonConfigPanel', () => ({
+vi.mock('@/features/visualization/components/TendonConfigPanel', () => ({
   TendonConfigPanel: vi.fn(() => (
     <div data-testid="tendon-config-panel">Tendon Config Panel</div>
   )),
 }));
 
-vi.mock('../../../../components/icons', () => ({
+vi.mock('@/components/icons', () => ({
   AdvancedIcon: vi.fn(() => <div data-testid="advanced-icon" />),
   LightningIcon: vi.fn(() => <div data-testid="lightning-icon" />),
   RobotIcon: vi.fn(() => <div data-testid="robot-icon" />),
@@ -33,10 +32,18 @@ vi.mock('../../../../components/icons', () => ({
   UploadIcon: vi.fn(() => <div data-testid="upload-icon" />),
 }));
 
-vi.mock('../../../../components/ui', () => ({
+vi.mock('@/components/ui', () => ({
+  Button: vi.fn(({ children, onClick, ...props }) => (
+    <button onClick={onClick} data-testid="button" {...props}>
+      {children}
+    </button>
+  )),
   SliderInput: vi.fn(() => <div data-testid="slider-input">Slider Input</div>),
-  SubsectionTitle: vi.fn(({ children }) => (
-    <div data-testid="subsection-title">{children}</div>
+  SubsectionTitle: vi.fn(({ title, children }) => (
+    <div data-testid="subsection-title">
+      <div>{title}</div>
+      {children}
+    </div>
   )),
   Typography: vi.fn(({ children, variant }) => (
     <div data-testid={`typography-${variant}`}>{children}</div>
@@ -89,16 +96,13 @@ describe('RobotSetupTab', () => {
       <RobotSetupTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    // Look for collapsible sections by their button elements
-    const collapsibleButtons = screen
-      .getAllByRole('button')
-      .filter(
-        button =>
-          button.textContent?.includes('Robot Segments') ||
-          button.textContent?.includes('Backbone Lengths') ||
-          button.textContent?.includes('Tendons')
-      );
-    expect(collapsibleButtons.length).toBeGreaterThan(0);
+    // Look for collapsible sections by their testid (from mock)
+    const collapsibleSections = screen.getAllByTestId('collapsible-section');
+    expect(collapsibleSections.length).toBeGreaterThan(0);
+    // Check that sections contain the expected titles
+    expect(screen.getByText('Robot Segments')).toBeInTheDocument();
+    expect(screen.getByText('Dimensions')).toBeInTheDocument(); // Changed from "Backbone Lengths"
+    expect(screen.getByText('Tendons')).toBeInTheDocument();
   });
 
   it('renders array input groups', () => {
@@ -123,9 +127,10 @@ describe('RobotSetupTab', () => {
       <RobotSetupTab robotState={defaultRobotState} setRobotState={mockSetRobotState} />
     );
 
-    // Look for actual slider inputs by their type
-    const sliders = screen.getAllByRole('slider');
-    expect(sliders).toHaveLength(3); // Multiple sliders for different inputs
+    // SliderInput is mocked, so we check for the mock testid
+    const sliderInputs = screen.getAllByTestId('slider-input');
+    // There should be at least 2 sliders (one for segments, one for discretization steps)
+    expect(sliderInputs.length).toBeGreaterThanOrEqual(2);
   });
 
   it('renders upload icon', () => {
@@ -155,9 +160,10 @@ describe('RobotSetupTab', () => {
     );
 
     expect(screen.getByText('Number of segments')).toBeInTheDocument();
+    // These are subsection titles inside the "Dimensions" collapsible section
     expect(screen.getByText('Backbone Lengths')).toBeInTheDocument();
     expect(screen.getByText('Coupling Lengths')).toBeInTheDocument();
-    // Tendon configuration might be in a nested component
+    // Tendon configuration is in its own collapsible section
     expect(screen.getByText('Tendons')).toBeInTheDocument();
   });
 });

@@ -7,7 +7,7 @@ and request/response processing across all API endpoints.
 
 import traceback
 import uuid
-from typing import Callable
+from typing import Callable, Optional
 
 from fastapi import HTTPException, Request, Response
 
@@ -15,7 +15,7 @@ from fastapi import HTTPException, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.responses import APIException, error_response
-from app.utils.logging import logger
+from app.utils.logging import LogContext, default_logger
 
 
 class RequestIDMiddleware(BaseHTTPMiddleware):
@@ -42,14 +42,17 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
 
         except APIException as e:
             # Handle our custom API exceptions
-            logger.error(
+            default_logger.error(
+                LogContext.API,
                 f"API Error: {e.error_type} - {e.detail}",
-                extra={
+                {
                     "request_id": getattr(request.state, "request_id", None),
                     "error_type": e.error_type,
                     "details": e.details,
                     "status_code": e.status_code,
                 },
+                "API",
+                "api_error",
             )
 
             return error_response(
@@ -57,34 +60,42 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
                 message=str(e.detail),
                 status_code=e.status_code,
                 details=e.details,
-                request_id=getattr(request.state, "request_id", None),
+                request=request,
             )
 
         except HTTPException as e:
             # Handle FastAPI HTTP exceptions
-            logger.error(
+            default_logger.error(
+                LogContext.API,
                 f"HTTP Error: {e.status_code} - {e.detail}",
-                extra={
+                {
                     "request_id": getattr(request.state, "request_id", None),
                     "status_code": e.status_code,
                 },
+                "API",
+                "http_error",
             )
 
             return error_response(
                 error_type="http_error",
                 message=str(e.detail),
                 status_code=e.status_code,
-                request_id=getattr(request.state, "request_id", None),
+                request=request,
             )
 
         except Exception as e:
             # Handle unexpected errors
-            logger.error(
+            default_logger.error(
+                LogContext.API,
                 f"Unexpected error: {str(e)}",
-                extra={
+                {
                     "request_id": getattr(request.state, "request_id", None),
+                    "error": str(e),
+                    "error_type": type(e).__name__,
                     "traceback": traceback.format_exc(),
                 },
+                "API",
+                "unexpected_error",
             )
 
             return error_response(
@@ -92,39 +103,73 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
                 message="An unexpected error occurred. Please try again later.",
                 status_code=500,
                 details=(
-                    {"error": str(e)} if logger.level <= 10 else None
+                    {"error": str(e)} if default_logger.logger.level <= 10 else None
                 ),  # Only in debug mode
-                request_id=getattr(request.state, "request_id", None),
+                request=request,
             )
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
-    """Middleware for request/response logging."""
+    """Middleware for request/response logging with path exclusions."""
+
+    def __init__(
+        self,
+        app,
+        exclude_paths: Optional[list] = None,
+    ):
+        super().__init__(app)
+        self.exclude_paths = exclude_paths or [
+            "/health",
+            "/metrics",
+            "/docs",
+            "/openapi.json",
+            "/redoc",
+        ]
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        # Skip logging for excluded paths
+        if request.url.path in self.exclude_paths:
+            return await call_next(request)
+
+        request_id = getattr(request.state, "request_id", None)
+
         # Log request
-        logger.info(
+        default_logger.info(
+            LogContext.API,
             f"Request: {request.method} {request.url.path}",
-            extra={
-                "request_id": getattr(request.state, "request_id", None),
+            {
+                "request_id": request_id,
                 "method": request.method,
                 "path": request.url.path,
                 "query_params": dict(request.query_params),
                 "client_ip": request.client.host if request.client else None,
+                "user_agent": request.headers.get("user-agent"),
             },
+            "API",
+            "request",
         )
 
         # Process request
         response = await call_next(request)
 
         # Log response
-        logger.info(
-            f"Response: {response.status_code}",
-            extra={
-                "request_id": getattr(request.state, "request_id", None),
+        if response.status_code >= 500:
+            log_level = "error"
+        elif response.status_code >= 400:
+            log_level = "warning"
+        else:
+            log_level = "info"
+
+        getattr(default_logger, log_level)(
+            LogContext.API,
+            f"Response: {request.method} {request.url.path} - {response.status_code}",
+            {
+                "request_id": request_id,
                 "status_code": response.status_code,
                 "response_size": response.headers.get("content-length", "unknown"),
             },
+            "API",
+            "response",
         )
 
         return response
@@ -155,7 +200,7 @@ class CORSMiddleware(BaseHTTPMiddleware):
         # Determine the appropriate origin
         origin = request.headers.get("origin")
         allow_origin = "*"
-        
+
         if origin and "*" not in self.allow_origins:
             # If specific origins are configured, check if request origin is allowed
             if origin in self.allow_origins:

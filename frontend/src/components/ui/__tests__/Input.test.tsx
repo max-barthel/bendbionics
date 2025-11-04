@@ -1,8 +1,7 @@
+import Input from '@/components/ui/Input';
 import '@testing-library/jest-dom';
 import { fireEvent, render, screen } from '@testing-library/react';
-import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import Input from '../Input';
 
 describe('Input', () => {
   const mockOnChange = vi.fn();
@@ -294,7 +293,10 @@ describe('Input', () => {
       render(<Input value="" onChange={mockOnChange} />);
 
       const input = screen.getByRole('textbox');
-      expect(input).toHaveClass('border', 'rounded-full', 'bg-white/20');
+      // Input uses Tahoe glass input preset
+      expect(input).toHaveClass('rounded-full'); // From input preset
+      expect(input).toHaveClass('bg-white/2'); // From base glass variant
+      expect(input).toHaveClass('border'); // From base glass variant
     });
 
     it('applies focus classes', () => {
@@ -319,7 +321,8 @@ describe('Input', () => {
       render(<Input value="" onChange={mockOnChange} />);
 
       const input = screen.getByRole('textbox');
-      expect(input).toHaveClass('border-white/30');
+      // Input uses base glass variant which has border-white/5
+      expect(input).toHaveClass('border-white/5'); // From base glass variant
     });
 
     it('applies custom className', () => {

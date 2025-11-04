@@ -1,16 +1,14 @@
-import React, { useId, useState } from 'react';
-import {
-  combineStyles,
-  getFloatingLabelStyles,
-  getTahoeGlassStyles,
-} from '../../styles/tahoe-utils';
+import { useInputBehavior } from '@/features/shared';
+import { inputSizeClasses, type ComponentSize } from '@/styles/design-tokens';
+import { cn, getTahoeGlassPreset } from '@/styles/tahoe-utils';
+import React, { useId } from 'react';
+import { FloatingLabel, useFloatingLabel } from './FloatingLabel';
 
 type InputType = 'text' | 'number' | 'password' | 'email';
-type InputSize = 'sm' | 'md' | 'lg';
 
 interface InputProps {
   type?: InputType;
-  size?: InputSize;
+  size?: ComponentSize;
   value: string | number;
   onChange: (value: string | number) => void;
   placeholder?: string;
@@ -28,26 +26,14 @@ interface InputProps {
 }
 
 // Helper function to get input classes
-function getInputClasses(size: InputSize, error?: string, className?: string) {
-  const sizeClasses = {
-    sm: 'pl-4 pr-2 py-2 text-sm',
-    md: 'px-3 py-2.5 text-sm',
-    lg: 'px-4 py-3 text-base',
-  };
+function getInputClasses(size: ComponentSize, error?: string, className?: string) {
   const baseClasses = 'text-gray-800 placeholder:text-gray-500 bg-gray-50';
-  const tahoeGlassClasses = getTahoeGlassStyles(
-    'base',
-    'subtle',
-    'full',
-    'standard',
-    'blue',
-    'subtle'
-  );
+  const tahoeGlassClasses = getTahoeGlassPreset('input');
   const errorClasses = error ? 'border-red-400/50 focus:ring-red-400/50' : '';
-  return combineStyles(
+  return cn(
     baseClasses,
     tahoeGlassClasses,
-    sizeClasses[size],
+    inputSizeClasses[size],
     errorClasses,
     className
   );
@@ -68,70 +54,30 @@ function handleInputChange(
   }
 }
 
-// Floating label component
-function FloatingLabel({
-  label,
-  id,
-  shouldFloat,
-}: {
-  readonly label: string;
-  readonly id?: string;
-  readonly shouldFloat: boolean;
-}) {
-  return (
-    <label
-      htmlFor={id}
-      className={combineStyles(
-        'absolute left-3 pointer-events-none transition-all duration-200',
-        shouldFloat
-          ? combineStyles(
-              'top-0 transform -translate-y-1/2 text-xs text-gray-600',
-              getFloatingLabelStyles(true)
-            )
-          : 'top-1/2 transform -translate-y-1/2 text-sm text-gray-600'
-      )}
-    >
-      {label}
-    </label>
-  );
-}
-
-// Custom hook for input state
-function useInputState() {
-  const [isFocused, setIsFocused] = useState(false);
-  return { isFocused, setIsFocused };
-}
-
-// Custom hook for input focus handlers
-function useInputFocusHandlers(
-  setIsFocused: (focused: boolean) => void,
+// Custom hook for input state and styling
+function useInputStateAndStyling(
+  size: ComponentSize,
+  error?: string,
+  className?: string,
   onFocus?: () => void,
   onBlur?: () => void
 ) {
-  const handleFocus = () => {
-    setIsFocused(true);
-    onFocus?.();
+  // Build options object conditionally to satisfy exactOptionalPropertyTypes
+  const behaviorOptions: Parameters<typeof useInputBehavior>[0] = {
+    ...(onFocus && { onFocus }),
+    ...(onBlur && { onBlur }),
   };
-  const handleBlur = () => {
-    setIsFocused(false);
-    onBlur?.();
-  };
-  return { handleFocus, handleBlur };
-}
-
-// Custom hook for input state and styling
-function useInputStateAndStyling(size: InputSize, error?: string, className?: string) {
-  const { isFocused, setIsFocused } = useInputState();
+  const inputBehavior = useInputBehavior(behaviorOptions);
   const classes = getInputClasses(size, error, className);
-  return { isFocused, setIsFocused, classes };
+  return {
+    isFocused: inputBehavior.isFocused,
+    setIsFocused: inputBehavior.setIsFocused,
+    classes,
+    handleFocus: inputBehavior.handleFocus,
+    handleBlur: inputBehavior.handleBlur,
+  };
 }
 
-// Custom hook for input value and float logic
-function useInputValueAndFloat(value: string | number, isFocused: boolean) {
-  const hasValue = value !== '' && value !== undefined && value !== null;
-  const shouldFloat = isFocused || hasValue;
-  return { hasValue, shouldFloat };
-}
 
 function Input({
   type = 'text',
@@ -154,17 +100,14 @@ function Input({
   // Ensure label is correctly associated even if no id is passed in
   const reactGeneratedId = useId();
   const inputId = id ?? `input-${reactGeneratedId}`;
-  const { isFocused, setIsFocused, classes } = useInputStateAndStyling(
+  const { isFocused, classes, handleFocus, handleBlur } = useInputStateAndStyling(
     size,
     error,
-    className
-  );
-  const { handleFocus, handleBlur } = useInputFocusHandlers(
-    setIsFocused,
+    className,
     onFocus,
     onBlur
   );
-  const { shouldFloat } = useInputValueAndFloat(value, isFocused);
+  const { shouldFloat } = useFloatingLabel(value, isFocused);
 
   return (
     <div className="w-full relative">
@@ -181,7 +124,7 @@ function Input({
         min={min}
         max={max}
         step={step}
-        className={combineStyles('w-full', classes, label ? 'pt-3' : '')}
+        className={cn('w-full', classes, label ? 'pt-3' : '')}
       />
       {label && <FloatingLabel label={label} id={inputId} shouldFloat={shouldFloat} />}
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}

@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Protocol
 
 import numpy as np
 
+from app.utils.math_tools import homogeneous_matrix
+
 from .calculator import TendonCalculator
 from .types import TendonConfig
 
@@ -63,9 +65,24 @@ class TendonAnalysisEngine:
         # Step 2: Extract coupling element data using the model's method
         coupling_data = robot_model.get_coupling_elements(robot_positions)
 
+        # Step 3: Get coupling transformation matrices (4x4 homogeneous matrices)
+        # Use "transforms" if available (new format), otherwise construct
+        # from positions/orientations
+        if "transforms" in coupling_data:
+            coupling_transforms = coupling_data["transforms"]
+        else:
+            # Backward compatibility: construct 4x4 matrices from
+            # positions and orientations
+            coupling_transforms = []
+            positions = coupling_data.get("positions", [])
+            orientations = coupling_data.get("orientations", [])
+            for pos, orient in zip(positions, orientations):
+                transform = homogeneous_matrix(orient, pos)
+                coupling_transforms.append(transform)
+
+        # Step 3: Calculate tendon lengths using transformation matrices
         tendon_analysis = self.tendon_calculator.calculate_tendon_lengths(
-            coupling_data["positions"],
-            coupling_data["orientations"],
+            coupling_transforms
         )
 
         # Step 4: Get practical actuation commands

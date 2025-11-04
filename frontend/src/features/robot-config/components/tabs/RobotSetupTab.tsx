@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
 import {
   AdvancedIcon,
   LightningIcon,
   RobotIcon,
   TendonIcon,
   UploadIcon,
-} from '../../../../components/icons';
-import { SliderInput, SubsectionTitle, Typography } from '../../../../components/ui';
-import { CollapsibleSection } from '../../../shared/components/CollapsibleSection';
-import { TendonConfigPanel } from '../../../visualization/components/TendonConfigPanel';
-import { type RobotState } from '../../hooks/useRobotState';
-import ArrayInputGroup from '../ArrayInputGroup';
+} from '@/components/icons';
+import { Button, SliderInput, SubsectionTitle, Typography } from '@/components/ui';
+import ArrayInputGroup from '@/features/robot-config/components/ArrayInputGroup';
+import { CollapsibleSection } from '@/features/shared/components/CollapsibleSection';
+import { TendonConfigPanel } from '@/features/visualization/components/TendonConfigPanel';
+import { buttonVariants } from '@/styles/design-tokens';
+import type { RobotState } from '@/types/robot';
+import React, { useState } from 'react';
 
 interface RobotSetupTabProps {
   onShowPresetManager?: () => void;
@@ -46,16 +47,16 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
           <br />
           Then save as a preset.
         </Typography>
-        <button
+        <Button
+          variant="primary"
           onClick={() => onShowPresetManager?.()}
-          className="w-full mt-6 px-4 py-2 backdrop-blur-xl text-gray-900 text-sm font-medium border border-blue-400/30 shadow-lg transition-all duration-300 rounded-full hover:scale-105 relative bg-gradient-to-br from-blue-500/25 to-indigo-500/25 shadow-blue-500/20"
+          className="w-full mt-6 px-4 py-2 justify-center"
         >
           <div className="flex items-center justify-center gap-2">
             <UploadIcon className="w-4 h-4" />
-            Preset Manager
+            <span className={buttonVariants.primaryText}>Preset Manager</span>
           </div>
-          <div className="absolute inset-0 rounded-full pointer-events-none bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
-        </button>
+        </Button>
       </div>
 
       {/* Segments - Most Important */}
@@ -97,7 +98,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
             <SubsectionTitle title="Backbone Lengths" />
             <Typography
               variant="caption"
-              className="text-gray-500 text-xs break-words mb-2"
+              className="text-gray-500 text-xs wrap-break-words mb-2"
             >
               Adjust the height for each backbone
             </Typography>
@@ -114,7 +115,7 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
             <SubsectionTitle title="Coupling Lengths" />
             <Typography
               variant="caption"
-              className="text-gray-500 text-xs break-words mb-2"
+              className="text-gray-500 text-xs wrap-break-words mb-2"
             >
               Adjust the height for each coupling
             </Typography>

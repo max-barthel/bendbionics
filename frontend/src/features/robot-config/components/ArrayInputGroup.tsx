@@ -1,6 +1,12 @@
 import { useState } from 'react';
-import { Typography, UnitSelector } from '../../../components/ui';
-import NumberInput from '../../shared/components/NumberInput';
+import { NumberInput, Typography, UnitSelector } from '@/components/ui';
+import type { AngleUnit, LengthUnit } from '@/constants/unitConversions';
+import {
+  convertFromSI,
+  convertToSI,
+  getDefaultUnit,
+  getUnits,
+} from '@/utils/unitConversions';
 
 type UnitMode = 'angle' | 'length';
 
@@ -19,61 +25,18 @@ function ArrayInputGroup({
   mode = 'angle',
   onFieldCommit,
 }: ArrayInputGroupProps) {
-  const angleUnits = ['deg', 'rad'] as const;
-  const lengthUnits = ['mm', 'cm', 'm'] as const;
-
-  // Constants for angle conversions
-  const DEGREES_TO_RADIANS = Math.PI / 180;
-  const RADIANS_TO_DEGREES = 180 / Math.PI;
-
-  const angleConversion = {
-    deg: {
-      toSI: (v: number) => v * DEGREES_TO_RADIANS,
-      fromSI: (v: number) => v * RADIANS_TO_DEGREES,
-    },
-    rad: {
-      toSI: (v: number) => v,
-      fromSI: (v: number) => v,
-    },
-  };
-
-  const lengthConversion = {
-    mm: {
-      toSI: (v: number) => v / 1000,
-      fromSI: (v: number) => v * 1000,
-    },
-    cm: {
-      toSI: (v: number) => v / 100,
-      fromSI: (v: number) => v * 100,
-    },
-    m: {
-      toSI: (v: number) => v,
-      fromSI: (v: number) => v,
-    },
-  };
-
-  const unitOptions = mode === 'angle' ? angleUnits : lengthUnits;
-  const defaultUnit = mode === 'angle' ? 'deg' : 'mm';
-  const [unit, setUnit] = useState<(typeof unitOptions)[number]>(defaultUnit);
-
-  const convertToSI = (v: number) =>
-    mode === 'angle'
-      ? angleConversion[unit as 'deg' | 'rad'].toSI(v)
-      : lengthConversion[unit as 'mm' | 'cm' | 'm'].toSI(v);
-
-  const convertFromSI = (v: number) =>
-    mode === 'angle'
-      ? angleConversion[unit as 'deg' | 'rad'].fromSI(v)
-      : lengthConversion[unit as 'mm' | 'cm' | 'm'].fromSI(v);
+  const unitOptions = getUnits(mode);
+  const defaultUnit = getDefaultUnit(mode);
+  const [unit, setUnit] = useState<AngleUnit | LengthUnit>(defaultUnit);
 
   const handleValueChange = (index: number, newDisplayValue: number) => {
     const updated = [...values];
-    updated[index] = convertToSI(newDisplayValue);
+    updated[index] = convertToSI(newDisplayValue, unit, mode);
     onChange(updated);
   };
 
   const handleUnitChange = (newUnit: string) => {
-    setUnit(newUnit as (typeof unitOptions)[number]);
+    setUnit(newUnit as AngleUnit | LengthUnit);
   };
 
   return (
@@ -101,7 +64,7 @@ function ArrayInputGroup({
         {values.map((val, idx) => (
           <NumberInput
             key={`${label}-${idx}`}
-            value={Number(convertFromSI(val).toFixed(4))} // Rounded for UI
+            value={Number(convertFromSI(val, unit, mode).toFixed(4))} // Rounded for UI
             onChange={value => handleValueChange(idx, value)}
             {...(onFieldCommit && { onBlur: onFieldCommit })}
             placeholder={`#${idx + 1}`}

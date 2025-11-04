@@ -1,55 +1,37 @@
-import { useCallback, useEffect, useState } from 'react';
+import { DEFAULT_BACKBONE_LENGTH, DEFAULT_COUPLING_LENGTH } from '@/constants/app';
+import { useLocalStorage } from '@/features/shared';
+import type { RobotState } from '@/types/robot';
+import { useCallback } from 'react';
 
-// Default configuration constants
-const DEFAULT_VALUES = {
-  BACKBONE_LENGTH: 0.07,
-  COUPLING_LENGTH: 0.03,
-} as const;
-
-export interface RobotState {
-  segments: number;
-  bendingAngles: number[];
-  rotationAngles: number[];
-  backboneLengths: number[];
-  couplingLengths: number[];
-  discretizationSteps: number;
-  tendonConfig?: {
-    count: number;
-    radius: number;
-  };
-}
+const DEFAULT_ROBOT_STATE: RobotState = {
+  segments: 5,
+  bendingAngles: [0, 0, 0, 0, 0],
+  rotationAngles: [0, 0, 0, 0, 0],
+  backboneLengths: [
+    DEFAULT_BACKBONE_LENGTH,
+    DEFAULT_BACKBONE_LENGTH,
+    DEFAULT_BACKBONE_LENGTH,
+    DEFAULT_BACKBONE_LENGTH,
+    DEFAULT_BACKBONE_LENGTH,
+  ],
+  couplingLengths: [
+    DEFAULT_COUPLING_LENGTH,
+    DEFAULT_COUPLING_LENGTH,
+    DEFAULT_COUPLING_LENGTH,
+    DEFAULT_COUPLING_LENGTH,
+    DEFAULT_COUPLING_LENGTH,
+    DEFAULT_COUPLING_LENGTH,
+  ],
+  discretizationSteps: 1000,
+  tendonConfig: {
+    count: 3,
+    radius: 0.01,
+  },
+};
 
 export function useRobotState() {
-  const [state, setState] = useState<RobotState>(() => {
-    const saved = localStorage.getItem('robotState');
-    return saved
-      ? JSON.parse(saved)
-      : {
-          segments: 5,
-          bendingAngles: [0, 0, 0, 0, 0],
-          rotationAngles: [0, 0, 0, 0, 0],
-          backboneLengths: [
-            DEFAULT_VALUES.BACKBONE_LENGTH,
-            DEFAULT_VALUES.BACKBONE_LENGTH,
-            DEFAULT_VALUES.BACKBONE_LENGTH,
-            DEFAULT_VALUES.BACKBONE_LENGTH,
-            DEFAULT_VALUES.BACKBONE_LENGTH,
-          ],
-          couplingLengths: [
-            DEFAULT_VALUES.COUPLING_LENGTH,
-            DEFAULT_VALUES.COUPLING_LENGTH,
-            DEFAULT_VALUES.COUPLING_LENGTH,
-            DEFAULT_VALUES.COUPLING_LENGTH,
-            DEFAULT_VALUES.COUPLING_LENGTH,
-            DEFAULT_VALUES.COUPLING_LENGTH,
-          ],
-          discretizationSteps: 1000,
-          tendonConfig: {
-            count: 3,
-            radius: 0.01,
-          },
-        };
-  });
+  // Use useLocalStorage hook instead of manual useEffect sync
+  const [state, setState] = useLocalStorage<RobotState>('robotState', DEFAULT_ROBOT_STATE);
 
   // Helper function to adjust a single array
   const adjustArray = <T>(
@@ -138,10 +120,6 @@ export function useRobotState() {
     },
     []
   );
-
-  useEffect(() => {
-    localStorage.setItem('robotState', JSON.stringify(state));
-  }, [state]);
 
   return [state, setStateWithValidation] as const;
 }

@@ -93,5 +93,6 @@
 
   // Privacy
   "telemetry.telemetryLevel": "off",
-  "cursorpyright.analysis.extraPaths": ["${workspaceFolder}/backend"]
+  "cursorpyright.analysis.extraPaths": ["${workspaceFolder}/backend"],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
