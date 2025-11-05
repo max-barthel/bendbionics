@@ -1,0 +1,17 @@
+[Unit]
+Description=BendBionics Dynamic DNS Update Timer
+Requires=update-dns.service
+
+[Timer]
+# Run every 10 minutes
+OnCalendar=*:0/10
+# Run immediately on boot (after 2 minutes)
+OnBootSec=2min
+# Run immediately if missed
+Persistent=true
+# Randomize by 30 seconds to avoid thundering herd
+RandomizedDelaySec=30s
+
+[Install]
+WantedBy=timers.target
+

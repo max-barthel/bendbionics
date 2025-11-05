@@ -212,6 +212,15 @@ create_deployment_package() {
         print_status "Included PostgreSQL setup script"
     fi
 
+    # Copy DDNS scripts (optional, for dynamic DNS setup)
+    if [ -d "scripts/ddns" ]; then
+        mkdir -p "$deploy_dir/scripts/ddns"
+        cp -r scripts/ddns/* "$deploy_dir/scripts/ddns/"
+        # Make all shell scripts executable
+        find "$deploy_dir/scripts/ddns" -name "*.sh" -type f -exec chmod +x {} \;
+        print_success "Included DDNS setup scripts"
+    fi
+
     # Copy environment templates
     if [ -f "backend/.env.production.example" ]; then
         cp backend/.env.production.example "$deploy_dir/backend/.env.production.template"
@@ -242,6 +251,7 @@ Contents:
 - systemd/           : Systemd service configuration
 - deploy.sh          : Main deployment script
 - setup-postgres.sh  : PostgreSQL setup script (first-time only)
+- scripts/ddns/      : Dynamic DNS setup scripts (optional)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FIRST-TIME DEPLOYMENT INSTRUCTIONS
@@ -274,6 +284,16 @@ If this is your first deployment, run these commands on your server:
    • Configure nginx and systemd
    • Start the application
 
+5. Set up Dynamic DNS (OPTIONAL, for dynamic IP addresses):
+   cd /var/www/bendbionics-app
+   sudo bash scripts/ddns/setup-ddns.sh
+
+   This will:
+   • Install DDNS update script
+   • Configure Porkbun API credentials
+   • Set up automatic DNS updates every 10 minutes
+   • Preserve configuration across deployments
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SUBSEQUENT DEPLOYMENTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -300,6 +320,9 @@ Post-Deployment:
 2. Configure Mailgun credentials for email verification
 3. Update FRONTEND_URL and BACKEND_URL with your actual URLs
 4. Set up SSL certificates with certbot (optional)
+5. Set up Dynamic DNS (if needed):
+   cd /var/www/bendbionics-app
+   sudo bash scripts/ddns/setup-ddns.sh
 
 Optimizations Applied:
 - Excluded test files and development dependencies
