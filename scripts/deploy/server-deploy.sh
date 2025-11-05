@@ -171,6 +171,15 @@ copy_application_files() {
         exit 1
     fi
 
+    # Copy DDNS scripts (preserve source files for setup)
+    if [ -d "$SCRIPT_DIR/scripts/ddns" ]; then
+        mkdir -p "$APP_DIR/scripts/ddns"
+        cp -r "$SCRIPT_DIR/scripts/ddns"/* "$APP_DIR/scripts/ddns/"
+        # Make all shell scripts executable
+        find "$APP_DIR/scripts/ddns" -name "*.sh" -type f -exec chmod +x {} \;
+        print_status "DDNS scripts copied to application directory"
+    fi
+
     # Copy frontend files
     if [ -d "$SCRIPT_DIR/frontend" ]; then
         # Create frontend directory if it doesn't exist
@@ -309,6 +318,32 @@ setup_environment() {
     chmod 600 "$EXISTING_ENV_FILE"
 
     print_success "Environment configuration completed"
+}
+
+# Function to preserve DDNS installation
+preserve_ddns() {
+    print_status "Checking for existing DDNS installation..."
+
+    # Check if DDNS is installed
+    if [ -f "/usr/local/bin/update-dns.sh" ] && [ -f "/etc/systemd/system/update-dns.timer" ]; then
+        print_status "DDNS installation found - preserving configuration"
+
+        # Check if timer is enabled
+        if systemctl is-enabled update-dns.timer >/dev/null 2>&1; then
+            print_status "DDNS timer is enabled - will continue running after deployment"
+        else
+            print_warning "DDNS timer exists but is not enabled"
+        fi
+
+        # Verify service files are intact
+        if [ ! -f "/etc/systemd/system/update-dns.service" ]; then
+            print_warning "DDNS service file missing - timer may need reconfiguration"
+        fi
+
+        print_success "DDNS installation preserved"
+    else
+        print_status "No existing DDNS installation found"
+    fi
 }
 
 # Function to setup systemd service
@@ -814,6 +849,7 @@ main() {
     # Run deployment process
     check_prerequisites
     pre_deployment_backup
+    preserve_ddns  # Preserve DDNS before deployment
     install_dependencies
     setup_app_directory
     copy_application_files
