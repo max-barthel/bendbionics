@@ -43,7 +43,7 @@ vi.mock('../providers', () => ({
     setSidebarCollapsed: vi.fn(),
     showPresetManager: false,
     setShowPresetManager: vi.fn(),
-    showTendonResults: false,
+    showTendonResults: true,
     setShowTendonResults: vi.fn(),
     showUserSettings: false,
     setShowUserSettings: vi.fn(),
