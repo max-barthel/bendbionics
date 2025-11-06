@@ -86,7 +86,7 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
   const [loading, setLoading] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showPresetManager, setShowPresetManager] = useState(false);
-  const [showTendonResults, setShowTendonResults] = useState(false);
+  const [showTendonResults, setShowTendonResults] = useState(true);
   const [showUserSettings, setShowUserSettings] = useState(false);
 
   // Preset state
