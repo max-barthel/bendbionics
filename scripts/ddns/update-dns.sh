@@ -117,6 +117,91 @@ get_dns_ip() {
     echo "$dns_ip"
 }
 
+# Function to retrieve DNS record ID
+get_record_id() {
+    # For root domain, record_name should be empty; for subdomain, use the subdomain name
+    local record_name=""
+    if [ -n "${SUBDOMAIN:-}" ] && [ "$SUBDOMAIN" != "@" ]; then
+        record_name="$SUBDOMAIN"
+    fi
+    local display_name="${SUBDOMAIN:+$SUBDOMAIN.}$DOMAIN"
+
+    log_info "Retrieving DNS record ID for $display_name" >&2
+
+    # Retrieve all DNS records
+    local response=$(curl -s --max-time 30 \
+        -X POST "https://api.porkbun.com/api/json/v3/dns/retrieve/$DOMAIN" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"apikey\": \"$PORKBUN_API_KEY\",
+            \"secretapikey\": \"$PORKBUN_SECRET_KEY\"
+        }" 2>/dev/null)
+
+    if [ $? -ne 0 ]; then
+        log_error "Failed to retrieve DNS records"
+        return 1
+    fi
+
+    # Check if response indicates an error
+    local status=$(echo "$response" | grep -o '"status":"[^"]*"' | cut -d'"' -f4 || echo "")
+    if [ "$status" = "ERROR" ]; then
+        local error_msg=$(echo "$response" | grep -o '"message":"[^"]*"' | cut -d'"' -f4 || echo "Unknown error")
+        log_error "Failed to retrieve DNS records: $error_msg"
+        return 1
+    fi
+
+    # Find the A record for root domain or subdomain
+    # Note: Porkbun API returns root domain with name="bendbionics.com" (full domain), not empty
+    # Use jq if available, otherwise use grep/sed
+    local record_id
+    if command -v jq >/dev/null 2>&1; then
+        # Use jq for proper JSON parsing
+        if [ -z "$record_name" ]; then
+            # Root domain: find record where name equals the domain (or empty/null)
+            record_id=$(echo "$response" | jq -r ".records[]? | select(.type == \"A\" and (.name == \"$DOMAIN\" or .name == \"\" or .name == null)) | .id" | head -1)
+        else
+            # Subdomain: find record with matching name (full subdomain name like "www.bendbionics.com")
+            local full_subdomain="$record_name.$DOMAIN"
+            record_id=$(echo "$response" | jq -r ".records[]? | select(.type == \"A\" and (.name == \"$full_subdomain\" or .name == \"$record_name\")) | .id" | head -1)
+        fi
+    else
+        # Fallback: use grep/sed (less reliable but works)
+        # Try multiple patterns to find the record
+        if [ -z "$record_name" ]; then
+            # Root domain: find record where name equals domain name or is empty
+            # Try pattern: "name":"bendbionics.com"..."type":"A"
+            record_id=$(echo "$response" | grep -oE "\"id\":\"[0-9]+\"[^}]*\"name\":\"$DOMAIN\"[^}]*\"type\":\"A\"" | grep -oE '"id":"[0-9]+"' | cut -d'"' -f4 | head -1)
+            # Try alternative pattern order
+            if [ -z "$record_id" ]; then
+                record_id=$(echo "$response" | grep -oE "\"id\":\"[0-9]+\"[^}]*\"type\":\"A\"[^}]*\"name\":\"$DOMAIN\"" | grep -oE '"id":"[0-9]+"' | cut -d'"' -f4 | head -1)
+            fi
+            # Try empty name as fallback
+            if [ -z "$record_id" ]; then
+                record_id=$(echo "$response" | grep -oE '"id":"[0-9]+"[^}]*"name":""[^}]*"type":"A"' | grep -oE '"id":"[0-9]+"' | cut -d'"' -f4 | head -1)
+            fi
+        else
+            # Subdomain: find record with matching name (full subdomain or just subdomain)
+            local full_subdomain="$record_name.$DOMAIN"
+            record_id=$(echo "$response" | grep -oE "\"id\":\"[0-9]+\"[^}]*\"name\":\"$full_subdomain\"[^}]*\"type\":\"A\"" | \
+                grep -oE '"id":"[0-9]+"' | cut -d'"' -f4 | head -1)
+            # Try alternative pattern order for subdomain
+            if [ -z "$record_id" ]; then
+                record_id=$(echo "$response" | grep -oE "\"id\":\"[0-9]+\"[^}]*\"type\":\"A\"[^}]*\"name\":\"$full_subdomain\"" | \
+                    grep -oE '"id":"[0-9]+"' | cut -d'"' -f4 | head -1)
+            fi
+        fi
+    fi
+
+    if [ -z "$record_id" ] || [ "$record_id" = "null" ]; then
+        log_error "A record not found for $display_name" >&2
+        log_error "API response (first 500 chars): $(echo "$response" | head -c 500)" >&2
+        return 1
+    fi
+
+    # Output only the record ID to stdout (for capture)
+    echo "$record_id"
+}
+
 # Function to update DNS via Porkbun API
 update_dns() {
     local new_ip=$1
@@ -127,24 +212,68 @@ update_dns() {
 
     log_info "Updating DNS A record for $display_name to $new_ip"
 
-    # Porkbun API endpoint - use editByNameType for root domain
-    # For root domain, use "@" or empty string
-    if [ "$record_name" = "@" ]; then
-        local api_url="https://porkbun.com/api/json/v3/dns/editByNameType/$DOMAIN/A/@"
+    # First, retrieve the record ID
+    local record_id
+    record_id=$(get_record_id 2>/dev/null)  # Log messages go to stderr, ID to stdout
+    local get_id_status=$?
+    if [ $get_id_status -ne 0 ] || [ -z "$record_id" ] || [ "$record_id" = "null" ]; then
+        log_error "Failed to retrieve record ID, trying editByNameType as fallback"
+
+        # Fallback to editByNameType
+        local json_payload
+        if [ "$record_name" = "@" ]; then
+            local api_url="https://api.porkbun.com/api/json/v3/dns/editByNameType/$DOMAIN/A"
+            json_payload=$(cat <<EOF
+{
+    "apikey": "$PORKBUN_API_KEY",
+    "secretapikey": "$PORKBUN_SECRET_KEY",
+    "name": "",
+    "content": "$new_ip",
+    "ttl": 600
+}
+EOF
+)
+        else
+            local api_url="https://api.porkbun.com/api/json/v3/dns/editByNameType/$DOMAIN/A/$record_name"
+            json_payload=$(cat <<EOF
+{
+    "apikey": "$PORKBUN_API_KEY",
+    "secretapikey": "$PORKBUN_SECRET_KEY",
+    "content": "$new_ip",
+    "ttl": 600
+}
+EOF
+)
+        fi
     else
-        local api_url="https://porkbun.com/api/json/v3/dns/editByNameType/$DOMAIN/A/$record_name"
+        # Use edit by ID (more reliable)
+        log_info "Found record ID: $record_id"
+        local api_url="https://api.porkbun.com/api/json/v3/dns/edit/$DOMAIN/$record_id"
+        # For root domain, Porkbun uses full domain name; for subdomain, use full subdomain name
+        local name_value="$DOMAIN"
+        if [ -n "$SUBDOMAIN" ] && [ "$SUBDOMAIN" != "@" ]; then
+            name_value="$SUBDOMAIN.$DOMAIN"
+        fi
+        # Build JSON payload - ensure proper escaping
+        local json_payload
+        json_payload=$(cat <<EOF
+{
+    "apikey": "$PORKBUN_API_KEY",
+    "secretapikey": "$PORKBUN_SECRET_KEY",
+    "name": "$name_value",
+    "type": "A",
+    "content": "$new_ip",
+    "ttl": 600
+}
+EOF
+)
     fi
 
     # Make API request
     local response=$(curl -s --max-time 30 \
         -X POST "$api_url" \
         -H "Content-Type: application/json" \
-        -d "{
-            \"apikey\": \"$PORKBUN_API_KEY\",
-            \"secretapikey\": \"$PORKBUN_SECRET_KEY\",
-            \"content\": \"$new_ip\",
-            \"ttl\": 600
-        }" 2>/dev/null)
+        -d "$json_payload" 2>/dev/null)
 
     # Check if curl succeeded
     if [ $? -ne 0 ]; then
@@ -188,30 +317,79 @@ main() {
 
     log_info "Current public IP: $current_ip"
 
-    # Get current DNS IP
-    local dns_ip
-    dns_ip=$(get_dns_ip)
+    # Get current DNS IPs for both root and www
+    local root_dns_ip
+    root_dns_ip=$(get_dns_ip)
     if [ $? -ne 0 ]; then
-        log_warning "Could not resolve current DNS, will attempt update anyway"
-        dns_ip=""
+        log_warning "Could not resolve root domain DNS, will attempt update anyway"
+        root_dns_ip=""
     else
-        log_info "Current DNS IP: $dns_ip"
+        log_info "Current root domain DNS IP: $root_dns_ip"
     fi
 
-    # Compare IPs
-    if [ "$current_ip" = "$dns_ip" ]; then
-        log_info "IPs match, no update needed"
+    # Check www subdomain
+    local www_dns_ip
+    if dig +short "www.$DOMAIN" A 2>/dev/null | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' >/dev/null; then
+        www_dns_ip=$(dig +short "www.$DOMAIN" A 2>/dev/null | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
+        log_info "Current www subdomain DNS IP: $www_dns_ip"
+    else
+        log_warning "Could not resolve www subdomain DNS, will attempt update anyway"
+        www_dns_ip=""
+    fi
+
+    # Check if updates are needed
+    local root_needs_update=false
+    local www_needs_update=false
+
+    if [ -z "$root_dns_ip" ] || [ "$current_ip" != "$root_dns_ip" ]; then
+        root_needs_update=true
+        log_info "Root domain IP mismatch: $root_dns_ip -> $current_ip"
+    fi
+
+    if [ -z "$www_dns_ip" ] || [ "$current_ip" != "$www_dns_ip" ]; then
+        www_needs_update=true
+        log_info "WWW subdomain IP mismatch: $www_dns_ip -> $current_ip"
+    fi
+
+    if [ "$root_needs_update" = false ] && [ "$www_needs_update" = false ]; then
+        log_info "All DNS records are up to date, no update needed"
         exit 0
     fi
 
-    log_info "IP mismatch detected, updating DNS"
+    log_info "IP mismatch detected, updating DNS records"
 
-    # Update DNS
-    if update_dns "$current_ip"; then
+    # Update root domain if needed
+    local root_success=true
+    if [ "$root_needs_update" = true ]; then
+        SUBDOMAIN=""
+        if ! update_dns "$current_ip"; then
+            log_error "Failed to update root domain DNS record"
+            root_success=false
+        fi
+    else
+        log_info "Root domain already up to date, skipping"
+        root_success=true  # Already correct, so success
+    fi
+
+    # Update www subdomain if needed
+    local www_success=true
+    if [ "$www_needs_update" = true ]; then
+        SUBDOMAIN="www"
+        if ! update_dns "$current_ip"; then
+            log_error "Failed to update www subdomain DNS record"
+            www_success=false
+        fi
+    else
+        log_info "WWW subdomain already up to date, skipping"
+        www_success=true  # Already correct, so success
+    fi
+
+    # Report results
+    if [ "$root_success" = true ] && [ "$www_success" = true ]; then
         log_info "DNS update completed successfully"
         exit 0
     else
-        log_error "DNS update failed"
+        log_error "DNS update had failures"
         exit 1
     fi
 }

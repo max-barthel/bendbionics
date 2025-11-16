@@ -26,6 +26,8 @@ export interface AppState {
   readonly setPresetLoadKey: (fn: (prev: number) => number) => void;
   readonly showUserSettings: boolean;
   readonly setShowUserSettings: (show: boolean) => void;
+  readonly showAboutModal: boolean;
+  readonly setShowAboutModal: (show: boolean) => void;
   readonly setRobotState: (state: RobotState) => void;
 }
 

@@ -47,6 +47,8 @@ vi.mock('../providers', () => ({
     setShowTendonResults: vi.fn(),
     showUserSettings: false,
     setShowUserSettings: vi.fn(),
+    showAboutModal: false,
+    setShowAboutModal: vi.fn(),
     isLoadingPreset: false,
     setIsLoadingPreset: vi.fn(),
     presetLoadKey: 0,
