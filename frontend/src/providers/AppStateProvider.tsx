@@ -34,6 +34,8 @@ interface AppStateContextType {
   readonly setShowTendonResults: (show: boolean) => void;
   readonly showUserSettings: boolean;
   readonly setShowUserSettings: (show: boolean) => void;
+  readonly showAboutModal: boolean;
+  readonly setShowAboutModal: (show: boolean) => void;
 
   // Preset state
   readonly isLoadingPreset: boolean;
@@ -88,6 +90,7 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
   const [showPresetManager, setShowPresetManager] = useState(false);
   const [showTendonResults, setShowTendonResults] = useState(true);
   const [showUserSettings, setShowUserSettings] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
 
   // Preset state
   const [isLoadingPreset, setIsLoadingPreset] = useState(false);
@@ -145,6 +148,8 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
       setShowTendonResults,
       showUserSettings,
       setShowUserSettings,
+      showAboutModal,
+      setShowAboutModal,
 
       // Preset state
       isLoadingPreset,
@@ -172,6 +177,7 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
       showPresetManager,
       showTendonResults,
       showUserSettings,
+      showAboutModal,
       isLoadingPreset,
       presetLoadKey,
       handlers,
