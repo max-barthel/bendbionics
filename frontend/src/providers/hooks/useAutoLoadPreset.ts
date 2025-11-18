@@ -27,18 +27,48 @@ export function useAutoLoadPreset(
             // Load the first public preset
             const firstPreset = publicPresets[0];
             if (firstPreset?.configuration) {
-              if (import.meta.env.DEV) {
-                logger.debug('Auto-loading public preset:', LogContext.UI, {
-                  presetName: firstPreset.name,
-                });
-              }
-              handleLoadPreset(firstPreset.configuration);
+              try {
+                let configuration: RobotConfiguration = {};
 
-              // Trigger computation after preset load with delay to ensure state is set
-              if (onPresetLoaded) {
-                setTimeout(() => {
-                  onPresetLoaded();
-                }, PRESET_LOAD_DELAY + 200);
+                // Handle case where configuration might be a string (shouldn't happen, but safety check)
+                if (typeof firstPreset.configuration === 'string') {
+                  try {
+                    configuration = JSON.parse(firstPreset.configuration) as RobotConfiguration;
+                  } catch {
+                    if (import.meta.env.DEV) {
+                      logger.debug('Failed to parse preset configuration as JSON string', LogContext.UI);
+                    }
+                    return;
+                  }
+                } else if (typeof firstPreset.configuration === 'object') {
+                  configuration = firstPreset.configuration;
+                } else {
+                  if (import.meta.env.DEV) {
+                    logger.debug('Invalid preset configuration format', LogContext.UI);
+                  }
+                  return;
+                }
+
+                if (import.meta.env.DEV) {
+                  logger.debug('Auto-loading public preset:', LogContext.UI, {
+                    presetName: firstPreset.name,
+                  });
+                }
+                handleLoadPreset(configuration);
+
+                // Trigger computation after preset load with delay to ensure state is set
+                if (onPresetLoaded) {
+                  setTimeout(() => {
+                    onPresetLoaded();
+                  }, PRESET_LOAD_DELAY + 200);
+                }
+              } catch (error) {
+                // Silently fail - if preset can't be loaded, just show the default screen
+                if (import.meta.env.DEV) {
+                  logger.debug('Error loading preset configuration:', LogContext.UI, {
+                    error,
+                  });
+                }
               }
             }
           }
