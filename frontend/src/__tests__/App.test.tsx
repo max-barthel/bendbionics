@@ -144,8 +144,17 @@ vi.mock('../components/ui', () => ({
     onClose?: () => void;
   }) =>
     isOpen ? (
-      <div data-testid="modal" onClick={onClose}>
+      <div data-testid="modal">
         {children}
+        {onClose && (
+          <button
+            onClick={onClose}
+            aria-label="Close modal"
+            data-testid="modal-close-button"
+          >
+            ×
+          </button>
+        )}
       </div>
     ) : null,
   Button: ({
