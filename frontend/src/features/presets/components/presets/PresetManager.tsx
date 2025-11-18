@@ -41,7 +41,35 @@ export const PresetManager: React.FC<PresetManagerProps> = ({
   } = usePresetManager(currentConfiguration);
 
   const handleLoadPreset = (preset: Preset) => {
-    onLoadPreset(preset.configuration as Record<string, unknown>);
+    try {
+      // Validate preset has configuration
+      if (!preset.configuration) {
+        console.error('Preset configuration is missing');
+        return;
+      }
+
+      let configuration: Record<string, unknown> = {};
+
+      // Handle case where configuration might be a string (shouldn't happen, but safety check)
+      if (typeof preset.configuration === 'string') {
+        try {
+          configuration = JSON.parse(preset.configuration);
+        } catch {
+          console.error('Failed to parse preset configuration as JSON string');
+          return;
+        }
+      } else if (typeof preset.configuration === 'object') {
+        configuration = preset.configuration as Record<string, unknown>;
+      } else {
+        console.error('Invalid preset configuration format');
+        return;
+      }
+
+      onLoadPreset(configuration);
+    } catch (error) {
+      console.error('Error loading preset:', error);
+      // Don't crash the app - just log the error
+    }
   };
 
   return (
