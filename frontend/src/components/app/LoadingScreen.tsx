@@ -7,7 +7,7 @@ interface LoadingScreenProps {
 
 export function LoadingScreen({
   isLoading,
-  isInitializing: _isInitializing,
+  isInitializing,
 }: Readonly<LoadingScreenProps>) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -17,7 +17,11 @@ export function LoadingScreen({
           Loading BendBionics App
         </Typography>
         <Typography variant="body" color="gray">
-          {isLoading ? 'Checking authentication...' : 'Initializing components...'}
+          {isInitializing
+            ? 'Initializing components...'
+            : isLoading
+              ? 'Checking authentication...'
+              : 'Initializing components...'}
         </Typography>
       </div>
     </div>
