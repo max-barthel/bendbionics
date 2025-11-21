@@ -4,11 +4,16 @@ from sqlmodel import Session, SQLModel, create_engine
 
 from app.config import settings
 
-# Create database engine
+# Create database engine with conditional connect_args
+# Only include PostgreSQL-specific options for PostgreSQL connections
+connect_args = {}
+if "postgresql" in settings.database_url:
+    connect_args = {"options": "-c timezone=UTC"}
+
 engine = create_engine(
     settings.database_url,
     echo=settings.debug,
-    connect_args={"options": "-c timezone=UTC"},
+    connect_args=connect_args,
     pool_pre_ping=True,
 )
 
@@ -21,9 +26,14 @@ def create_db_and_tables():
 @event.listens_for(Engine, "connect")
 def set_postgresql_timezone(dbapi_connection, connection_record):
     """Set timezone to UTC for PostgreSQL connections"""
+    # Only set timezone for PostgreSQL connections
     if "postgresql" in settings.database_url:
-        with dbapi_connection.cursor() as cursor:
-            cursor.execute("SET timezone TO 'UTC'")
+        try:
+            with dbapi_connection.cursor() as cursor:
+                cursor.execute("SET timezone TO 'UTC'")
+        except AttributeError:
+            # SQLite connections don't have cursor() method, skip
+            pass
 
 
 def get_session():
