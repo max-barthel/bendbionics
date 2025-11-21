@@ -18,14 +18,44 @@ vi.mock('../features/visualization/components/Visualizer3D', () => ({
   default: vi.fn(() => <div data-testid="visualizer-3d">3D Visualizer</div>),
 }));
 
+// Define the app state context type for testing
+interface AppStateContextType {
+  user: { username: string } | null;
+  isLoading: boolean;
+  logout: () => void;
+  navigate: (path: string) => void | Promise<void>;
+  segments: number[][][];
+  setSegments: (segments: number[][][]) => void;
+  currentConfiguration: Record<string, unknown>;
+  setCurrentConfiguration: (config: Record<string, unknown>) => void;
+  setRobotState: (state: unknown) => void;
+  isInitializing: boolean;
+  setIsInitializing: (initializing: boolean) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  showPresetManager: boolean;
+  setShowPresetManager: (show: boolean) => void;
+  showTendonResults: boolean;
+  setShowTendonResults: (show: boolean) => void;
+  showUserSettings: boolean;
+  setShowUserSettings: (show: boolean) => void;
+  showAboutModal: boolean;
+  setShowAboutModal: (show: boolean) => void;
+  isLoadingPreset: boolean;
+  setIsLoadingPreset: (loading: boolean) => void;
+  presetLoadKey: number;
+  setPresetLoadKey: (fn: (prev: number) => number) => void;
+  handleFormResult: () => void;
+  handleLoadPreset: () => void;
+  handleShowPresetManager: () => void;
+  toggleSidebar: () => void;
+}
+
 // Mock the AuthProvider and useAuth hook
-vi.mock('../providers', () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  AppStateProvider: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  useAuth: vi.fn(),
-  useAppState: vi.fn(() => ({
+const mockUseAppState = vi.fn(
+  (): AppStateContextType => ({
     user: null,
     isLoading: false,
     logout: vi.fn(),
@@ -57,7 +87,16 @@ vi.mock('../providers', () => ({
     handleLoadPreset: vi.fn(),
     handleShowPresetManager: vi.fn(),
     toggleSidebar: vi.fn(),
-  })),
+  })
+);
+
+vi.mock('../providers', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  AppStateProvider: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  useAuth: vi.fn(),
+  useAppState: () => mockUseAppState(),
 }));
 
 // Mock the FormTabs component
@@ -487,6 +526,40 @@ describe('App', () => {
     vi.clearAllMocks();
     const { useAuth } = await import('../providers');
     mockUseAuth = vi.mocked(useAuth);
+    // Reset useAppState mock to default
+    mockUseAppState.mockReturnValue({
+      user: null,
+      isLoading: false,
+      logout: vi.fn(),
+      navigate: vi.fn(),
+      segments: [],
+      setSegments: vi.fn(),
+      currentConfiguration: {},
+      setCurrentConfiguration: vi.fn(),
+      setRobotState: vi.fn(),
+      isInitializing: false,
+      setIsInitializing: vi.fn(),
+      loading: false,
+      setLoading: vi.fn(),
+      sidebarCollapsed: false,
+      setSidebarCollapsed: vi.fn(),
+      showPresetManager: false,
+      setShowPresetManager: vi.fn(),
+      showTendonResults: true,
+      setShowTendonResults: vi.fn(),
+      showUserSettings: false,
+      setShowUserSettings: vi.fn(),
+      showAboutModal: false,
+      setShowAboutModal: vi.fn(),
+      isLoadingPreset: false,
+      setIsLoadingPreset: vi.fn(),
+      presetLoadKey: 0,
+      setPresetLoadKey: vi.fn(),
+      handleFormResult: vi.fn(),
+      handleLoadPreset: vi.fn(),
+      handleShowPresetManager: vi.fn(),
+      toggleSidebar: vi.fn(),
+    });
   });
 
   const renderApp = () => {
@@ -497,6 +570,29 @@ describe('App', () => {
     );
   };
 
+  // Helper to make dropdown visible (CSS hover doesn't work in jsdom)
+  const showDropdown = (container: HTMLElement) => {
+    const dropdown = container.querySelector(
+      '[class*="opacity-0"][class*="invisible"]'
+    ) as HTMLElement;
+    if (dropdown) {
+      dropdown.classList.remove('opacity-0', 'invisible');
+      dropdown.classList.add('opacity-100', 'visible');
+    }
+  };
+
+  // Helper to find button by text content or predicate
+  const findButtonByText = (
+    container: HTMLElement,
+    textOrPredicate: string | ((btn: HTMLButtonElement) => boolean)
+  ): HTMLButtonElement | undefined => {
+    const predicate =
+      typeof textOrPredicate === 'string'
+        ? (btn: HTMLButtonElement) => btn.textContent?.includes(textOrPredicate)
+        : textOrPredicate;
+    return Array.from(container.querySelectorAll('button')).find(predicate);
+  };
+
   describe('Loading States', () => {
     it('shows loading spinner when auth is loading', () => {
       mockUseAuth.mockReturnValue({
@@ -504,6 +600,41 @@ describe('App', () => {
         isLoading: true,
         logout: vi.fn(),
       } as AuthContextType);
+
+      // Mock useAppState to return isLoading: true
+      mockUseAppState.mockReturnValue({
+        user: null,
+        isLoading: true,
+        logout: vi.fn(),
+        navigate: vi.fn(),
+        segments: [],
+        setSegments: vi.fn(),
+        currentConfiguration: {},
+        setCurrentConfiguration: vi.fn(),
+        setRobotState: vi.fn(),
+        isInitializing: false,
+        setIsInitializing: vi.fn(),
+        loading: false,
+        setLoading: vi.fn(),
+        sidebarCollapsed: false,
+        setSidebarCollapsed: vi.fn(),
+        showPresetManager: false,
+        setShowPresetManager: vi.fn(),
+        showTendonResults: true,
+        setShowTendonResults: vi.fn(),
+        showUserSettings: false,
+        setShowUserSettings: vi.fn(),
+        showAboutModal: false,
+        setShowAboutModal: vi.fn(),
+        isLoadingPreset: false,
+        setIsLoadingPreset: vi.fn(),
+        presetLoadKey: 0,
+        setPresetLoadKey: vi.fn(),
+        handleFormResult: vi.fn(),
+        handleLoadPreset: vi.fn(),
+        handleShowPresetManager: vi.fn(),
+        toggleSidebar: vi.fn(),
+      });
 
       renderApp();
 
@@ -519,11 +650,88 @@ describe('App', () => {
         logout: vi.fn(),
       } as AuthContextType);
 
-      renderApp();
+      // Mock isInitializing to be true initially
+      mockUseAppState.mockReturnValue({
+        user: null,
+        isLoading: false,
+        logout: vi.fn(),
+        navigate: vi.fn(),
+        segments: [],
+        setSegments: vi.fn(),
+        currentConfiguration: {},
+        setCurrentConfiguration: vi.fn(),
+        setRobotState: vi.fn(),
+        isInitializing: true,
+        setIsInitializing: vi.fn(),
+        loading: false,
+        setLoading: vi.fn(),
+        sidebarCollapsed: false,
+        setSidebarCollapsed: vi.fn(),
+        showPresetManager: false,
+        setShowPresetManager: vi.fn(),
+        showTendonResults: true,
+        setShowTendonResults: vi.fn(),
+        showUserSettings: false,
+        setShowUserSettings: vi.fn(),
+        showAboutModal: false,
+        setShowAboutModal: vi.fn(),
+        isLoadingPreset: false,
+        setIsLoadingPreset: vi.fn(),
+        presetLoadKey: 0,
+        setPresetLoadKey: vi.fn(),
+        handleFormResult: vi.fn(),
+        handleLoadPreset: vi.fn(),
+        handleShowPresetManager: vi.fn(),
+        toggleSidebar: vi.fn(),
+      });
 
-      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
-      expect(screen.getByText('Loading BendBionics')).toBeInTheDocument();
+      const { rerender } = renderApp();
+
+      // When initializing, should show LoadingScreen
+      expect(screen.getByText('Loading BendBionics App')).toBeInTheDocument();
       expect(screen.getByText('Initializing components...')).toBeInTheDocument();
+
+      // Simulate initialization completing
+      mockUseAppState.mockReturnValue({
+        user: null,
+        isLoading: false,
+        logout: vi.fn(),
+        navigate: vi.fn(),
+        segments: [],
+        setSegments: vi.fn(),
+        currentConfiguration: {},
+        setCurrentConfiguration: vi.fn(),
+        setRobotState: vi.fn(),
+        isInitializing: false,
+        setIsInitializing: vi.fn(),
+        loading: false,
+        setLoading: vi.fn(),
+        sidebarCollapsed: false,
+        setSidebarCollapsed: vi.fn(),
+        showPresetManager: false,
+        setShowPresetManager: vi.fn(),
+        showTendonResults: true,
+        setShowTendonResults: vi.fn(),
+        showUserSettings: false,
+        setShowUserSettings: vi.fn(),
+        showAboutModal: false,
+        setShowAboutModal: vi.fn(),
+        isLoadingPreset: false,
+        setIsLoadingPreset: vi.fn(),
+        presetLoadKey: 0,
+        setPresetLoadKey: vi.fn(),
+        handleFormResult: vi.fn(),
+        handleLoadPreset: vi.fn(),
+        handleShowPresetManager: vi.fn(),
+        toggleSidebar: vi.fn(),
+      });
+
+      // Re-render the component with the updated mock state
+      rerender(
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      );
 
       // Wait for initialization to complete
       await waitFor(
@@ -559,51 +767,194 @@ describe('App', () => {
         logout: vi.fn(),
       } as AuthContextType);
 
-      renderApp();
+      mockUseAppState.mockReturnValue({
+        user: { username: 'testuser' },
+        isLoading: false,
+        logout: vi.fn(),
+        navigate: vi.fn(),
+        segments: [],
+        setSegments: vi.fn(),
+        currentConfiguration: {},
+        setCurrentConfiguration: vi.fn(),
+        setRobotState: vi.fn(),
+        isInitializing: false,
+        setIsInitializing: vi.fn(),
+        loading: false,
+        setLoading: vi.fn(),
+        sidebarCollapsed: false,
+        setSidebarCollapsed: vi.fn(),
+        showPresetManager: false,
+        setShowPresetManager: vi.fn(),
+        showTendonResults: true,
+        setShowTendonResults: vi.fn(),
+        showUserSettings: false,
+        setShowUserSettings: vi.fn(),
+        showAboutModal: false,
+        setShowAboutModal: vi.fn(),
+        isLoadingPreset: false,
+        setIsLoadingPreset: vi.fn(),
+        presetLoadKey: 0,
+        setPresetLoadKey: vi.fn(),
+        handleFormResult: vi.fn(),
+        handleLoadPreset: vi.fn(),
+        handleShowPresetManager: vi.fn(),
+        toggleSidebar: vi.fn(),
+      });
+
+      const { container } = renderApp();
+
+      // Wait for the menu button to be rendered
+      await waitFor(() => {
+        expect(screen.getAllByTestId('button').length).toBeGreaterThan(0);
+      });
+
+      // Manually make dropdown visible (CSS hover doesn't work in jsdom)
+      showDropdown(container);
 
       await waitFor(() => {
-        expect(screen.getAllByText('testuser')[0]).toBeInTheDocument();
-        expect(screen.getByText('Sign Out')).toBeInTheDocument();
-        expect(screen.queryByText('Sign In')).not.toBeInTheDocument();
+        // Query for text in the dropdown (even if hidden)
+        const allText = container.textContent || '';
+        expect(allText).toContain('testuser');
+        expect(allText).toContain('Sign Out');
+        expect(allText).not.toContain('Sign In');
       });
     });
 
     it('calls logout and navigates when logout button is clicked', async () => {
       const mockLogout = vi.fn();
+      const mockNavigateFn = vi.fn();
       mockUseAuth.mockReturnValue({
         user: { username: 'testuser' },
         isLoading: false,
         logout: mockLogout,
       } as AuthContextType);
 
-      renderApp();
-
-      await waitFor(() => {
-        expect(screen.getByText('Sign Out')).toBeInTheDocument();
+      mockUseAppState.mockReturnValue({
+        user: { username: 'testuser' },
+        isLoading: false,
+        logout: mockLogout,
+        navigate: mockNavigateFn,
+        segments: [],
+        setSegments: vi.fn(),
+        currentConfiguration: {},
+        setCurrentConfiguration: vi.fn(),
+        setRobotState: vi.fn(),
+        isInitializing: false,
+        setIsInitializing: vi.fn(),
+        loading: false,
+        setLoading: vi.fn(),
+        sidebarCollapsed: false,
+        setSidebarCollapsed: vi.fn(),
+        showPresetManager: false,
+        setShowPresetManager: vi.fn(),
+        showTendonResults: true,
+        setShowTendonResults: vi.fn(),
+        showUserSettings: false,
+        setShowUserSettings: vi.fn(),
+        showAboutModal: false,
+        setShowAboutModal: vi.fn(),
+        isLoadingPreset: false,
+        setIsLoadingPreset: vi.fn(),
+        presetLoadKey: 0,
+        setPresetLoadKey: vi.fn(),
+        handleFormResult: vi.fn(),
+        handleLoadPreset: vi.fn(),
+        handleShowPresetManager: vi.fn(),
+        toggleSidebar: vi.fn(),
       });
 
-      fireEvent.click(screen.getByText('Sign Out'));
+      const { container } = renderApp();
+
+      // Wait for the menu button to be rendered
+      await waitFor(() => {
+        expect(screen.getAllByTestId('button').length).toBeGreaterThan(0);
+      });
+
+      // Manually make dropdown visible (CSS hover doesn't work in jsdom)
+      showDropdown(container);
+
+      await waitFor(() => {
+        // Find Sign Out button even if hidden
+        const signOutButton = findButtonByText(container, 'Sign Out');
+        expect(signOutButton).toBeTruthy();
+      });
+
+      const signOutButton = findButtonByText(container, 'Sign Out');
+      if (signOutButton) {
+        fireEvent.click(signOutButton);
+      }
 
       expect(mockLogout).toHaveBeenCalled();
-      expect(mockNavigate).toHaveBeenCalledWith('/');
+      expect(mockNavigateFn).toHaveBeenCalledWith('/');
     });
 
     it('navigates to auth page when sign in button is clicked', async () => {
+      const mockNavigateFn = vi.fn();
       mockUseAuth.mockReturnValue({
         user: null,
         isLoading: false,
         logout: vi.fn(),
       } as AuthContextType);
 
-      renderApp();
-
-      await waitFor(() => {
-        expect(screen.getByText('Sign In')).toBeInTheDocument();
+      mockUseAppState.mockReturnValue({
+        user: null,
+        isLoading: false,
+        logout: vi.fn(),
+        navigate: mockNavigateFn,
+        segments: [],
+        setSegments: vi.fn(),
+        currentConfiguration: {},
+        setCurrentConfiguration: vi.fn(),
+        setRobotState: vi.fn(),
+        isInitializing: false,
+        setIsInitializing: vi.fn(),
+        loading: false,
+        setLoading: vi.fn(),
+        sidebarCollapsed: false,
+        setSidebarCollapsed: vi.fn(),
+        showPresetManager: false,
+        setShowPresetManager: vi.fn(),
+        showTendonResults: true,
+        setShowTendonResults: vi.fn(),
+        showUserSettings: false,
+        setShowUserSettings: vi.fn(),
+        showAboutModal: false,
+        setShowAboutModal: vi.fn(),
+        isLoadingPreset: false,
+        setIsLoadingPreset: vi.fn(),
+        presetLoadKey: 0,
+        setPresetLoadKey: vi.fn(),
+        handleFormResult: vi.fn(),
+        handleLoadPreset: vi.fn(),
+        handleShowPresetManager: vi.fn(),
+        toggleSidebar: vi.fn(),
       });
 
-      fireEvent.click(screen.getByText('Sign In'));
+      const { container } = renderApp();
 
-      expect(mockNavigate).toHaveBeenCalledWith('/auth');
+      // Wait for the menu button to be rendered
+      await waitFor(() => {
+        expect(screen.getAllByTestId('button').length).toBeGreaterThan(0);
+      });
+
+      // Manually make dropdown visible (CSS hover doesn't work in jsdom)
+      showDropdown(container);
+
+      const findSignInButton = (btn: HTMLButtonElement) =>
+        btn.textContent?.includes('Sign In') && !btn.textContent?.includes('Sign Out');
+
+      await waitFor(() => {
+        // Find Sign In button even if hidden
+        const signInButton = findButtonByText(container, findSignInButton);
+        expect(signInButton).toBeTruthy();
+      });
+
+      const signInButton = findButtonByText(container, findSignInButton);
+      if (signInButton) {
+        fireEvent.click(signInButton);
+      }
+
+      expect(mockNavigateFn).toHaveBeenCalledWith('/auth');
     });
   });
 

@@ -64,7 +64,7 @@ check_system_requirements() {
 
     # Check Python
     if ! command -v python &> /dev/null && ! command -v python3 &> /dev/null; then
-        print_error "Python is not installed. Please install Python 3.8+ from https://python.org/"
+        print_error "Python is not installed. Please install Python 3.11+ from https://python.org/"
         exit 1
     fi
 
@@ -73,6 +73,14 @@ check_system_requirements() {
     else
         print_success "Python: $(python --version)"
     fi
+
+    # Check uv
+    if ! command -v uv &> /dev/null; then
+        print_error "uv is not installed. Install from https://github.com/astral-sh/uv"
+        print_error "Quick install: curl -LsSf https://astral.sh/uv/install.sh | sh"
+        exit 1
+    fi
+    print_success "uv: $(uv --version)"
 
     # Check Rust (optional but recommended)
     if ! command -v cargo &> /dev/null; then
@@ -114,28 +122,17 @@ setup_backend() {
 
     cd backend
 
-    # Check if virtual environment exists
-    if [ ! -d ".venv" ] && [ ! -d "venv" ]; then
-        print_status "Creating Python virtual environment..."
-        python3 -m venv .venv
-    fi
+    # Create virtual environment with uv
+    print_status "Creating Python virtual environment with uv..."
+    uv venv
 
-    # Activate virtual environment
-    if [ -d ".venv" ]; then
-        print_status "Activating virtual environment..."
-        source .venv/bin/activate
-    elif [ -d "venv" ]; then
-        print_status "Activating virtual environment..."
-        source venv/bin/activate
-    fi
-
-    # Install dependencies
-    print_status "Installing backend dependencies..."
-    pip install -r requirements.txt
+    # Sync dependencies (installs all dependencies from pyproject.toml)
+    print_status "Installing backend dependencies with uv..."
+    uv sync
 
     # Install development dependencies
     print_status "Installing development dependencies..."
-    pip install black ruff pylint mypy pytest pytest-cov isort
+    uv sync --extra dev
 
     cd ..
 
@@ -168,17 +165,17 @@ run_health_checks() {
     fi
 
     # Check backend dependencies
-    if [ -d "backend/.venv" ] || [ -d "backend/venv" ]; then
+    if [ -d "backend/.venv" ]; then
         print_success "Backend virtual environment: Found"
     else
         print_warning "Backend virtual environment: Not found"
     fi
 
-    # Check if requirements.txt exists
-    if [ -f "backend/requirements.txt" ]; then
-        print_success "Backend requirements: Found"
+    # Check if pyproject.toml exists
+    if [ -f "pyproject.toml" ]; then
+        print_success "Backend dependencies: Found (pyproject.toml)"
     else
-        print_error "Backend requirements: Missing"
+        print_error "Backend dependencies: Missing (pyproject.toml)"
         return 1
     fi
 

@@ -29,6 +29,11 @@ jobs:
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
 
+            - name: Install uv
+              uses: astral-sh/setup-uv@v5
+              with:
+                  version: "latest"
+
             - name: Install frontend dependencies
               run: |
                   cd frontend
@@ -37,13 +42,12 @@ jobs:
             - name: Install backend dependencies
               run: |
                   cd backend
-                  python -m pip install --upgrade pip
-                  pip install -r requirements.txt
+                  uv sync
 
             - name: Quick linting check
               run: |
                   cd frontend && npm run lint:check
-                  cd ../backend && ruff check app/ --quiet
+                  cd ../backend && uv run ruff check app/ --quiet
 
             - name: Quick build test
               run: |
@@ -53,7 +57,7 @@ jobs:
             - name: Backend import test
               run: |
                   cd backend
-                  python -c "import app.main; print('✅ Backend imports successful')"
+                  uv run python -c "import app.main; print('✅ Backend imports successful')"
 
             - name: Success message
               run: |

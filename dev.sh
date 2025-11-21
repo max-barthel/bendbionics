@@ -60,6 +60,13 @@ check_prerequisites() {
         exit 1
     fi
 
+    # Check if uv is installed
+    if ! command -v uv &> /dev/null; then
+        print_error "uv is not installed. Install from https://github.com/astral-sh/uv"
+        print_error "Quick install: curl -LsSf https://astral.sh/uv/install.sh | sh"
+        exit 1
+    fi
+
     # Quick dependency check - install if missing
     if [ ! -d "frontend/node_modules" ]; then
         print_status "Installing frontend dependencies..."
@@ -144,15 +151,24 @@ start_backend() {
 
     cd backend
 
-    # Quick virtual environment check
-    if [ -d "venv" ]; then
-        source venv/bin/activate
-    elif [ -d ".venv" ]; then
-        source .venv/bin/activate
+    # Check if uv is installed
+    if ! command -v uv &> /dev/null; then
+        print_error "uv is not installed. Install from https://github.com/astral-sh/uv"
+        exit 1
     fi
 
-    # Start backend
-    python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
+    # Ensure virtual environment exists and dependencies are installed
+    if [ ! -d ".venv" ]; then
+        print_status "Creating virtual environment with uv..."
+        uv venv
+    fi
+
+    # Sync dependencies (install/update if needed)
+    print_status "Syncing dependencies with uv..."
+    uv sync
+
+    # Start backend using uv run
+    uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
     BACKEND_PID=$!
 
     cd ..
@@ -195,8 +211,8 @@ run_health_checks() {
         print_warning "Frontend dependencies not found"
     fi
 
-    if [ ! -d "backend/venv" ] && [ ! -d "backend/.venv" ]; then
-        print_warning "Backend virtual environment not found"
+    if [ ! -d "backend/.venv" ]; then
+        print_warning "Backend virtual environment not found (will be created on first run)"
     fi
 
     print_success "Health checks completed"

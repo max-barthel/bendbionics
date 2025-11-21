@@ -184,7 +184,7 @@ create_deployment_package() {
 
         # Copy essential backend files only
         cp -r backend/app "$deploy_dir/backend/"
-        cp backend/requirements.txt "$deploy_dir/backend/"
+        cp pyproject.toml "$deploy_dir/"  # uv uses pyproject.toml
         cp backend/init_database.py "$deploy_dir/backend/"
         cp backend/migrate.py "$deploy_dir/backend/"
 
@@ -244,8 +244,8 @@ Contents:
 - frontend/          : Built React application (optimized for production)
 - backend/           : Python FastAPI backend (production files only)
   - app/             : Application source code
-  - requirements.txt : Python dependencies
   - init_database.py : Database initialization script
+- pyproject.toml     : Python dependencies (uv)
   - migrate.py       : Database migration script
 - nginx/             : Nginx configuration
 - systemd/           : Systemd service configuration
@@ -397,12 +397,21 @@ test_build_locally() {
     # Start backend for testing
     print_status "Starting backend for testing..."
     cd backend
-    if [ -d "venv" ]; then
-        source venv/bin/activate
-    elif [ -d ".venv" ]; then
-        source .venv/bin/activate
+
+    # Check if uv is installed
+    if ! command -v uv &> /dev/null; then
+        print_error "uv is not installed. Install from https://github.com/astral-sh/uv"
+        exit 1
     fi
-    python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+
+    # Ensure dependencies are installed
+    if [ ! -d ".venv" ]; then
+        uv venv
+    fi
+    uv sync
+
+    # Start backend using uv run
+    uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 &
     BACKEND_PID=$!
     cd ..
 
