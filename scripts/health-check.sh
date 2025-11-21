@@ -100,11 +100,11 @@ check_dependencies() {
         print_warning "Backend virtual environment: Not found"
     fi
 
-    # Check if requirements.txt exists
-    if [ -f "backend/requirements.txt" ]; then
-        print_success "Backend requirements: Found"
+    # Check if pyproject.toml exists
+    if [ -f "pyproject.toml" ] || [ -f "backend/pyproject.toml" ]; then
+        print_success "Backend dependencies: Found (pyproject.toml)"
     else
-        print_error "Backend requirements: Missing"
+        print_error "Backend dependencies: Missing (pyproject.toml)"
         return 1
     fi
 
@@ -201,10 +201,21 @@ check_test_status() {
 
     # Run backend tests
     cd backend
-    if python -m pytest --tb=no -q > /dev/null 2>&1; then
-        print_success "Backend Tests: Passing"
+    # Check if uv is available, use it if so, otherwise fall back to pytest
+    if command -v uv &> /dev/null && [ -d ".venv" ]; then
+        if uv run pytest --tb=no -q > /dev/null 2>&1; then
+            print_success "Backend Tests: Passing"
+        else
+            print_warning "Backend Tests: Some failures"
+        fi
+    elif command -v pytest &> /dev/null; then
+        if python -m pytest --tb=no -q > /dev/null 2>&1; then
+            print_success "Backend Tests: Passing"
+        else
+            print_warning "Backend Tests: Some failures"
+        fi
     else
-        print_warning "Backend Tests: Some failures"
+        print_warning "Backend Tests: pytest not available"
     fi
     cd ..
 }

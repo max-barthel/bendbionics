@@ -55,7 +55,7 @@ lint_all() {
 test_all() {
     print_status "Running all tests..."
     npm run test
-    cd backend && python -m pytest && cd ..
+    cd backend && uv run pytest && cd ..
     print_success "All tests completed"
 }
 

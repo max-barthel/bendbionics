@@ -136,22 +136,25 @@ start_backend_test() {
     cd backend
 
     # Create virtual environment if it doesn't exist
-    if [ ! -d "venv" ]; then
-        print_status "Creating Python virtual environment..."
-        python3 -m venv venv
+    # Check if uv is installed
+    if ! command -v uv &> /dev/null; then
+        print_error "uv is not installed. Install from https://github.com/astral-sh/uv"
+        exit 1
     fi
 
-    # Activate virtual environment
-    source venv/bin/activate
+    # Create virtual environment with uv
+    if [ ! -d ".venv" ]; then
+        print_status "Creating Python virtual environment with uv..."
+        uv venv
+    fi
 
     # Install dependencies
-    if [ -f "requirements.txt" ]; then
-        pip install -r requirements.txt
-    fi
+    print_status "Installing dependencies with uv..."
+    uv sync
 
     # Start backend server
     print_status "Starting FastAPI backend on port 8000..."
-    python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+    uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 &
     BACKEND_PID=$!
 
     cd ..

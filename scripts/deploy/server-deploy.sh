@@ -85,7 +85,7 @@ check_prerequisites() {
     fi
 
     # Check required commands
-    local required_commands=("python3" "pip3" "nginx" "systemctl" "certbot")
+    local required_commands=("python3" "nginx" "systemctl" "certbot")
     local missing_commands=()
 
     for cmd in "${required_commands[@]}"; do
@@ -97,7 +97,7 @@ check_prerequisites() {
     if [ ${#missing_commands[@]} -ne 0 ]; then
         print_error "Missing required commands: ${missing_commands[*]}"
         print_status "Please install missing packages:"
-        print_status "sudo apt update && sudo apt install -y python3 python3-pip nginx certbot python3-certbot-nginx"
+        print_status "sudo apt update && sudo apt install -y python3 nginx certbot python3-certbot-nginx"
         exit 1
     fi
 
@@ -112,7 +112,7 @@ install_dependencies() {
     apt update
 
     # Install Python and development tools
-    apt install -y python3 python3-pip python3-venv python3-dev build-essential
+    apt install -y python3 python3-venv python3-dev build-essential
 
     # Install nginx
     apt install -y nginx
@@ -200,6 +200,15 @@ copy_application_files() {
         exit 1
     fi
 
+    # Copy pyproject.toml (needed for uv)
+    if [ -f "$SCRIPT_DIR/pyproject.toml" ]; then
+        cp "$SCRIPT_DIR/pyproject.toml" "$APP_DIR/"
+        print_status "pyproject.toml copied"
+    else
+        print_error "pyproject.toml not found in deployment package"
+        exit 1
+    fi
+
     # Set proper permissions
     chown -R www-data:www-data "$APP_DIR"
 
@@ -212,18 +221,27 @@ setup_python_environment() {
 
     cd "$APP_DIR/backend"
 
-    # Create virtual environment
-    python3 -m venv venv
-    source venv/bin/activate
+    # Check if uv is installed, install if not
+    if ! command -v uv &> /dev/null; then
+        print_status "Installing uv..."
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        export PATH="$HOME/.cargo/bin:$PATH"
+        # Source cargo env if available
+        if [ -f "$HOME/.cargo/env" ]; then
+            source "$HOME/.cargo/env"
+        fi
+    fi
 
-    # Upgrade pip
-    pip install --upgrade pip
+    # Create virtual environment with uv
+    print_status "Creating virtual environment with uv..."
+    uv venv
 
-    # Install Python dependencies
-    if [ -f "requirements.txt" ]; then
-        pip install -r requirements.txt
+    # Install Python dependencies from pyproject.toml
+    print_status "Installing Python dependencies with uv..."
+    if [ -f "../pyproject.toml" ]; then
+        uv sync
     else
-        print_error "requirements.txt not found in backend directory"
+        print_error "pyproject.toml not found in backend directory"
         exit 1
     fi
 
@@ -662,7 +680,7 @@ initialize_database() {
     cd "$APP_DIR/backend"
 
     # Use virtual environment's Python to ensure dependencies are available
-    source venv/bin/activate
+    source .venv/bin/activate
     python init_database.py
     INIT_RESULT=$?
     deactivate

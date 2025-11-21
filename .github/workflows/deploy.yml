@@ -56,16 +56,21 @@ jobs:
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
 
+            - name: Install uv
+              uses: astral-sh/setup-uv@v5
+              with:
+                  version: "latest"
+
             - name: 📦 Install dependencies
               run: |
                   cd frontend && npm ci
-                  cd ../backend && pip install -r requirements.txt
+                  cd ../backend && uv sync
 
             - name: 🧪 Run tests
               if: ${{ !inputs.skip_build }}
               run: |
                   cd frontend && npm run test:run
-                  cd ../backend && python -m pytest tests/ -v
+                  cd ../backend && uv run pytest tests/ -v
 
             - name: 🏗️ Build application
               if: ${{ !inputs.skip_build }}
@@ -87,11 +92,13 @@ jobs:
                   # Copy backend files
                   mkdir -p "$DEPLOY_DIR/backend"
                   cp -r backend/app "$DEPLOY_DIR/backend/"
-                  cp backend/requirements.txt "$DEPLOY_DIR/backend/"
 
                     # Copy database initialization and migration scripts
                     cp backend/init_database.py "$DEPLOY_DIR/backend/"
                     cp backend/migrate.py "$DEPLOY_DIR/backend/"
+
+                  # Copy pyproject.toml (needed for uv)
+                  cp pyproject.toml "$DEPLOY_DIR/"
 
                   # Copy deployment configurations
                   cp -r deploy/nginx "$DEPLOY_DIR/"
