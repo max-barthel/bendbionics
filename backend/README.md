@@ -28,24 +28,28 @@ A FastAPI-based backend for soft robot simulation and control.
 ### Setup
 
 ```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # Install dependencies
-pip install -r requirements.txt
+cd backend
+uv sync
 
 # Run development server
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Testing
 
 ```bash
 # Run all tests
-python -m pytest
+uv run pytest
 
 # Run specific test file
-python -m pytest tests/test_pcc.py
+uv run pytest tests/test_pcc.py
 
 # Run with coverage
-python -m pytest --cov=app --cov-report=term-missing
+uv run pytest --cov=app --cov-report=term-missing
 ```
 
 ### Test Structure

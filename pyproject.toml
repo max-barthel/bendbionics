@@ -1,3 +1,68 @@
+[project]
+name = "bendbionics"
+version = "0.1.0"
+description = "Soft Robot Simulation Platform - Backend API"
+requires-python = ">=3.11"
+dependencies = [
+    "annotated-types==0.7.0",
+    "anyio==4.11.0",
+    "click==8.3.1",
+    "fastapi==0.121.2",
+    "h11==0.16.0",
+    "httptools==0.7.1",
+    "idna==3.11",
+    "pydantic==2.12.4",
+    "pydantic-settings==2.12.0",
+    "python-dotenv==1.2.1",
+    "PyYAML==6.0.3",
+    "sniffio==1.3.1",
+    "SQLAlchemy==2.0.44",
+    "sqlmodel==0.0.27",
+    "starlette>=0.40.0,<0.50.0",
+    "typing-inspection==0.4.2",
+    "typing_extensions==4.15.0",
+    "uvicorn==0.38.0",
+    "uvloop==0.22.1",
+    "watchfiles==1.1.1",
+    "websockets==15.0.1",
+    "httpx==0.28.1",
+    "python-jose[cryptography]==3.5.0",
+    "passlib[bcrypt]==1.7.4",
+    "bcrypt==4.3.0",
+    "python-multipart==0.0.20",
+    "alembic==1.17.2",
+    "psycopg2-binary==2.9.11",
+    "psycopg2==2.9.11",
+    "asyncpg==0.30.0",
+    "python-decouple==3.8",
+    "numpy==1.26.4",
+    "gunicorn==21.2.0",
+    "aiofiles==23.2.1",
+    "aiohttp==3.13.2",
+    "psutil==5.9.8",
+    "ruff==0.14.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.4.2",
+    "pytest-asyncio==0.26.0",
+    "pytest-cov==6.3.0",
+    "coverage==7.11.3",
+    "black",
+    "pylint",
+    "mypy",
+    "isort",
+    "safety",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend/app"]
+
 [tool.black]
 line-length = 88
 
@@ -48,21 +113,22 @@ ignore = [
 "tests/**/*.py" = ["S101", "PLR2004", "S106", "S108"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["backend/tests"]
+pythonpath = ["backend"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=app",
+    "--cov=backend/app",
     "--cov-report=term-missing",
     "--cov-report=html:htmlcov",
     "--cov-fail-under=40"
 ]
 
 [tool.coverage.run]
-source = ["app"]
+source = ["backend/app"]
 omit = [
     "*/tests/*",
     "*/test_*",

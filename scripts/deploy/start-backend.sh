@@ -6,7 +6,8 @@
 
 # Configuration
 BACKEND_DIR="/var/www/bendbionics-app/backend"
-VENV_DIR="$BACKEND_DIR/venv"
+VENV_DIR="$BACKEND_DIR/.venv"  # uv uses .venv by default
+FALLBACK_VENV_DIR="$BACKEND_DIR/venv"  # fallback for legacy setups
 ENV_FILE="$BACKEND_DIR/.env.production"
 
 # Function to print status
@@ -32,10 +33,17 @@ if [ ! -d "$BACKEND_DIR" ]; then
     exit 1
 fi
 
-# Check if virtual environment exists
-if [ ! -d "$VENV_DIR" ]; then
-    print_error "Virtual environment not found: $VENV_DIR"
+# Check if virtual environment exists (try .venv first, then venv)
+if [ ! -d "$VENV_DIR" ] && [ ! -d "$FALLBACK_VENV_DIR" ]; then
+    print_error "Virtual environment not found: $VENV_DIR or $FALLBACK_VENV_DIR"
     exit 1
+fi
+
+# Use .venv if available, otherwise fall back to venv
+if [ -d "$VENV_DIR" ]; then
+    VENV_DIR="$VENV_DIR"
+elif [ -d "$FALLBACK_VENV_DIR" ]; then
+    VENV_DIR="$FALLBACK_VENV_DIR"
 fi
 
 # Check if environment file exists
