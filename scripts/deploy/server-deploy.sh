@@ -225,10 +225,16 @@ setup_python_environment() {
     if ! command -v uv &> /dev/null; then
         print_status "Installing uv..."
         curl -LsSf https://astral.sh/uv/install.sh | sh
-        export PATH="$HOME/.cargo/bin:$PATH"
-        # Source cargo env if available
-        if [ -f "$HOME/.cargo/env" ]; then
-            source "$HOME/.cargo/env"
+        # Add uv's installation directory to PATH
+        export PATH="$HOME/.local/bin:$PATH"
+        # Source uv's env file if available (created by installer)
+        if [ -f "$HOME/.local/bin/env" ]; then
+            source "$HOME/.local/bin/env"
+        fi
+        # Verify uv is now available
+        if ! command -v uv &> /dev/null; then
+            print_error "uv installation failed or not in PATH"
+            exit 1
         fi
     fi
 
@@ -680,7 +686,8 @@ initialize_database() {
     cd "$APP_DIR/backend"
 
     # Use virtual environment's Python to ensure dependencies are available
-    source .venv/bin/activate
+    # Venv is created at project root ($APP_DIR/.venv) by uv sync
+    source ../.venv/bin/activate
     python init_database.py
     INIT_RESULT=$?
     deactivate
