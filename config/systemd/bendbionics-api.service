@@ -7,7 +7,7 @@ Type=simple
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/bendbionics-app/backend
-Environment="PATH=/var/www/bendbionics-app/backend/venv/bin"
+Environment="PATH=/var/www/bendbionics-app/backend/.venv/bin"
 Environment="PYTHONPATH=/var/www/bendbionics-app/backend"
 EnvironmentFile=/var/www/bendbionics-app/backend/.env.production
 ExecStart=/var/www/bendbionics-app/scripts/deploy/start-backend.sh
