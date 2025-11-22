@@ -28,8 +28,8 @@ class TestMainRoutes:
         self.client = TestClient(app)
 
     @patch("app.api.routes.compute_pcc_with_tendons")
-    def test_run_pcc_with_tendons_success(self, mock_compute):
-        """Test successful PCC computation with tendons."""
+    def test_run_kinematics_success(self, mock_compute):
+        """Test successful kinematics computation."""
         # Mock computation result
         mock_result = {
             "robot_positions": [
@@ -69,7 +69,7 @@ class TestMainRoutes:
             },
         }
 
-        response = self.client.post("/pcc-with-tendons", json=params)
+        response = self.client.post("/kinematics", json=params)
 
         assert response.status_code == 200
         data = response.json()
@@ -81,8 +81,8 @@ class TestMainRoutes:
         assert "actuation_commands" in data["data"]["result"]
 
     @patch("app.api.routes.compute_pcc_with_tendons")
-    def test_run_pcc_with_tendons_error(self, mock_compute):
-        """Test PCC computation with tendons error handling."""
+    def test_run_kinematics_error(self, mock_compute):
+        """Test kinematics computation error handling."""
         # Mock computation error
         mock_compute.side_effect = Exception("Computation failed")
 
@@ -103,7 +103,7 @@ class TestMainRoutes:
             },
         }
 
-        response = self.client.post("/pcc-with-tendons", json=params)
+        response = self.client.post("/kinematics", json=params)
 
         # ComputationError is caught by middleware and converted to error_response
         assert response.status_code == 500

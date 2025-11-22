@@ -7,15 +7,6 @@ const global = globalThis as unknown as typeof globalThis & Record<string, unkno
 // Disable console.log during tests to prevent hanging
 // console.log = vi.fn();
 
-// Mock Tauri API
-global['__TAURI__'] = {
-  invoke: vi.fn(),
-  event: {
-    listen: vi.fn(),
-    emit: vi.fn(),
-  },
-} as unknown;
-
 // Mock window.matchMedia
 Object.defineProperty(globalThis, 'matchMedia', {
   writable: true,

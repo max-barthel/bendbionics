@@ -80,7 +80,13 @@ function Button({
   if (variant === 'primary') {
     const classes = cn(buttonVariants.primary, className);
     return (
-      <button type={type} onClick={onClick} disabled={isDisabled} className={classes}>
+      <button
+        type={type}
+        onClick={onClick}
+        disabled={isDisabled}
+        className={classes}
+        aria-label={ariaLabel}
+      >
         {children}
         <div className="absolute inset-0 rounded-full pointer-events-none z-0 bg-gradient-to-br from-white/10 to-white/5 shadow-inner" />
       </button>
@@ -208,7 +214,13 @@ function Button({
   );
 
   return (
-    <button type={type} onClick={onClick} disabled={isDisabled} className={classes}>
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={isDisabled}
+      className={classes}
+      aria-label={ariaLabel}
+    >
       <div className="flex items-center justify-center gap-2">
         {loading && <LoadingSpinner size="sm" color="white" />}
         {children}

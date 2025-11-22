@@ -81,7 +81,7 @@ export async function handleTendonComputation(
   robotState: RobotState,
   onResult: (segments: number[][][], configuration: RobotConfiguration) => void
 ): Promise<void> {
-  const result = await robotAPI.computePCCWithTendons(params);
+  const result = await robotAPI.computeKinematics(params);
   const segments = isApiResponseWithResult(result)
     ? result.data.result.robot_positions
     : [];

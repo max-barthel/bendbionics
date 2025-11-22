@@ -185,6 +185,19 @@ jobs:
                   cd frontend
                   bun run lighthouse:ci
 
+            - name: Cleanup old Lighthouse reports
+              run: |
+                  cd frontend
+                  if [ -d "lighthouse-reports" ]; then
+                    REPORT_COUNT=$(find lighthouse-reports -maxdepth 1 -name "*.report.*" -type f 2>/dev/null | wc -l | tr -d ' ')
+                    if [ "$REPORT_COUNT" -gt 10 ]; then
+                      cd lighthouse-reports
+                      ls -t *.report.* 2>/dev/null | tail -n +11 | xargs rm -f 2>/dev/null || true
+                      cd ..
+                    fi
+                  fi
+                  rm -rf .lighthouseci 2>/dev/null || true
+
             - name: Upload performance results
               uses: actions/upload-artifact@v5
               with:

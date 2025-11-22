@@ -14,7 +14,7 @@ A FastAPI-based backend for soft robot simulation and control.
 ## API Endpoints
 
 - `POST /pcc` - Compute robot kinematics
-- `POST /pcc-with-tendons` - Compute robot kinematics with tendon analysis
+- `POST /kinematics` - Compute robot kinematics with tendon analysis
 - `POST /tendons/calculate` - Calculate tendon lengths and actuation
 - `POST /tendons/analyze-configuration` - Analyze tendon configuration
 - `GET /tendons/configurations` - Get predefined tendon configurations

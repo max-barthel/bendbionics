@@ -37,14 +37,26 @@ async def options_pcc():
     return Response(status_code=200)
 
 
-@router.post("/pcc-with-tendons")
-async def run_pcc_with_tendons(params: PCCParams):
-    """Compute PCC robot configuration with tendon analysis."""
+@router.post("/kinematics")
+async def run_kinematics(params: PCCParams):
+    """Compute robot kinematics with tendon analysis."""
     result = compute_pcc_with_tendons(params)
     # Convert numpy arrays to lists for JSON serialization
     result_serializable = convert_result_to_serializable(result)
 
     return success_response(
         data={"result": result_serializable},
-        message="PCC with tendons computation completed successfully",
+        message="Kinematics computation completed successfully",
     )
+
+
+@router.options("/kinematics")
+async def options_kinematics():
+    """Handle CORS preflight requests.
+
+    Note: CORS middleware should handle OPTIONS requests, but FastAPI requires
+    an explicit route handler to avoid 405 errors. The middleware will add
+    CORS headers to this response.
+    """
+    # Return empty response - CORS middleware will add headers after this handler
+    return Response(status_code=200)
