@@ -49,24 +49,18 @@ check_directory() {
 check_prerequisites() {
     print_status "Checking build prerequisites..."
 
-    # Check Node.js
-    if ! command -v node &> /dev/null; then
-        print_error "Node.js is not installed. Please install Node.js 18+ from https://nodejs.org/"
+    # Check if Bun is installed
+    if ! command -v bun &> /dev/null; then
+        print_error "Bun is not installed. Install from https://bun.sh"
+        print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
         exit 1
     fi
-
-    # Check Node.js version
-    NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
-    if [ "$NODE_VERSION" -lt 18 ]; then
-        print_error "Node.js 18+ required. Current: $(node --version)"
-        exit 1
-    fi
-    print_status "Node.js version: $(node --version) ✓"
+    print_status "Bun version: $(bun --version) ✓"
 
     # Check if frontend dependencies are installed
     if [ ! -d "frontend/node_modules" ]; then
-        print_warning "Frontend dependencies not found. Installing..."
-        cd frontend && npm install && cd ..
+        print_warning "Frontend dependencies not found. Installing with Bun..."
+        cd frontend && bun install && cd ..
     fi
 
     print_success "Prerequisites check completed"
@@ -113,7 +107,7 @@ build_frontend_web() {
 
     # Build with TypeScript check
     print_status "Running TypeScript compilation and web build..."
-    npm run build
+    bun run build
 
     if [ $? -ne 0 ]; then
         print_error "Frontend web build failed"
@@ -430,7 +424,7 @@ test_build_locally() {
     # Start frontend preview server
     print_status "Starting frontend preview server..."
     cd frontend
-    npm run preview &
+    bun run preview &
     FRONTEND_PID=$!
     cd ..
 

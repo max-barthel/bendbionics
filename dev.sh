@@ -49,9 +49,10 @@ check_directory() {
 check_prerequisites() {
     print_status "Quick prerequisite check..."
 
-    # Only check what's absolutely essential
-    if ! command -v node &> /dev/null; then
-        print_error "Node.js is required. Install from https://nodejs.org/"
+    # Check if Bun is installed
+    if ! command -v bun &> /dev/null; then
+        print_error "Bun is not installed. Install from https://bun.sh"
+        print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
         exit 1
     fi
 
@@ -69,8 +70,8 @@ check_prerequisites() {
 
     # Quick dependency check - install if missing
     if [ ! -d "frontend/node_modules" ]; then
-        print_status "Installing frontend dependencies..."
-        cd frontend && npm install && cd ..
+        print_status "Installing frontend dependencies with Bun..."
+        cd frontend && bun install && cd ..
     fi
 
     print_success "Prerequisites ready"
@@ -84,7 +85,7 @@ smart_cleanup() {
     find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
     find . -name "*.pyc" -delete 2>/dev/null || true
 
-    # Clean Node.js cache (but preserve node_modules)
+    # Clean Bun cache (but preserve node_modules)
     rm -rf frontend/.vite 2>/dev/null || true
     rm -rf frontend/coverage 2>/dev/null || true
 
@@ -185,7 +186,7 @@ start_frontend() {
     cd frontend
 
     # Start frontend (web development server)
-    npm run dev &
+    bun run dev &
     FRONTEND_PID=$!
 
     cd ..

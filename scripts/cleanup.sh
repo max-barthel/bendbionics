@@ -28,7 +28,7 @@ find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 find . -name "*.pyc" -delete 2>/dev/null || true
 print_status $GREEN "✓ Cleaned Python cache"
 
-# Clean Node.js
+# Clean Bun dependencies (node_modules directory)
 rm -rf node_modules frontend/node_modules 2>/dev/null || true
 print_status $GREEN "✓ Cleaned node_modules"
 

@@ -49,19 +49,6 @@ check_directory() {
 check_system_requirements() {
     print_status "Checking system requirements..."
 
-    # Check Node.js
-    if ! command -v node &> /dev/null; then
-        print_error "Node.js is not installed. Please install Node.js 18+ from https://nodejs.org/"
-        exit 1
-    fi
-
-    NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
-    if [ "$NODE_VERSION" -lt 18 ]; then
-        print_error "Node.js version 18+ is required. Current version: $(node --version)"
-        exit 1
-    fi
-    print_success "Node.js: $(node --version)"
-
     # Check Python
     if ! command -v python &> /dev/null && ! command -v python3 &> /dev/null; then
         print_error "Python is not installed. Please install Python 3.11+ from https://python.org/"
@@ -82,6 +69,14 @@ check_system_requirements() {
     fi
     print_success "uv: $(uv --version)"
 
+    # Check Bun
+    if ! command -v bun &> /dev/null; then
+        print_error "Bun is not installed. Install from https://bun.sh"
+        print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
+        exit 1
+    fi
+    print_success "Bun: $(bun --version)"
+
     # Check Rust (optional but recommended)
     if ! command -v cargo &> /dev/null; then
         print_warning "Rust/Cargo not found. Desktop app development will not work."
@@ -100,16 +95,16 @@ setup_frontend() {
     cd frontend
 
     # Install dependencies
-    print_status "Installing frontend dependencies..."
-    npm install
+    print_status "Installing frontend dependencies with Bun..."
+    bun install
 
     # Install Playwright browsers
     print_status "Installing Playwright browsers..."
-    npx playwright install
+    bunx playwright install
 
     # Setup git hooks
     print_status "Setting up git hooks..."
-    npm run prepare
+    bun run prepare
 
     cd ..
 
@@ -144,10 +139,10 @@ setup_git_hooks() {
     print_status "Setting up git hooks..."
 
     # Install husky
-    npm install
+    bun install
 
     # Setup husky
-    npx husky install
+    bunx husky install
 
     print_success "Git hooks setup completed"
 }
