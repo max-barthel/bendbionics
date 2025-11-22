@@ -112,12 +112,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Store token in localStorage
       localStorage.setItem('token', cleanToken);
 
-      // Also store in global window object for Tauri compatibility
-      if (typeof globalThis !== 'undefined') {
-        (globalThis as unknown as Window & { authToken?: string }).authToken =
-          cleanToken;
-      }
-
       setToken(cleanToken);
       setUser(userData);
     } catch (error) {

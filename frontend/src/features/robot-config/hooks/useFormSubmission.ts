@@ -70,8 +70,8 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
       let apiResult;
       let segments: number[][][];
       if (robotState.tendonConfig) {
-        apiResult = await robotAPI.computePCCWithTendons(params);
-        segments = apiResult.result.robot_positions;
+        apiResult = await robotAPI.computeKinematics(params);
+        segments = apiResult.data.result.robot_positions;
       } else {
         apiResult = await robotAPI.computePCC(params);
         segments = apiResult.data.segments;

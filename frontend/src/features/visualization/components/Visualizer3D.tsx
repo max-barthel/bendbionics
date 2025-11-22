@@ -461,6 +461,7 @@ function Visualizer3D({
             <Button
               variant="primary"
               onClick={resetView}
+              aria-label="Reset camera view"
               className={`absolute top-4 px-4 py-2 z-50 ${
                 sidebarCollapsed ? 'left-4' : 'left-[calc(384px+16px)]'
               }`}
@@ -471,6 +472,7 @@ function Visualizer3D({
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"

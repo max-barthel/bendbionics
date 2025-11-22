@@ -17,5 +17,5 @@ export const DEFAULT_CONFIG = {
 } as const;
 
 // Timing constants
-export const INITIALIZATION_DELAY = 800;
+export const INITIALIZATION_DELAY = 0;
 export const PRESET_LOAD_DELAY = 10;

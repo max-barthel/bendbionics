@@ -34,10 +34,6 @@
       "maximumWarning": "100kb",
       "maximumError": "200kb"
     },
-    "tauri-vendor": {
-      "maximumWarning": "200kb",
-      "maximumError": "400kb"
-    },
     "style-vendor": {
       "maximumWarning": "50kb",
       "maximumError": "100kb"

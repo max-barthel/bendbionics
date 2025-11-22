@@ -7,6 +7,7 @@ export function GuestMenu() {
       <Button
         variant="primary"
         className="px-4 py-2"
+        aria-label="User menu"
       >
         <div className="flex items-center gap-2">
           <svg
@@ -14,6 +15,7 @@ export function GuestMenu() {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -27,6 +29,7 @@ export function GuestMenu() {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"

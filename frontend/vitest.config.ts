@@ -52,7 +52,7 @@ export default defineConfig({
       'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
       'src/**/__tests__/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     ],
-    exclude: ['node_modules', 'dist', '.idea', '.git', '.cache', 'src-tauri'],
+    exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
     // Enhanced coverage configuration
     coverage: {
       provider: 'v8',
@@ -69,7 +69,6 @@ export default defineConfig({
         'src/**/*.spec.*',
         'dist/',
         'coverage/',
-        'src-tauri/',
         '**/*.config.js',
         '**/*.config.ts',
         'vite.config.ts',

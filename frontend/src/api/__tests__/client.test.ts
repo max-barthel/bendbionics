@@ -1,14 +1,6 @@
 import { robotAPI } from '@/api/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Mock the tauri client
-vi.mock('@/api/tauri-client', () => ({
-  tauriClient: {
-    post: vi.fn(),
-    get: vi.fn(),
-  },
-}));
-
 // Mock the robotAPI to avoid the retry mechanism in tests
 vi.mock('@/api/client', async () => {
   const actual = await vi.importActual('@/api/client');
@@ -16,7 +8,7 @@ vi.mock('@/api/client', async () => {
     ...actual,
     robotAPI: {
       computePCC: vi.fn(),
-      computePCCWithTendons: vi.fn(),
+      computeKinematics: vi.fn(),
     },
   };
 });
