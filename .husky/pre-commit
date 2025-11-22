@@ -31,12 +31,12 @@ cd ..
 echo "🐍 Checking backend for critical errors..."
 cd backend
 # Only check for syntax errors and critical issues
-python -m py_compile app/main.py 2>/dev/null || {
+uv run python -m py_compile app/main.py 2>/dev/null || {
   echo "❌ Critical Python syntax errors found."
   exit 1
 }
 # Check for critical linting issues only
-ruff check . --select=E9,F63,F7,F82 --quiet 2>/dev/null || {
+uv run ruff check . --select=E9,F63,F7,F82 --quiet 2>/dev/null || {
   echo "❌ Critical backend errors found."
   exit 1
 }
