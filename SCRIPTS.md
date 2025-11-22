@@ -20,10 +20,10 @@ This guide explains the purpose and usage of each script in the BendBionics plat
 
 **What it does**:
 
-- Checks system requirements (Node.js, Python, Rust)
-- Installs frontend dependencies
-- Sets up Python virtual environment
-- Installs backend dependencies
+- Checks system requirements (Node.js, Bun, Python, uv)
+- Installs frontend dependencies with Bun
+- Sets up Python virtual environment with uv
+- Installs backend dependencies with uv
 - Configures git hooks
 - Runs initial checks
 
@@ -305,32 +305,28 @@ cd bendbionics-app
 ./toolkit.sh frontend analyze
 ```
 
-## 🎯 NPM Scripts
+## 🎯 Package Manager Scripts
 
-For convenience, many toolkit commands are also available as npm scripts:
+For convenience, many toolkit commands are also available as Bun scripts:
 
 ```bash
 # Development
-npm run dev                        # Start development
-npm run build                      # Build application
-npm run setup                      # Setup environment
-npm run health                     # Health check
+bun run dev                        # Start development
+bun run build                      # Build application
+bun run setup                      # Setup environment
+bun run health                     # Health check
 
 # Toolkit commands
-npm run toolkit                    # Show toolkit help
-npm run toolkit:test               # Run tests
-npm run toolkit:lint               # Run linting
-npm run toolkit:fix                # Fix issues
-npm run toolkit:quality            # Quality report
-npm run toolkit:docs               # Start Storybook
-npm run toolkit:ci                 # Run CI pipeline
-
-# Productivity tools
-npm run productivity:setup         # Setup productivity tools
-npm run productivity:stats         # Code statistics
-npm run productivity:todos         # Find TODOs
-npm run productivity:clean         # Clean temp files
+bun run toolkit                    # Show toolkit help
+bun run toolkit:test               # Run tests
+bun run toolkit:lint                # Run linting
+bun run toolkit:fix                 # Fix issues
+bun run toolkit:quality             # Quality report
+bun run toolkit:docs                # Start Storybook
+bun run toolkit:ci                 # Run CI pipeline
 ```
+
+Note: This project uses **Bun** as the package manager (10-30x faster than npm) for the frontend, similar to how `uv` is used for the backend.
 
 ## 🛠️ VS Code Integration
 

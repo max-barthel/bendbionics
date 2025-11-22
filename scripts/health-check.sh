@@ -49,13 +49,19 @@ check_directory() {
 check_system_health() {
     print_status "Checking system health..."
 
-    # Check Node.js
+    # Check Bun (required)
+    if command -v bun &> /dev/null; then
+        BUN_VERSION=$(bun --version)
+        print_success "Bun: $BUN_VERSION"
+    else
+        print_error "Bun not found (required)"
+        return 1
+    fi
+
+    # Check Node.js (optional, informational only - Bun includes Node.js compatibility)
     if command -v node &> /dev/null; then
         NODE_VERSION=$(node --version)
-        print_success "Node.js: $NODE_VERSION"
-    else
-        print_error "Node.js not found"
-        return 1
+        print_status "Node.js: $NODE_VERSION (optional, for compatibility)"
     fi
 
     # Check Python
@@ -169,7 +175,7 @@ check_build_status() {
 
     # Check if frontend can build
     cd frontend
-    if npm run build > /dev/null 2>&1; then
+    if bun run build > /dev/null 2>&1; then
         print_success "Frontend Build: Working"
     else
         print_error "Frontend Build: Failed"
@@ -192,7 +198,7 @@ check_test_status() {
 
     # Run frontend tests
     cd frontend
-    if npm run test:run > /dev/null 2>&1; then
+    if bun run test:run > /dev/null 2>&1; then
         print_success "Frontend Tests: Passing"
     else
         print_warning "Frontend Tests: Some failures"

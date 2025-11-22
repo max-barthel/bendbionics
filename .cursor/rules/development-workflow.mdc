@@ -22,7 +22,7 @@ Use the provided scripts for consistent development:
 
 # Testing
 ./scripts/health-check.sh # System health check
-npm run test:all          # Run all tests
+bun run test:all          # Run all tests
 ```
 
 ## Code Quality Standards
@@ -38,14 +38,16 @@ npm run test:all          # Run all tests
 # Feature development
 git checkout -b feature/description
 # Make changes
-npm run commit  # Use commitizen for conventional commits
+bun run commit  # Use commitizen for conventional commits
 git push origin feature/description
 ```
 
 ## Development Tools
 
 - **Frontend**: Vite + React 19 + TypeScript + Tailwind CSS 4
+- **Package Manager**: Bun (frontend) - 10-30x faster than npm
 - **Backend**: FastAPI + SQLAlchemy + Pydantic + PostgreSQL
+- **Python Package Manager**: uv (backend) - modern, fast
 - **3D Visualization**: Three.js with @react-three/fiber
 - **Web**: Optimized for modern browsers
 - **Testing**: Playwright for E2E, Vitest for unit tests
