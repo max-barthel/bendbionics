@@ -423,7 +423,7 @@ test_build_locally() {
 
     # Ensure dependencies are installed
     if [ ! -d ".venv" ]; then
-        uv venv
+        uv venv --clear
     fi
     uv sync
 
