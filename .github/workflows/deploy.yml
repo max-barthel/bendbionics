@@ -91,18 +91,40 @@ jobs:
                   mkdir -p "$DEPLOY_DIR/backend"
                   cp -r backend/app "$DEPLOY_DIR/backend/"
 
-                    # Copy database initialization and migration scripts
-                    cp backend/init_database.py "$DEPLOY_DIR/backend/"
-                    cp backend/migrate.py "$DEPLOY_DIR/backend/"
+                  # Copy database initialization and migration scripts
+                  cp backend/init_database.py "$DEPLOY_DIR/backend/"
+                  cp backend/migrate.py "$DEPLOY_DIR/backend/"
 
                   # Copy pyproject.toml (needed for uv)
                   cp backend/pyproject.toml "$DEPLOY_DIR/backend/"
 
+                  # Clean up any __pycache__ directories that might have been copied
+                  find "$DEPLOY_DIR/backend" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+                  find "$DEPLOY_DIR/backend" -name "*.pyc" -delete 2>/dev/null || true
+
                   # Copy deployment configurations
-                  cp -r deploy/nginx "$DEPLOY_DIR/"
-                  cp -r deploy/systemd "$DEPLOY_DIR/"
-                  cp deploy.sh "$DEPLOY_DIR/"
+                  cp -r config/nginx "$DEPLOY_DIR/"
+                  cp -r config/systemd "$DEPLOY_DIR/"
+
+                  # Copy deployment scripts
+                  cp scripts/deploy/server-deploy.sh "$DEPLOY_DIR/deploy.sh"
+                  cp scripts/deploy/start-backend.sh "$DEPLOY_DIR/start-backend.sh"
                   chmod +x "$DEPLOY_DIR/deploy.sh"
+                  chmod +x "$DEPLOY_DIR/start-backend.sh"
+
+                  # Copy PostgreSQL setup script
+                  if [ -f "scripts/deploy/setup-postgres.sh" ]; then
+                      cp scripts/deploy/setup-postgres.sh "$DEPLOY_DIR/setup-postgres.sh"
+                      chmod +x "$DEPLOY_DIR/setup-postgres.sh"
+                  fi
+
+                  # Copy DDNS scripts (optional, for dynamic DNS setup)
+                  if [ -d "scripts/ddns" ]; then
+                      mkdir -p "$DEPLOY_DIR/scripts/ddns"
+                      cp -r scripts/ddns/* "$DEPLOY_DIR/scripts/ddns/"
+                      # Make all shell scripts executable
+                      find "$DEPLOY_DIR/scripts/ddns" -name "*.sh" -type f -exec chmod +x {} \;
+                  fi
 
                   # Store package name for later steps
                   echo "DEPLOY_PACKAGE=$DEPLOY_DIR" >> $GITHUB_ENV
