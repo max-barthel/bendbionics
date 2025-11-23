@@ -266,7 +266,7 @@ setup_environment() {
     # Path to existing .env.production on server (has DATABASE_URL and SECRET_KEY)
     EXISTING_ENV_FILE="$APP_DIR/backend/.env.production"
 
-    # Check if this is first-time deployment
+    # Check if this is first-time deployment or if database config is missing
     if [ ! -f "$EXISTING_ENV_FILE" ]; then
         print_error "Server .env.production file not found!"
         echo ""
@@ -300,11 +300,42 @@ setup_environment() {
     print_status "Backed up existing environment file"
 
     # Extract critical server settings (DATABASE_URL and SECRET_KEY)
-    DATABASE_URL=$(grep "^DATABASE_URL=" "$EXISTING_ENV_FILE" | cut -d '=' -f2-)
-    SECRET_KEY=$(grep "^SECRET_KEY=" "$EXISTING_ENV_FILE" | cut -d '=' -f2-)
+    # Handle various formats: with/without quotes, with/without spaces
+    DATABASE_URL=$(grep -E "^[[:space:]]*DATABASE_URL[[:space:]]*=" "$EXISTING_ENV_FILE" | grep -v "^[[:space:]]*#" | head -1 | sed -E 's/^[[:space:]]*DATABASE_URL[[:space:]]*=[[:space:]]*//' | sed -E 's/^["'\'']|["'\'']$//g')
+    SECRET_KEY=$(grep -E "^[[:space:]]*SECRET_KEY[[:space:]]*=" "$EXISTING_ENV_FILE" | grep -v "^[[:space:]]*#" | head -1 | sed -E 's/^[[:space:]]*SECRET_KEY[[:space:]]*=[[:space:]]*//' | sed -E 's/^["'\'']|["'\'']$//g')
 
     if [ -z "$DATABASE_URL" ] || [ -z "$SECRET_KEY" ]; then
-        print_error "Failed to extract DATABASE_URL or SECRET_KEY from existing config"
+        print_error "DATABASE_URL or SECRET_KEY not found in environment file"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "📋 PostgreSQL Database Setup Required"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "The environment file exists but is missing database configuration."
+        echo "This usually means setup-postgres.sh hasn't been run yet."
+        echo ""
+        echo "To fix this:"
+        echo ""
+        echo "1. Set up PostgreSQL database and credentials:"
+        echo "   Run the setup script from your deployment package:"
+        echo ""
+        echo "   cd /tmp/$(basename $SCRIPT_DIR)"
+        echo "   sudo bash setup-postgres.sh"
+        echo ""
+        echo "2. Then run this deployment script again:"
+        echo "   sudo ./deploy.sh"
+        echo ""
+        echo "The setup script will:"
+        echo "  • Install and configure PostgreSQL (if not already installed)"
+        echo "  • Create database and user with secure credentials"
+        echo "  • Add DATABASE_URL and SECRET_KEY to .env.production"
+        echo "  • Save credentials securely"
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        print_status "Current environment file location: $EXISTING_ENV_FILE"
+        print_status "First 10 lines of environment file:"
+        head -10 "$EXISTING_ENV_FILE" | sed 's/^/  /'
         exit 1
     fi
 
