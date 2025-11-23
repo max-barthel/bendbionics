@@ -1,6 +1,6 @@
 ---
-description: Development Workflow and Best Practices
-globs: ["**/*"]
+description: Development workflow, project scripts, code organization, and tooling configuration
+globs: ["**/*.sh", "**/package.json", "**/pyproject.toml", "**/vite.config.ts", "**/tsconfig*.json"]
 alwaysApply: false
 ---
 
@@ -63,10 +63,12 @@ frontend/src/
 ├── api/           # API client and types
 └── utils/         # Utility functions
 
-backend/app/
-├── api/           # API routes
-├── models/        # Data models and business logic
-├── utils/         # Utility functions
+backend/
+├── app/           # Application code
+│   ├── api/       # API routes
+│   ├── models/    # Data models and business logic
+│   ├── services/  # Business logic services
+│   └── utils/     # Utility functions
 └── tests/         # Test files
 ```
 

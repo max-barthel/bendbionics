@@ -1,6 +1,6 @@
 ---
-description: Backend FastAPI Development Standards
-globs: ["backend/**/*.py"]
+description: Backend FastAPI API endpoint patterns, response formats, and error handling
+globs: ["backend/app/api/**/*.py", "backend/app/routes/**/*.py"]
 alwaysApply: false
 ---
 
@@ -11,73 +11,78 @@ alwaysApply: false
 When creating FastAPI endpoints:
 
 ```python
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
+from sqlmodel import Session
 from app.models.pcc.types import PCCParams
-from app.api.responses import APIResponse
+from app.api.responses import success_response, created_response, error_response
 from app.auth import get_current_user
+from app.database import get_session
+from app.models.user import User
 
 router = APIRouter(prefix="/api", tags=["feature"])
 
-@router.post("/endpoint", response_model=APIResponse)
+@router.post("/endpoint")
 async def endpoint_name(
     params: PCCParams,
-    current_user: User = Depends(get_current_user)
-) -> APIResponse:
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
     """
     Endpoint description with clear docstring.
 
     Args:
         params: Input parameters
-        current_user: Authenticated user
+        current_user: Authenticated user (from dependency)
+        session: Database session (from dependency)
 
     Returns:
-        APIResponse with standardized format
+        JSONResponse with standardized format
     """
-    try:
-        # Business logic here
-        result = process_data(params)
-        return APIResponse(
-            success=True,
-            data=result,
-            message="Operation completed successfully"
-        )
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    # Business logic here
+    result = process_data(params, session)
+
+    # Use helper functions for consistent responses
+    return success_response(
+        data=result,
+        message="Operation completed successfully"
+    )
+
+@router.post("/create")
+async def create_endpoint(
+    data: CreateModel,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Create endpoint returns 201 status."""
+    result = create_data(data, session, current_user.id)
+    return created_response(
+        data=result,
+        message="Resource created successfully"
+    )
 ```
 
 ## Response Format Standards
 
-All API responses must use the unified `APIResponse` format:
+All API responses must use the unified response helpers from `app.api.responses`:
 
+- `success_response()`: Standard 200 response with data
+- `created_response()`: 201 response for resource creation
+- `error_response()`: Standardized error responses
+- `paginated_response()`: Paginated list responses
+
+Response format includes:
 - `success`: Boolean indicating operation success
-- `data`: Response payload
+- `data`: Response payload (automatically serialized)
 - `message`: Human-readable message
-- `timestamp`: ISO timestamp
-- `request_id`: Unique request identifier
+- `timestamp`: ISO timestamp (auto-generated)
+- `request_id`: Unique request identifier (auto-extracted from request)
 
 ## Error Handling
 
-- **Simple Error Responses**: Basic HTTP status codes, no complex middleware
+- **Use Helper Functions**: Use `error_response()` for consistent error format
+- **HTTP Exceptions**: Use `HTTPException` for FastAPI's built-in error handling
 - **User-Friendly Messages**: Clear error messages for users
 - **Fail Fast**: Let errors bubble up, don't over-catch
+- **Request Context**: Errors automatically include request_id when available
 
-## Testing Requirements
-
-- **Critical Endpoints Only**: Test main user flows, not every endpoint
-- **Quick Tests**: Fast feedback, not comprehensive coverage
-- **Real Scenarios**: Test with actual user data
-
-## Database Operations
-
-- **PostgreSQL in Production**: Production uses PostgreSQL for reliability
-- **SQLite for Development**: Fast local development with SQLite
-- **Direct SQLAlchemy**: Use ORM directly, no repository pattern
-- **Simple Migrations**: Basic schema changes only
-- **YAGNI**: Don't abstract until you need it
-
-## Authentication & Security
-
-- **JWT Authentication**: Token-based auth with secure cookies
-- **Essential Validation**: Validate only what matters
-- **Environment Variables**: Use .env files for secrets
-- **SSL/TLS**: HTTPS enforced in production (Let's Encrypt)
+See `backend-patterns.mdc` for database, authentication, and service layer patterns.

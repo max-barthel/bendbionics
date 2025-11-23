@@ -1,0 +1,189 @@
+---
+description: Frontend patterns for API client usage, state management with Context, custom hooks, and form handling
+globs: ["frontend/src/api/**/*.ts", "frontend/src/hooks/**/*.ts", "frontend/src/features/**/*.tsx", "frontend/src/providers/**/*.tsx"]
+alwaysApply: false
+---
+
+# Frontend Patterns
+
+## API Client Usage
+
+### Basic API Call Pattern
+
+```tsx
+import { client } from '@/api/client';
+import type { User } from '@/types';
+
+// API client automatically handles:
+// - Authentication tokens (from localStorage)
+// - Error handling (401, 500, etc.)
+// - Request/response interceptors
+
+const response = await client().get<{ data: User }>('/auth/me');
+const user = response.data.data; // Response wrapped in { success, data, message }
+```
+
+### API Module Pattern
+
+```tsx
+// frontend/src/api/auth.ts
+import { client } from './client';
+import type { User, LoginRequest } from '@/types';
+
+export const authAPI = {
+  login: async (data: LoginRequest): Promise<AuthResponse> => {
+    const response = await client().post<{ data: AuthResponse }>('/auth/login', data);
+    return response.data.data; // Extract data from wrapped response
+  },
+
+  getCurrentUser: async (): Promise<User> => {
+    const response = await client().get<{ data: User }>('/auth/me');
+    return response.data.data;
+  },
+};
+```
+
+### Error Handling Pattern
+
+```tsx
+import { useUnifiedErrorHandler } from '@/features/shared/hooks/useUnifiedErrorHandler';
+
+function MyComponent() {
+  const { handleError, showError } = useUnifiedErrorHandler();
+
+  const handleAction = async () => {
+    try {
+      await someAPICall();
+    } catch (error) {
+      handleError(error, 'Action failed');
+      // Error automatically shown to user
+    }
+  };
+}
+```
+
+## State Management
+
+### Context Provider Pattern
+
+```tsx
+// Create provider with hooks
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem('token')
+  );
+
+  const login = useCallback(async (data: LoginRequest) => {
+    const response = await authAPI.login(data);
+    localStorage.setItem('token', response.access_token);
+    setToken(response.access_token);
+    setUser(response.user);
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// Use in components
+function MyComponent() {
+  const { user, login } = useAuth();
+  // ...
+}
+```
+
+### Custom Hooks Pattern
+
+```tsx
+// Reusable hook for async operations
+import { useAsyncOperation } from '@/features/shared/hooks/useAsyncOperation';
+
+function MyComponent() {
+  const { execute, isLoading, error } = useAsyncOperation({
+    onSuccess: (data) => {
+      // Handle success
+    },
+  });
+
+  const handleClick = () => {
+    execute(async () => {
+      return await someAPICall();
+    });
+  };
+}
+```
+
+### Form Handling Pattern
+
+```tsx
+import { useAuthForm } from '@/features/auth/hooks/useAuthForm';
+import { useFormFields } from '@/features/shared/hooks/useFormFields';
+
+function LoginForm() {
+  const fields = useFormFields([
+    { name: 'username', initialValue: '' },
+    { name: 'password', initialValue: '' },
+  ]);
+
+  const { isLoading, error, handleSubmit } = useAuthForm({
+    onSubmit: async () => {
+      const values = fields.getValues();
+      await login(values);
+    },
+    onSuccess: () => navigate('/'),
+  });
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <Input
+        value={fields.getFieldByName('username')!.value}
+        onChange={fields.getFieldByName('username')!.setValue}
+      />
+      {/* ... */}
+    </form>
+  );
+}
+```
+
+## Common Hooks
+
+### Local Storage Hook
+
+```tsx
+import { useLocalStorage } from '@/features/shared/hooks/useLocalStorage';
+
+function MyComponent() {
+  const [value, setValue] = useLocalStorage('key', 'default');
+  // Automatically syncs with localStorage
+}
+```
+
+### Async Operation Hook
+
+```tsx
+import { useAsyncOperation } from '@/features/shared/hooks/useAsyncOperation';
+
+const { execute, isLoading, error, handleApiError } = useAsyncOperation({
+  onSuccess: (result) => console.log(result),
+  onError: (error) => handleApiError(error, 'Operation context'),
+});
+```
+
+## Response Structure
+
+All API responses follow this structure:
+
+```typescript
+{
+  success: boolean;
+  data: T;           // Actual response data
+  message?: string;  // Human-readable message
+  timestamp: string;
+  request_id?: string;
+}
+```
+
+Always access data via `response.data.data` (first `data` is axios wrapper, second is API response).
