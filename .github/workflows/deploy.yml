@@ -32,7 +32,7 @@ env:
     CI: "true"
     # Server configuration (matches deploy-workflow.sh)
     SERVER_USER: "serveruser"
-    SERVER_HOST: "bendbionics"
+    SERVER_HOST: ${{ secrets.SERVER_HOST }}
     SERVER_PATH: "/tmp"
 
 jobs:
@@ -217,6 +217,31 @@ jobs:
                   EOF
 
                   echo "✅ Production environment file created with email configuration"
+
+            - name: 🔍 Validate server configuration
+              if: ${{ !inputs.skip_upload }}
+              run: |
+                  echo "🔍 Validating server configuration..."
+
+                  # Check if SERVER_HOST secret is set
+                  if [ -z "${{ secrets.SERVER_HOST }}" ]; then
+                      echo "❌ SERVER_HOST secret is not set"
+                      echo "   Please add SERVER_HOST to your GitHub repository secrets"
+                      echo "   Use either:"
+                      echo "   - Your server's public IP address (e.g., 123.45.67.89)"
+                      echo "   - Or a fully qualified domain name (e.g., server.bendbionics.com)"
+                      exit 1
+                  fi
+
+                  # Check if SSH_PRIVATE_KEY secret is set
+                  if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+                      echo "❌ SSH_PRIVATE_KEY secret is not set"
+                      echo "   Please add SSH_PRIVATE_KEY to your GitHub repository secrets"
+                      exit 1
+                  fi
+
+                  echo "✅ Server configuration validation passed"
+                  echo "   Server Host: ${{ secrets.SERVER_HOST }}"
 
             - name: 🔑 Setup SSH
               if: ${{ !inputs.skip_upload }}
