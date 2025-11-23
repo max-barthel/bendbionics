@@ -24,12 +24,35 @@ check_directory() {
     fi
 }
 
-# Core functions - leveraging existing npm scripts
+# Function to ensure bun is available in PATH
+ensure_bun_in_path() {
+    # Check if bun is already in PATH
+    if command -v bun &> /dev/null; then
+        return 0
+    fi
+
+    # Simple fallback: add ~/.bun/bin to PATH if bun binary exists there
+    if [ -f "$HOME/.bun/bin/bun" ]; then
+        export PATH="$HOME/.bun/bin:$PATH"
+        if command -v bun &> /dev/null; then
+            return 0
+        fi
+    fi
+
+    # If we get here, bun is not found
+    print_error "Bun is not installed or not in PATH"
+    print_error "Install from https://bun.sh"
+    print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
+    print_error "If bun is installed, ensure ~/.zshenv includes: export PATH=\"\$HOME/.bun/bin:\$PATH\""
+    exit 1
+}
+
+# Core functions - leveraging existing Bun scripts
 run_frontend() {
     local cmd="$1"
     print_status "Running frontend: $cmd"
     cd frontend
-    npm run "$cmd"
+    bun run "$cmd"
     cd ..
     print_success "Frontend $cmd completed"
 }
@@ -47,29 +70,29 @@ run_backend() {
 # Essential operations
 lint_all() {
     print_status "Running all linting checks..."
-    npm run lint
+    bun run lint
     cd backend && ruff check app/ && cd ..
     print_success "All linting completed"
 }
 
 test_all() {
     print_status "Running all tests..."
-    npm run test
+    bun run test
     cd backend && uv run pytest && cd ..
     print_success "All tests completed"
 }
 
 fix_all() {
     print_status "Auto-fixing all issues..."
-    npm run lint:fix
-    cd frontend && npm run format && cd ..
+    bun run lint:fix
+    cd frontend && bun run format && cd ..
     cd backend && ruff check --fix . && cd ..
     print_success "All fixes completed"
 }
 
 quick_check() {
     print_status "Running quick checks..."
-    npm run lint:check
+    bun run lint:check
     cd backend && ruff check app/ && cd ..
     print_success "Quick checks completed"
 }
@@ -77,26 +100,26 @@ quick_check() {
 # Quality and CI operations
 quality_report() {
     print_status "Generating quality report..."
-    npm run quality
+    bun run quality
     print_success "Quality report completed"
 }
 
 ci_pipeline() {
     print_status "Running CI pipeline..."
-    npm run ci:all
+    bun run ci:all
     print_success "CI pipeline completed"
 }
 
 # Documentation
 docs_storybook() {
     print_status "Starting Storybook..."
-    cd frontend && npm run storybook
+    cd frontend && bun run storybook
 }
 
 # Git operations
 git_commit_check() {
     if [ -n "$1" ]; then
-        echo "$1" | npx --no -- commitlint
+        echo "$1" | bunx --bun commitlint
         print_success "Commit message validation passed"
     else
         print_error "No commit message provided"
@@ -107,31 +130,7 @@ git_commit_check() {
 # Cleanup operations
 cleanup_all() {
     print_status "Running comprehensive cleanup..."
-
-    # Clean Python cache
-    find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
-    find . -name "*.pyc" -delete 2>/dev/null || true
-    print_success "Cleaned Python cache"
-
-    # Clean Node.js cache (but preserve node_modules)
-    rm -rf frontend/.vite 2>/dev/null || true
-    rm -rf frontend/coverage 2>/dev/null || true
-    print_success "Cleaned Node.js cache"
-
-    # Clean build artifacts
-    rm -rf frontend/dist 2>/dev/null || true
-    rm -rf backend/htmlcov 2>/dev/null || true
-    print_success "Cleaned build artifacts"
-
-    # Clean logs
-    find . -name "*.log" -delete 2>/dev/null || true
-    print_success "Cleaned log files"
-
-    # Clean test results
-    rm -rf test-results playwright-report 2>/dev/null || true
-    print_success "Cleaned test results"
-
-    print_success "Cleanup completed"
+    ./scripts/cleanup.sh
 }
 
 # Productivity operations
@@ -161,6 +160,7 @@ productivity_todos() {
 
 # Main script logic
 check_directory
+ensure_bun_in_path
 
 # Normalize legacy arg order (e.g., "./toolkit.sh all test")
 if [ "${1:-}" = "all" ] && [ -n "${2:-}" ]; then
@@ -204,17 +204,17 @@ case "${1:-help}" in
     "quality")
         case "${2:-report}" in
             "report") quality_report ;;
-            "frontend") npm run quality:frontend ;;
-            "backend") npm run quality:backend ;;
+            "frontend") bun run quality:frontend ;;
+            "backend") bun run quality:backend ;;
             *) print_error "Unknown quality command: $2" ;;
         esac
         ;;
     "ci")
         case "${2:-all}" in
             "all") ci_pipeline ;;
-            "test") npm run ci:test ;;
-            "lint") npm run ci:lint ;;
-            "build") npm run ci:build ;;
+            "test") bun run ci:test ;;
+            "lint") bun run ci:lint ;;
+            "build") bun run ci:build ;;
             *) print_error "Unknown ci command: $2" ;;
         esac
         ;;
@@ -228,7 +228,7 @@ case "${1:-help}" in
     "git")
         case "${2:-help}" in
             "commit-check") git_commit_check "$3" ;;
-            "changelog") npm run changelog ;;
+            "changelog") bun run changelog ;;
             *) print_error "Unknown git command: $2" ;;
         esac
         ;;

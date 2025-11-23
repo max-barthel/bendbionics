@@ -37,6 +37,29 @@ print_header() {
     echo -e "${PURPLE}================================${NC}"
 }
 
+# Function to ensure bun is available in PATH
+ensure_bun_in_path() {
+    # Check if bun is already in PATH
+    if command -v bun &> /dev/null; then
+        return 0
+    fi
+
+    # Simple fallback: add ~/.bun/bin to PATH if bun binary exists there
+    if [ -f "$HOME/.bun/bin/bun" ]; then
+        export PATH="$HOME/.bun/bin:$PATH"
+        if command -v bun &> /dev/null; then
+            return 0
+        fi
+    fi
+
+    # If we get here, bun is not found
+    print_error "Bun is not installed or not in PATH"
+    print_error "Install from https://bun.sh"
+    print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
+    print_error "If bun is installed, ensure ~/.zshenv includes: export PATH=\"\$HOME/.bun/bin:\$PATH\""
+    exit 1
+}
+
 # Function to check if we're in the right directory
 check_directory() {
     if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
@@ -48,19 +71,6 @@ check_directory() {
 # Function to check system requirements
 check_system_requirements() {
     print_status "Checking system requirements..."
-
-    # Check Node.js
-    if ! command -v node &> /dev/null; then
-        print_error "Node.js is not installed. Please install Node.js 18+ from https://nodejs.org/"
-        exit 1
-    fi
-
-    NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
-    if [ "$NODE_VERSION" -lt 18 ]; then
-        print_error "Node.js version 18+ is required. Current version: $(node --version)"
-        exit 1
-    fi
-    print_success "Node.js: $(node --version)"
 
     # Check Python
     if ! command -v python &> /dev/null && ! command -v python3 &> /dev/null; then
@@ -82,6 +92,14 @@ check_system_requirements() {
     fi
     print_success "uv: $(uv --version)"
 
+    # Check Bun
+    if ! command -v bun &> /dev/null; then
+        print_error "Bun is not installed. Install from https://bun.sh"
+        print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
+        exit 1
+    fi
+    print_success "Bun: $(bun --version)"
+
     # Check Rust (optional but recommended)
     if ! command -v cargo &> /dev/null; then
         print_warning "Rust/Cargo not found. Desktop app development will not work."
@@ -100,16 +118,16 @@ setup_frontend() {
     cd frontend
 
     # Install dependencies
-    print_status "Installing frontend dependencies..."
-    npm install
+    print_status "Installing frontend dependencies with Bun..."
+    bun install
 
     # Install Playwright browsers
     print_status "Installing Playwright browsers..."
-    npx playwright install
+    bunx playwright install
 
     # Setup git hooks
     print_status "Setting up git hooks..."
-    npm run prepare
+    bun run prepare
 
     cd ..
 
@@ -144,10 +162,10 @@ setup_git_hooks() {
     print_status "Setting up git hooks..."
 
     # Install husky
-    npm install
+    bun install
 
     # Setup husky
-    npx husky install
+    bunx husky install
 
     print_success "Git hooks setup completed"
 }
@@ -172,7 +190,7 @@ run_health_checks() {
     fi
 
     # Check if pyproject.toml exists
-    if [ -f "pyproject.toml" ]; then
+    if [ -f "backend/pyproject.toml" ]; then
         print_success "Backend dependencies: Found (pyproject.toml)"
     else
         print_error "Backend dependencies: Missing (pyproject.toml)"
@@ -229,6 +247,7 @@ main() {
     print_header
 
     check_directory
+    ensure_bun_in_path
     check_system_requirements
     setup_frontend
     setup_backend

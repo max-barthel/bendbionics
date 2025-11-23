@@ -11,7 +11,10 @@ export function Visualizer3DWrapper() {
   const appState = useAppState();
 
   return (
-    <div className={`w-full h-full ${tahoeGlass.enhanced} relative`}>
+    <div
+      className={`w-full h-full ${tahoeGlass.enhanced} relative`}
+      data-testid="visualizer-wrapper"
+    >
       <Suspense
         fallback={
           <div className="w-full h-full flex items-center justify-center bg-gray-100">

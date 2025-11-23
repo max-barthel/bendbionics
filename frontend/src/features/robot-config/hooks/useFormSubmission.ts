@@ -36,17 +36,19 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
 
   const { showError } = useUnifiedErrorHandler();
 
-  const { isLoading, error, execute, hideError } = useAsyncOperation<FormSubmissionResult>({
-    onSuccess: result => {
-      onResult?.(result);
-    },
-    onStart: () => {
-      onLoadingChange?.(true);
-    },
-  });
+  const { isLoading, error, execute, hideError } =
+    useAsyncOperation<FormSubmissionResult>({
+      onSuccess: result => {
+        onResult?.(result);
+      },
+      onStart: () => {
+        onLoadingChange?.(true);
+      },
+    });
 
   // Track progress based on loading state
-  const { progress: computationProgress, setProgressComplete } = useProgressTracking(isLoading);
+  const { progress: computationProgress, setProgressComplete } =
+    useProgressTracking(isLoading);
 
   const handleSubmit = useCallback(async (): Promise<boolean> => {
     hideError();
@@ -66,16 +68,9 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
         ...(robotState.tendonConfig && { tendon_config: robotState.tendonConfig }),
       };
 
-      // Use tendon endpoint if tendon configuration is provided
-      let apiResult;
-      let segments: number[][][];
-      if (robotState.tendonConfig) {
-        apiResult = await robotAPI.computePCCWithTendons(params);
-        segments = apiResult.result.robot_positions;
-      } else {
-        apiResult = await robotAPI.computePCC(params);
-        segments = apiResult.data.segments;
-      }
+      // Always use kinematics endpoint (robot requires tendon configuration)
+      const apiResult = await robotAPI.computeKinematics(params);
+      const segments = apiResult.data.result.robot_positions;
 
       // Mark progress as complete before returning
       setProgressComplete();

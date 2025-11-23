@@ -1,6 +1,6 @@
 ---
-description: Robot Simulation Domain Knowledge
-globs: ["backend/app/models/**/*", "frontend/src/features/**/*"]
+description: Domain knowledge for PCC (Piecewise Constant Curvature) robot model, tendon system, and 3D visualization
+globs: ["backend/app/models/pcc/**/*.py", "frontend/src/features/simulation/**/*.tsx", "frontend/src/features/simulation/**/*.ts"]
 alwaysApply: false
 ---
 
@@ -40,9 +40,15 @@ result = compute_pcc_with_tendons(params)
 
 Modular tendon calculation system that works with any robot model:
 
+### Architecture
+
+- **RobotModelInterface**: Protocol-based interface for model-agnostic design
+- **TendonAnalysisEngine**: Analyzes any robot model implementing the interface
+- **PCCRobotModel**: PCC implementation of RobotModelInterface
+
 ### Features
 
-- **Model-Agnostic**: Works with PCC or advanced physics models
+- **Model-Agnostic**: Works with PCC or advanced physics models via protocol
 - **Configurable**: 3-12 tendons with custom positioning
 - **Actuation Commands**: Direct control commands for robot hardware
 - **Length Calculations**: Precise tendon length requirements

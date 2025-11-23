@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.api.auth_routes import router as auth_router
+from app.api.error_routes import router as error_router
 from app.api.middleware import CORSMiddleware as CustomCORSMiddleware
 from app.api.middleware import (
     ErrorHandlingMiddleware,
@@ -69,6 +70,7 @@ app.include_router(pcc_router)
 app.include_router(auth_router)
 app.include_router(preset_router)
 app.include_router(tendon_router)
+app.include_router(error_router)
 
 
 @app.on_event("startup")

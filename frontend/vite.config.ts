@@ -2,6 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
+import type { MinifyOptions } from 'terser';
 import { defineConfig } from 'vite';
 import { analyzer } from 'vite-bundle-analyzer';
 
@@ -60,7 +61,6 @@ export default defineConfig(({ mode }) => {
               'react-dom',
               'react-router-dom',
               'axios',
-              '@tauri-apps/api',
             ],
             exclude: ['@vitest/browser', '@vitest/ui', 'vitest'],
             force: true,
@@ -89,8 +89,8 @@ export default defineConfig(({ mode }) => {
           target: 'http://localhost:8000',
           changeOrigin: true,
         },
-        // Proxy PCC routes directly
-        '/pcc': {
+        // Proxy kinematics routes directly
+        '/kinematics': {
           target: 'http://localhost:8000',
           changeOrigin: true,
         },
@@ -102,8 +102,6 @@ export default defineConfig(({ mode }) => {
       },
       watch: {
         ignored: [
-          '**/src-tauri/target/**',
-          '**/src-tauri/Cargo.lock',
           '**/node_modules/**',
           '**/.git/**',
           '**/*.log',
@@ -129,7 +127,7 @@ export default defineConfig(({ mode }) => {
               return 'react-vendor';
             }
 
-            // 3D visualization libraries (heaviest)
+            // 3D visualization libraries (heaviest) - load separately to avoid blocking initial render
             if (id.includes('three') || id.includes('@react-three')) {
               return 'three-vendor';
             }
@@ -137,11 +135,6 @@ export default defineConfig(({ mode }) => {
             // Form and utilities
             if (id.includes('axios')) {
               return 'form-vendor';
-            }
-
-            // Tauri API
-            if (id.includes('@tauri-apps')) {
-              return 'tauri-vendor';
             }
 
             // Tailwind and styling
@@ -192,8 +185,12 @@ export default defineConfig(({ mode }) => {
         compress: {
           drop_console: isProduction,
           drop_debugger: isProduction,
+          passes: 2, // Multiple passes for better compression
         },
-      },
+        format: {
+          comments: false, // Remove comments
+        },
+      } as MinifyOptions,
       // Increase warning limit for technical applications with 3D libraries
       chunkSizeWarningLimit: 1000,
       // Enable source maps for debugging in development
@@ -204,6 +201,8 @@ export default defineConfig(({ mode }) => {
       cssCodeSplit: true,
       // Report compressed sizes
       reportCompressedSize: true,
+      // Optimize asset inlining threshold (inline small assets)
+      assetsInlineLimit: 4096,
     },
   };
 });

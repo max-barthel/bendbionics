@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -96,7 +96,7 @@ function checkBundleSize() {
 
   const distPath = path.join(__dirname, '../dist');
   if (!fs.existsSync(distPath)) {
-    log('❌ Dist folder not found. Run "npm run build" first.', 'red');
+    log('❌ Dist folder not found. Run "bun run build" first.', 'red');
     process.exit(1);
   }
 

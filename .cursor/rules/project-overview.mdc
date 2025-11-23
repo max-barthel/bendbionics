@@ -13,7 +13,9 @@ Modern web application for simulating soft robot kinematics using the Piecewise 
 ## Architecture
 
 - **Frontend**: React 19 + TypeScript + Tailwind CSS 4 (Vite)
+- **Frontend Package Manager**: Bun (10-30x faster than npm)
 - **Backend**: FastAPI + Python 3.11+
+- **Backend Package Manager**: uv (modern, fast Python package manager)
 - **Database**: PostgreSQL (production) / SQLite (development)
 - **Deployment**: Ubuntu server + nginx + SSL (Let's Encrypt)
 - **Design**: macOS Tahoe 26 aesthetic with liquid glass styling

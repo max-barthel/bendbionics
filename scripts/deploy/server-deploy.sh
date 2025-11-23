@@ -201,8 +201,8 @@ copy_application_files() {
     fi
 
     # Copy pyproject.toml (needed for uv)
-    if [ -f "$SCRIPT_DIR/pyproject.toml" ]; then
-        cp "$SCRIPT_DIR/pyproject.toml" "$APP_DIR/"
+    if [ -f "$SCRIPT_DIR/backend/pyproject.toml" ]; then
+        cp "$SCRIPT_DIR/backend/pyproject.toml" "$APP_DIR/backend/"
         print_status "pyproject.toml copied"
     else
         print_error "pyproject.toml not found in deployment package"
@@ -240,11 +240,11 @@ setup_python_environment() {
 
     # Create virtual environment with uv
     print_status "Creating virtual environment with uv..."
-    uv venv
+    uv venv --clear
 
     # Install Python dependencies from pyproject.toml
     print_status "Installing Python dependencies with uv..."
-    if [ -f "../pyproject.toml" ]; then
+    if [ -f "pyproject.toml" ]; then
         uv sync
     else
         print_error "pyproject.toml not found in backend directory"
@@ -462,7 +462,7 @@ server {
     }
 
     # Proxy all requests to backend (backend handles routing)
-    location ~ ^/(api|pcc|auth|presets|tendons|docs|openapi\.json|redoc) {
+    location ~ ^/(api|kinematics|auth|presets|tendons|docs|openapi\.json|redoc) {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -518,7 +518,7 @@ server {
     }
 
     # Proxy all API requests to backend (backend handles routing)
-    location ~ ^/(api|pcc|auth|presets|tendons|docs|openapi\.json|redoc) {
+    location ~ ^/(api|kinematics|auth|presets|tendons|docs|openapi\.json|redoc) {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -593,7 +593,7 @@ server {
     }
 
     # Proxy all API requests to backend (backend handles routing)
-    location ~ ^/(api|pcc|auth|presets|tendons|docs|openapi\.json|redoc) {
+    location ~ ^/(api|kinematics|auth|presets|tendons|docs|openapi\.json|redoc) {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;

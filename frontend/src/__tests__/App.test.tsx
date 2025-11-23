@@ -805,7 +805,7 @@ describe('App', () => {
 
       // Wait for the menu button to be rendered
       await waitFor(() => {
-        expect(screen.getAllByTestId('button').length).toBeGreaterThan(0);
+        expect(screen.getByTestId('user-menu-button')).toBeInTheDocument();
       });
 
       // Manually make dropdown visible (CSS hover doesn't work in jsdom)
@@ -867,7 +867,7 @@ describe('App', () => {
 
       // Wait for the menu button to be rendered
       await waitFor(() => {
-        expect(screen.getAllByTestId('button').length).toBeGreaterThan(0);
+        expect(screen.getByTestId('user-menu-button')).toBeInTheDocument();
       });
 
       // Manually make dropdown visible (CSS hover doesn't work in jsdom)
@@ -934,7 +934,7 @@ describe('App', () => {
 
       // Wait for the menu button to be rendered
       await waitFor(() => {
-        expect(screen.getAllByTestId('button').length).toBeGreaterThan(0);
+        expect(screen.getByTestId('user-menu-button')).toBeInTheDocument();
       });
 
       // Manually make dropdown visible (CSS hover doesn't work in jsdom)

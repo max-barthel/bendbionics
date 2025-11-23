@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 /**
  * Simple code quality report for BendBionics platform
@@ -46,7 +46,7 @@ function main() {
   console.log(
     "Frontend:",
     runCommand(
-      'cd frontend && npm run lint:check 2>/dev/null || echo "No linting issues"'
+      'cd frontend && bun run lint:check 2>/dev/null || echo "No linting issues"'
     )
   );
   console.log(

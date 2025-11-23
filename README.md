@@ -8,8 +8,8 @@ BendBionics is a **web-based simulation platform** optimized for deployment on U
 
 ## Architecture
 
-- **Frontend**: React + TypeScript + Tailwind CSS (Vite)
-- **Backend**: FastAPI + Python with essential testing
+- **Frontend**: React + TypeScript + Tailwind CSS (Vite) with Bun package manager
+- **Backend**: FastAPI + Python with uv package manager
 - **Design**: macOS Tahoe 26 aesthetic with liquid glass styling
 - **Deployment**: nginx + systemd + SSL certificates
 - **Database**: SQLite (upgradeable to PostgreSQL)
@@ -24,6 +24,12 @@ BendBionics is a **web-based simulation platform** optimized for deployment on U
 
 ## Quick Start
 
+### Prerequisites
+
+- **Bun** (JavaScript runtime & package manager) - Install: `curl -fsSL https://bun.sh/install | bash`
+- **Python** 3.11+
+- **uv** (Python package manager) - Install: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
 ### Development
 
 ```bash
@@ -31,8 +37,8 @@ BendBionics is a **web-based simulation platform** optimized for deployment on U
 ./dev.sh
 
 # Or manually:
-# Backend: cd backend && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-# Frontend: cd frontend && npm run dev
+# Backend: cd backend && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Frontend: cd frontend && bun run dev
 ```
 
 ### Testing
@@ -111,7 +117,9 @@ See the deployment section above for complete deployment instructions.
 ## Technology Stack
 
 - **Frontend**: React 19, TypeScript, Tailwind CSS, Three.js
-- **Backend**: FastAPI, Python 3.8+, SQLAlchemy
+- **Package Manager**: Bun (10-30x faster than npm)
+- **Backend**: FastAPI, Python 3.11+, SQLAlchemy
+- **Python Package Manager**: uv (modern, fast)
 - **Deployment**: nginx, systemd, Let's Encrypt
 - **Database**: SQLite (production: PostgreSQL)
 - **Testing**: Vitest, Playwright, Storybook

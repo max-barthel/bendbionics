@@ -37,6 +37,29 @@ print_header() {
     echo -e "${PURPLE}================================${NC}"
 }
 
+# Function to ensure bun is available in PATH
+ensure_bun_in_path() {
+    # Check if bun is already in PATH
+    if command -v bun &> /dev/null; then
+        return 0
+    fi
+
+    # Simple fallback: add ~/.bun/bin to PATH if bun binary exists there
+    if [ -f "$HOME/.bun/bin/bun" ]; then
+        export PATH="$HOME/.bun/bin:$PATH"
+        if command -v bun &> /dev/null; then
+            return 0
+        fi
+    fi
+
+    # If we get here, bun is not found
+    print_error "Bun is not installed or not in PATH"
+    print_error "Install from https://bun.sh"
+    print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
+    print_error "If bun is installed, ensure ~/.zshenv includes: export PATH=\"\$HOME/.bun/bin:\$PATH\""
+    exit 1
+}
+
 # Function to check if we're in the right directory
 check_directory() {
     if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
@@ -49,9 +72,9 @@ check_directory() {
 check_prerequisites() {
     print_status "Checking test prerequisites..."
 
-    # Check Node.js
-    if ! command -v node &> /dev/null; then
-        print_error "Node.js is not installed"
+    # Check Bun
+    if ! command -v bun &> /dev/null; then
+        print_error "Bun is not installed. Install from https://bun.sh"
         exit 1
     fi
 
@@ -63,8 +86,8 @@ check_prerequisites() {
 
     # Check if frontend dependencies are installed
     if [ ! -d "frontend/node_modules" ]; then
-        print_warning "Frontend dependencies not found. Installing..."
-        cd frontend && npm install && cd ..
+        print_warning "Frontend dependencies not found. Installing with Bun..."
+        cd frontend && bun install && cd ..
     fi
 
     print_success "Prerequisites check completed"
@@ -106,7 +129,7 @@ build_frontend_web() {
 
     # Build with TypeScript check
     print_status "Running web build..."
-    npm run build:web
+    bun run build:web
 
     if [ $? -ne 0 ]; then
         print_error "Frontend web build failed"
@@ -181,7 +204,7 @@ start_frontend_test() {
 
     # Start preview server
     print_status "Starting frontend preview on port 3000..."
-    npm run preview:web &
+    bun run preview:web &
     FRONTEND_PID=$!
 
     cd ..
@@ -292,6 +315,7 @@ main() {
 
     # Run test process
     check_directory
+    ensure_bun_in_path
     check_prerequisites
     clean_test_environment
     build_frontend_web

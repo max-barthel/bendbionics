@@ -115,7 +115,7 @@ This project uses GitHub Actions for automated CI/CD, optimized for web applicat
 
 ```bash
 # Check locally
-npm run ci:all
+bun run ci:all
 ```
 
 #### Deployment Failures
@@ -129,23 +129,23 @@ ssh $SERVER_USER@$SERVER_HOST "echo 'Connection successful'"
 
 ```bash
 # Run tests locally
-npm run test
+bun run test
 cd backend && python -m pytest
 ```
 
 ### Debug Commands
 
-#### Frontend 1
+#### Frontend
 
 ```bash
 cd frontend
-npm run lint          # Check linting
-npm run test:run      # Run tests
-npm run build         # Test build
-npm run lighthouse    # Performance audit
+bun run lint          # Check linting
+bun run test:run      # Run tests
+bun run build         # Test build
+bun run lighthouse     # Performance audit
 ```
 
-#### Backend 1
+#### Backend
 
 ```bash
 cd backend
@@ -172,7 +172,7 @@ python -c "import app.main"  # Test imports
 ./toolkit.sh fix all     # Auto-fix issues
 ```
 
-### Deployment 1
+### Deployment
 
 ```bash
 ./build.sh              # Build for production
@@ -219,7 +219,7 @@ python -c "import app.main"  # Test imports
 ### Documentation
 
 - **API Docs**: <https://bendbionics.com/docs>
-- **Storybook**: `npm run storybook`
+- **Storybook**: `bun run storybook`
 - **Development**: `./dev.sh`
 
 ### Issues

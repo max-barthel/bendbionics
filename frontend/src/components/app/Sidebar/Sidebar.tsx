@@ -12,6 +12,7 @@ export function Sidebar({ formTabsRef }: Readonly<SidebarProps>) {
 
   return (
     <div
+      data-testid="sidebar"
       className={`fixed top-0 left-0 h-full transition-all duration-300 ease-in-out overflow-hidden z-40 ${
         appState.sidebarCollapsed
           ? 'w-0 -translate-x-full opacity-0'

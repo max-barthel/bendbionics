@@ -1,15 +1,27 @@
-import { hoverStates } from '@/styles/design-tokens';
-import { cn } from '@/styles/tahoe-utils';
 import TahoeGlass from '@/components/ui/TahoeGlass';
 import { useAppState } from '@/providers';
+import { hoverStates } from '@/styles/design-tokens';
+import { cn } from '@/styles/tahoe-utils';
 import { UserAvatarIcon } from './UserAvatarIcon';
 
-export function GuestDropdownMenu() {
+interface GuestDropdownMenuProps {
+  readonly isOpen: boolean;
+}
+
+export function GuestDropdownMenu({ isOpen }: GuestDropdownMenuProps) {
   const appState = useAppState();
   const isLoggedIn = !!appState.user;
 
   return (
-    <TahoeGlass className="absolute top-full right-0 mt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible">
+    <TahoeGlass
+      data-testid="guest-dropdown-menu"
+      className={cn(
+        'absolute top-full right-0 mt-2 w-48 transition-opacity duration-200 z-50',
+        isOpen
+          ? 'opacity-100 visible pointer-events-auto'
+          : 'opacity-0 invisible pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto'
+      )}
+    >
       {isLoggedIn && (
         <div className={cn('p-3 border-b border-white/20')}>
           <div className="flex items-center gap-2">
@@ -55,6 +67,7 @@ export function GuestDropdownMenu() {
               'w-full text-center px-3 py-2 text-sm text-gray-700 rounded-lg transition-colors',
               hoverStates.menu
             )}
+            data-testid="sign-in-button"
           >
             Sign In
           </button>
@@ -72,4 +85,3 @@ export function GuestDropdownMenu() {
     </TahoeGlass>
   );
 }
-

@@ -24,7 +24,7 @@ export function MainAppLayout() {
   );
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col" data-testid="main-app-layout">
       <div
         className={`flex-1 ${backgroundGradients.appBackground} relative overflow-hidden`}
       >

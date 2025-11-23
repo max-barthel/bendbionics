@@ -129,7 +129,7 @@ This rule automates app analysis:
 
 When asked to analyze the app:
 
-1. Run dev server with npm run dev
+1. Run dev server with bun run dev
 2. Fetch logs from console
 3. Suggest performance improvements
 
