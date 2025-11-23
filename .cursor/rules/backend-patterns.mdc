@@ -1,0 +1,181 @@
+---
+description: Backend patterns for database sessions, SQLModel queries, service layer, and common helpers
+globs: ["backend/app/**/*.py"]
+alwaysApply: false
+---
+
+# Backend Patterns
+
+## Database Session Pattern
+
+### Using Sessions in Routes
+
+```python
+from fastapi import Depends
+from sqlmodel import Session
+from app.database import get_session
+
+@router.post("/endpoint")
+async def create_item(
+    data: CreateModel,
+    session: Session = Depends(get_session),
+):
+    """Session automatically closes after request."""
+    item = ItemModel(**data.dict())
+    session.add(item)
+    session.commit()
+    session.refresh(item)
+    return success_response(data=item)
+```
+
+### SQLModel Query Patterns
+
+```python
+from sqlmodel import select, Session
+
+# Get single item
+def get_user_by_username(session: Session, username: str) -> Optional[User]:
+    return session.exec(select(User).where(User.username == username)).first()
+
+# Get multiple items
+def get_user_presets(session: Session, user_id: int) -> List[Preset]:
+    return list(session.exec(select(Preset).where(Preset.user_id == user_id)))
+
+# Update item
+def update_preset(session: Session, preset_id: int, updates: dict) -> Preset:
+    preset = session.get(Preset, preset_id)
+    if not preset:
+        raise NotFoundError("Preset not found")
+    for key, value in updates.items():
+        setattr(preset, key, value)
+    session.add(preset)
+    session.commit()
+    session.refresh(preset)
+    return preset
+```
+
+## Common Helper Functions
+
+### Save and Refresh Pattern
+
+```python
+from app.services.db_helpers import save_and_refresh
+
+# Automatically saves and refreshes object
+preset = save_and_refresh(session, preset)
+```
+
+### Update Object Pattern
+
+```python
+from app.services.db_helpers import update_object
+
+# Update multiple fields at once
+user = update_object(session, user, email=new_email, name=new_name)
+```
+
+## Service Layer Pattern
+
+```python
+# backend/app/services/preset_service.py
+from sqlmodel import Session
+from app.models import Preset, PresetCreate
+
+def create_preset(session: Session, data: PresetCreate, user_id: int) -> Preset:
+    """Business logic in service layer."""
+    preset = Preset(**data.dict(), user_id=user_id)
+    session.add(preset)
+    session.commit()
+    session.refresh(preset)
+    return preset
+
+# In route handler
+@router.post("/presets")
+async def create_preset_endpoint(
+    data: PresetCreate,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    preset = create_preset(session, data, current_user.id)
+    return created_response(data=preset_to_response(preset))
+```
+
+## Error Handling
+
+### Custom Exceptions
+
+```python
+from app.api.responses import APIException, NotFoundError
+
+# Raise custom exceptions (automatically handled by middleware)
+if not item:
+    raise NotFoundError("Item not found")
+
+# Custom error with details
+raise APIException(
+    error_type="validation_error",
+    detail="Invalid input",
+    status_code=400,
+    details={"field": "email", "reason": "Invalid format"}
+)
+```
+
+### Error Logging
+
+```python
+from app.utils.error_tracking import log_error, log_api_error
+
+try:
+    # operation
+except Exception as e:
+    log_error(e, context="operation_name", extra_data={"key": "value"})
+    # or for API errors
+    log_api_error(e, endpoint="/api/endpoint", user_id=user.id)
+    raise
+```
+
+## Authentication Pattern
+
+```python
+from app.auth import get_current_user
+from app.models.user import User
+
+@router.get("/protected")
+async def protected_endpoint(
+    current_user: User = Depends(get_current_user),
+):
+    """User automatically authenticated via JWT token."""
+    return success_response(data={"user_id": current_user.id})
+```
+
+## Response Helpers
+
+```python
+from app.api.responses import (
+    success_response,
+    created_response,
+    error_response,
+    paginated_response,
+)
+
+# Standard success (200)
+return success_response(data=result, message="Operation successful")
+
+# Created resource (201)
+return created_response(data=new_item, message="Resource created")
+
+# Error response
+return error_response(
+    error_type="validation_error",
+    message="Invalid input",
+    status_code=400
+)
+
+# Paginated list
+return paginated_response(
+    data=items,
+    page=1,
+    per_page=10,
+    total=total_count
+)
+```

@@ -1,6 +1,6 @@
 ---
-description: Design System - Tahoe Glass Aesthetic
-globs: ["frontend/src/**/*.tsx", "frontend/src/**/*.css"]
+description: Design System - Tahoe Glass Aesthetic and Tailwind CSS styling patterns
+globs: ["frontend/src/**/*.tsx", "frontend/src/**/*.ts", "frontend/src/**/*.css"]
 alwaysApply: false
 ---
 
@@ -29,6 +29,20 @@ Follow the macOS Tahoe 26 design language with liquid glass as the signature sty
 ```
 
 ## Component Styling Patterns
+
+### Class Merging Utility
+
+Use the `cn()` utility function from `@/styles/tahoe-utils` for conditional classes and proper Tailwind class merging:
+
+```tsx
+import { cn } from '@/styles/tahoe-utils';
+
+className={cn(
+  "bg-white/10 backdrop-blur-md",
+  isActive && "bg-white/20",
+  className // Allow prop overrides
+)}
+```
 
 ### Standard Glass Container
 
@@ -97,3 +111,7 @@ className =
 - Use Tailwind's responsive utilities: `sm:`, `md:`, `lg:`, `xl:`, `2xl:`
 - Test across devices with browser dev tools
 - Ensure touch targets are at least 44x44px on mobile
+
+## Related Rules
+
+See `frontend-components.mdc` for React component structure and styling guidelines.
