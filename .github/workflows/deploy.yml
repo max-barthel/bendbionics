@@ -30,6 +30,7 @@ env:
     BUN_VERSION: "latest"
     PYTHON_VERSION: "3.11"
     CI: "true"
+    HUSKY: "0"  # Suppress git hooks in CI
     # Server configuration (matches deploy-workflow.sh)
     SERVER_USER: "serveruser"
     SERVER_HOST: ${{ secrets.SERVER_HOST }}
@@ -50,6 +51,16 @@ jobs:
               with:
                   bun-version: ${{ env.BUN_VERSION }}
 
+            - name: 💾 Cache Bun dependencies
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      frontend/node_modules
+                      ~/.bun/install/cache
+                  key: ${{ runner.os }}-bun-${{ hashFiles('frontend/bun.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-bun-
+
             - name: 🐍 Setup Python
               uses: actions/setup-python@v6
               with:
@@ -65,11 +76,15 @@ jobs:
                   cd frontend && bun install
                   cd ../backend && uv sync
 
-            - name: 🧪 Run tests
+            - name: 🧪 Run frontend tests
               if: ${{ !inputs.skip_build }}
               run: |
                   cd frontend && bun run test:run
-                  cd ../backend && uv run pytest tests/ -v
+
+            - name: 🧪 Run backend tests
+              if: ${{ !inputs.skip_build }}
+              run: |
+                  cd backend && uv run pytest tests/ -v
 
             - name: 🏗️ Build application
               if: ${{ !inputs.skip_build }}
@@ -88,7 +103,7 @@ jobs:
                   mkdir -p "$DEPLOY_DIR/frontend"
                   cp -r frontend/dist/* "$DEPLOY_DIR/frontend/"
 
-                  # Copy backend files
+                  # Copy backend files (exclude test files and cache)
                   mkdir -p "$DEPLOY_DIR/backend"
                   cp -r backend/app "$DEPLOY_DIR/backend/"
 
@@ -102,6 +117,10 @@ jobs:
                   # Clean up any __pycache__ directories that might have been copied
                   find "$DEPLOY_DIR/backend" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
                   find "$DEPLOY_DIR/backend" -name "*.pyc" -delete 2>/dev/null || true
+                  # Exclude test files
+                  find "$DEPLOY_DIR/backend" -path "*/tests/*" -type f -delete 2>/dev/null || true
+                  find "$DEPLOY_DIR/backend" -name "*_test.py" -type f -delete 2>/dev/null || true
+                  find "$DEPLOY_DIR/backend" -name "test_*.py" -type f -delete 2>/dev/null || true
 
                   # Copy deployment configurations
                   cp -r config/nginx "$DEPLOY_DIR/"
@@ -127,7 +146,7 @@ jobs:
                       find "$DEPLOY_DIR/scripts/ddns" -name "*.sh" -type f -exec chmod +x {} \;
                   fi
 
-                  # Store package name for later steps
+                  # Store package name for later steps (cache for reuse)
                   echo "DEPLOY_PACKAGE=$DEPLOY_DIR" >> $GITHUB_ENV
                   echo "PACKAGE_NAME=$(basename $DEPLOY_DIR)" >> $GITHUB_ENV
 
@@ -168,8 +187,8 @@ jobs:
                   MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }} # These env vars are used in the shell script below
                   MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }} # yamllint disable-line
               run: |
-                  # Find the deployment directory
-                  DEPLOY_DIR=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+                  # Use cached deployment directory
+                  DEPLOY_DIR="${{ env.DEPLOY_PACKAGE }}"
 
                   # Create .env.production with email configuration
                   cat > "$DEPLOY_DIR/backend/.env.production" << 'EOF'
@@ -263,26 +282,32 @@ jobs:
             - name: 📤 Upload to server
               if: ${{ !inputs.skip_upload }}
               run: |
-                  # Find the latest deployment package
-                  LATEST_PACKAGE=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
+                  # Use cached deployment package
+                  DEPLOY_PACKAGE="${{ env.DEPLOY_PACKAGE }}"
 
-                  if [ -z "$LATEST_PACKAGE" ]; then
+                  if [ -z "$DEPLOY_PACKAGE" ] || [ ! -d "$DEPLOY_PACKAGE" ]; then
                       echo "❌ No deployment package found. Run build first."
                       exit 1
                   fi
 
-                  echo "📤 Uploading package: $LATEST_PACKAGE"
-                  scp -r "$LATEST_PACKAGE" "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
+                  echo "📦 Compressing deployment package..."
+                  PACKAGE_NAME="${{ env.PACKAGE_NAME }}"
+                  tar -czf "${PACKAGE_NAME}.tar.gz" -C deploy "$PACKAGE_NAME"
 
-                  # Store package name for deployment
-                  echo "PACKAGE_NAME=$(basename $LATEST_PACKAGE)" >> $GITHUB_ENV
+                  echo "📤 Uploading compressed package: ${PACKAGE_NAME}.tar.gz"
+                  scp "${PACKAGE_NAME}.tar.gz" "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
+
+                  echo "📦 Extracting package on server..."
+                  ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "cd ${{ env.SERVER_PATH }} && tar -xzf ${PACKAGE_NAME}.tar.gz && rm -f ${PACKAGE_NAME}.tar.gz"
+
+                  echo "🧹 Cleaning up local compressed package..."
+                  rm -f "${PACKAGE_NAME}.tar.gz"
 
             - name: 🚀 Deploy on server
               if: ${{ !inputs.skip_deploy }}
               run: |
-                  # Find the latest deployment package
-                  LATEST_PACKAGE=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
-                  PACKAGE_NAME=$(basename "$LATEST_PACKAGE")
+                  # Use cached package name
+                  PACKAGE_NAME="${{ env.PACKAGE_NAME }}"
 
                   echo "🚀 Deploying package: $PACKAGE_NAME"
                   # Deploy with sudo (requires passwordless sudo setup)
@@ -291,11 +316,26 @@ jobs:
             - name: 🏥 Health check
               if: ${{ !inputs.skip_deploy }}
               run: |
-                  echo "⏳ Waiting for deployment to complete..."
-                  sleep 30
                   echo "🏥 Checking application health..."
-                  curl -f https://bendbionics.com/health || exit 1
-                  echo "✅ Health check passed!"
+                  MAX_ATTEMPTS=12
+                  ATTEMPT=0
+                  SLEEP_INTERVAL=5
+
+                  while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+                      if curl -f -s https://bendbionics.com/health > /dev/null 2>&1; then
+                          echo "✅ Health check passed!"
+                          exit 0
+                      fi
+
+                      ATTEMPT=$((ATTEMPT + 1))
+                      if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+                          echo "⏳ Attempt $ATTEMPT/$MAX_ATTEMPTS failed, retrying in ${SLEEP_INTERVAL}s..."
+                          sleep $SLEEP_INTERVAL
+                      fi
+                  done
+
+                  echo "❌ Health check failed after $MAX_ATTEMPTS attempts"
+                  exit 1
 
             - name: 🔍 Verify deployment and cleanup
               if: ${{ !inputs.skip_deploy }}
@@ -326,11 +366,11 @@ jobs:
             - name: 🧹 Cleanup local package
               if: ${{ !inputs.cleanup_only }}
               run: |
-                  # Clean up local deployment package
-                  LATEST_PACKAGE=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
-                  if [ -n "$LATEST_PACKAGE" ] && [ -d "$LATEST_PACKAGE" ]; then
-                      echo "🧹 Removing local package: $LATEST_PACKAGE"
-                      rm -rf "$LATEST_PACKAGE"
+                  # Clean up local deployment package using cached path
+                  DEPLOY_PACKAGE="${{ env.DEPLOY_PACKAGE }}"
+                  if [ -n "$DEPLOY_PACKAGE" ] && [ -d "$DEPLOY_PACKAGE" ]; then
+                      echo "🧹 Removing local package: $DEPLOY_PACKAGE"
+                      rm -rf "$DEPLOY_PACKAGE"
                   fi
 
             - name: 🧹 Cleanup old packages
@@ -349,9 +389,8 @@ jobs:
             - name: 🧹 Server cleanup
               if: ${{ !inputs.skip_deploy }}
               run: |
-                  # Clean up server deployment package
-                  LATEST_PACKAGE=$(ls -td deploy/web-build-* 2>/dev/null | head -1)
-                  PACKAGE_NAME=$(basename "$LATEST_PACKAGE")
+                  # Clean up server deployment package using cached name
+                  PACKAGE_NAME="${{ env.PACKAGE_NAME }}"
                   if [ -n "$PACKAGE_NAME" ]; then
                       echo "🧹 Cleaning up server package..."
                       ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "rm -rf ${{ env.SERVER_PATH }}/$PACKAGE_NAME"

@@ -108,20 +108,19 @@ check_prerequisites() {
 install_dependencies() {
     print_status "Installing system dependencies..."
 
-    # Update package list
+    # Update package list once (consolidated)
     apt update
 
-    # Install Python and development tools
-    apt install -y python3 python3-venv python3-dev build-essential
-
-    # Install nginx
-    apt install -y nginx
-
-    # Install certbot for SSL
-    apt install -y certbot python3-certbot-nginx
-
-    # Install additional Python dependencies
-    apt install -y libpq-dev  # For PostgreSQL support (optional)
+    # Install all packages in a single command to reduce overhead
+    apt install -y \
+        python3 \
+        python3-venv \
+        python3-dev \
+        build-essential \
+        nginx \
+        certbot \
+        python3-certbot-nginx \
+        libpq-dev
 
     print_success "System dependencies installed"
 }
@@ -690,16 +689,13 @@ EOF
 install_postgresql() {
     print_status "Installing PostgreSQL..."
 
-    # Check if PostgreSQL is already installed
-    if command -v psql &> /dev/null; then
-        print_success "PostgreSQL is already installed"
+    # Check if PostgreSQL is already installed and running
+    if command -v psql &> /dev/null && systemctl is-active --quiet postgresql; then
+        print_success "PostgreSQL is already installed and running"
         return 0
     fi
 
-    # Update package list
-    apt-get update
-
-    # Install PostgreSQL
+    # Install PostgreSQL (apt update already called in install_dependencies)
     print_status "Installing PostgreSQL server and client..."
     apt-get install -y postgresql postgresql-contrib
 
