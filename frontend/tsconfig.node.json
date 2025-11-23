@@ -9,7 +9,7 @@
     "noLib": false,
 
     /* Node.js module resolution */
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "noEmit": true,

@@ -9,22 +9,6 @@ from fastapi.testclient import TestClient
 client = TestClient(app)
 
 
-def test_pcc_computation():
-    """Test core PCC computation that users rely on."""
-    response = client.post(
-        "/pcc",
-        json={
-            "bending_angles": [0.5, 0.3],
-            "rotation_angles": [0.0, 0.0],
-            "backbone_lengths": [0.1, 0.1],
-            "coupling_lengths": [0.02, 0.02, 0.02],
-            "discretization_steps": 10,
-        },
-    )
-    assert response.status_code == 200
-    data = response.json()
-    assert data["success"] is True
-    assert "segments" in data["data"]
 
 
 def test_tendon_calculation():

@@ -2,6 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
+import type { MinifyOptions } from 'terser';
 import { defineConfig } from 'vite';
 import { analyzer } from 'vite-bundle-analyzer';
 
@@ -85,11 +86,6 @@ export default defineConfig(({ mode }) => {
         },
         // Proxy preset routes directly
         '/presets': {
-          target: 'http://localhost:8000',
-          changeOrigin: true,
-        },
-        // Proxy PCC routes directly
-        '/pcc': {
           target: 'http://localhost:8000',
           changeOrigin: true,
         },
@@ -194,7 +190,7 @@ export default defineConfig(({ mode }) => {
         format: {
           comments: false, // Remove comments
         },
-      },
+      } as MinifyOptions,
       // Increase warning limit for technical applications with 3D libraries
       chunkSizeWarningLimit: 1000,
       // Enable source maps for debugging in development

@@ -111,11 +111,6 @@ class TestMainRoutes:
         # APIException is converted to error_response format by middleware
         assert "error" in data or "message" in data or "detail" in data
 
-    def test_options_pcc_cors(self):
-        """Test CORS preflight request handling."""
-        response = self.client.options("/pcc")
-
-        assert response.status_code == 200
         headers = response.headers
         assert "Access-Control-Allow-Origin" in headers
         assert "Access-Control-Allow-Methods" in headers
