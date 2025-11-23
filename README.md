@@ -8,18 +8,20 @@ BendBionics is a **web-based simulation platform** optimized for deployment on U
 
 ## Architecture
 
-- **Frontend**: React + TypeScript + Tailwind CSS (Vite) with Bun package manager
-- **Backend**: FastAPI + Python with uv package manager
+- **Frontend**: React 19 + TypeScript + Tailwind CSS 4 (Vite) with Bun package manager
+- **Backend**: FastAPI + Python 3.11+ with uv package manager
 - **Design**: macOS Tahoe 26 aesthetic with liquid glass styling
-- **Deployment**: nginx + systemd + SSL certificates
-- **Database**: SQLite (upgradeable to PostgreSQL)
+- **Deployment**: nginx + systemd + SSL certificates (Let's Encrypt)
+- **Database**: PostgreSQL (production) / SQLite (development)
+- **CI/CD**: GitHub Actions for automated testing and deployment
 
 ## Key Features
 
-- 3D visualization of robot segments with real-time updates
+- 3D visualization of robot segments with real-time updates (Three.js)
 - Real-time parameter adjustment with live preview
 - Unit conversion (degrees/radians, mm/cm/m)
-- Preset Management with user authentication
+- Preset Management with user authentication (JWT)
+- Modular tendon calculation system (3-12 tendons)
 - Web-optimized performance with modern browsers
 
 ## Quick Start
@@ -29,6 +31,13 @@ BendBionics is a **web-based simulation platform** optimized for deployment on U
 - **Bun** (JavaScript runtime & package manager) - Install: `curl -fsSL https://bun.sh/install | bash`
 - **Python** 3.11+
 - **uv** (Python package manager) - Install: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+### First-Time Setup
+
+```bash
+# Set up development environment
+./setup.sh
+```
 
 ### Development
 
@@ -44,11 +53,11 @@ BendBionics is a **web-based simulation platform** optimized for deployment on U
 ### Testing
 
 ```bash
-# Test web build locally
-./test-build.sh
-
 # Run all tests
 ./toolkit.sh all test
+
+# Test web build locally (optional)
+./scripts/test-build.sh
 ```
 
 ### Building
@@ -60,34 +69,40 @@ BendBionics is a **web-based simulation platform** optimized for deployment on U
 
 ## Deployment
 
-### Local Testing
-
-```bash
-# Test web build locally
-./test-build.sh
-```
-
 ### Production Deployment
 
+BendBionics is deployed at **https://bendbionics.com**
+
 ```bash
-# Build for deployment
+# Complete deployment workflow (build, upload, deploy)
+./deploy-workflow.sh
+
+# Or step by step:
+# 1. Build for deployment
 ./build.sh
 
-# Deploy to Ubuntu server
-# 1. Upload deployment package to server
-# 2. Run: sudo ./deploy.sh
-# 3. Configure domain and SSL
+# 2. Deploy using workflow script
+./deploy-workflow.sh
 ```
 
-See the deployment section above for complete deployment instructions.
+The deployment workflow handles:
+- Building the application
+- Uploading to server
+- Deploying on server
+- Cleanup of deployment packages
+
+For detailed server management and troubleshooting, see [SERVER.md](./SERVER.md).
 
 ## Development Workflow
 
 - Use `./dev.sh` for development
-- Use `./build.sh` for building
+- Use `./build.sh` for production builds
+- Use `./deploy-workflow.sh` for deployment
 - Use `./toolkit.sh` for development tools
 - All styling with Tailwind CSS only (no direct CSS)
 - Follow Tahoe liquid glass design system consistently
+
+For detailed script documentation, see [SCRIPTS.md](./SCRIPTS.md).
 
 ## Code Quality Standards
 
@@ -106,29 +121,31 @@ See the deployment section above for complete deployment instructions.
 │   └── package.json   # Web dependencies
 ├── backend/            # FastAPI backend
 │   ├── app/           # Application code
-│   └── requirements.txt # Python dependencies
-├── deploy/             # Deployment configurations
+│   └── pyproject.toml  # Python dependencies (uv)
+├── config/             # Deployment configurations
 │   ├── nginx/         # Nginx configuration
-│   ├── systemd/       # Service configuration
-│   └── *.sh           # Deployment scripts
-└── scripts/           # Development tools
+│   └── systemd/       # Service configuration
+├── builds/             # Deployment packages
+├── scripts/            # Development tools and deployment scripts
+└── deploy-workflow.sh  # Complete deployment workflow
 ```
 
 ## Technology Stack
 
-- **Frontend**: React 19, TypeScript, Tailwind CSS, Three.js
-- **Package Manager**: Bun (10-30x faster than npm)
-- **Backend**: FastAPI, Python 3.11+, SQLAlchemy
-- **Python Package Manager**: uv (modern, fast)
+- **Frontend**: React 19, TypeScript, Tailwind CSS 4, Three.js
+- **Frontend Package Manager**: Bun (10-30x faster than npm)
+- **Backend**: FastAPI, Python 3.11+, SQLAlchemy, SQLModel
+- **Backend Package Manager**: uv (modern, fast Python package manager)
 - **Deployment**: nginx, systemd, Let's Encrypt
-- **Database**: SQLite (production: PostgreSQL)
-- **Testing**: Vitest, Playwright, Storybook
+- **Database**: PostgreSQL (production) / SQLite (development)
+- **Testing**: Vitest (frontend), Playwright (integration), pytest (backend)
+- **Documentation**: Storybook (component documentation)
 
 ## Getting Help
 
-- **Development**: See `DEVELOPMENT.md`
-- **Deployment**: See deployment section above
-- **Scripts**: See `SCRIPTS.md`
+- **Development**: See [SCRIPTS.md](./SCRIPTS.md) for development tools and workflows
+- **Deployment**: See [SERVER.md](./SERVER.md) for server management and deployment details
+- **Scripts**: See [SCRIPTS.md](./SCRIPTS.md) for complete script documentation
 
 ## License
 
