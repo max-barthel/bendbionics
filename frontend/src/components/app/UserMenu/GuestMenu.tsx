@@ -41,7 +41,12 @@ export function GuestMenu() {
   const isMouseDevice = !isTouchDevice;
 
   return (
-    <div ref={containerRef} className="group relative">
+    <div
+      ref={containerRef}
+      className="group relative"
+      onMouseEnter={isMouseDevice ? () => setIsOpen(true) : undefined}
+      onMouseLeave={isMouseDevice ? () => setIsOpen(false) : undefined}
+    >
       <Button
         variant="primary"
         className="px-4 py-2"
@@ -49,8 +54,6 @@ export function GuestMenu() {
         aria-expanded={isOpen ? 'true' : 'false'}
         data-testid="user-menu-button"
         onClick={handleToggle}
-        onMouseEnter={isMouseDevice ? () => setIsOpen(true) : undefined}
-        onMouseLeave={isMouseDevice ? () => setIsOpen(false) : undefined}
         style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
       >
         <div className="flex items-center gap-2">

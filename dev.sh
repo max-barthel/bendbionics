@@ -181,6 +181,16 @@ start_backend() {
         exit 1
     fi
 
+    # Unset VIRTUAL_ENV to avoid conflicts with root-level venv
+    # uv manages its own virtual environment in the project directory
+    unset VIRTUAL_ENV
+
+    # Check if .venv exists and is valid (has Python executable)
+    if [ -d ".venv" ] && [ ! -f ".venv/bin/python" ] && [ ! -f ".venv/bin/python3" ]; then
+        print_warning "Corrupted virtual environment detected, removing..."
+        rm -rf .venv
+    fi
+
     # Ensure virtual environment exists and dependencies are installed
     if [ ! -d ".venv" ]; then
         print_status "Creating virtual environment with uv..."

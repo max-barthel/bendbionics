@@ -201,8 +201,8 @@ copy_application_files() {
     fi
 
     # Copy pyproject.toml (needed for uv)
-    if [ -f "$SCRIPT_DIR/pyproject.toml" ]; then
-        cp "$SCRIPT_DIR/pyproject.toml" "$APP_DIR/"
+    if [ -f "$SCRIPT_DIR/backend/pyproject.toml" ]; then
+        cp "$SCRIPT_DIR/backend/pyproject.toml" "$APP_DIR/backend/"
         print_status "pyproject.toml copied"
     else
         print_error "pyproject.toml not found in deployment package"
@@ -244,7 +244,7 @@ setup_python_environment() {
 
     # Install Python dependencies from pyproject.toml
     print_status "Installing Python dependencies with uv..."
-    if [ -f "../pyproject.toml" ]; then
+    if [ -f "pyproject.toml" ]; then
         uv sync
     else
         print_error "pyproject.toml not found in backend directory"
