@@ -190,7 +190,7 @@ run_health_checks() {
     fi
 
     # Check if pyproject.toml exists
-    if [ -f "pyproject.toml" ]; then
+    if [ -f "backend/pyproject.toml" ]; then
         print_success "Backend dependencies: Found (pyproject.toml)"
     else
         print_error "Backend dependencies: Missing (pyproject.toml)"

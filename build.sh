@@ -201,7 +201,7 @@ create_deployment_package() {
 
         # Copy essential backend files only
         cp -r backend/app "$deploy_dir/backend/"
-        cp pyproject.toml "$deploy_dir/"  # uv uses pyproject.toml
+        cp backend/pyproject.toml "$deploy_dir/backend/"  # uv uses pyproject.toml
         cp backend/init_database.py "$deploy_dir/backend/"
         cp backend/migrate.py "$deploy_dir/backend/"
 
@@ -262,7 +262,7 @@ Contents:
 - backend/           : Python FastAPI backend (production files only)
   - app/             : Application source code
   - init_database.py : Database initialization script
-- pyproject.toml     : Python dependencies (uv)
+- backend/pyproject.toml     : Python dependencies (uv)
   - migrate.py       : Database migration script
 - nginx/             : Nginx configuration
 - systemd/           : Systemd service configuration

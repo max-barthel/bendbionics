@@ -67,11 +67,14 @@ async def report_error(error_report: ErrorReport, request: Request):
     except Exception as e:
         # Even if logging fails, don't break the error reporting flow
         # Log the logging failure separately
+        error_id = (
+            error_report.errorId if hasattr(error_report, "errorId") else "unknown"
+        )
         default_logger.error(
             LogContext.API,
             f"Failed to log client error report: {str(e)}",
             {
-                "error_id": error_report.errorId if hasattr(error_report, "errorId") else "unknown",
+                "error_id": error_id,
                 "request_id": getattr(request.state, "request_id", None),
             },
             "API",
@@ -84,4 +87,3 @@ async def report_error(error_report: ErrorReport, request: Request):
         message="Error report received",
         request=request,
     )
-

@@ -96,7 +96,7 @@ jobs:
                     cp backend/migrate.py "$DEPLOY_DIR/backend/"
 
                   # Copy pyproject.toml (needed for uv)
-                  cp pyproject.toml "$DEPLOY_DIR/"
+                  cp backend/pyproject.toml "$DEPLOY_DIR/backend/"
 
                   # Copy deployment configurations
                   cp -r deploy/nginx "$DEPLOY_DIR/"
