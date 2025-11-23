@@ -34,6 +34,10 @@ playwright-report/
 **/__screenshots__/
 **/*.spec.ts-snapshots/
 
+# Lighthouse reports
+**/lighthouse-reports/
+**/.lighthouseci/
+
 # IDE
 .vscode/
 .idea/

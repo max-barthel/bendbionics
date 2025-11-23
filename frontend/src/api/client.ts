@@ -25,29 +25,35 @@ export interface PCCResponse {
 
 // Define tendon analysis response type
 export interface TendonAnalysisResponse {
-  result: {
-    robot_positions: number[][][];
-    coupling_data: {
-      positions: number[][];
-      orientations: number[][][];
+  success: boolean;
+  data: {
+    result: {
+      robot_positions: number[][][];
+      coupling_data: {
+        positions: number[][];
+        orientations: number[][][];
+      };
+      tendon_analysis: {
+        segment_lengths: number[][];
+        total_lengths: number[][];
+        length_changes: number[][];
+        routing_points: number[][][][];
+      };
+      actuation_commands: Record<
+        string,
+        {
+          length_change_m: number;
+          pull_direction: string;
+          magnitude: number;
+        }
+      >;
+      model_type: string;
+      tendon_config: TendonConfig;
     };
-    tendon_analysis: {
-      segment_lengths: number[][];
-      total_lengths: number[][];
-      length_changes: number[][];
-      routing_points: number[][][][];
-    };
-    actuation_commands: Record<
-      string,
-      {
-        length_change_m: number;
-        pull_direction: string;
-        magnitude: number;
-      }
-    >;
-    model_type: string;
-    tendon_config: TendonConfig;
   };
+  message: string;
+  timestamp: string;
+  request_id: string | null;
 }
 
 // Retry configuration interface
@@ -251,23 +257,13 @@ function handleResponseError(error: {
 
 // API methods with retry support
 export const robotAPI = {
-  computePCC: async (
-    params: PCCParams,
-    retryConfig?: Partial<RetryConfig>
-  ): Promise<PCCResponse> => {
-    return withRetry(async () => {
-      const client = getApiClient();
-      const response = await client.post('/pcc', params);
-      return response.data as PCCResponse;
-    }, retryConfig);
-  },
-  computePCCWithTendons: async (
+  computeKinematics: async (
     params: PCCParams,
     retryConfig?: Partial<RetryConfig>
   ): Promise<TendonAnalysisResponse> => {
     return withRetry(async () => {
       const client = getApiClient();
-      const response = await client.post('/pcc-with-tendons', params);
+      const response = await client.post('/kinematics', params);
       return response.data as TendonAnalysisResponse;
     }, retryConfig);
   },

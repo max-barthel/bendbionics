@@ -37,6 +37,29 @@ print_header() {
     echo -e "${PURPLE}================================${NC}"
 }
 
+# Function to ensure bun is available in PATH
+ensure_bun_in_path() {
+    # Check if bun is already in PATH
+    if command -v bun &> /dev/null; then
+        return 0
+    fi
+
+    # Simple fallback: add ~/.bun/bin to PATH if bun binary exists there
+    if [ -f "$HOME/.bun/bin/bun" ]; then
+        export PATH="$HOME/.bun/bin:$PATH"
+        if command -v bun &> /dev/null; then
+            return 0
+        fi
+    fi
+
+    # If we get here, bun is not found
+    print_error "Bun is not installed or not in PATH"
+    print_error "Install from https://bun.sh"
+    print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
+    print_error "If bun is installed, ensure ~/.zshenv includes: export PATH=\"\$HOME/.bun/bin:\$PATH\""
+    exit 1
+}
+
 # Function to check if we're in the right directory
 check_directory() {
     if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
@@ -49,24 +72,18 @@ check_directory() {
 check_prerequisites() {
     print_status "Checking build prerequisites..."
 
-    # Check Node.js
-    if ! command -v node &> /dev/null; then
-        print_error "Node.js is not installed. Please install Node.js 18+ from https://nodejs.org/"
+    # Check if Bun is installed
+    if ! command -v bun &> /dev/null; then
+        print_error "Bun is not installed. Install from https://bun.sh"
+        print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
         exit 1
     fi
-
-    # Check Node.js version
-    NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
-    if [ "$NODE_VERSION" -lt 18 ]; then
-        print_error "Node.js 18+ required. Current: $(node --version)"
-        exit 1
-    fi
-    print_status "Node.js version: $(node --version) ✓"
+    print_status "Bun version: $(bun --version) ✓"
 
     # Check if frontend dependencies are installed
     if [ ! -d "frontend/node_modules" ]; then
-        print_warning "Frontend dependencies not found. Installing..."
-        cd frontend && npm install && cd ..
+        print_warning "Frontend dependencies not found. Installing with Bun..."
+        cd frontend && bun install && cd ..
     fi
 
     print_success "Prerequisites check completed"
@@ -113,7 +130,7 @@ build_frontend_web() {
 
     # Build with TypeScript check
     print_status "Running TypeScript compilation and web build..."
-    npm run build
+    bun run build
 
     if [ $? -ne 0 ]; then
         print_error "Frontend web build failed"
@@ -184,7 +201,7 @@ create_deployment_package() {
 
         # Copy essential backend files only
         cp -r backend/app "$deploy_dir/backend/"
-        cp pyproject.toml "$deploy_dir/"  # uv uses pyproject.toml
+        cp backend/pyproject.toml "$deploy_dir/backend/"  # uv uses pyproject.toml
         cp backend/init_database.py "$deploy_dir/backend/"
         cp backend/migrate.py "$deploy_dir/backend/"
 
@@ -245,7 +262,7 @@ Contents:
 - backend/           : Python FastAPI backend (production files only)
   - app/             : Application source code
   - init_database.py : Database initialization script
-- pyproject.toml     : Python dependencies (uv)
+- backend/pyproject.toml     : Python dependencies (uv)
   - migrate.py       : Database migration script
 - nginx/             : Nginx configuration
 - systemd/           : Systemd service configuration
@@ -406,7 +423,7 @@ test_build_locally() {
 
     # Ensure dependencies are installed
     if [ ! -d ".venv" ]; then
-        uv venv
+        uv venv --clear
     fi
     uv sync
 
@@ -430,7 +447,7 @@ test_build_locally() {
     # Start frontend preview server
     print_status "Starting frontend preview server..."
     cd frontend
-    npm run preview &
+    bun run preview &
     FRONTEND_PID=$!
     cd ..
 
@@ -522,6 +539,9 @@ main() {
 
     print_header
 
+    # Ensure bun is available before any operations
+    ensure_bun_in_path
+
     if [ "$test_mode" = true ]; then
         test_build_locally
     elif [ "$deploy_mode" = true ]; then
@@ -529,6 +549,7 @@ main() {
     else
         # Standard build process
         check_directory
+        ensure_bun_in_path
         check_prerequisites
         clean_build
         build_frontend_web

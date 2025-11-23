@@ -37,6 +37,29 @@ print_header() {
     echo -e "${PURPLE}================================${NC}"
 }
 
+# Function to ensure bun is available in PATH
+ensure_bun_in_path() {
+    # Check if bun is already in PATH
+    if command -v bun &> /dev/null; then
+        return 0
+    fi
+
+    # Simple fallback: add ~/.bun/bin to PATH if bun binary exists there
+    if [ -f "$HOME/.bun/bin/bun" ]; then
+        export PATH="$HOME/.bun/bin:$PATH"
+        if command -v bun &> /dev/null; then
+            return 0
+        fi
+    fi
+
+    # If we get here, bun is not found
+    print_error "Bun is not installed or not in PATH"
+    print_error "Install from https://bun.sh"
+    print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
+    print_error "If bun is installed, ensure ~/.zshenv includes: export PATH=\"\$HOME/.bun/bin:\$PATH\""
+    exit 1
+}
+
 # Function to check if we're in the right directory
 check_directory() {
     if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
@@ -49,9 +72,10 @@ check_directory() {
 check_prerequisites() {
     print_status "Quick prerequisite check..."
 
-    # Only check what's absolutely essential
-    if ! command -v node &> /dev/null; then
-        print_error "Node.js is required. Install from https://nodejs.org/"
+    # Check if Bun is installed
+    if ! command -v bun &> /dev/null; then
+        print_error "Bun is not installed. Install from https://bun.sh"
+        print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
         exit 1
     fi
 
@@ -69,8 +93,8 @@ check_prerequisites() {
 
     # Quick dependency check - install if missing
     if [ ! -d "frontend/node_modules" ]; then
-        print_status "Installing frontend dependencies..."
-        cd frontend && npm install && cd ..
+        print_status "Installing frontend dependencies with Bun..."
+        cd frontend && bun install && cd ..
     fi
 
     print_success "Prerequisites ready"
@@ -84,7 +108,7 @@ smart_cleanup() {
     find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
     find . -name "*.pyc" -delete 2>/dev/null || true
 
-    # Clean Node.js cache (but preserve node_modules)
+    # Clean Bun cache (but preserve node_modules)
     rm -rf frontend/.vite 2>/dev/null || true
     rm -rf frontend/coverage 2>/dev/null || true
 
@@ -157,6 +181,16 @@ start_backend() {
         exit 1
     fi
 
+    # Unset VIRTUAL_ENV to avoid conflicts with root-level venv
+    # uv manages its own virtual environment in the project directory
+    unset VIRTUAL_ENV
+
+    # Check if .venv exists and is valid (has Python executable)
+    if [ -d ".venv" ] && [ ! -f ".venv/bin/python" ] && [ ! -f ".venv/bin/python3" ]; then
+        print_warning "Corrupted virtual environment detected, removing..."
+        rm -rf .venv
+    fi
+
     # Ensure virtual environment exists and dependencies are installed
     if [ ! -d ".venv" ]; then
         print_status "Creating virtual environment with uv..."
@@ -185,7 +219,7 @@ start_frontend() {
     cd frontend
 
     # Start frontend (web development server)
-    npm run dev &
+    bun run dev &
     FRONTEND_PID=$!
 
     cd ..
@@ -240,6 +274,7 @@ main() {
 
     # Run checks
     check_directory
+    ensure_bun_in_path
     check_prerequisites
     run_health_checks
 

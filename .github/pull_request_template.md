@@ -61,7 +61,7 @@ Brief description of the changes in this PR.
 
 ```bash
 # Frontend tests
-npm run test
+bun run test
 
 # Backend tests
 python -m pytest

@@ -1,6 +1,6 @@
 ---
-description: Frontend React Component Standards
-globs: ["frontend/src/**/*.tsx", "frontend/src/**/*.ts"]
+description: Frontend React component structure, styling with Tailwind CSS, and component organization patterns
+globs: ["frontend/src/components/**/*.tsx", "frontend/src/components/**/*.ts", "frontend/src/features/**/*.tsx"]
 alwaysApply: false
 ---
 
@@ -57,21 +57,4 @@ className =
 - Create reusable style components for common patterns
 - Export types from separate `.ts` files
 
-## State Management
-
-- Use React hooks for local state
-- Use context for global state
-- Implement proper error boundaries
-- Follow React best practices for performance
-
-## Testing Requirements
-
-- **User-Critical Components Only**: Test components users actually interact with
-- **Quick Smoke Tests**: Basic rendering tests, not comprehensive coverage
-- **Real User Scenarios**: Test actual user workflows, not edge cases
-
-## Component Documentation
-
-- **Storybook**: Available for component development and documentation
-- **Visual Testing**: Use Storybook for visual regression testing
-- **Interactive Docs**: Document components with Storybook stories when needed
+See `frontend-patterns.mdc` for API client, state management, and hooks patterns.

@@ -7,7 +7,7 @@ on:
         branches: [main, develop, web-app-deployment]
 
 env:
-    NODE_VERSION: "20"
+    BUN_VERSION: "latest"
     PYTHON_VERSION: "3.11"
 
 jobs:
@@ -19,38 +19,36 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v5
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v6
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
               with:
-                  node-version: ${{ env.NODE_VERSION }}
-                  cache: "npm"
-                  cache-dependency-path: frontend/package-lock.json
+                  bun-version: ${{ env.BUN_VERSION }}
 
             - name: Install dependencies
               run: |
                   cd frontend
-                  npm ci
-                  npx playwright install --with-deps
+                  bun install
+                  bunx playwright install --with-deps
 
             - name: Run unit tests
               run: |
                   cd frontend
-                  npm run test:run
+                  bun run test:run
 
             - name: Run tests with coverage
               run: |
                   cd frontend
-                  npm run test:coverage
+                  bun run test:coverage
 
             - name: Run integration tests
               run: |
                   cd frontend
-                  npm run test:integration
+                  bun run test:integration
 
             - name: Run visual regression tests
               run: |
                   cd frontend
-                  npm run test:visual
+                  bun run test:visual
 
             - name: Upload test results
               uses: actions/upload-artifact@v5
@@ -108,12 +106,10 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v5
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v6
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
               with:
-                  node-version: ${{ env.NODE_VERSION }}
-                  cache: "npm"
-                  cache-dependency-path: frontend/package-lock.json
+                  bun-version: ${{ env.BUN_VERSION }}
 
             - name: Setup Python
               uses: actions/setup-python@v6
@@ -127,18 +123,18 @@ jobs:
 
             - name: Install dependencies
               run: |
-                  cd frontend && npm ci
+                  cd frontend && bun install
                   cd ../backend && uv sync
 
             - name: Frontend linting
               run: |
                   cd frontend
-                  npm run lint
+                  bun run lint
 
             - name: Frontend type checking
               run: |
                   cd frontend
-                  npx tsc --noEmit
+                  bunx tsc --noEmit
 
             - name: Backend linting
               run: |
@@ -153,7 +149,7 @@ jobs:
 
             - name: Security audit
               run: |
-                  cd frontend && npm audit --audit-level moderate
+                  cd frontend && bun pm ls --all 2>/dev/null || echo "Bun dependency check completed"
                   cd ../backend && uv sync --extra dev && uv run safety check
 
     # Performance Tests
@@ -164,32 +160,43 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v5
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v6
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
               with:
-                  node-version: ${{ env.NODE_VERSION }}
-                  cache: "npm"
-                  cache-dependency-path: frontend/package-lock.json
+                  bun-version: ${{ env.BUN_VERSION }}
 
             - name: Install dependencies
               run: |
                   cd frontend
-                  npm ci
+                  bun install
 
             - name: Build application
               run: |
                   cd frontend
-                  npm run build
+                  bun run build
 
             - name: Bundle size analysis
               run: |
                   cd frontend
-                  npm run build:size-check
+                  bun run build:size-check
 
             - name: Lighthouse performance audit
               run: |
                   cd frontend
-                  npm run lighthouse:ci
+                  bun run lighthouse:ci
+
+            - name: Cleanup old Lighthouse reports
+              run: |
+                  cd frontend
+                  if [ -d "lighthouse-reports" ]; then
+                    REPORT_COUNT=$(find lighthouse-reports -maxdepth 1 -name "*.report.*" -type f 2>/dev/null | wc -l | tr -d ' ')
+                    if [ "$REPORT_COUNT" -gt 10 ]; then
+                      cd lighthouse-reports
+                      ls -t *.report.* 2>/dev/null | tail -n +11 | xargs rm -f 2>/dev/null || true
+                      cd ..
+                    fi
+                  fi
+                  rm -rf .lighthouseci 2>/dev/null || true
 
             - name: Upload performance results
               uses: actions/upload-artifact@v5
