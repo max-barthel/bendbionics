@@ -186,7 +186,7 @@ export const EmailVerification: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4" data-testid="email-verification-page">
       <div className="w-full max-w-md mx-auto">
         <div className={`${modalVariants.contentGlass} p-8 text-center`}>
           {getStatusIcon()}

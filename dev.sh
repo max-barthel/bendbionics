@@ -37,6 +37,29 @@ print_header() {
     echo -e "${PURPLE}================================${NC}"
 }
 
+# Function to ensure bun is available in PATH
+ensure_bun_in_path() {
+    # Check if bun is already in PATH
+    if command -v bun &> /dev/null; then
+        return 0
+    fi
+
+    # Simple fallback: add ~/.bun/bin to PATH if bun binary exists there
+    if [ -f "$HOME/.bun/bin/bun" ]; then
+        export PATH="$HOME/.bun/bin:$PATH"
+        if command -v bun &> /dev/null; then
+            return 0
+        fi
+    fi
+
+    # If we get here, bun is not found
+    print_error "Bun is not installed or not in PATH"
+    print_error "Install from https://bun.sh"
+    print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
+    print_error "If bun is installed, ensure ~/.zshenv includes: export PATH=\"\$HOME/.bun/bin:\$PATH\""
+    exit 1
+}
+
 # Function to check if we're in the right directory
 check_directory() {
     if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
@@ -241,6 +264,7 @@ main() {
 
     # Run checks
     check_directory
+    ensure_bun_in_path
     check_prerequisites
     run_health_checks
 
