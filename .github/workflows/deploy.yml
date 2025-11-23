@@ -249,6 +249,17 @@ jobs:
               with:
                   ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+            - name: 🔐 Configure SSH known hosts
+              if: ${{ !inputs.skip_upload }}
+              run: |
+                  echo "🔐 Configuring SSH known hosts..."
+                  mkdir -p ~/.ssh
+                  chmod 700 ~/.ssh
+                  # Add server host key to known_hosts to avoid "Host key verification failed"
+                  ssh-keyscan -H "${{ env.SERVER_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+                  chmod 600 ~/.ssh/known_hosts
+                  echo "✅ SSH known hosts configured"
+
             - name: 📤 Upload to server
               if: ${{ !inputs.skip_upload }}
               run: |
