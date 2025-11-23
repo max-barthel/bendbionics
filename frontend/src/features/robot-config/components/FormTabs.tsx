@@ -5,7 +5,6 @@ import { useConfigurationLoader } from '@/features/presets/hooks/useConfiguratio
 import { useRobotState } from '@/features/robot-config/hooks/useRobotState';
 import {
   createPCCParams,
-  handleRegularComputation,
   handleTendonComputation,
 } from '@/features/robot-config/utils/computation-helpers';
 import { ErrorDisplay } from '@/features/shared/components/ErrorDisplay';
@@ -60,12 +59,8 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
 
       try {
         const params = createPCCParams(robotState);
-
-        if (robotState.tendonConfig) {
-          await handleTendonComputation(params, robotState, onResult);
-        } else {
-          await handleRegularComputation(params, robotState, onResult);
-        }
+        // Always use tendon computation (robot requires tendon configuration)
+        await handleTendonComputation(params, robotState, onResult);
       } catch (err: unknown) {
         handleApiError(err, 'computation');
       } finally {

@@ -1,40 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 
 from app.api.responses import success_response
-from app.models.pcc.model import compute_pcc
 from app.models.pcc.pcc_model import compute_pcc_with_tendons
 from app.models.pcc.types import PCCParams
-from app.utils.serialization import (
-    convert_result_to_serializable,
-    convert_robot_positions,
-)
+from app.utils.serialization import convert_result_to_serializable
 
 router = APIRouter()
-
-
-@router.post("/pcc")
-async def run_pcc(params: PCCParams):
-    """Compute PCC (Piecewise Constant Curvature) robot configuration."""
-    result = compute_pcc(params)
-    result_serializable = convert_robot_positions(result)
-
-    return success_response(
-        data={"segments": result_serializable},
-        message="PCC computation completed successfully",
-    )
-
-
-@router.options("/pcc")
-async def options_pcc():
-    """Handle CORS preflight requests.
-
-    Note: CORS middleware should handle OPTIONS requests, but FastAPI requires
-    an explicit route handler to avoid 405 errors. The middleware will add
-    CORS headers to this response.
-    """
-    # Return empty response - CORS middleware will add headers after this handler
-    return Response(status_code=200)
 
 
 @router.post("/kinematics")
@@ -47,6 +19,18 @@ async def run_kinematics(params: PCCParams):
     return success_response(
         data={"result": result_serializable},
         message="Kinematics computation completed successfully",
+    )
+
+
+@router.get("/kinematics")
+async def get_kinematics():
+    """Handle GET requests to /kinematics endpoint.
+
+    This endpoint only accepts POST requests. GET requests return 405 Method Not Allowed.
+    """
+    raise HTTPException(
+        status_code=405,
+        detail="Method not allowed. This endpoint only accepts POST requests. Use POST /kinematics to compute robot kinematics with tendon analysis.",
     )
 
 

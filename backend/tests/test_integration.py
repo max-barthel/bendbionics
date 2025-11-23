@@ -13,6 +13,20 @@ class TestFullAPIWorkflow:
         clear_cache()
         self.client = TestClient(app)
 
+    @staticmethod
+    def _add_tendon_config(payload):
+        """Add default tendon config to payload if not present."""
+        if "tendon_config" not in payload:
+            payload["tendon_config"] = {
+                "num_tendons": 3,
+                "tendon_positions": [
+                    [0.01, 0],
+                    [-0.005, 0.0087],
+                    [-0.005, -0.0087],
+                ],
+            }
+        return payload
+
     def test_complete_workflow_success(self):
         """Test the complete API workflow from request to response."""
         # Step 1: Prepare valid request payload
@@ -25,7 +39,8 @@ class TestFullAPIWorkflow:
         }
 
         # Step 2: Send POST request
-        response = self.client.post("/pcc", json=payload)
+        payload = self._add_tendon_config(payload)
+        response = self.client.post("/kinematics", json=payload)
 
         # Step 3: Verify response
         assert response.status_code == 200
@@ -33,12 +48,13 @@ class TestFullAPIWorkflow:
 
         data = response.json()
         assert "data" in data
-        assert "segments" in data["data"]
-        assert isinstance(data["data"]["segments"], list)
-        assert len(data["data"]["segments"]) == 7  # 3 backbone + 4 coupling segments
+        assert "result" in data["data"]
+        assert "robot_positions" in data["data"]["result"]
+        assert isinstance(data["data"]["result"]["robot_positions"], list)
+        assert len(data["data"]["result"]["robot_positions"]) == 7  # 3 backbone + 4 coupling segments
 
         # Step 4: Verify segment structure
-        for segment in data["data"]["segments"]:
+        for segment in data["data"]["result"]["robot_positions"]:
             assert isinstance(segment, list)
             assert len(segment) > 0
             for point in segment:
@@ -57,12 +73,13 @@ class TestFullAPIWorkflow:
         }
 
         # First request - should compute and cache
-        response1 = self.client.post("/pcc", json=payload)
+        payload = self._add_tendon_config(payload)
+        response1 = self.client.post("/kinematics", json=payload)
         assert response1.status_code == 200
         data1 = response1.json()
 
         # Second request - should use cache
-        response2 = self.client.post("/pcc", json=payload)
+        response2 = self.client.post("/kinematics", json=payload)
         assert response2.status_code == 200
         data2 = response2.json()
 
@@ -84,14 +101,15 @@ class TestFullAPIWorkflow:
         }
 
         # First request with complex payload
+        complex_payload = self._add_tendon_config(complex_payload)
         start_time = time.time()
-        response3 = self.client.post("/pcc", json=complex_payload)
+        response3 = self.client.post("/kinematics", json=complex_payload)
         first_complex_time = time.time() - start_time
         assert response3.status_code == 200
 
         # Second request with same complex payload (should be cached)
         start_time = time.time()
-        response4 = self.client.post("/pcc", json=complex_payload)
+        response4 = self.client.post("/kinematics", json=complex_payload)
         second_complex_time = time.time() - start_time
         assert response4.status_code == 200
 
@@ -138,12 +156,14 @@ class TestFullAPIWorkflow:
         ]
 
         for test_case in test_cases:
-            response = self.client.post("/pcc", json=test_case["payload"])
+            payload = self._add_tendon_config(test_case["payload"].copy())
+            response = self.client.post("/kinematics", json=payload)
             assert response.status_code == 200, f"Failed for {test_case['name']}"
             data = response.json()
             assert "data" in data
-            assert "segments" in data["data"], f"Failed for {test_case['name']}"
-            assert len(data["data"]["segments"]) > 0, f"Failed for {test_case['name']}"
+            assert "result" in data["data"], f"Failed for {test_case['name']}"
+            assert "robot_positions" in data["data"]["result"], f"Failed for {test_case['name']}"
+            assert len(data["data"]["result"]["robot_positions"]) > 0, f"Failed for {test_case['name']}"
 
     def test_workflow_error_handling(self):
         """Test error handling throughout the workflow."""
@@ -185,7 +205,8 @@ class TestFullAPIWorkflow:
         ]
 
         for test_case in invalid_payloads:
-            response = self.client.post("/pcc", json=test_case["payload"])
+            payload = self._add_tendon_config(test_case["payload"].copy())
+            response = self.client.post("/kinematics", json=payload)
             assert (
                 response.status_code == test_case["expected_status"]
             ), f"Failed for {test_case['name']}"
@@ -193,7 +214,7 @@ class TestFullAPIWorkflow:
     def test_workflow_with_cors(self):
         """Test CORS handling in the workflow."""
         # Test OPTIONS request
-        response = self.client.options("/pcc")
+        response = self.client.options("/kinematics")
         assert response.status_code == 200
         assert "Access-Control-Allow-Origin" in response.headers
         assert "Access-Control-Allow-Methods" in response.headers
@@ -207,8 +228,9 @@ class TestFullAPIWorkflow:
             "coupling_lengths": [0.03, 0.03, 0.03, 0.015],
             "discretization_steps": 10,
         }
+        payload = self._add_tendon_config(payload)
 
-        response = self.client.post("/pcc", json=payload)
+        response = self.client.post("/kinematics", json=payload)
         assert response.status_code == 200
 
     def test_workflow_performance(self):
@@ -250,8 +272,9 @@ class TestFullAPIWorkflow:
         ]
 
         for test_case in performance_tests:
+            payload = self._add_tendon_config(test_case["payload"].copy())
             start_time = time.time()
-            response = self.client.post("/pcc", json=test_case["payload"])
+            response = self.client.post("/kinematics", json=payload)
             execution_time = time.time() - start_time
 
             assert response.status_code == 200, f"Failed for {test_case['name']}"
@@ -275,9 +298,10 @@ class TestFullAPIWorkflow:
         results = queue.Queue()
         errors = queue.Queue()
 
+        payload = self._add_tendon_config(payload)
         def make_request():
             try:
-                response = self.client.post("/pcc", json=payload)
+                response = self.client.post("/kinematics", json=payload)
                 results.put((response.status_code, response.json()))
             except Exception as e:
                 errors.put(e)
@@ -302,20 +326,21 @@ class TestFullAPIWorkflow:
             status_code, data = results.get()
             assert status_code == 200
             assert "data" in data
-        assert "segments" in data["data"]
+            assert "result" in data["data"]
+            assert "robot_positions" in data["data"]["result"]
 
     def test_workflow_with_malformed_json(self):
         """Test workflow with malformed JSON requests."""
         # Test with invalid JSON
         response = self.client.post(
-            "/pcc",
+            "/kinematics",
             data="invalid json",
             headers={"Content-Type": "application/json"},
         )
         assert response.status_code == 422
 
         # Test with empty body
-        response = self.client.post("/pcc", data="")
+        response = self.client.post("/kinematics", data="")
         assert response.status_code == 422
 
     def test_workflow_with_large_payload(self):
@@ -329,13 +354,15 @@ class TestFullAPIWorkflow:
             "discretization_steps": 100,
         }
 
-        response = self.client.post("/pcc", json=payload)
+        payload = self._add_tendon_config(payload)
+        response = self.client.post("/kinematics", json=payload)
         assert response.status_code == 200
         data = response.json()
         assert "data" in data
-        assert "segments" in data["data"]
+        assert "result" in data["data"]
+        assert "robot_positions" in data["data"]["result"]
         # 20 backbone + 21 coupling segments
-        assert len(data["data"]["segments"]) == 41
+        assert len(data["data"]["result"]["robot_positions"]) == 41
 
     def test_workflow_cache_invalidation(self):
         """Test that cache works correctly with different parameters."""
@@ -348,7 +375,8 @@ class TestFullAPIWorkflow:
         }
 
         # First request
-        response1 = self.client.post("/pcc", json=base_payload)
+        base_payload = self._add_tendon_config(base_payload)
+        response1 = self.client.post("/kinematics", json=base_payload)
         assert response1.status_code == 200
         data1 = response1.json()
 
@@ -357,7 +385,7 @@ class TestFullAPIWorkflow:
         # Slightly different
         modified_payload["bending_angles"] = [0.11, 0.2, 0.3]
 
-        response2 = self.client.post("/pcc", json=modified_payload)
+        response2 = self.client.post("/kinematics", json=modified_payload)
         assert response2.status_code == 200
         data2 = response2.json()
 
@@ -365,7 +393,7 @@ class TestFullAPIWorkflow:
         assert data1 != data2
 
         # Original payload should still use cache
-        response3 = self.client.post("/pcc", json=base_payload)
+        response3 = self.client.post("/kinematics", json=base_payload)
         assert response3.status_code == 200
         data3 = response3.json()
         # Results should be identical (excluding timestamp)
@@ -413,12 +441,14 @@ class TestFullAPIWorkflow:
         ]
 
         for test_case in edge_cases:
-            response = self.client.post("/pcc", json=test_case["payload"])
+            payload = self._add_tendon_config(test_case["payload"].copy())
+            response = self.client.post("/kinematics", json=payload)
             assert response.status_code == 200, f"Failed for {test_case['name']}"
             data = response.json()
             assert "data" in data
-            assert "segments" in data["data"], f"Failed for {test_case['name']}"
-            assert len(data["data"]["segments"]) > 0, f"Failed for {test_case['name']}"
+            assert "result" in data["data"], f"Failed for {test_case['name']}"
+            assert "robot_positions" in data["data"]["result"], f"Failed for {test_case['name']}"
+            assert len(data["data"]["result"]["robot_positions"]) > 0, f"Failed for {test_case['name']}"
 
     def test_workflow_api_documentation(self):
         """Test that API documentation is accessible."""
@@ -427,7 +457,7 @@ class TestFullAPIWorkflow:
         assert response.status_code == 200
         schema = response.json()
         assert "paths" in schema
-        assert "/pcc" in schema["paths"]
+        assert "/kinematics" in schema["paths"]
 
         # Test docs endpoint
         response = self.client.get("/docs")

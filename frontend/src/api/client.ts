@@ -257,16 +257,6 @@ function handleResponseError(error: {
 
 // API methods with retry support
 export const robotAPI = {
-  computePCC: async (
-    params: PCCParams,
-    retryConfig?: Partial<RetryConfig>
-  ): Promise<PCCResponse> => {
-    return withRetry(async () => {
-      const client = getApiClient();
-      const response = await client.post('/pcc', params);
-      return response.data as PCCResponse;
-    }, retryConfig);
-  },
   computeKinematics: async (
     params: PCCParams,
     retryConfig?: Partial<RetryConfig>

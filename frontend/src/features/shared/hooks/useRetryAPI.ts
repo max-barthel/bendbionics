@@ -49,7 +49,7 @@ export function useRetryAPI<T = PCCResponse>(
       const config = { ...defaultRetryConfig, ...initialRetryConfig, ...retryConfig };
 
       const result = await executeAsync(async () => {
-        return (await robotAPI.computePCC(params, config)) as T;
+        return (await robotAPI.computeKinematics(params, config)) as T;
       });
 
       return result ?? null;
