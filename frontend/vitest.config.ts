@@ -99,7 +99,9 @@ export default defineConfig({
       },
     },
     // Enhanced reporting
-    reporters: ['verbose', 'html', 'json'],
+    // Disable HTML reporter in CI to prevent process from hanging
+    reporters:
+      process.env.CI === 'true' ? ['verbose', 'json'] : ['verbose', 'html', 'json'],
     outputFile: {
       html: './test-results/index.html',
       json: './test-results/results.json',

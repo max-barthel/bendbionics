@@ -29,6 +29,7 @@ on:
 env:
     BUN_VERSION: "latest"
     PYTHON_VERSION: "3.11"
+    CI: "true"
     # Server configuration (matches deploy-workflow.sh)
     SERVER_USER: "serveruser"
     SERVER_HOST: "bendbionics"
