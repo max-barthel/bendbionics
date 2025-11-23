@@ -151,9 +151,22 @@ copy_application_files() {
     # Copy backend files
     if [ -d "$SCRIPT_DIR/backend" ]; then
         cp -r "$SCRIPT_DIR/backend"/* "$APP_DIR/backend/"
-        # Copy hidden files (like .env files)
-        cp -r "$SCRIPT_DIR/backend"/.* "$APP_DIR/backend/" 2>/dev/null || true
-        print_status "Backend files copied"
+        # Copy hidden files (but exclude .env files - those are managed by setup_environment)
+        # Loop through hidden files and copy them, excluding .env* files
+        for hidden_file in "$SCRIPT_DIR/backend"/.*; do
+            # Skip .env* files and the . and .. entries
+            if [[ "$(basename "$hidden_file")" =~ ^\.env ]] || [[ "$(basename "$hidden_file")" == "." ]] || [[ "$(basename "$hidden_file")" == ".." ]]; then
+                continue
+            fi
+            if [ -e "$hidden_file" ]; then
+                if [ -d "$hidden_file" ]; then
+                    cp -r "$hidden_file" "$APP_DIR/backend/"
+                else
+                    cp "$hidden_file" "$APP_DIR/backend/"
+                fi
+            fi
+        done 2>/dev/null || true
+        print_status "Backend files copied (excluding .env files - managed separately)"
     else
         print_error "Backend directory not found in deployment package"
         exit 1
@@ -265,78 +278,86 @@ setup_environment() {
     NEW_ENV_FILE="$SCRIPT_DIR/backend/.env.production"
     # Path to existing .env.production on server (has DATABASE_URL and SECRET_KEY)
     EXISTING_ENV_FILE="$APP_DIR/backend/.env.production"
+    # Path to setup-postgres.sh in deployment package
+    SETUP_POSTGRES_SCRIPT="$SCRIPT_DIR/setup-postgres.sh"
 
-    # Check if this is first-time deployment or if database config is missing
+    # Check if environment file exists and has required values
+    NEEDS_SETUP=false
     if [ ! -f "$EXISTING_ENV_FILE" ]; then
-        print_error "Server .env.production file not found!"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "📋 First-Time PostgreSQL Setup Required"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo "This appears to be your first deployment. You need to:"
-        echo ""
-        echo "1. Set up PostgreSQL database and credentials:"
-        echo "   Run the setup script from your deployment package:"
-        echo ""
-        echo "   cd /tmp/$(basename $SCRIPT_DIR)"
-        echo "   sudo bash setup-postgres.sh"
-        echo ""
-        echo "2. Then run this deployment script again:"
-        echo "   sudo ./deploy.sh"
-        echo ""
-        echo "The setup script will:"
-        echo "  • Install and configure PostgreSQL"
-        echo "  • Create database and user with secure credentials"
-        echo "  • Generate .env.production with database configuration"
-        echo "  • Save credentials securely"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        exit 1
+        print_status "Environment file not found - first-time deployment detected"
+        NEEDS_SETUP=true
+    else
+        # Backup existing environment file before checking
+        cp "$EXISTING_ENV_FILE" "$EXISTING_ENV_FILE.backup.$(date +%Y%m%d-%H%M%S)"
+        print_status "Backed up existing environment file"
+
+        # Extract critical server settings (DATABASE_URL and SECRET_KEY)
+        # Handle various formats: with/without quotes, with/without spaces
+        DATABASE_URL=$(grep -E "^[[:space:]]*DATABASE_URL[[:space:]]*=" "$EXISTING_ENV_FILE" | grep -v "^[[:space:]]*#" | head -1 | sed -E 's/^[[:space:]]*DATABASE_URL[[:space:]]*=[[:space:]]*//' | sed -E 's/^["'\'']|["'\'']$//g')
+        SECRET_KEY=$(grep -E "^[[:space:]]*SECRET_KEY[[:space:]]*=" "$EXISTING_ENV_FILE" | grep -v "^[[:space:]]*#" | head -1 | sed -E 's/^[[:space:]]*SECRET_KEY[[:space:]]*=[[:space:]]*//' | sed -E 's/^["'\'']|["'\'']$//g')
+
+        if [ -z "$DATABASE_URL" ] || [ -z "$SECRET_KEY" ]; then
+            print_warning "Environment file exists but is missing DATABASE_URL or SECRET_KEY"
+            NEEDS_SETUP=true
+        fi
     fi
 
-    # Backup existing environment file
-    cp "$EXISTING_ENV_FILE" "$EXISTING_ENV_FILE.backup.$(date +%Y%m%d-%H%M%S)"
-    print_status "Backed up existing environment file"
+    # If setup is needed, try to run setup-postgres.sh automatically
+    if [ "$NEEDS_SETUP" = true ]; then
+        if [ -f "$SETUP_POSTGRES_SCRIPT" ]; then
+            print_status "Running PostgreSQL setup script automatically..."
+            print_status "This will install PostgreSQL (if needed) and create database configuration"
 
-    # Extract critical server settings (DATABASE_URL and SECRET_KEY)
-    # Handle various formats: with/without quotes, with/without spaces
-    DATABASE_URL=$(grep -E "^[[:space:]]*DATABASE_URL[[:space:]]*=" "$EXISTING_ENV_FILE" | grep -v "^[[:space:]]*#" | head -1 | sed -E 's/^[[:space:]]*DATABASE_URL[[:space:]]*=[[:space:]]*//' | sed -E 's/^["'\'']|["'\'']$//g')
-    SECRET_KEY=$(grep -E "^[[:space:]]*SECRET_KEY[[:space:]]*=" "$EXISTING_ENV_FILE" | grep -v "^[[:space:]]*#" | head -1 | sed -E 's/^[[:space:]]*SECRET_KEY[[:space:]]*=[[:space:]]*//' | sed -E 's/^["'\'']|["'\'']$//g')
+            # Run setup-postgres.sh
+            bash "$SETUP_POSTGRES_SCRIPT"
+            SETUP_RESULT=$?
 
-    if [ -z "$DATABASE_URL" ] || [ -z "$SECRET_KEY" ]; then
-        print_error "DATABASE_URL or SECRET_KEY not found in environment file"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "📋 PostgreSQL Database Setup Required"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        echo "The environment file exists but is missing database configuration."
-        echo "This usually means setup-postgres.sh hasn't been run yet."
-        echo ""
-        echo "To fix this:"
-        echo ""
-        echo "1. Set up PostgreSQL database and credentials:"
-        echo "   Run the setup script from your deployment package:"
-        echo ""
-        echo "   cd /tmp/$(basename $SCRIPT_DIR)"
-        echo "   sudo bash setup-postgres.sh"
-        echo ""
-        echo "2. Then run this deployment script again:"
-        echo "   sudo ./deploy.sh"
-        echo ""
-        echo "The setup script will:"
-        echo "  • Install and configure PostgreSQL (if not already installed)"
-        echo "  • Create database and user with secure credentials"
-        echo "  • Add DATABASE_URL and SECRET_KEY to .env.production"
-        echo "  • Save credentials securely"
-        echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo ""
-        print_status "Current environment file location: $EXISTING_ENV_FILE"
-        print_status "First 10 lines of environment file:"
-        head -10 "$EXISTING_ENV_FILE" | sed 's/^/  /'
-        exit 1
+            if [ $SETUP_RESULT -ne 0 ]; then
+                print_error "PostgreSQL setup script failed with exit code $SETUP_RESULT"
+                exit 1
+            fi
+
+            print_success "PostgreSQL setup completed successfully"
+
+            # Verify the environment file was created and has required values
+            if [ ! -f "$EXISTING_ENV_FILE" ]; then
+                print_error "Environment file was not created by setup-postgres.sh"
+                exit 1
+            fi
+
+            # Re-extract values after setup
+            DATABASE_URL=$(grep -E "^[[:space:]]*DATABASE_URL[[:space:]]*=" "$EXISTING_ENV_FILE" | grep -v "^[[:space:]]*#" | head -1 | sed -E 's/^[[:space:]]*DATABASE_URL[[:space:]]*=[[:space:]]*//' | sed -E 's/^["'\'']|["'\'']$//g')
+            SECRET_KEY=$(grep -E "^[[:space:]]*SECRET_KEY[[:space:]]*=" "$EXISTING_ENV_FILE" | grep -v "^[[:space:]]*#" | head -1 | sed -E 's/^[[:space:]]*SECRET_KEY[[:space:]]*=[[:space:]]*//' | sed -E 's/^["'\'']|["'\'']$//g')
+
+            if [ -z "$DATABASE_URL" ] || [ -z "$SECRET_KEY" ]; then
+                print_error "Environment file still missing DATABASE_URL or SECRET_KEY after setup"
+                print_status "Current environment file location: $EXISTING_ENV_FILE"
+                print_status "First 10 lines of environment file:"
+                head -10 "$EXISTING_ENV_FILE" | sed 's/^/  /'
+                exit 1
+            fi
+        else
+            # setup-postgres.sh not found - show error message
+            print_error "PostgreSQL setup required but setup-postgres.sh not found in deployment package"
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            if [ ! -f "$EXISTING_ENV_FILE" ]; then
+                echo "📋 First-Time PostgreSQL Setup Required"
+            else
+                echo "📋 PostgreSQL Database Setup Required"
+            fi
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "The environment file is missing or incomplete, but setup-postgres.sh"
+            echo "was not found in the deployment package."
+            echo ""
+            if [ -f "$EXISTING_ENV_FILE" ]; then
+                print_status "Current environment file location: $EXISTING_ENV_FILE"
+                print_status "First 10 lines of environment file:"
+                head -10 "$EXISTING_ENV_FILE" | sed 's/^/  /'
+            fi
+            exit 1
+        fi
     fi
 
     # Check if deployment package has new .env.production with email config
