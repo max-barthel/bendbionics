@@ -11,6 +11,7 @@ export function SidebarToggle() {
       onClick={appState.toggleSidebar}
       aria-label={appState.sidebarCollapsed ? 'Show parameters' : 'Hide parameters'}
       size="md"
+      data-testid="sidebar-toggle"
       className={`fixed top-1/2 transform -translate-y-1/2 z-50 ${
         appState.sidebarCollapsed
           ? 'left-4 translate-x-0'

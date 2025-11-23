@@ -24,6 +24,29 @@ check_directory() {
     fi
 }
 
+# Function to ensure bun is available in PATH
+ensure_bun_in_path() {
+    # Check if bun is already in PATH
+    if command -v bun &> /dev/null; then
+        return 0
+    fi
+
+    # Simple fallback: add ~/.bun/bin to PATH if bun binary exists there
+    if [ -f "$HOME/.bun/bin/bun" ]; then
+        export PATH="$HOME/.bun/bin:$PATH"
+        if command -v bun &> /dev/null; then
+            return 0
+        fi
+    fi
+
+    # If we get here, bun is not found
+    print_error "Bun is not installed or not in PATH"
+    print_error "Install from https://bun.sh"
+    print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
+    print_error "If bun is installed, ensure ~/.zshenv includes: export PATH=\"\$HOME/.bun/bin:\$PATH\""
+    exit 1
+}
+
 # Core functions - leveraging existing Bun scripts
 run_frontend() {
     local cmd="$1"
@@ -137,6 +160,7 @@ productivity_todos() {
 
 # Main script logic
 check_directory
+ensure_bun_in_path
 
 # Normalize legacy arg order (e.g., "./toolkit.sh all test")
 if [ "${1:-}" = "all" ] && [ -n "${2:-}" ]; then

@@ -2,6 +2,7 @@
   "name": "bendbionics",
   "version": "1.0.0",
   "description": "Soft Robot Simulation Platform",
+  "packageManager": "bun@1.3.3",
   "scripts": {
     "prepare": "husky",
     "setup": "./scripts/setup.sh",

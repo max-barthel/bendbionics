@@ -15,13 +15,13 @@ export default defineConfig({
   testDir: './e2e',
 
   /* Timeout Configuration */
-  /** Maximum time one test can run for (default: 30s) */
-  timeout: 30 * 1000,
+  /** Maximum time one test can run for (increased for lazy-loaded components) */
+  timeout: 60 * 1000, // 60 seconds to accommodate lazy-loaded 3D visualizer
   /** Maximum time the whole test run can take */
   globalTimeout: 60 * 60 * 1000, // 1 hour
-  /** Maximum time expect() can wait for assertion */
+  /** Maximum time expect() can wait for assertion (increased for lazy-loaded components) */
   expect: {
-    timeout: 5 * 1000,
+    timeout: 15 * 1000, // 15 seconds to match our test waits for lazy-loaded components
     /** Threshold for visual regression tests (0.2 = 20% pixel difference allowed) */
     toHaveScreenshot: {
       threshold: 0.2,
@@ -118,8 +118,12 @@ export default defineConfig({
 
   /* Local Development Server Configuration */
   webServer: {
-    /** Command to start the development server */
-    command: 'bun run dev',
+    /** Command to start the development server
+     * Uses zsh which sources ~/.zshenv where bun PATH is configured
+     */
+    command: process.platform === 'win32'
+      ? 'bun run dev'
+      : `zsh -c 'bun run dev'`,
     /** URL to check if server is ready */
     url: BASE_URL,
     /** Reuse existing server if available (not on CI) */
