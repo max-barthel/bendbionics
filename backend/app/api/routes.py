@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi.responses import Response
 
 from app.api.responses import success_response
@@ -19,18 +19,6 @@ async def run_kinematics(params: PCCParams):
     return success_response(
         data={"result": result_serializable},
         message="Kinematics computation completed successfully",
-    )
-
-
-@router.get("/kinematics")
-async def get_kinematics():
-    """Handle GET requests to /kinematics endpoint.
-
-    This endpoint only accepts POST requests. GET requests return 405 Method Not Allowed.
-    """
-    raise HTTPException(
-        status_code=405,
-        detail="Method not allowed. This endpoint only accepts POST requests. Use POST /kinematics to compute robot kinematics with tendon analysis.",
     )
 
 

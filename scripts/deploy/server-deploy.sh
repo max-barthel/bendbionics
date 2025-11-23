@@ -240,7 +240,7 @@ setup_python_environment() {
 
     # Create virtual environment with uv
     print_status "Creating virtual environment with uv..."
-    uv venv
+    uv venv --clear
 
     # Install Python dependencies from pyproject.toml
     print_status "Installing Python dependencies with uv..."
@@ -462,7 +462,7 @@ server {
     }
 
     # Proxy all requests to backend (backend handles routing)
-    location ~ ^/(api|pcc|kinematics|auth|presets|tendons|docs|openapi\.json|redoc) {
+    location ~ ^/(api|kinematics|auth|presets|tendons|docs|openapi\.json|redoc) {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -518,7 +518,7 @@ server {
     }
 
     # Proxy all API requests to backend (backend handles routing)
-    location ~ ^/(api|pcc|auth|presets|tendons|docs|openapi\.json|redoc) {
+    location ~ ^/(api|kinematics|auth|presets|tendons|docs|openapi\.json|redoc) {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -593,7 +593,7 @@ server {
     }
 
     # Proxy all API requests to backend (backend handles routing)
-    location ~ ^/(api|pcc|auth|presets|tendons|docs|openapi\.json|redoc) {
+    location ~ ^/(api|kinematics|auth|presets|tendons|docs|openapi\.json|redoc) {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
