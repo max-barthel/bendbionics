@@ -6,6 +6,7 @@ import {
   UploadIcon,
 } from '@/components/icons';
 import { Button, SliderInput, SubsectionTitle, Typography } from '@/components/ui';
+import { DEFAULT_TENDON_RADIUS } from '@/constants/app';
 import ArrayInputGroup from '@/features/robot-config/components/ArrayInputGroup';
 import { CollapsibleSection } from '@/features/shared/components/CollapsibleSection';
 import { TendonConfigPanel } from '@/features/visualization/components/TendonConfigPanel';
@@ -142,10 +143,11 @@ export const RobotSetupTab: React.FC<RobotSetupTabProps> = ({
           tendonConfig={
             robotState.tendonConfig ?? {
               count: 3,
-              radius: 0.01,
+              radius: new Array(robotState.segments + 1).fill(DEFAULT_TENDON_RADIUS),
             }
           }
           onConfigChange={tendonConfig => updateRobotState({ tendonConfig })}
+          segments={robotState.segments}
           {...(onFieldCommit && { onFieldCommit })}
         />
       </CollapsibleSection>

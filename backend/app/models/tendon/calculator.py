@@ -6,6 +6,8 @@ from typing import Any, Dict, List
 
 import numpy as np
 
+from app.api.responses import ValidationError
+
 from .eyelet_math import compute_eyelets_from_origin
 from .types import TendonConfig
 
@@ -114,14 +116,29 @@ class TendonCalculator:
         num_elements = len(coupling_transforms)
         num_tendons = self.config.count
 
+        # Validate radius array length matches number of coupling elements
+        if len(self.config.radius) != num_elements:
+            msg = (
+                f"Radius array length ({len(self.config.radius)}) must match "
+                f"number of coupling elements ({num_elements})"
+            )
+            raise ValidationError(
+                msg,
+                details={
+                    "radius_array_length": len(self.config.radius),
+                    "coupling_elements_count": num_elements,
+                },
+            )
+
         routing_points = np.zeros((num_elements, num_tendons, 3))
 
         for i in range(num_elements):
             origin_matrix = coupling_transforms[i]
 
             # Compute eyelet transformation matrices using new eyelet math
+            # Use radius[i] for each coupling element
             eyelet_matrices = compute_eyelets_from_origin(
-                origin_matrix, num_tendons, self.config.radius
+                origin_matrix, num_tendons, self.config.radius[i]
             )
 
             # Extract positions from eyelet transformation matrices

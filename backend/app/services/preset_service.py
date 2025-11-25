@@ -1,12 +1,12 @@
 """Preset service for preset-related database operations."""
 
-import json
 from typing import List, Optional
 
 from sqlmodel import Session, select
 
 from app.models.preset import Preset, PresetCreate, PresetResponse, PresetUpdate
 from app.services.db_helpers import save_and_refresh
+from app.utils.preset_helpers import extract_preset_metadata, normalize_tendon_radius
 
 
 def create_preset(session: Session, preset_data: PresetCreate, user_id: int) -> Preset:
@@ -20,11 +20,17 @@ def create_preset(session: Session, preset_data: PresetCreate, user_id: int) -> 
     Returns:
         Created Preset instance
     """
+    # Normalize configuration
+    normalized_config = normalize_tendon_radius(preset_data.configuration)
+    segments, tendon_count = extract_preset_metadata(normalized_config)
+
     preset = Preset(
         name=preset_data.name,
         description=preset_data.description,
         is_public=preset_data.is_public,
-        configuration=json.dumps(preset_data.configuration),
+        configuration=normalized_config,
+        segments=segments,
+        tendon_count=tendon_count,
         user_id=user_id,
     )
 
@@ -113,7 +119,12 @@ def update_preset(
     if preset_data.is_public is not None:
         preset.is_public = preset_data.is_public
     if preset_data.configuration is not None:
-        preset.configuration = json.dumps(preset_data.configuration)
+        # Normalize configuration and update metadata
+        normalized_config = normalize_tendon_radius(preset_data.configuration)
+        preset.configuration = normalized_config
+        segments, tendon_count = extract_preset_metadata(normalized_config)
+        preset.segments = segments
+        preset.tendon_count = tendon_count
 
     return save_and_refresh(session, preset)
 

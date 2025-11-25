@@ -1,19 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { SliderInput, SubsectionTitle } from '@/components/ui';
+import ArrayInputGroup from '@/features/robot-config/components/ArrayInputGroup';
 import type { TendonConfig } from '@/types';
-import {
-  NumberInput,
-  SliderInput,
-  SubsectionTitle,
-  UnitSelector,
-} from '@/components/ui';
-
-type LengthUnit = 'mm' | 'cm' | 'm';
+import { ensureValidTendonConfig } from '@/utils/tendon-helpers';
+import React, { useEffect, useState } from 'react';
 
 interface TendonConfigPanelProps {
   tendonConfig: TendonConfig;
   onConfigChange: (config: TendonConfig) => void;
   className?: string;
   onFieldCommit?: () => void;
+  segments?: number;
 }
 
 export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
@@ -21,52 +17,34 @@ export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
   onConfigChange,
   className = '',
   onFieldCommit,
+  segments,
 }) => {
-  const [localConfig, setLocalConfig] = useState<TendonConfig>(tendonConfig);
-  const [radiusUnit, setRadiusUnit] = useState<LengthUnit>('mm');
-  const lengthUnits: readonly LengthUnit[] = ['mm', 'cm', 'm'];
+  const couplingCount = segments ? segments + 1 : tendonConfig.radius?.length || 6;
 
-  // Update local config when prop changes
+  const [localConfig, setLocalConfig] = useState<TendonConfig>(
+    ensureValidTendonConfig(tendonConfig, couplingCount)
+  );
+
+  // Update local config when prop or segments change
   useEffect(() => {
-    setLocalConfig(tendonConfig);
-  }, [tendonConfig]);
+    const validConfig = ensureValidTendonConfig(tendonConfig, couplingCount);
+    const wasInvalid =
+      !Array.isArray(tendonConfig.radius) ||
+      tendonConfig.radius.length !== validConfig.radius.length;
 
-  const handleConfigChange = (field: keyof TendonConfig, value: number) => {
+    setLocalConfig(validConfig);
+
+    // If the config was corrected, notify parent (only once to avoid loops)
+    if (wasInvalid) {
+      onConfigChange(validConfig);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tendonConfig, segments]);
+
+  const handleConfigChange = (field: keyof TendonConfig, value: number | number[]) => {
     const newConfig = { ...localConfig, [field]: value };
     setLocalConfig(newConfig);
     onConfigChange(newConfig);
-  };
-
-  // Unit conversion functions
-  const convertToSI = (value: number, unit: LengthUnit) => {
-    switch (unit) {
-      case 'mm':
-        return value / 1000;
-      case 'cm':
-        return value / 100;
-      case 'm':
-        return value;
-      default:
-        return value;
-    }
-  };
-
-  const convertFromSI = (value: number, unit: LengthUnit) => {
-    switch (unit) {
-      case 'mm':
-        return value * 1000;
-      case 'cm':
-        return value * 100;
-      case 'm':
-        return value;
-      default:
-        return value;
-    }
-  };
-
-  const handleRadiusChange = (value: number) => {
-    const siValue = convertToSI(value, radiusUnit);
-    handleConfigChange('radius', siValue);
   };
 
   return (
@@ -86,29 +64,19 @@ export const TendonConfigPanel: React.FC<TendonConfigPanelProps> = ({
         />
       </div>
 
-      {/* Radius - using ArrayInputGroup style with unit switching */}
+      {/* Radius - using ArrayInputGroup like coupling lengths */}
       <div className="space-y-3">
         <SubsectionTitle
-          title="Radius"
-          description="Distance from center to tendon eyelets"
+          title="Tendon Radii"
+          description="Distance from center to tendon eyelets for each coupling"
         />
-
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <NumberInput
-              value={convertFromSI(localConfig.radius, radiusUnit)}
-              onChange={handleRadiusChange}
-              {...(onFieldCommit && { onBlur: onFieldCommit })}
-              placeholder="Radius"
-            />
-            <UnitSelector
-              units={lengthUnits}
-              selectedUnit={radiusUnit}
-              onUnitChange={setRadiusUnit}
-              ariaLabel="Radius"
-            />
-          </div>
-        </div>
+        <ArrayInputGroup
+          label=""
+          values={localConfig.radius}
+          onChange={radius => handleConfigChange('radius', radius)}
+          mode="length"
+          {...(onFieldCommit && { onFieldCommit })}
+        />
       </div>
     </div>
   );

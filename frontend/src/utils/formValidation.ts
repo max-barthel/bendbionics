@@ -55,14 +55,33 @@ const validateTendonConfig = (
     return false;
   }
 
-  if (radius <= 0) {
-    showError('validation', 'Tendon radius must be positive.');
+  // Validate radius array
+  if (!Array.isArray(radius)) {
+    showError('validation', 'Tendon radius must be an array.');
     return false;
   }
 
-  if (radius > 0.1) {
-    showError('validation', 'Radius cannot exceed 10cm.');
+  if (radius.length === 0) {
+    showError('validation', 'Tendon radius array cannot be empty.');
     return false;
+  }
+
+  for (let i = 0; i < radius.length; i++) {
+    const radiusValue = radius[i];
+    if (radiusValue === undefined) {
+      showError('validation', `Tendon radius[${i}] is missing.`);
+      return false;
+    }
+
+    if (radiusValue <= 0) {
+      showError('validation', `Tendon radius[${i}] must be positive.`);
+      return false;
+    }
+
+    if (radiusValue > 1) {
+      showError('validation', `Radius[${i}] cannot exceed 1m.`);
+      return false;
+    }
   }
 
   return true;

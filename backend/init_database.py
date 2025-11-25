@@ -10,21 +10,23 @@ from pathlib import Path
 # Add the app directory to the Python path
 sys.path.append(str(Path(__file__).parent))
 
+from sqlmodel import SQLModel
+
 from app.database import engine
 from app.utils.logging import logger
-from sqlmodel import SQLModel, text
 
 
 def check_database_exists():
     """Check if database tables already exist"""
     try:
-        from app.database import engine
         from sqlalchemy import inspect
-        
+
+        from app.database import engine
+
         # Use inspector to check if tables exist
         inspector = inspect(engine)
         tables = inspector.get_table_names()
-        return 'user' in tables
+        return "user" in tables
 
     except Exception:
         return False
@@ -58,82 +60,23 @@ def create_database():
 
 
 def run_migrations():
-    """Run database migrations for schema changes"""
-    logger.info("🔄 Checking for required migrations...")
+    """Run database migrations for schema changes using migrate.py"""
+    logger.info("🔄 Running database migrations...")
 
     try:
-        from app.database import engine
-        from sqlalchemy import inspect
-        
-        # Use inspector to check table structure
-        inspector = inspect(engine)
-        tables = inspector.get_table_names()
-        
-        # Only run migrations if table exists
-        if 'user' not in tables:
-            logger.info("✅ Fresh database - all tables created with correct schema")
+        # Import and run migrations from migrate.py
+        from migrate import run_migrations as run_migration_script
+
+        if run_migration_script():
+            logger.info("✅ Migrations completed successfully")
             return True
-        
-        # Check existing columns
-        columns = inspector.get_columns('user')
-        existing_columns = [col['name'] for col in columns]
-        
-        required_email_fields = [
-            "email", "email_verified", "email_verification_token",
-            "email_verification_token_expires", "password_reset_token",
-            "password_reset_token_expires"
-        ]
-
-        missing_fields = [field for field in required_email_fields
-                         if field not in existing_columns]
-
-        if missing_fields:
-            logger.warning(f"⚠️  Missing email verification fields: {missing_fields}")
-            logger.info("🔄 Running migration to add email verification fields...")
-
-            from app.database import get_session
-            session = next(get_session())
-
-            # Add missing email fields
-            for field in missing_fields:
-                if field == "email":
-                    session.execute(text(
-                        'ALTER TABLE "user" ADD COLUMN email VARCHAR UNIQUE'
-                    ))
-                elif field == "email_verified":
-                    session.execute(text(
-                        'ALTER TABLE "user" ADD COLUMN email_verified '
-                        'BOOLEAN DEFAULT FALSE'
-                    ))
-                elif field == "email_verification_token":
-                    session.execute(text(
-                        'ALTER TABLE "user" ADD COLUMN email_verification_token VARCHAR'
-                    ))
-                elif field == "email_verification_token_expires":
-                    session.execute(text(
-                        'ALTER TABLE "user" ADD COLUMN '
-                        'email_verification_token_expires TIMESTAMP'
-                    ))
-                elif field == "password_reset_token":
-                    session.execute(text(
-                        'ALTER TABLE "user" ADD COLUMN password_reset_token VARCHAR'
-                    ))
-                elif field == "password_reset_token_expires":
-                    session.execute(text(
-                        'ALTER TABLE "user" ADD COLUMN '
-                        'password_reset_token_expires TIMESTAMP'
-                    ))
-
-            session.commit()
-            session.close()
-            logger.info("✅ Email verification fields migration completed!")
-        else:
-            logger.info("✅ All required fields present - no migration needed")
-
-        return True
+        logger.error("❌ Migrations failed")
+        return False
 
     except Exception as e:
         logger.error(f"❌ Error running migrations: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
         return False
 
 
@@ -142,8 +85,9 @@ def verify_database():
     logger.info("\n🔍 Verifying database structure...")
 
     try:
-        from app.database import get_session
         from sqlmodel import text
+
+        from app.database import get_session
 
         session = next(get_session())
 

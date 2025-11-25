@@ -10,17 +10,29 @@ from pathlib import Path
 # Add the app directory to the Python path
 sys.path.append(str(Path(__file__).parent))
 
+from sqlmodel import SQLModel
+
 from app.database import engine
 from app.utils.logging import logger
-from sqlmodel import SQLModel
 
 
 def create_database():
-    """Create all database tables for development"""
-    logger.info("🚀 Setting up BendBionics development database...")
+    """Create all database tables for development (idempotent)"""
+    logger.info("🔍 Checking database state...")
 
     try:
-        # Create all tables
+        from sqlalchemy import inspect
+
+        # Use inspector to check if tables exist
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+
+        if "user" in tables:
+            logger.info("✅ Database tables already exist - skipping creation")
+            return True
+
+        logger.info("Creating BendBionics development database tables...")
+        # Create all tables (SQLModel.create_all is idempotent)
         SQLModel.metadata.create_all(engine)
         logger.info("✅ Database tables created successfully!")
         logger.info("📊 Tables created:")
@@ -32,6 +44,27 @@ def create_database():
 
     except Exception as e:
         logger.error(f"❌ Error creating database: {e}")
+        return False
+
+
+def run_migrations():
+    """Run database migrations for schema changes using migrate.py"""
+    logger.info("🔄 Running database migrations...")
+
+    try:
+        # Import and run migrations from migrate.py
+        from migrate import run_migrations as run_migration_script
+
+        if run_migration_script():
+            logger.info("✅ Migrations completed successfully")
+            return True
+        logger.error("❌ Migrations failed")
+        return False
+
+    except Exception as e:
+        logger.error(f"❌ Error running migrations: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
         return False
 
 
@@ -77,20 +110,23 @@ def main():
         logger.error("\n❌ Environment setup incomplete")
         return False
 
-    # Create database
+    # Create database tables (idempotent)
     if create_database():
-        logger.info("\n🎉 Development setup completed successfully!")
-        logger.info("\n🔧 Next steps:")
-        logger.info("   1. Update your .env file with your Mailgun credentials")
-        logger.info(
-            "   2. Start your application: python -m uvicorn app.main:app --reload"
-        )
-        logger.info("   3. Test the email verification flow")
-        logger.info("\n📝 Database connection:")
-        logger.info("   Host: localhost:5432")
-        logger.info("   Database: bendbionics.db")
-        logger.info("   Username: postgres")
-        return True
+        # Run migrations for existing databases
+        if run_migrations():
+            logger.info("\n🎉 Development setup completed successfully!")
+            logger.info("\n🔧 Next steps:")
+            logger.info("   1. Update your .env file with your Mailgun credentials")
+            logger.info(
+                "   2. Start your application: python -m uvicorn app.main:app --reload"
+            )
+            logger.info("   3. Test the email verification flow")
+            logger.info("\n📝 Database connection:")
+            logger.info("   Host: localhost:5432")
+            logger.info("   Database: bendbionics.db")
+            logger.info("   Username: postgres")
+            return True
+        logger.warning("\n⚠️  Database created but migrations failed")
     logger.error("\n❌ Development setup failed")
     return False
 
