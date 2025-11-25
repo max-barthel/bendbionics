@@ -87,6 +87,13 @@ export function GuestMenu() {
           </svg>
         </div>
       </Button>
+      {/* Invisible bridge to fill the gap and keep menu open when moving mouse down */}
+      {isOpen && isMouseDevice && (
+        <div
+          className="absolute top-full right-0 w-48 h-2 pointer-events-auto"
+          aria-hidden="true"
+        />
+      )}
       <GuestDropdownMenu isOpen={isOpen} />
     </div>
   );
