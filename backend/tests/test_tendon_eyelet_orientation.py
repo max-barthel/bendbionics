@@ -6,6 +6,7 @@ coupling elements, not just vertical to the floor.
 """
 
 import numpy as np
+
 from app.models.pcc.pcc_model import PCCRobotModel
 from app.models.pcc.types import PCCParams
 from app.models.tendon.engine import TendonAnalysisEngine
@@ -32,7 +33,7 @@ def test_bent_robot_should_have_length_changes():
         backbone_lengths=[0.07],
         coupling_lengths=[0.03, 0.03],
         discretization_steps=1000,
-        tendon_config=TendonConfig(count=3, radius=0.05),
+        tendon_config=TendonConfig(count=3, radius=[0.05, 0.05]),
     )
 
     # Create engine and compute

@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from app.api.responses import success_response
 from app.utils.logging import LogContext, default_logger
 
-router = APIRouter(prefix="/api/errors", tags=["errors"])
+router = APIRouter(prefix="/errors", tags=["errors"])
 
 
 class ErrorReport(BaseModel):

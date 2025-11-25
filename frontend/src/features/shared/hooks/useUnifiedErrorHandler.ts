@@ -83,110 +83,125 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
     };
   };
 
-  const isApiError = (error: unknown): error is ApiError => {
+  const isApiError = useCallback((error: unknown): error is ApiError => {
     return error instanceof Error || (typeof error === 'object' && error !== null);
-  };
+  }, []);
 
   // Extract error message from response data
-  const extractErrorMessage = (
-    data?: ApiErrorData,
-    fallback: string = 'An unexpected error occurred. Please try again.'
-  ): string => {
-    if (!data) {
-      return fallback;
-    }
+  const extractErrorMessage = useCallback(
+    (
+      data?: ApiErrorData,
+      fallback: string = 'An unexpected error occurred. Please try again.'
+    ): string => {
+      if (!data) {
+        return fallback;
+      }
 
-    if (data.detail) {
-      if (typeof data.detail === 'string') {
-        return data.detail;
+      if (data.detail) {
+        if (typeof data.detail === 'string') {
+          return data.detail;
+        }
+        if (Array.isArray(data.detail)) {
+          const messages = data.detail
+            .map(
+              (item: { loc: string[]; msg: string; type: string }) =>
+                `${item.loc.join('.')}: ${item.msg}`
+            )
+            .join(', ');
+          return `Validation error: ${messages}`;
+        }
       }
-      if (Array.isArray(data.detail)) {
-        const messages = data.detail
-          .map(
-            (item: { loc: string[]; msg: string; type: string }) =>
-              `${item.loc.join('.')}: ${item.msg}`
-          )
-          .join(', ');
-        return `Validation error: ${messages}`;
+      if (data.message) {
+        return data.message;
       }
-    }
-    if (data.message) {
-      return data.message;
-    }
-    return fallback;
-  };
+      return fallback;
+    },
+    []
+  );
 
   // Handle network errors
-  const handleNetworkError = (err: ApiError) => {
-    if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-      showError(
-        'network',
-        'Request timed out. Please check your connection and try again.'
-      );
-      return true;
-    }
-    if (!err.response) {
-      showError(
-        'network',
-        'Unable to connect to server. Please check your connection.'
-      );
-      return true;
-    }
-    return false;
-  };
+  const handleNetworkError = useCallback(
+    (err: ApiError) => {
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        showError(
+          'network',
+          'Request timed out. Please check your connection and try again.'
+        );
+        return true;
+      }
+      if (!err.response) {
+        showError(
+          'network',
+          'Unable to connect to server. Please check your connection.'
+        );
+        return true;
+      }
+      return false;
+    },
+    [showError]
+  );
 
   // Handle server errors
-  const handleServerError = (err: ApiError): boolean => {
-    const status = err.response?.status;
-    if (status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
-      showError(
-        'server',
-        'Server error occurred. Please try again later or contact support.'
-      );
-      return true;
-    }
-    if (status === HTTP_STATUS.NOT_FOUND) {
-      showError('server', 'Service not found. Please check if the backend is running.');
-      return true;
-    }
-    return false;
-  };
+  const handleServerError = useCallback(
+    (err: ApiError): boolean => {
+      const status = err.response?.status;
+      if (status === HTTP_STATUS.INTERNAL_SERVER_ERROR) {
+        showError(
+          'server',
+          'Server error occurred. Please try again later or contact support.'
+        );
+        return true;
+      }
+      if (status === HTTP_STATUS.NOT_FOUND) {
+        showError('server', 'Service not found. Please check if the backend is running.');
+        return true;
+      }
+      return false;
+    },
+    [showError]
+  );
 
   // Handle validation errors
-  const handleValidationError = (err: ApiError): boolean => {
-    const status = err.response?.status;
-    if (
-      status === HTTP_STATUS.BAD_REQUEST ||
-      status === HTTP_STATUS.UNPROCESSABLE_ENTITY
-    ) {
-      const defaultMessage =
-        'Invalid parameters provided. Please check your input values.';
-      const message = extractErrorMessage(err.response?.data, defaultMessage);
-      showError('validation', message);
-      return true;
-    }
-    return false;
-  };
+  const handleValidationError = useCallback(
+    (err: ApiError): boolean => {
+      const status = err.response?.status;
+      if (
+        status === HTTP_STATUS.BAD_REQUEST ||
+        status === HTTP_STATUS.UNPROCESSABLE_ENTITY
+      ) {
+        const defaultMessage =
+          'Invalid parameters provided. Please check your input values.';
+        const message = extractErrorMessage(err.response?.data, defaultMessage);
+        showError('validation', message);
+        return true;
+      }
+      return false;
+    },
+    [showError, extractErrorMessage]
+  );
 
   // Handle authentication errors
-  const handleAuthErrorByStatus = (err: ApiError): boolean => {
-    const status = err.response?.status;
-    if (status === HTTP_STATUS.UNAUTHORIZED) {
-      showError(
-        'auth',
-        'Authentication failed. Please check your credentials and try again.'
-      );
-      return true;
-    }
-    if (status === HTTP_STATUS.FORBIDDEN) {
-      showError(
-        'auth',
-        "Access denied. You don't have permission to perform this action."
-      );
-      return true;
-    }
-    return false;
-  };
+  const handleAuthErrorByStatus = useCallback(
+    (err: ApiError): boolean => {
+      const status = err.response?.status;
+      if (status === HTTP_STATUS.UNAUTHORIZED) {
+        showError(
+          'auth',
+          'Authentication failed. Please check your credentials and try again.'
+        );
+        return true;
+      }
+      if (status === HTTP_STATUS.FORBIDDEN) {
+        showError(
+          'auth',
+          "Access denied. You don't have permission to perform this action."
+        );
+        return true;
+      }
+      return false;
+    },
+    [showError]
+  );
 
   // Helper function to handle API errors consistently
   const handleApiError = useCallback(
@@ -212,11 +227,20 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
       );
       showError('unknown', errorMessage);
     },
-    [showError]
+    [
+      showError,
+      extractErrorMessage,
+      handleAuthErrorByStatus,
+      handleNetworkError,
+      handleServerError,
+      handleValidationError,
+      isApiError,
+    ]
   );
 
   // Handle auth-specific status codes
-  const handleAuthSpecificError = (err: ApiError): boolean => {
+  const handleAuthSpecificError = useCallback(
+    (err: ApiError): boolean => {
     const status = err.response?.status;
     if (status === HTTP_STATUS.UNAUTHORIZED) {
       showError(
@@ -242,7 +266,9 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
       return true;
     }
     return false;
-  };
+  },
+    [showError]
+  );
 
   // Helper function to handle authentication-specific errors
   const handleAuthError = useCallback(
@@ -261,7 +287,7 @@ export function useUnifiedErrorHandler(options: UseUnifiedErrorHandlerOptions = 
         handleApiError(err, 'authentication');
       }
     },
-    [showError, handleApiError]
+    [showError, handleApiError, handleAuthSpecificError, isApiError]
   );
 
   return {

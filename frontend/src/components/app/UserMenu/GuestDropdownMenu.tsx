@@ -6,9 +6,15 @@ import { UserAvatarIcon } from './UserAvatarIcon';
 
 interface GuestDropdownMenuProps {
   readonly isOpen: boolean;
+  readonly onMouseEnter?: (() => void) | undefined;
+  readonly onMouseLeave?: (() => void) | undefined;
 }
 
-export function GuestDropdownMenu({ isOpen }: GuestDropdownMenuProps) {
+export function GuestDropdownMenu({
+  isOpen,
+  onMouseEnter,
+  onMouseLeave,
+}: GuestDropdownMenuProps) {
   const appState = useAppState();
   const isLoggedIn = !!appState.user;
 
@@ -21,6 +27,8 @@ export function GuestDropdownMenu({ isOpen }: GuestDropdownMenuProps) {
           ? 'opacity-100 visible pointer-events-auto'
           : 'opacity-0 invisible pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto'
       )}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {isLoggedIn && (
         <div className={cn('p-3 border-b border-white/20')}>

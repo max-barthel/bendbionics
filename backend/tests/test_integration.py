@@ -1,8 +1,9 @@
 import time
 
+from fastapi.testclient import TestClient
+
 from app.main import app
 from app.utils.cache import clear_cache
-from fastapi.testclient import TestClient
 
 
 class TestFullAPIWorkflow:
@@ -17,13 +18,11 @@ class TestFullAPIWorkflow:
     def _add_tendon_config(payload):
         """Add default tendon config to payload if not present."""
         if "tendon_config" not in payload:
+            # Radius array must match number of coupling elements
+            num_coupling_elements = len(payload.get("coupling_lengths", [0.03]))
             payload["tendon_config"] = {
-                "num_tendons": 3,
-                "tendon_positions": [
-                    [0.01, 0],
-                    [-0.005, 0.0087],
-                    [-0.005, -0.0087],
-                ],
+                "count": 3,
+                "radius": [0.03] * num_coupling_elements,
             }
         return payload
 
@@ -51,7 +50,8 @@ class TestFullAPIWorkflow:
         assert "result" in data["data"]
         assert "robot_positions" in data["data"]["result"]
         assert isinstance(data["data"]["result"]["robot_positions"], list)
-        assert len(data["data"]["result"]["robot_positions"]) == 7  # 3 backbone + 4 coupling segments
+        assert len(data["data"]["result"]["robot_positions"]) == 7
+        # 3 backbone + 4 coupling segments
 
         # Step 4: Verify segment structure
         for segment in data["data"]["result"]["robot_positions"]:
@@ -162,8 +162,12 @@ class TestFullAPIWorkflow:
             data = response.json()
             assert "data" in data
             assert "result" in data["data"], f"Failed for {test_case['name']}"
-            assert "robot_positions" in data["data"]["result"], f"Failed for {test_case['name']}"
-            assert len(data["data"]["result"]["robot_positions"]) > 0, f"Failed for {test_case['name']}"
+            assert "robot_positions" in data["data"]["result"], (
+                f"Failed for {test_case['name']}"
+            )
+            assert len(data["data"]["result"]["robot_positions"]) > 0, (
+                f"Failed for {test_case['name']}"
+            )
 
     def test_workflow_error_handling(self):
         """Test error handling throughout the workflow."""
@@ -447,8 +451,12 @@ class TestFullAPIWorkflow:
             data = response.json()
             assert "data" in data
             assert "result" in data["data"], f"Failed for {test_case['name']}"
-            assert "robot_positions" in data["data"]["result"], f"Failed for {test_case['name']}"
-            assert len(data["data"]["result"]["robot_positions"]) > 0, f"Failed for {test_case['name']}"
+            assert "robot_positions" in data["data"]["result"], (
+                f"Failed for {test_case['name']}"
+            )
+            assert len(data["data"]["result"]["robot_positions"]) > 0, (
+                f"Failed for {test_case['name']}"
+            )
 
     def test_workflow_api_documentation(self):
         """Test that API documentation is accessible."""

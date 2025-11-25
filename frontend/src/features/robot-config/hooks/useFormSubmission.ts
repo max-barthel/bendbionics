@@ -68,7 +68,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
         ...(robotState.tendonConfig && { tendon_config: robotState.tendonConfig }),
       };
 
-      // Always use kinematics endpoint (robot requires tendon configuration)
+      // Use kinematics endpoint (handles both with and without tendon config)
       const apiResult = await robotAPI.computeKinematics(params);
       const segments = apiResult.data.result.robot_positions;
 
@@ -99,7 +99,7 @@ export function useFormSubmission(options: UseFormSubmissionOptions = {}) {
 
     onLoadingChange?.(false);
     return false;
-  }, [robotState, showError, hideError, execute, onResult, onLoadingChange]);
+  }, [robotState, showError, hideError, execute, onLoadingChange, setProgressComplete]);
 
   // Debounced auto-compute entrypoint: validate and compute if not already loading
   const computeIfValid = useCallback(async (): Promise<boolean> => {

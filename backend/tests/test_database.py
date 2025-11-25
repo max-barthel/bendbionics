@@ -1,9 +1,8 @@
-import json
-
 import pytest
+from sqlmodel import Session
+
 from app.database import create_db_and_tables, get_session
 from app.models import Preset, User
-from sqlmodel import Session
 
 
 class TestDatabaseFunctions:
@@ -99,15 +98,13 @@ class TestDatabaseOperations:
                 description="A test preset for database testing",
                 user_id=user.id,
                 is_public=False,
-                configuration=json.dumps(
-                    {
-                        "bending_angles": [0.1, 0.2, 0.3],
-                        "rotation_angles": [0, 0, 0],
-                        "backbone_lengths": [0.07, 0.07, 0.07],
-                        "coupling_lengths": [0.03, 0.03, 0.03, 0.015],
-                        "discretization_steps": 10,
-                    }
-                ),
+                configuration={
+                    "bending_angles": [0.1, 0.2, 0.3],
+                    "rotation_angles": [0, 0, 0],
+                    "backbone_lengths": [0.07, 0.07, 0.07],
+                    "coupling_lengths": [0.03, 0.03, 0.03, 0.015],
+                    "discretization_steps": 10,
+                },
             )
 
             # Add to database
@@ -160,7 +157,7 @@ class TestDatabaseOperations:
                 description="First preset for relationship test",
                 user_id=user.id,
                 is_public=False,
-                configuration=json.dumps({"test": "data1"}),
+                configuration={"test": "data1"},
             )
 
             preset2 = Preset(
@@ -168,7 +165,7 @@ class TestDatabaseOperations:
                 description="Second preset for relationship test",
                 user_id=user.id,
                 is_public=True,
-                configuration=json.dumps({"test": "data2"}),
+                configuration={"test": "data2"},
             )
 
             session.add_all([preset1, preset2])
@@ -210,21 +207,25 @@ class TestDatabaseOperations:
 
     def test_preset_config_dict_property(self):
         """Test preset config_dict property."""
-        # Test valid JSON
+        # Test valid dict
         preset = Preset(
             name="Test Preset",
             user_id=1,
-            configuration='{"key": "value", "number": 42}',
+            configuration={"key": "value", "number": 42},
         )
         assert preset.config_dict == {"key": "value", "number": 42}
 
-        # Test invalid JSON
+        # Test string JSON (backward compatibility)
+        preset.configuration = '{"key": "value", "number": 42}'
+        assert preset.config_dict == {"key": "value", "number": 42}
+
+        # Test invalid JSON string
         preset.configuration = "invalid json"
         assert preset.config_dict == {}
 
         # Test setting config_dict
         preset.config_dict = {"new_key": "new_value"}
-        assert preset.configuration == '{"new_key": "new_value"}'
+        assert preset.configuration == {"new_key": "new_value"}
 
     def test_preset_models(self):
         """Test PresetCreate and PresetUpdate models."""

@@ -549,9 +549,8 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                       </thead>
                       <tbody>
                         {tendonAnalysis.tendon_analysis.segment_length_changes[0]
-                          ?.slice(1)
-                          .map((_, segmentIndex) => {
-                            const segmentKey = `segment-${segmentIndex + 1}`;
+                          ?.map((_, segmentIndex) => {
+                            const segmentKey = `segment-${segmentIndex}`;
                             return (
                               <tr key={segmentKey}>
                                 <td className={cn(tableCellVariants.bodyFirst)}>
@@ -560,11 +559,11 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                                 {tendonAnalysis.tendon_analysis?.segment_length_changes.map(
                                   (tendonLengths, tendonIndex) => (
                                     <td
-                                      key={`tendon-${tendonIndex}-segment-${segmentIndex + 1}`}
+                                      key={`tendon-${tendonIndex}-segment-${segmentIndex}`}
                                       className={cn(tableCellVariants.body)}
                                     >
                                       {formatLengthChange(
-                                        tendonLengths[segmentIndex + 1] ?? 0,
+                                        tendonLengths[segmentIndex] ?? 0,
                                         unit
                                       )}
                                     </td>
@@ -577,14 +576,13 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
                         <tr className="border-t-2 border-gray-300/60">
                           <td className={cn(tableCellVariants.bodyFirst)}>Total</td>
                           {tendonEntries.map(([tendonId], tendonIndex) => {
-                            // Calculate sum of segments starting from index 1
+                            // Calculate sum of all segments
                             const segmentLengthChanges =
                               tendonAnalysis.tendon_analysis?.segment_length_changes[
                                 tendonIndex
                               ];
                             const totalFromSegments = segmentLengthChanges
                               ? segmentLengthChanges
-                                  .slice(1)
                                   .reduce((sum, change) => sum + (change ?? 0), 0)
                               : 0;
 

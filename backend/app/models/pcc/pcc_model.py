@@ -78,11 +78,6 @@ class PCCRobotModel(RobotModelInterface):
         transform_matrix = np.eye(4)
         coupling_lengths = self.coupling_lengths
 
-        # Add base coupling element
-        self._add_base_coupling(
-            coupling_transforms, coupling_positions, coupling_orientations
-        )
-
         # Process first coupling if present
         if self._has_first_coupling(robot_positions):
             transform_matrix = self._process_first_coupling(
