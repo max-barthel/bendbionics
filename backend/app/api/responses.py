@@ -8,7 +8,6 @@ It standardizes success responses, error handling, and data serialization.
 from datetime import UTC, datetime
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
-import numpy as np
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
@@ -80,7 +79,8 @@ def serialize_response_data(data: Any) -> Any:
     """Serialize response data, handling Pydantic models and numpy arrays.
 
     Args:
-        data: Data to serialize (can be Pydantic model, dict, list, numpy array, or primitive)
+        data: Data to serialize (can be Pydantic model, dict, list,
+            numpy array, or primitive)
 
     Returns:
         Serialized data ready for JSON response
@@ -93,7 +93,8 @@ def serialize_response_data(data: Any) -> Any:
         # Convert Pydantic model to dict, then serialize any numpy arrays within
         return convert_numpy_to_serializable(data.model_dump(mode="json"))
 
-    # Delegate numpy array and nested structure handling to convert_numpy_to_serializable
+    # Delegate numpy array and nested structure handling to
+    # convert_numpy_to_serializable
     # This handles numpy arrays, scalars, lists, tuples, and dicts recursively
     return convert_numpy_to_serializable(data)
 
