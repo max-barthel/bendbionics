@@ -3,8 +3,9 @@ Core API Tests - Startup Style
 Test only what users actually use, not theoretical edge cases.
 """
 
-from app.main import app
 from fastapi.testclient import TestClient
+
+from app.main import app
 
 client = TestClient(app)
 
@@ -22,7 +23,7 @@ def test_tendon_calculation():
             "backbone_lengths": [0.1, 0.1],
             "coupling_lengths": [0.02, 0.02, 0.02],
             "discretization_steps": 10,
-            "tendon_config": {"count": 6, "radius": 0.012},
+            "tendon_config": {"count": 6, "radius": [0.012, 0.012, 0.012]},
         },
     )
     assert response.status_code == 200

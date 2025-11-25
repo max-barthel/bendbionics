@@ -66,7 +66,7 @@ const FormTabs = forwardRef<FormTabsRef, FormTabsProps>(
       } finally {
         setLoading(false);
       }
-    }, [robotState, showError, hideError, onResult]);
+    }, [robotState, showError, hideError, onResult, handleApiError]);
 
     // Notify parent of loading state changes
     useEffect(() => {

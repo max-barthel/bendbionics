@@ -2,6 +2,9 @@ import json
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from sqlalchemy import JSON, Column, Integer
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.types import TypeDecorator
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.utils.timezone import now_utc
@@ -10,11 +13,34 @@ if TYPE_CHECKING:
     from .user import User
 
 
+class JSONBType(TypeDecorator):
+    """JSONB type that uses JSONB for PostgreSQL and JSON for SQLite."""
+
+    impl = JSON
+    cache_ok = True
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == "postgresql":
+            return dialect.type_descriptor(JSONB())
+        return dialect.type_descriptor(JSON())
+
+
 class PresetBase(SQLModel):
     name: str = Field(index=True)
     description: Optional[str] = None
     is_public: bool = Field(default=False)
-    configuration: str = Field(default="{}")  # Store as JSON string
+    # Metadata columns for querying
+    segments: Optional[int] = Field(
+        default=None, sa_column=Column(Integer, nullable=True, index=True)
+    )
+    tendon_count: Optional[int] = Field(
+        default=None, sa_column=Column(Integer, nullable=True, index=True)
+    )
+    # Configuration stored as JSONB (PostgreSQL) or JSON (SQLite)
+    configuration: Dict[str, Any] = Field(
+        default_factory=dict,
+        sa_column=Column(JSONBType(), nullable=False),
+    )
 
 
 class Preset(PresetBase, table=True):
@@ -29,15 +55,19 @@ class Preset(PresetBase, table=True):
     @property
     def config_dict(self) -> Dict[str, Any]:
         """Get configuration as dictionary"""
-        try:
-            return json.loads(self.configuration)
-        except (json.JSONDecodeError, TypeError):
-            return {}
+        if isinstance(self.configuration, dict):
+            return self.configuration
+        if isinstance(self.configuration, str):
+            try:
+                return json.loads(self.configuration)
+            except (json.JSONDecodeError, TypeError):
+                return {}
+        return {}
 
     @config_dict.setter
     def config_dict(self, value: Dict[str, Any]):
         """Set configuration from dictionary"""
-        self.configuration = json.dumps(value)
+        self.configuration = value
 
 
 class PresetCreate(SQLModel):

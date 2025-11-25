@@ -119,11 +119,15 @@ export default defineConfig({
   /* Local Development Server Configuration */
   webServer: {
     /** Command to start the development server
-     * Uses zsh which sources ~/.zshenv where bun PATH is configured
+     * Uses zsh locally (which sources ~/.zshenv where bun PATH is configured)
+     * In CI, bun should already be in PATH, so we use it directly
      */
-    command: process.platform === 'win32'
-      ? 'bun run dev'
-      : `zsh -c 'bun run dev'`,
+    command:
+      process.platform === 'win32'
+        ? 'bun run dev'
+        : IS_CI
+          ? 'bun run dev'
+          : `zsh -c 'bun run dev'`,
     /** URL to check if server is ready */
     url: BASE_URL,
     /** Reuse existing server if available (not on CI) */

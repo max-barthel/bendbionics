@@ -6,21 +6,41 @@ import {
   DEFAULT_TENDON_COUNT,
   DEFAULT_TENDON_RADIUS,
 } from '@/constants/app';
+import { normalizeTendonRadius } from '@/utils/tendon-helpers';
 import type { RobotConfiguration } from '@/types/robot';
 
 // Helper function to create array with default values
-export function createArrayWithDefaults(length: number, defaultValue: number): number[] {
+export function createArrayWithDefaults(
+  length: number,
+  defaultValue: number
+): number[] {
   return new Array(length).fill(defaultValue) as number[];
 }
 
 // Helper function to create tendon config
 export function createTendonConfig(configuration: RobotConfiguration) {
-  return (
-    configuration.tendonConfig ?? {
-      count: DEFAULT_TENDON_COUNT,
-      radius: DEFAULT_TENDON_RADIUS,
-    }
-  );
+  const segments = configuration.segments ?? DEFAULT_SEGMENTS;
+  const couplingCount = segments + 1;
+
+  const tendonConfig = configuration.tendonConfig;
+  if (tendonConfig) {
+    // Normalize radius to array format (handles single value, array, or undefined)
+    const radius = normalizeTendonRadius(
+      tendonConfig.radius,
+      couplingCount,
+      DEFAULT_TENDON_RADIUS
+    );
+
+    return {
+      count: tendonConfig.count ?? DEFAULT_TENDON_COUNT,
+      radius,
+    };
+  }
+
+  return {
+    count: DEFAULT_TENDON_COUNT,
+    radius: normalizeTendonRadius(undefined, couplingCount, DEFAULT_TENDON_RADIUS),
+  };
 }
 
 // Helper function to create robot state from configuration

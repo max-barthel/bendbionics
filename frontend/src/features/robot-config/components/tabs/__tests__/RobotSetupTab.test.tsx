@@ -63,7 +63,7 @@ describe('RobotSetupTab', () => {
     discretizationSteps: 1000,
     tendonConfig: {
       count: 3,
-      radius: 0.01,
+      radius: [0.03, 0.03, 0.03],
     },
   };
 
