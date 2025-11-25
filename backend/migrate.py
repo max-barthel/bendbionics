@@ -4,15 +4,31 @@ Database migration script for BendBionics.
 This script handles schema changes without losing user data.
 """
 
+import json
+import os
+import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
+from typing import Callable, Dict, Optional
+from urllib.parse import urlparse
 
 # Add the app directory to the Python path
 sys.path.append(str(Path(__file__).parent))
 
+from sqlmodel import Session, select, text
+
+from app.config import settings
 from app.database import get_session
+from app.models.preset import Preset
 from app.utils.logging import logger
-from sqlmodel import text
+from app.utils.preset_helpers import extract_preset_metadata, normalize_tendon_radius
+
+# Backup configuration
+BACKUP_RETENTION_COUNT = 7  # Keep last 7 backups
+BACKUP_DIR_PRODUCTION_1 = "/var/backups/bendbionics/database"
+BACKUP_DIR_PRODUCTION_2 = "/mnt/data/backups/database"  # Alternative production locatio
+BACKUP_DIR_DEV = Path(__file__).parent.parent / "backups" / "database"
 
 
 def check_migration_needed():
@@ -64,8 +80,203 @@ def get_applied_migrations():
         return []
 
 
-def apply_migration(migration_name, migration_sql):
-    """Apply a single migration"""
+def get_backup_directory() -> Path:
+    """Get the backup directory path based on environment."""
+    # Try production directories first
+    for backup_dir_str in [BACKUP_DIR_PRODUCTION_1, BACKUP_DIR_PRODUCTION_2]:
+        backup_dir = Path(backup_dir_str)
+        try:
+            if backup_dir.exists() and os.access(backup_dir_str, os.W_OK):
+                return backup_dir
+            # Try to create if parent exists
+            if backup_dir.parent.exists() and os.access(
+                str(backup_dir.parent), os.W_OK
+            ):
+                backup_dir.mkdir(parents=True, exist_ok=True)
+                return backup_dir
+        except OSError:
+            # Skip this directory if we don't have access (includes PermissionError)
+            continue
+
+    # Use dev directory if production doesn't exist or isn't writable
+    backup_dir = Path(BACKUP_DIR_DEV)
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    return backup_dir
+
+
+def database_has_data() -> bool:
+    """Check if database has any data (users or presets)."""
+    try:
+        session = next(get_session())
+
+        # Check if we have any users or presets
+        user_count = session.execute(
+            text('SELECT COUNT(*) FROM "user"')
+        ).fetchone()[0]
+        preset_count = session.execute(
+            text("SELECT COUNT(*) FROM preset")
+        ).fetchone()[0]
+
+        session.close()
+        return user_count > 0 or preset_count > 0
+
+    except Exception as e:
+        logger.warning(f"Could not check if database has data: {e}")
+        # Assume it has data to be safe
+        return True
+
+
+def parse_database_url() -> Dict[str, Optional[str]]:
+    """Parse database URL to extract connection parameters."""
+    parsed = urlparse(settings.database_url)
+
+    return {
+        "host": parsed.hostname or "localhost",
+        "port": str(parsed.port) if parsed.port else "5432",
+        "database": parsed.path.lstrip("/") if parsed.path else None,
+        "username": parsed.username,
+        "password": parsed.password,
+    }
+
+
+def create_database_backup() -> Optional[Path]:
+    """Create a PostgreSQL database backup.
+
+    Returns:
+        Path to backup file if successful, None otherwise
+    """
+    # Only backup PostgreSQL databases
+    if "postgresql" not in settings.database_url:
+        logger.info("Skipping backup (not PostgreSQL database)")
+        return None
+
+    # Skip backup if database is empty (fresh install)
+    if not database_has_data():
+        logger.info("Skipping backup (database is empty - fresh install)")
+        return None
+
+    try:
+        backup_dir = get_backup_directory()
+        # Use datetime.now() without timezone for filename (not a security issue)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # noqa: DTZ005
+        backup_filename = f"bendbionics_backup_{timestamp}.sql"
+        backup_path = backup_dir / backup_filename
+
+        logger.info(f"Creating database backup: {backup_path}")
+
+        # Parse database URL
+        db_params = parse_database_url()
+        if not db_params["database"]:
+            logger.error("Could not determine database name from URL")
+            return None
+
+        # Build pg_dump command
+        env = os.environ.copy()
+        if db_params["password"]:
+            env["PGPASSWORD"] = db_params["password"]
+
+        cmd = [
+            "pg_dump",
+            "-h",
+            db_params["host"],
+            "-p",
+            db_params["port"],
+            "-U",
+            db_params["username"] or "postgres",
+            "-d",
+            db_params["database"],
+            "-F",
+            "c",  # Custom format (compressed)
+            "-f",
+            str(backup_path),
+        ]
+
+        # Run pg_dump (pg_dump is a trusted system command)
+        result = subprocess.run(  # noqa: S603
+            cmd, env=env, capture_output=True, text=True, check=False
+        )
+
+        if result.returncode != 0:
+            logger.error(f"Backup failed: {result.stderr}")
+            return None
+
+        # Verify backup file exists and has content
+        if not backup_path.exists():
+            logger.error("Backup file was not created")
+            return None
+
+        file_size = backup_path.stat().st_size
+        if file_size == 0:
+            logger.error("Backup file is empty")
+            backup_path.unlink()
+            return None
+
+        logger.info(f"✅ Backup created successfully ({file_size / 1024:.1f} KB)")
+        return backup_path
+
+    except FileNotFoundError:
+        logger.error("pg_dump not found. Install PostgreSQL client tools.")
+        return None
+    except Exception as e:
+        logger.error(f"Error creating backup: {e}")
+        return None
+
+
+def cleanup_old_backups(retention_count: int = BACKUP_RETENTION_COUNT) -> None:
+    """Clean up old backups, keeping only the most recent N backups.
+
+    Args:
+        retention_count: Number of backups to keep
+    """
+    try:
+        backup_dir = get_backup_directory()
+
+        # Find all backup files
+        backup_files = sorted(
+            backup_dir.glob("bendbionics_backup_*.sql"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+
+        if len(backup_files) <= retention_count:
+            logger.info(
+                f"Keeping all {len(backup_files)} backups "
+                f"(within retention limit of {retention_count})"
+            )
+            return
+
+        # Delete old backups
+        to_delete = backup_files[retention_count:]
+        deleted_count = 0
+        for backup_file in to_delete:
+            try:
+                backup_file.unlink()
+                deleted_count += 1
+            except Exception as e:
+                logger.warning(f"Could not delete backup {backup_file}: {e}")
+
+        if deleted_count > 0:
+            logger.info(
+                f"Cleaned up {deleted_count} old backup(s), "
+                f"keeping {retention_count} most recent"
+            )
+
+    except Exception as e:
+        logger.warning(f"Error cleaning up old backups: {e}")
+
+
+def apply_migration(
+    migration_name: str,
+    migration_sql: Optional[str] = None,
+    migration_func: Optional[Callable[[Session], bool]] = None,
+):
+    """Apply a single migration.
+
+    Args:
+        migration_name: Name of the migration
+        migration_sql: SQL migration script (for SQL-based migrations)
+        migration_func: Python function to run (for Python-based migrations)
+    """
     try:
         session = next(get_session())
 
@@ -81,7 +292,17 @@ def apply_migration(migration_name, migration_sql):
 
         # Apply migration
         logger.info(f"Applying migration: {migration_name}")
-        session.execute(text(migration_sql))
+        if migration_sql:
+            session.execute(text(migration_sql))
+        elif migration_func:
+            if not migration_func(session):
+                session.rollback()
+                session.close()
+                return False
+        else:
+            logger.error(f"No migration SQL or function provided for {migration_name}")
+            session.close()
+            return False
 
         # Record migration
         session.execute(text("""
@@ -99,8 +320,154 @@ def apply_migration(migration_name, migration_sql):
         return False
 
 
+
+
+def _add_sqlite_metadata_columns(session: Session) -> None:
+    """Add metadata columns to SQLite preset table."""
+    # Add segments column
+    try:
+        session.execute(
+            text("ALTER TABLE preset ADD COLUMN segments INTEGER")
+        )
+        session.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS "
+                "ix_preset_segments ON preset(segments)"
+            )
+        )
+    except Exception:
+        pass  # Column might already exist
+
+    # Add tendon_count column
+    try:
+        session.execute(
+            text("ALTER TABLE preset ADD COLUMN tendon_count INTEGER")
+        )
+        session.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS "
+                "ix_preset_tendon_count ON preset(tendon_count)"
+            )
+        )
+    except Exception:
+        pass  # Column might already exist
+
+
+def migrate_preset_to_jsonb_with_metadata(session: Session) -> bool:
+    """Migrate preset table to use JSONB/JSON with metadata columns.
+
+    Steps:
+    1. Add metadata columns (segments, tendon_count) as nullable
+    2. Migrate existing data: normalize JSON, extract metadata
+    3. Change configuration column type to JSONB/JSON
+    """
+    try:
+        is_postgresql = "postgresql" in settings.database_url
+
+        # Step 1: Add metadata columns if they don't exist
+        logger.info("Step 1: Adding metadata columns...")
+        if is_postgresql:
+            # PostgreSQL
+            session.execute(text("""
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                                  WHERE table_name = 'preset'
+                                  AND column_name = 'segments') THEN
+                        ALTER TABLE preset ADD COLUMN segments INTEGER;
+                        CREATE INDEX IF NOT EXISTS
+                            ix_preset_segments ON preset(segments);
+                    END IF;
+
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                                  WHERE table_name = 'preset'
+                                  AND column_name = 'tendon_count') THEN
+                        ALTER TABLE preset ADD COLUMN tendon_count INTEGER;
+                        CREATE INDEX IF NOT EXISTS
+                            ix_preset_tendon_count ON preset(tendon_count);
+                    END IF;
+                END $$;
+            """))
+        else:
+            # SQLite
+            _add_sqlite_metadata_columns(session)
+
+        session.commit()
+
+        # Step 2: Migrate existing data
+        logger.info("Step 2: Migrating existing preset data...")
+        presets = session.exec(select(Preset)).all()
+        migrated_count = 0
+
+        for preset in presets:
+            try:
+                # Parse existing configuration
+                if isinstance(preset.configuration, str):
+                    config = json.loads(preset.configuration)
+                elif isinstance(preset.configuration, dict):
+                    config = preset.configuration
+                else:
+                    config = {}
+
+                # Normalize configuration
+                normalized_config = normalize_tendon_radius(config)
+                segments, tendon_count = extract_preset_metadata(normalized_config)
+
+                # Update preset
+                preset.configuration = normalized_config
+                preset.segments = segments
+                preset.tendon_count = tendon_count
+
+                migrated_count += 1
+            except Exception as e:
+                logger.warning(f"Error migrating preset {preset.id}: {e}")
+                continue
+
+        session.commit()
+        logger.info(f"Migrated {migrated_count} presets")
+
+        # Step 3: Change configuration column type to JSONB/JSON
+        logger.info("Step 3: Converting configuration column to JSONB/JSON...")
+        if is_postgresql:
+            # PostgreSQL: Convert TEXT to JSONB
+            session.execute(text("""
+                DO $$
+                BEGIN
+                    -- Check if column is already JSONB
+                    IF EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name = 'preset'
+                        AND column_name = 'configuration'
+                        AND data_type = 'jsonb'
+                    ) THEN
+                        RAISE NOTICE 'Configuration column is already JSONB';
+                    ELSE
+                        -- Convert TEXT to JSONB
+                        ALTER TABLE preset
+                        ALTER COLUMN configuration TYPE JSONB
+                        USING configuration::jsonb;
+                    END IF;
+                END $$;
+            """))
+        else:
+            # SQLite: JSON is stored as TEXT, but we'll ensure it's valid JSON
+            # SQLite doesn't have a separate JSON type, it's just TEXT
+            # The application layer will handle JSON parsing
+            logger.info("SQLite uses TEXT for JSON - no column type change needed")
+
+        session.commit()
+        logger.info("✅ Preset migration completed successfully")
+        return True
+
+    except Exception as e:
+        logger.error(f"❌ Error in preset migration: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return False
+
+
 def run_migrations():
-    """Run all pending migrations"""
+    """Run all pending migrations with automatic backup."""
     logger.info("🔄 Checking for database migrations...")
 
     if not check_migration_needed():
@@ -108,6 +475,33 @@ def run_migrations():
 
     applied_migrations = get_applied_migrations()
     logger.info(f"Applied migrations: {applied_migrations}")
+
+    # Check if there are pending migrations
+    all_migrations = [
+        "add_email_verification_fields",
+        "migrate_preset_to_jsonb_with_metadata",
+    ]
+    pending_migrations = [
+        name for name in all_migrations if name not in applied_migrations
+    ]
+
+    # Create backup before running migrations (if there are pending migrations)
+    if pending_migrations:
+        logger.info(
+            f"Found {len(pending_migrations)} pending migration(s), "
+            "creating backup..."
+        )
+        backup_path = create_database_backup()
+        if backup_path is None and database_has_data():
+            logger.error(
+                "⚠️  Backup creation failed but database has data. "
+                "Aborting migrations for safety."
+            )
+            return False
+        if backup_path:
+            logger.info(f"✅ Backup ready: {backup_path}")
+    else:
+        logger.info("No pending migrations - skipping backup")
 
     # Define available migrations
     migrations = [
@@ -164,15 +558,31 @@ def run_migrations():
                         password_reset_token_expires TIMESTAMP;
                     END IF;
                 END $$;
-            """
-        }
+            """,
+            "func": None,
+        },
+        {
+            "name": "migrate_preset_to_jsonb_with_metadata",
+            "sql": None,
+            "func": migrate_preset_to_jsonb_with_metadata,
+        },
     ]
 
     # Apply pending migrations
     for migration in migrations:
-        if migration["name"] not in applied_migrations:
-            if not apply_migration(migration["name"], migration["sql"]):
-                return False
+        if (
+            migration["name"] not in applied_migrations
+            and not apply_migration(
+                migration["name"],
+                migration.get("sql"),
+                migration.get("func"),
+            )
+        ):
+            return False
+
+    # Clean up old backups after successful migrations
+    if pending_migrations:
+        cleanup_old_backups()
 
     logger.info("✅ All migrations completed successfully")
     return True

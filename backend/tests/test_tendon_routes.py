@@ -1,9 +1,10 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from app.api.tendon_routes import router
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
+from app.api.tendon_routes import router
 
 
 class TestTendonRoutes:
@@ -236,6 +237,7 @@ class TestTendonRoutes:
     def test_tendon_length_delta_validation(self):
         """Test tendon length delta calculation against MATLAB reference."""
         import numpy as np
+
         from app.models.pcc.pcc_model import compute_pcc_with_tendons
         from app.models.pcc.types import PCCParams
         from app.models.tendon.types import TendonConfig
@@ -253,7 +255,7 @@ class TestTendonRoutes:
             backbone_lengths=[0.070, 0.070, 0.070],  # 70mm in meters
             coupling_lengths=[0.030, 0.030, 0.030, 0.030],  # 30mm in meters
             discretization_steps=100,
-            tendon_config=TendonConfig(count=3, radius=0.030),  # 30mm radius
+            tendon_config=TendonConfig(count=3, radius=[0.030, 0.030, 0.030, 0.030]),
         )
 
         # Compute tendon analysis
@@ -265,9 +267,9 @@ class TestTendonRoutes:
         actuation_commands = result["actuation_commands"]
 
         # Validate basic structure
-        # With 3 backbone segments + 4 coupling lengths, we get 5 coupling elements
-        assert length_changes.shape == (3, 5), (
-            f"Expected shape (3, 5), got {length_changes.shape}"
+        # With 3 segments, we get 4 coupling elements (segments + 1)
+        assert length_changes.shape == (3, 4), (
+            f"Expected shape (3, 4), got {length_changes.shape}"
         )
 
         # Validate sign convention: negative = pull, positive = release
@@ -310,7 +312,7 @@ class TestTendonRoutes:
             backbone_lengths=[0.070, 0.070, 0.070],
             coupling_lengths=[0.030, 0.030, 0.030, 0.030],
             discretization_steps=100,
-            tendon_config=TendonConfig(count=3, radius=0.030),
+            tendon_config=TendonConfig(count=3, radius=[0.030, 0.030, 0.030, 0.030]),
         )
 
         straight_result = compute_pcc_with_tendons(straight_params)

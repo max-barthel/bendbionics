@@ -94,3 +94,18 @@ export async function handleTendonComputation(
 
   onResult(segments, configuration);
 }
+/**
+ * Handle regular PCC computation (without tendons)
+ */
+export async function handleRegularComputation(
+  params: PCCParams,
+  robotState: RobotState,
+  onResult: (segments: number[][][], configuration: RobotConfiguration) => void
+): Promise<void> {
+  const result = await robotAPI.computeKinematics(params);
+  const segments = isApiResponseWithResult(result)
+    ? result.data.result.robot_positions
+    : [];
+  const configuration = createBaseConfiguration(robotState);
+  onResult(segments, configuration);
+}

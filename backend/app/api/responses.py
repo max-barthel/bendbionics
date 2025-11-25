@@ -12,6 +12,8 @@ from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+from app.utils.serialization import convert_numpy_to_serializable
+
 # Generic type for response data
 T = TypeVar("T")
 
@@ -74,10 +76,11 @@ def get_request_id(request_or_id: Optional[Request | str] = None) -> Optional[st
 
 
 def serialize_response_data(data: Any) -> Any:
-    """Serialize response data, handling Pydantic models automatically.
+    """Serialize response data, handling Pydantic models and numpy arrays.
 
     Args:
-        data: Data to serialize (can be Pydantic model, dict, list, or primitive)
+        data: Data to serialize (can be Pydantic model, dict, list,
+            numpy array, or primitive)
 
     Returns:
         Serialized data ready for JSON response
@@ -85,20 +88,15 @@ def serialize_response_data(data: Any) -> Any:
     if data is None:
         return None
 
-    # Handle Pydantic models
+    # Handle Pydantic models first - convert to dict then serialize numpy arrays
     if isinstance(data, BaseModel):
-        return data.model_dump(mode="json")
+        # Convert Pydantic model to dict, then serialize any numpy arrays within
+        return convert_numpy_to_serializable(data.model_dump(mode="json"))
 
-    # Handle lists of Pydantic models
-    if isinstance(data, list):
-        return [serialize_response_data(item) for item in data]
-
-    # Handle dicts (recursively serialize values)
-    if isinstance(data, dict):
-        return {key: serialize_response_data(value) for key, value in data.items()}
-
-    # Return primitives as-is
-    return data
+    # Delegate numpy array and nested structure handling to
+    # convert_numpy_to_serializable
+    # This handles numpy arrays, scalars, lists, tuples, and dicts recursively
+    return convert_numpy_to_serializable(data)
 
 
 # Response helper functions

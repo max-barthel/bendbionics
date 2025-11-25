@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { NumberInput, Typography, UnitSelector } from '@/components/ui';
 import type { AngleUnit, LengthUnit } from '@/constants/unitConversions';
 import {
@@ -7,6 +6,7 @@ import {
   getDefaultUnit,
   getUnits,
 } from '@/utils/unitConversions';
+import { useState } from 'react';
 
 type UnitMode = 'angle' | 'length';
 
@@ -29,8 +29,11 @@ function ArrayInputGroup({
   const defaultUnit = getDefaultUnit(mode);
   const [unit, setUnit] = useState<AngleUnit | LengthUnit>(defaultUnit);
 
+  // Ensure values is always an array (defensive check)
+  const safeValues = Array.isArray(values) ? values : [];
+
   const handleValueChange = (index: number, newDisplayValue: number) => {
-    const updated = [...values];
+    const updated = [...safeValues];
     updated[index] = convertToSI(newDisplayValue, unit, mode);
     onChange(updated);
   };
@@ -61,7 +64,7 @@ function ArrayInputGroup({
       </div>
 
       <div className="grid gap-3 gap-y-4 ml-2 grid-cols-3">
-        {values.map((val, idx) => (
+        {safeValues.map((val, idx) => (
           <NumberInput
             key={`${label}-${idx}`}
             value={Number(convertFromSI(val, unit, mode).toFixed(4))} // Rounded for UI

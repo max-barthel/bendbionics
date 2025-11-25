@@ -113,7 +113,7 @@ export const EmailVerification: React.FC = () => {
     };
 
     void verifyEmail();
-  }, [searchParams]);
+  }, [searchParams, refreshUser, verificationState.status]);
 
   const handleContinue = () => {
     navigate('/auth');

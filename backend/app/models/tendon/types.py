@@ -2,6 +2,8 @@
 Tendon system types and configuration.
 """
 
+from typing import List
+
 import numpy as np
 from pydantic import BaseModel, field_validator
 
@@ -10,7 +12,8 @@ class TendonConfig(BaseModel):
     """Configuration for tendon routing in the robot."""
 
     count: int = 3  # Number of tendons
-    radius: float = 0.03  # Distance from center to tendon eyelets (m)
+    # Distance from center to tendon eyelets (m) per coupling element
+    radius: List[float] = [0.03]
 
     @field_validator("count")
     @classmethod
@@ -26,12 +29,19 @@ class TendonConfig(BaseModel):
     @field_validator("radius")
     @classmethod
     def validate_radius(cls, v):
-        if v <= 0:
-            msg = "Tendon radius must be positive"
+        if not isinstance(v, list):
+            msg = "Radius must be a list"
             raise ValueError(msg)
-        if v > 0.1:  # Max 10cm
-            msg = "Radius cannot exceed 10cm"
+        if len(v) == 0:
+            msg = "Radius list cannot be empty"
             raise ValueError(msg)
+        for i, radius_value in enumerate(v):
+            if radius_value <= 0:
+                msg = f"Tendon radius[{i}] must be positive"
+                raise ValueError(msg)
+            if radius_value > 1.0:  # Max 1m
+                msg = f"Radius[{i}] cannot exceed 1m"
+                raise ValueError(msg)
         return v
 
 

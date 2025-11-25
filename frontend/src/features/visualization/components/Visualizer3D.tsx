@@ -165,86 +165,82 @@ function Visualizer3D({
     );
   };
 
-  // Helper function to create tendon eyelets for a coupling point
-  // Uses routing_points directly from backend (no calculations)
-  const createTendonEyelets = (
-    couplingPos: number[],
-    couplingIndex: number,
-    routingPoints: number[][],
-    tendonCount: number
-  ) => {
-    const elements: React.ReactElement[] = [];
-    const x = Number(couplingPos[0]) || 0;
-    const y = Number(couplingPos[1]) || 0;
-    const z = Number(couplingPos[2]) || 0;
-
-    // Use routing_points directly from backend (no calculations)
-    for (let i = 0; i < tendonCount; i++) {
-      const eyeletPos = routingPoints[i];
-      if (!eyeletPos || eyeletPos.length < 3) continue;
-
-      const eyeletX = Number(eyeletPos[0]) || 0;
-      const eyeletY = Number(eyeletPos[1]) || 0;
-      const eyeletZ = Number(eyeletPos[2]) || 0;
-
-      // Create eyelet sphere and tendon connection line
-      elements.push(
-        <Sphere
-          key={`tendon-${couplingIndex}-${i}`}
-          args={[
-            VISUALIZATION_CONSTANTS.SPHERE_RADIUS,
-            VISUALIZATION_CONSTANTS.SPHERE_SEGMENTS,
-            VISUALIZATION_CONSTANTS.SPHERE_RINGS,
-          ]}
-          position={[eyeletX, eyeletY, eyeletZ]}
-          onClick={handleObjectClick}
-        >
-          <meshBasicMaterial color="#000000" />
-        </Sphere>,
-        <Line
-          key={`tendon-line-${couplingIndex}-${i}`}
-          points={[
-            [eyeletX, eyeletY, eyeletZ],
-            [x, y, z],
-          ]}
-          color="#9ca3af"
-          lineWidth={1}
-        />
-      );
+  // Generate tendon eyelets and connections with proper transformations
+  const tendonElements = useMemo(() => {
+    if (!tendonConfig || !tendonAnalysis?.coupling_data) {
+      return [];
     }
 
-    return elements;
-  };
+    // Helper function to create tendon eyelets for a coupling point
+    // Uses routing_points directly from backend (no calculations)
+    const createTendonEyelets = (
+      couplingPos: number[],
+      couplingIndex: number,
+      routingPoints: number[][],
+      tendonCount: number
+    ) => {
+      const elements: React.ReactElement[] = [];
+      const x = Number(couplingPos[0]) || 0;
+      const y = Number(couplingPos[1]) || 0;
+      const z = Number(couplingPos[2]) || 0;
 
-  // Helper function to create tendon routing lines
-  const createTendonRouting = (
-    couplingPositions: number[][][],
-    tendonCount: number,
-    tendonAnalysis: NonNullable<Visualizer3DProps['tendonAnalysis']>
-  ) => {
-    const elements: React.ReactElement[] = [];
+      // Use routing_points directly from backend (no calculations)
+      for (let i = 0; i < tendonCount; i++) {
+        const eyeletPos = routingPoints[i];
+        if (!eyeletPos || eyeletPos.length < 3) continue;
 
-    for (
-      let couplingIndex = 0;
-      couplingIndex < couplingPositions.length - 1;
-      couplingIndex++
-    ) {
+        const eyeletX = Number(eyeletPos[0]) || 0;
+        const eyeletY = Number(eyeletPos[1]) || 0;
+        const eyeletZ = Number(eyeletPos[2]) || 0;
+
+        // Create eyelet sphere and tendon connection line
+        elements.push(
+          <Sphere
+            key={`tendon-${couplingIndex}-${i}`}
+            args={[
+              VISUALIZATION_CONSTANTS.SPHERE_RADIUS,
+              VISUALIZATION_CONSTANTS.SPHERE_SEGMENTS,
+              VISUALIZATION_CONSTANTS.SPHERE_RINGS,
+            ]}
+            position={[eyeletX, eyeletY, eyeletZ]}
+            onClick={handleObjectClick}
+          >
+            <meshBasicMaterial color="#000000" />
+          </Sphere>,
+          <Line
+            key={`tendon-line-${couplingIndex}-${i}`}
+            points={[
+              [eyeletX, eyeletY, eyeletZ],
+              [x, y, z],
+            ]}
+            color="#9ca3af"
+            lineWidth={1}
+          />
+        );
+      }
+
+      return elements;
+    };
+
+    // Helper function to create first pseudo tendon segment (vertical line from first eyelet to origin plane)
+    // This segment is fixed length and never changes, purely for visualization
+    const createFirstPseudoSegment = (
+      routingPoints: number[][][],
+      tendonCount: number,
+      tendonAnalysis: NonNullable<Visualizer3DProps['tendonAnalysis']>
+    ) => {
+      const elements: React.ReactElement[] = [];
+
+      // Check if we have routing points for the first coupling
+      const firstCouplingRoutingPoints = routingPoints[0];
+      if (!firstCouplingRoutingPoints || firstCouplingRoutingPoints.length === 0) {
+        return elements;
+      }
+
+      // Create vertical lines from each tendon's first eyelet down to the origin plane (z=0)
       for (let tendonIndex = 0; tendonIndex < tendonCount; tendonIndex++) {
-        const currentEyelet =
-          tendonAnalysis.tendon_analysis?.routing_points?.[couplingIndex]?.[
-            tendonIndex
-          ];
-        const nextEyelet =
-          tendonAnalysis.tendon_analysis?.routing_points?.[couplingIndex + 1]?.[
-            tendonIndex
-          ];
-
-        if (
-          !currentEyelet ||
-          !nextEyelet ||
-          currentEyelet.length < 3 ||
-          nextEyelet.length < 3
-        ) {
+        const firstEyelet = firstCouplingRoutingPoints[tendonIndex];
+        if (!firstEyelet || firstEyelet.length < 3) {
           continue;
         }
 
@@ -252,12 +248,14 @@ function Visualizer3D({
         const isActive = isTendonActive(tendonId, tendonAnalysis);
         const tendonColor = getTendonColor(tendonId);
 
+        // First pseudo segment: vertical line from first eyelet to origin plane
+        // Same styling as normal segments (same color, dashed when not active)
         elements.push(
           <Line
-            key={`tendon-routing-${couplingIndex}-${tendonIndex}`}
+            key={`tendon-pseudo-0-${tendonIndex}`}
             points={[
-              [currentEyelet[0] || 0, currentEyelet[1] || 0, currentEyelet[2] || 0],
-              [nextEyelet[0] || 0, nextEyelet[1] || 0, nextEyelet[2] || 0],
+              [firstEyelet[0] || 0, firstEyelet[1] || 0, firstEyelet[2] || 0],
+              [firstEyelet[0] || 0, firstEyelet[1] || 0, 0],
             ]}
             color={tendonColor}
             lineWidth={2}
@@ -265,16 +263,63 @@ function Visualizer3D({
           />
         );
       }
-    }
 
-    return elements;
-  };
+      return elements;
+    };
 
-  // Generate tendon eyelets and connections with proper transformations
-  const tendonElements = useMemo(() => {
-    if (!tendonConfig || !tendonAnalysis?.coupling_data) {
-      return [];
-    }
+    // Helper function to create tendon routing lines
+    const createTendonRouting = (
+      couplingPositions: number[][],
+      tendonCount: number,
+      tendonAnalysis: NonNullable<Visualizer3DProps['tendonAnalysis']>
+    ) => {
+      const elements: React.ReactElement[] = [];
+
+      for (
+        let couplingIndex = 0;
+        couplingIndex < couplingPositions.length - 1;
+        couplingIndex++
+      ) {
+        for (let tendonIndex = 0; tendonIndex < tendonCount; tendonIndex++) {
+          const currentEyelet =
+            tendonAnalysis.tendon_analysis?.routing_points?.[couplingIndex]?.[
+              tendonIndex
+            ];
+          const nextEyelet =
+            tendonAnalysis.tendon_analysis?.routing_points?.[couplingIndex + 1]?.[
+              tendonIndex
+            ];
+
+          if (
+            !currentEyelet ||
+            !nextEyelet ||
+            currentEyelet.length < 3 ||
+            nextEyelet.length < 3
+          ) {
+            continue;
+          }
+
+          const tendonId = (tendonIndex + 1).toString();
+          const isActive = isTendonActive(tendonId, tendonAnalysis);
+          const tendonColor = getTendonColor(tendonId);
+
+          elements.push(
+            <Line
+              key={`tendon-routing-${couplingIndex}-${tendonIndex}`}
+              points={[
+                [currentEyelet[0] || 0, currentEyelet[1] || 0, currentEyelet[2] || 0],
+                [nextEyelet[0] || 0, nextEyelet[1] || 0, nextEyelet[2] || 0],
+              ]}
+              color={tendonColor}
+              lineWidth={2}
+              dashed={!isActive}
+            />
+          );
+        }
+      }
+
+      return elements;
+    };
 
     const elements: React.ReactElement[] = [];
     const { count: tendonCount } = tendonConfig;
@@ -327,14 +372,18 @@ function Visualizer3D({
       );
     }
 
+    // Add first pseudo tendon segment (vertical line from first eyelet to origin plane)
+    // This segment is fixed length and never changes
+    if (routingPoints.length > 0) {
+      elements.push(
+        ...createFirstPseudoSegment(routingPoints, tendonCount, tendonAnalysis)
+      );
+    }
+
     // Add tendon routing lines between consecutive coupling elements
     if (couplingPositions.length > 1) {
       elements.push(
-        ...createTendonRouting(
-          tendonAnalysis.tendon_analysis?.routing_points || [],
-          tendonCount,
-          tendonAnalysis
-        )
+        ...createTendonRouting(couplingPositions, tendonCount, tendonAnalysis)
       );
     }
 

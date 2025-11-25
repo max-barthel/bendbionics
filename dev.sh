@@ -201,6 +201,17 @@ start_backend() {
     print_status "Syncing dependencies with uv..."
     uv sync
 
+    # Initialize database and run migrations (we're already in backend directory)
+    print_status "Initializing database and running migrations..."
+    uv run python setup_dev.py
+    DB_INIT_RESULT=$?
+
+    if [ $DB_INIT_RESULT -eq 0 ]; then
+        print_success "Database initialized and migrations applied"
+    else
+        print_warning "Database initialization had issues (continuing anyway)"
+    fi
+
     # Start backend using uv run
     uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
     BACKEND_PID=$!

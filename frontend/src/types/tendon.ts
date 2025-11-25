@@ -5,6 +5,6 @@
  */
 export interface TendonConfig {
   readonly count: number;
-  readonly radius: number;
+  readonly radius: number[];
 }
 
