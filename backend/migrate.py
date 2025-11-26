@@ -277,6 +277,7 @@ def apply_migration(
         migration_sql: SQL migration script (for SQL-based migrations)
         migration_func: Python function to run (for Python-based migrations)
     """
+    session = None
     try:
         session = next(get_session())
 
@@ -296,12 +297,14 @@ def apply_migration(
             session.execute(text(migration_sql))
         elif migration_func:
             if not migration_func(session):
+                logger.error(f"Migration function {migration_name} returned False")
                 session.rollback()
                 session.close()
                 return False
         else:
             logger.error(f"No migration SQL or function provided for {migration_name}")
-            session.close()
+            if session:
+                session.close()
             return False
 
         # Record migration
@@ -317,6 +320,14 @@ def apply_migration(
 
     except Exception as e:
         logger.error(f"❌ Error applying migration {migration_name}: {e}")
+        import traceback
+        logger.error(f"Migration error traceback:\n{traceback.format_exc()}")
+        if session:
+            try:
+                session.rollback()
+                session.close()
+            except Exception:
+                pass  # Ignore errors during cleanup
         return False
 
 
@@ -471,6 +482,7 @@ def run_migrations():
     logger.info("🔄 Checking for database migrations...")
 
     if not check_migration_needed():
+        logger.error("Failed to check migration status - cannot proceed")
         return False
 
     applied_migrations = get_applied_migrations()
@@ -488,14 +500,17 @@ def run_migrations():
     # Create backup before running migrations (if there are pending migrations)
     if pending_migrations:
         logger.info(
-            f"Found {len(pending_migrations)} pending migration(s), "
-            "creating backup..."
+            f"Found {len(pending_migrations)} pending migration(s): {pending_migrations}"
         )
+        logger.info("Creating backup before applying migrations...")
         backup_path = create_database_backup()
         if backup_path is None and database_has_data():
             logger.error(
                 "⚠️  Backup creation failed but database has data. "
                 "Aborting migrations for safety."
+            )
+            logger.error(
+                "Please ensure pg_dump is installed and backup directories are writable"
             )
             return False
         if backup_path:
@@ -570,15 +585,18 @@ def run_migrations():
 
     # Apply pending migrations
     for migration in migrations:
-        if (
-            migration["name"] not in applied_migrations
-            and not apply_migration(
+        if migration["name"] not in applied_migrations:
+            logger.info(f"Applying pending migration: {migration['name']}")
+            if not apply_migration(
                 migration["name"],
                 migration.get("sql"),
                 migration.get("func"),
-            )
-        ):
-            return False
+            ):
+                logger.error(
+                    f"Failed to apply migration: {migration['name']}. "
+                    "Stopping migration process."
+                )
+                return False
 
     # Clean up old backups after successful migrations
     if pending_migrations:
