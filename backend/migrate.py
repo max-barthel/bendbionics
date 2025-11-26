@@ -104,6 +104,28 @@ def get_backup_directory() -> Path:
     return backup_dir
 
 
+def is_permission_error(error: Exception) -> bool:
+    """Check if an error is a database permission error."""
+    error_str = str(error)
+    error_type = type(error).__name__
+
+    # Check for PostgreSQL permission errors
+    permission_indicators = [
+        "permission denied",
+        "InsufficientPrivilege",
+        "insufficient_privilege",
+        "access denied",
+    ]
+
+    return (
+        "InsufficientPrivilege" in error_type
+        or any(
+            indicator.lower() in error_str.lower()
+            for indicator in permission_indicators
+        )
+    )
+
+
 def database_has_data() -> bool:
     """Check if database has any data (users or presets)."""
     try:
@@ -121,7 +143,13 @@ def database_has_data() -> bool:
         return user_count > 0 or preset_count > 0
 
     except Exception as e:
-        logger.warning(f"Could not check if database has data: {e}")
+        if is_permission_error(e):
+            logger.warning(
+                f"Permission error checking database data: {e}\n"
+                "This indicates the database user lacks necessary privileges."
+            )
+        else:
+            logger.warning(f"Could not check if database has data: {e}")
         # Assume it has data to be safe
         return True
 
@@ -197,7 +225,18 @@ def create_database_backup() -> Optional[Path]:
         )
 
         if result.returncode != 0:
-            logger.error(f"Backup failed: {result.stderr}")
+            error_output = result.stderr or result.stdout or ""
+            logger.error(f"Backup failed: {error_output}")
+
+            # Check if this is a permission error
+            if "permission denied" in error_output.lower():
+                logger.error(
+                    "⚠️  Database permission error detected!\n"
+                    "The database user lacks necessary privileges for backups.\n"
+                    "To fix this, run the permission fix script:\n"
+                    "  sudo scripts/deploy/fix-db-permissions.sh\n"
+                    "Or manually grant privileges as the postgres superuser."
+                )
             return None
 
         # Verify backup file exists and has content
@@ -432,6 +471,92 @@ def migrate_preset_to_jsonb_with_metadata(session: Session) -> bool:
         return False
 
 
+def check_and_handle_permission_error() -> bool:
+    """Check for permission errors and log helpful error message.
+
+    Returns:
+        True if permission error was detected (migration should stop)
+        False if no permission error (migration can continue)
+    """
+    try:
+        session = next(get_session())
+        # Try a simple query to check permissions
+        session.execute(text('SELECT 1 FROM "user" LIMIT 1'))
+        session.close()
+        return False
+    except Exception as e:
+        if is_permission_error(e):
+            logger.error(
+                "⚠️  Database permission error detected!\n"
+                "The database user lacks necessary privileges for "
+                "migrations and backups.\n"
+                "\n"
+                "To fix this issue:\n"
+                "1. Run the permission fix script:\n"
+                "   sudo scripts/deploy/fix-db-permissions.sh\n"
+                "\n"
+                "2. Or manually grant privileges as postgres superuser:\n"
+                "   sudo -u postgres psql -d bendbionics -c "
+                "'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public "
+                "TO bendbionics_user;'\n"
+                "   sudo -u postgres psql -d bendbionics -c "
+                "'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public "
+                "TO bendbionics_user;'\n"
+                "\n"
+                "After fixing permissions, run migrations again."
+            )
+            return True
+        return False
+
+
+def handle_migration_backup(pending_migrations: list) -> bool:
+    """Handle backup creation before migrations.
+
+    Args:
+        pending_migrations: List of pending migration names
+
+    Returns:
+        True if backup succeeded or is not needed, False if backup failed critically
+    """
+    if not pending_migrations:
+        logger.info("No pending migrations - skipping backup")
+        return True
+
+    logger.info(
+        f"Found {len(pending_migrations)} pending migration(s): "
+        f"{pending_migrations}"
+    )
+    logger.info("Creating backup before applying migrations...")
+    backup_path = create_database_backup()
+
+    if backup_path is None:
+        if check_and_handle_permission_error():
+            return False
+
+        # If no permission error, check if database has data
+        has_data = database_has_data()
+        if has_data:
+            logger.error(
+                "⚠️  Backup creation failed but database has data. "
+                "Aborting migrations for safety."
+            )
+            logger.error(
+                "Possible causes:\n"
+                "  - Database permission errors (run fix-db-permissions.sh)\n"
+                "  - pg_dump not installed\n"
+                "  - Backup directory not writable\n"
+                "\n"
+                "Please resolve the backup issue before running migrations."
+            )
+            return False
+
+        logger.info("Backup skipped (database is empty - fresh install)")
+    else:
+        logger.info(f"✅ Backup ready: {backup_path}")
+
+    return True
+
+
 def run_migrations():
     """Run all pending migrations with automatic backup."""
     logger.info("🔄 Checking for database migrations...")
@@ -452,30 +577,25 @@ def run_migrations():
         name for name in all_migrations if name not in applied_migrations
     ]
 
-    # Create backup before running migrations (if there are pending migrations)
-    if pending_migrations:
-        logger.info(
-            f"Found {len(pending_migrations)} pending migration(s): "
-            f"{pending_migrations}"
-        )
-        logger.info("Creating backup before applying migrations...")
-        backup_path = create_database_backup()
-        if backup_path is None and database_has_data():
-            logger.error(
-                "⚠️  Backup creation failed but database has data. "
-                "Aborting migrations for safety."
-            )
-            logger.error(
-                "Please ensure pg_dump is installed and backup directories are writable"
-            )
-            return False
-        if backup_path:
-            logger.info(f"✅ Backup ready: {backup_path}")
-    else:
-        logger.info("No pending migrations - skipping backup")
+    # Create backup before running migrations
+    if not handle_migration_backup(pending_migrations):
+        return False
 
-    # Define available migrations
-    migrations = [
+    # Apply pending migrations
+    if not apply_pending_migrations(applied_migrations):
+        return False
+
+    # Clean up old backups after successful migrations
+    if pending_migrations:
+        cleanup_old_backups()
+
+    logger.info("✅ All migrations completed successfully")
+    return True
+
+
+def get_migration_definitions():
+    """Get all available migration definitions."""
+    return [
         {
             "name": "add_email_verification_fields",
             "sql": """
@@ -539,7 +659,18 @@ def run_migrations():
         },
     ]
 
-    # Apply pending migrations
+
+def apply_pending_migrations(applied_migrations: list) -> bool:
+    """Apply all pending migrations.
+
+    Args:
+        applied_migrations: List of already applied migration names
+
+    Returns:
+        True if all migrations succeeded, False otherwise
+    """
+    migrations = get_migration_definitions()
+
     for migration in migrations:
         if migration["name"] not in applied_migrations:
             logger.info(f"Applying pending migration: {migration['name']}")
@@ -554,11 +685,6 @@ def run_migrations():
                 )
                 return False
 
-    # Clean up old backups after successful migrations
-    if pending_migrations:
-        cleanup_old_backups()
-
-    logger.info("✅ All migrations completed successfully")
     return True
 
 
