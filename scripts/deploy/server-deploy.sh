@@ -171,7 +171,7 @@ copy_application_files() {
         exit 1
     fi
 
-    # Copy startup script
+    # Copy startup script and deployment scripts
     if [ -f "$SCRIPT_DIR/start-backend.sh" ]; then
         # Create scripts/deploy directory if it doesn't exist
         mkdir -p "$APP_DIR/scripts/deploy"
@@ -181,6 +181,14 @@ copy_application_files() {
     else
         print_error "Startup script not found in deployment package"
         exit 1
+    fi
+
+    # Copy fix-db-permissions.sh script if it exists
+    if [ -f "$SCRIPT_DIR/scripts/deploy/fix-db-permissions.sh" ]; then
+        mkdir -p "$APP_DIR/scripts/deploy"
+        cp "$SCRIPT_DIR/scripts/deploy/fix-db-permissions.sh" "$APP_DIR/scripts/deploy/"
+        chmod +x "$APP_DIR/scripts/deploy/fix-db-permissions.sh"
+        print_status "Database permission fix script copied"
     fi
 
     # Copy DDNS scripts (preserve source files for setup)
@@ -717,6 +725,9 @@ install_postgresql() {
 initialize_database() {
     print_status "Setting up PostgreSQL database..."
 
+    # Get the directory where this script is located (for finding deployment scripts)
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
     # Install PostgreSQL if not present
     install_postgresql
 
@@ -727,6 +738,29 @@ initialize_database() {
         exit 1
     else
         print_success "Database already exists - preserving user data"
+    fi
+
+    # Fix database permissions before running migrations
+    # This ensures the database user has all necessary privileges
+    print_status "Ensuring database permissions are correct..."
+
+    # Try to find the fix script in APP_DIR first (after deployment), then SCRIPT_DIR (during deployment)
+    FIX_SCRIPT=""
+    if [ -f "$APP_DIR/scripts/deploy/fix-db-permissions.sh" ]; then
+        FIX_SCRIPT="$APP_DIR/scripts/deploy/fix-db-permissions.sh"
+    elif [ -f "$SCRIPT_DIR/scripts/deploy/fix-db-permissions.sh" ]; then
+        FIX_SCRIPT="$SCRIPT_DIR/scripts/deploy/fix-db-permissions.sh"
+    fi
+
+    if [ -n "$FIX_SCRIPT" ]; then
+        if bash "$FIX_SCRIPT" 2>&1; then
+            print_success "Database permissions verified"
+        else
+            print_warning "Permission fix script encountered issues (continuing anyway - script is idempotent)"
+        fi
+    else
+        print_warning "Permission fix script not found - continuing with database setup"
+        print_warning "If permission errors occur, run: sudo $APP_DIR/scripts/deploy/fix-db-permissions.sh"
     fi
 
     # Initialize database tables and run migrations (safe to run multiple times)

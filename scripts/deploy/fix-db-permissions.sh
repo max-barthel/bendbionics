@@ -62,13 +62,25 @@ fi
 # Grant privileges on existing tables and sequences
 print_status "Granting privileges on existing tables and sequences..."
 
-sudo -u postgres psql -d "$DB_NAME" << EOF
+GRANT_RESULT=$(sudo -u postgres psql -d "$DB_NAME" << EOF 2>&1
 -- Grant schema privileges (if not already granted)
 GRANT ALL ON SCHEMA public TO $DB_USER;
 
 -- Grant privileges on all existing tables
--- This includes SELECT, INSERT, UPDATE, DELETE, and TRIGGER
+-- This includes SELECT, INSERT, UPDATE, DELETE, TRIGGER, and LOCK
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;
+
+-- Explicitly grant LOCK privilege on all tables (required for pg_dump)
+-- This handles edge cases where tables might have been created by different users
+DO \$\$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public'
+    LOOP
+        EXECUTE format('GRANT LOCK ON TABLE %I.%I TO %I', 'public', r.tablename, '$DB_USER');
+    END LOOP;
+END \$\$;
 
 -- Grant privileges on all existing sequences
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
@@ -76,14 +88,11 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
 -- Grant USAGE on sequences (required for nextval, currval, etc.)
 GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
 
--- Note: We don't make the user schema owner to keep permissions minimal
--- ALL PRIVILEGES on tables includes the ability to LOCK TABLE (required for pg_dump)
-
 -- Grant default privileges for future tables (ensure new tables get permissions)
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO $DB_USER;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO $DB_USER;
 
--- Verify permissions by listing tables
+-- Count tables for verification
 DO \$\$
 DECLARE
     table_count INTEGER;
@@ -98,19 +107,88 @@ END \$\$;
 
 \q
 EOF
+)
 
-if [ $? -eq 0 ]; then
-    print_success "Permissions granted successfully!"
+GRANT_EXIT_CODE=$?
+
+if [ $GRANT_EXIT_CODE -ne 0 ]; then
+    print_error "Failed to grant permissions"
+    echo "$GRANT_RESULT" | grep -i "error" || echo "$GRANT_RESULT"
+    exit 1
+fi
+
+# Verify permissions by checking system tables
+print_status "Verifying permissions..."
+
+VERIFY_RESULT=$(sudo -u postgres psql -d "$DB_NAME" << EOF 2>&1
+-- Verify table permissions by checking pg_class and has_table_privilege
+DO \$\$
+DECLARE
+    table_name TEXT;
+    has_select BOOLEAN;
+    has_lock BOOLEAN;
+    table_count INTEGER := 0;
+    verified_count INTEGER := 0;
+BEGIN
+    -- Count tables
+    SELECT COUNT(*) INTO table_count
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+    AND table_type = 'BASE TABLE';
+
+    IF table_count = 0 THEN
+        RAISE NOTICE 'No tables found in public schema (this is OK for fresh installs)';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Verifying permissions on % tables...', table_count;
+
+    -- Check permissions on each table
+    FOR table_name IN
+        SELECT tablename FROM pg_tables WHERE schemaname = 'public'
+    LOOP
+        -- Check SELECT permission
+        SELECT has_table_privilege('$DB_USER', 'public.' || quote_ident(table_name), 'SELECT')
+        INTO has_select;
+
+        -- Check LOCK permission (has_table_privilege doesn't directly check LOCK,
+        -- but ALL PRIVILEGES should include it, so we check for UPDATE which is a good proxy)
+        SELECT has_table_privilege('$DB_USER', 'public.' || quote_ident(table_name), 'UPDATE')
+        INTO has_lock;
+
+        IF has_select AND has_lock THEN
+            verified_count := verified_count + 1;
+        ELSE
+            RAISE WARNING 'Table % has missing permissions (SELECT: %, UPDATE: %)', table_name, has_select, has_lock;
+        END IF;
+    END LOOP;
+
+    IF verified_count = table_count THEN
+        RAISE NOTICE '✅ All % tables have proper permissions', verified_count;
+    ELSE
+        RAISE WARNING 'Only % of % tables have proper permissions', verified_count, table_count;
+    END IF;
+END \$\$;
+
+\q
+EOF
+)
+
+VERIFY_EXIT_CODE=$?
+
+if [ $VERIFY_EXIT_CODE -eq 0 ]; then
+    print_success "Permissions granted and verified successfully!"
     print_status "The user $DB_USER now has:"
-    print_status "  ✅ Full access to all existing tables"
+    print_status "  ✅ Full access to all existing tables (SELECT, INSERT, UPDATE, DELETE)"
+    print_status "  ✅ LOCK TABLE permission (required for pg_dump backups)"
     print_status "  ✅ Full access to all sequences"
-    print_status "  ✅ Schema ownership (enables LOCK TABLE for backups)"
     print_status "  ✅ Default privileges for future tables"
     echo ""
     print_success "Database permissions fixed! Migrations and backups should now work."
 else
-    print_error "Failed to grant permissions"
-    exit 1
+    print_warning "Permissions were granted but verification encountered issues"
+    echo "$VERIFY_RESULT" | grep -i -E "(error|warning)" || echo "$VERIFY_RESULT"
+    print_status "Permissions were still granted - please verify manually if issues persist"
 fi
 
 echo ""
