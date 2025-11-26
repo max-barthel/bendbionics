@@ -170,6 +170,11 @@ jobs:
                   chmod +x "$DEPLOY_DIR/deploy.sh"
                   chmod +x "$DEPLOY_DIR/start-backend.sh"
 
+                  # Copy database permission fix script
+                  mkdir -p "$DEPLOY_DIR/scripts/deploy"
+                  cp scripts/deploy/fix-db-permissions.sh "$DEPLOY_DIR/scripts/deploy/fix-db-permissions.sh"
+                  chmod +x "$DEPLOY_DIR/scripts/deploy/fix-db-permissions.sh"
+
                   # Copy PostgreSQL setup script
                   if [ -f "scripts/deploy/setup-postgres.sh" ]; then
                       cp scripts/deploy/setup-postgres.sh "$DEPLOY_DIR/setup-postgres.sh"
