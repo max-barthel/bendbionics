@@ -30,7 +30,7 @@ env:
     BUN_VERSION: "latest"
     PYTHON_VERSION: "3.11"
     CI: "true"
-    HUSKY: "0"  # Suppress git hooks in CI
+    HUSKY: "0" # Suppress git hooks in CI
     # Server configuration (matches deploy-workflow.sh)
     SERVER_USER: "serveruser"
     SERVER_HOST: ${{ secrets.SERVER_HOST }}
@@ -59,6 +59,12 @@ jobs:
         steps:
             - name: 🎯 Checkout code
               uses: actions/checkout@v6
+
+            - name: 🔧 Initialize deployment variables
+              run: |
+                  # Initialize deployment variables (will be set by build step if not skipped)
+                  echo "DEPLOY_PACKAGE=" >> $GITHUB_ENV
+                  echo "PACKAGE_NAME=" >> $GITHUB_ENV
 
             - name: 🔧 Setup Bun
               uses: oven-sh/setup-bun@v2
@@ -323,7 +329,7 @@ jobs:
                   echo "✅ SSH known hosts configured"
 
             - name: 📤 Upload to server
-              if: ${{ !inputs.skip_upload }}
+              if: ${{ !inputs.skip_upload && !inputs.skip_build }}
               run: |
                   # Use cached deployment package
                   DEPLOY_PACKAGE="${{ env.DEPLOY_PACKAGE }}"
@@ -347,7 +353,7 @@ jobs:
                   rm -f "${PACKAGE_NAME}.tar.gz"
 
             - name: 🚀 Deploy on server
-              if: ${{ !inputs.skip_deploy }}
+              if: ${{ !inputs.skip_deploy && !inputs.skip_build }}
               run: |
                   # Use cached package name
                   PACKAGE_NAME="${{ env.PACKAGE_NAME }}"
