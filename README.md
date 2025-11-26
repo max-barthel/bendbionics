@@ -12,7 +12,7 @@ BendBionics is a **web-based simulation platform** optimized for deployment on U
 - **Backend**: FastAPI + Python 3.11+ with uv package manager
 - **Design**: macOS Tahoe 26 aesthetic with liquid glass styling
 - **Deployment**: nginx + systemd + SSL certificates (Let's Encrypt)
-- **Database**: PostgreSQL (production) / SQLite (development)
+- **Database**: PostgreSQL
 - **CI/CD**: GitHub Actions for automated testing and deployment
 
 ## Key Features
@@ -71,7 +71,7 @@ BendBionics is a **web-based simulation platform** optimized for deployment on U
 
 ### Production Deployment
 
-BendBionics is deployed at **https://bendbionics.com**
+BendBionics is deployed at **<https://bendbionics.com>**
 
 ```bash
 # Complete deployment workflow (build, upload, deploy)
@@ -86,6 +86,7 @@ BendBionics is deployed at **https://bendbionics.com**
 ```
 
 The deployment workflow handles:
+
 - Building the application
 - Uploading to server
 - Deploying on server
@@ -137,7 +138,7 @@ For detailed script documentation, see [SCRIPTS.md](./SCRIPTS.md).
 - **Backend**: FastAPI, Python 3.11+, SQLAlchemy, SQLModel
 - **Backend Package Manager**: uv (modern, fast Python package manager)
 - **Deployment**: nginx, systemd, Let's Encrypt
-- **Database**: PostgreSQL (production) / SQLite (development)
+- **Database**: PostgreSQL
 - **Testing**: Vitest (frontend), Playwright (integration), pytest (backend)
 - **Documentation**: Storybook (component documentation)
 

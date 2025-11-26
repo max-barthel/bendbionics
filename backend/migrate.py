@@ -333,75 +333,37 @@ def apply_migration(
 
 
 
-def _add_sqlite_metadata_columns(session: Session) -> None:
-    """Add metadata columns to SQLite preset table."""
-    # Add segments column
-    try:
-        session.execute(
-            text("ALTER TABLE preset ADD COLUMN segments INTEGER")
-        )
-        session.execute(
-            text(
-                "CREATE INDEX IF NOT EXISTS "
-                "ix_preset_segments ON preset(segments)"
-            )
-        )
-    except Exception:
-        pass  # Column might already exist
-
-    # Add tendon_count column
-    try:
-        session.execute(
-            text("ALTER TABLE preset ADD COLUMN tendon_count INTEGER")
-        )
-        session.execute(
-            text(
-                "CREATE INDEX IF NOT EXISTS "
-                "ix_preset_tendon_count ON preset(tendon_count)"
-            )
-        )
-    except Exception:
-        pass  # Column might already exist
-
-
 def migrate_preset_to_jsonb_with_metadata(session: Session) -> bool:
-    """Migrate preset table to use JSONB/JSON with metadata columns.
+    """Migrate preset table to use JSONB with metadata columns.
 
     Steps:
     1. Add metadata columns (segments, tendon_count) as nullable
     2. Migrate existing data: normalize JSON, extract metadata
-    3. Change configuration column type to JSONB/JSON
+    3. Change configuration column type to JSONB
     """
     try:
-        is_postgresql = "postgresql" in settings.database_url
-
         # Step 1: Add metadata columns if they don't exist
         logger.info("Step 1: Adding metadata columns...")
-        if is_postgresql:
-            # PostgreSQL
-            session.execute(text("""
-                DO $$
-                BEGIN
-                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
-                                  WHERE table_name = 'preset'
-                                  AND column_name = 'segments') THEN
-                        ALTER TABLE preset ADD COLUMN segments INTEGER;
-                        CREATE INDEX IF NOT EXISTS
-                            ix_preset_segments ON preset(segments);
-                    END IF;
+        session.execute(text("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                              WHERE table_name = 'preset'
+                              AND column_name = 'segments') THEN
+                    ALTER TABLE preset ADD COLUMN segments INTEGER;
+                    CREATE INDEX IF NOT EXISTS
+                        ix_preset_segments ON preset(segments);
+                END IF;
 
-                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
-                                  WHERE table_name = 'preset'
-                                  AND column_name = 'tendon_count') THEN
-                        ALTER TABLE preset ADD COLUMN tendon_count INTEGER;
-                        CREATE INDEX IF NOT EXISTS
-                            ix_preset_tendon_count ON preset(tendon_count);
-                    END IF;
-                END $$;
-            """))
-        else:
-            # SQLite
-            _add_sqlite_metadata_columns(session)
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                              WHERE table_name = 'preset'
+                              AND column_name = 'tendon_count') THEN
+                    ALTER TABLE preset ADD COLUMN tendon_count INTEGER;
+                    CREATE INDEX IF NOT EXISTS
+                        ix_preset_tendon_count ON preset(tendon_count);
+                END IF;
+            END $$;
+        """))
 
         session.commit()
 
@@ -437,34 +399,27 @@ def migrate_preset_to_jsonb_with_metadata(session: Session) -> bool:
         session.commit()
         logger.info(f"Migrated {migrated_count} presets")
 
-        # Step 3: Change configuration column type to JSONB/JSON
-        logger.info("Step 3: Converting configuration column to JSONB/JSON...")
-        if is_postgresql:
-            # PostgreSQL: Convert TEXT to JSONB
-            session.execute(text("""
-                DO $$
-                BEGIN
-                    -- Check if column is already JSONB
-                    IF EXISTS (
-                        SELECT 1 FROM information_schema.columns
-                        WHERE table_name = 'preset'
-                        AND column_name = 'configuration'
-                        AND data_type = 'jsonb'
-                    ) THEN
-                        RAISE NOTICE 'Configuration column is already JSONB';
-                    ELSE
-                        -- Convert TEXT to JSONB
-                        ALTER TABLE preset
-                        ALTER COLUMN configuration TYPE JSONB
-                        USING configuration::jsonb;
-                    END IF;
-                END $$;
-            """))
-        else:
-            # SQLite: JSON is stored as TEXT, but we'll ensure it's valid JSON
-            # SQLite doesn't have a separate JSON type, it's just TEXT
-            # The application layer will handle JSON parsing
-            logger.info("SQLite uses TEXT for JSON - no column type change needed")
+        # Step 3: Change configuration column type to JSONB
+        logger.info("Step 3: Converting configuration column to JSONB...")
+        session.execute(text("""
+            DO $$
+            BEGIN
+                -- Check if column is already JSONB
+                IF EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'preset'
+                    AND column_name = 'configuration'
+                    AND data_type = 'jsonb'
+                ) THEN
+                    RAISE NOTICE 'Configuration column is already JSONB';
+                ELSE
+                    -- Convert TEXT to JSONB
+                    ALTER TABLE preset
+                    ALTER COLUMN configuration TYPE JSONB
+                    USING configuration::jsonb;
+                END IF;
+            END $$;
+        """))
 
         session.commit()
         logger.info("✅ Preset migration completed successfully")
@@ -500,7 +455,8 @@ def run_migrations():
     # Create backup before running migrations (if there are pending migrations)
     if pending_migrations:
         logger.info(
-            f"Found {len(pending_migrations)} pending migration(s): {pending_migrations}"
+            f"Found {len(pending_migrations)} pending migration(s): "
+            f"{pending_migrations}"
         )
         logger.info("Creating backup before applying migrations...")
         backup_path = create_database_backup()

@@ -81,7 +81,7 @@ def check_environment():
         logger.info("📝 Example .env content:")
         logger.info("""
    # Database
-   DATABASE_URL=postgresql://postgres:password@localhost:5432/bendbionics.db
+   DATABASE_URL=postgresql://postgres:password@localhost:5432/bendbionics
 
 # Mailgun (for email verification)
 MAILGUN_API_KEY=your-mailgun-api-key
@@ -123,7 +123,7 @@ def main():
             logger.info("   3. Test the email verification flow")
             logger.info("\n📝 Database connection:")
             logger.info("   Host: localhost:5432")
-            logger.info("   Database: bendbionics.db")
+            logger.info("   Database: bendbionics")
             logger.info("   Username: postgres")
             return True
         logger.warning("\n⚠️  Database created but migrations failed")
