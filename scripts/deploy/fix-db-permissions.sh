@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # PostgreSQL Permission Fix Script for BendBionics
-# This script grants necessary privileges to the database user for migrations and backups
+# This script transfers ownership and grants necessary privileges to the database user
+# for migrations and backups. Ownership is required for ALTER TABLE statements in migrations.
 # Safe to run multiple times (idempotent)
 
 set -e  # Exit on error
@@ -58,6 +59,82 @@ if ! sudo -u postgres psql -t -c "SELECT 1 FROM pg_user WHERE usename = '$DB_USE
     print_error "Please run setup-postgres.sh first to create the user"
     exit 1
 fi
+
+# Transfer ownership of all tables and sequences to bendbionics_user
+# This is required for migrations to run ALTER TABLE statements
+print_status "Transferring ownership of tables and sequences to $DB_USER..."
+
+OWNERSHIP_RESULT=$(sudo -u postgres psql -d "$DB_NAME" << EOF 2>&1
+-- Transfer ownership of all tables in public schema
+DO \$\$
+DECLARE
+    r RECORD;
+    table_count INTEGER := 0;
+BEGIN
+    -- Count tables
+    SELECT COUNT(*) INTO table_count
+    FROM pg_tables
+    WHERE schemaname = 'public';
+
+    IF table_count = 0 THEN
+        RAISE NOTICE 'No tables found in public schema (this is OK for fresh installs)';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Transferring ownership of % tables...', table_count;
+
+    -- Transfer ownership of each table
+    FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public'
+    LOOP
+        EXECUTE format('ALTER TABLE %I.%I OWNER TO %I', 'public', r.tablename, '$DB_USER');
+    END LOOP;
+
+    RAISE NOTICE '✅ All tables ownership transferred';
+END \$\$;
+
+-- Transfer ownership of all sequences in public schema
+DO \$\$
+DECLARE
+    r RECORD;
+    sequence_count INTEGER := 0;
+BEGIN
+    -- Count sequences
+    SELECT COUNT(*) INTO sequence_count
+    FROM pg_sequences
+    WHERE schemaname = 'public';
+
+    IF sequence_count = 0 THEN
+        RAISE NOTICE 'No sequences found in public schema';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Transferring ownership of % sequences...', sequence_count;
+
+    -- Transfer ownership of each sequence
+    FOR r IN
+        SELECT sequence_name
+        FROM information_schema.sequences
+        WHERE sequence_schema = 'public'
+    LOOP
+        EXECUTE format('ALTER SEQUENCE %I.%I OWNER TO %I', 'public', r.sequence_name, '$DB_USER');
+    END LOOP;
+
+    RAISE NOTICE '✅ All sequences ownership transferred';
+END \$\$;
+
+\q
+EOF
+)
+
+OWNERSHIP_EXIT_CODE=$?
+
+if [ $OWNERSHIP_EXIT_CODE -ne 0 ]; then
+    print_error "Failed to transfer ownership"
+    echo "$OWNERSHIP_RESULT" | grep -i "error" || echo "$OWNERSHIP_RESULT"
+    exit 1
+fi
+
+print_success "Ownership transferred successfully"
 
 # Grant privileges on existing tables and sequences
 print_status "Granting privileges on existing tables and sequences..."
@@ -117,18 +194,20 @@ if [ $GRANT_EXIT_CODE -ne 0 ]; then
     exit 1
 fi
 
-# Verify permissions by checking system tables
-print_status "Verifying permissions..."
+# Verify ownership and permissions by checking system tables
+print_status "Verifying ownership and permissions..."
 
 VERIFY_RESULT=$(sudo -u postgres psql -d "$DB_NAME" << EOF 2>&1
--- Verify table permissions by checking pg_class and has_table_privilege
+-- Verify table ownership and permissions
 DO \$\$
 DECLARE
     table_name TEXT;
+    table_owner TEXT;
     has_select BOOLEAN;
     has_lock BOOLEAN;
     table_count INTEGER := 0;
-    verified_count INTEGER := 0;
+    ownership_verified_count INTEGER := 0;
+    permission_verified_count INTEGER := 0;
 BEGIN
     -- Count tables
     SELECT COUNT(*) INTO table_count
@@ -141,32 +220,93 @@ BEGIN
         RETURN;
     END IF;
 
-    RAISE NOTICE 'Verifying permissions on % tables...', table_count;
+    RAISE NOTICE 'Verifying ownership and permissions on % tables...', table_count;
 
-    -- Check permissions on each table
+    -- Check ownership and permissions on each table
     FOR table_name IN
         SELECT tablename FROM pg_tables WHERE schemaname = 'public'
     LOOP
+        -- Check ownership
+        SELECT pg_get_userbyid(c.relowner) INTO table_owner
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public' AND c.relname = table_name;
+
+        IF table_owner = '$DB_USER' THEN
+            ownership_verified_count := ownership_verified_count + 1;
+        ELSE
+            RAISE WARNING 'Table % is owned by % (expected: $DB_USER)', table_name, table_owner;
+        END IF;
+
         -- Check SELECT permission
         SELECT has_table_privilege('$DB_USER', 'public.' || quote_ident(table_name), 'SELECT')
         INTO has_select;
 
-        -- Check LOCK permission (has_table_privilege doesn't directly check LOCK,
-        -- but ALL PRIVILEGES should include it, so we check for UPDATE which is a good proxy)
+        -- Check UPDATE permission (proxy for LOCK)
         SELECT has_table_privilege('$DB_USER', 'public.' || quote_ident(table_name), 'UPDATE')
         INTO has_lock;
 
         IF has_select AND has_lock THEN
-            verified_count := verified_count + 1;
+            permission_verified_count := permission_verified_count + 1;
         ELSE
             RAISE WARNING 'Table % has missing permissions (SELECT: %, UPDATE: %)', table_name, has_select, has_lock;
         END IF;
     END LOOP;
 
-    IF verified_count = table_count THEN
-        RAISE NOTICE '✅ All % tables have proper permissions', verified_count;
+    IF ownership_verified_count = table_count THEN
+        RAISE NOTICE '✅ All % tables are owned by $DB_USER', ownership_verified_count;
     ELSE
-        RAISE WARNING 'Only % of % tables have proper permissions', verified_count, table_count;
+        RAISE WARNING 'Only % of % tables are owned by $DB_USER', ownership_verified_count, table_count;
+    END IF;
+
+    IF permission_verified_count = table_count THEN
+        RAISE NOTICE '✅ All % tables have proper permissions', permission_verified_count;
+    ELSE
+        RAISE WARNING 'Only % of % tables have proper permissions', permission_verified_count, table_count;
+    END IF;
+END \$\$;
+
+-- Verify sequence ownership
+DO \$\$
+DECLARE
+    sequence_name TEXT;
+    sequence_owner TEXT;
+    sequence_count INTEGER := 0;
+    ownership_verified_count INTEGER := 0;
+BEGIN
+    -- Count sequences
+    SELECT COUNT(*) INTO sequence_count
+    FROM information_schema.sequences
+    WHERE sequence_schema = 'public';
+
+    IF sequence_count = 0 THEN
+        RAISE NOTICE 'No sequences found in public schema';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Verifying ownership of % sequences...', sequence_count;
+
+    -- Check ownership of each sequence
+    FOR sequence_name IN
+        SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public'
+    LOOP
+        -- Check ownership
+        SELECT pg_get_userbyid(c.relowner) INTO sequence_owner
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public' AND c.relname = sequence_name;
+
+        IF sequence_owner = '$DB_USER' THEN
+            ownership_verified_count := ownership_verified_count + 1;
+        ELSE
+            RAISE WARNING 'Sequence % is owned by % (expected: $DB_USER)', sequence_name, sequence_owner;
+        END IF;
+    END LOOP;
+
+    IF ownership_verified_count = sequence_count THEN
+        RAISE NOTICE '✅ All % sequences are owned by $DB_USER', ownership_verified_count;
+    ELSE
+        RAISE WARNING 'Only % of % sequences are owned by $DB_USER', ownership_verified_count, sequence_count;
     END IF;
 END \$\$;
 
@@ -177,8 +317,10 @@ EOF
 VERIFY_EXIT_CODE=$?
 
 if [ $VERIFY_EXIT_CODE -eq 0 ]; then
-    print_success "Permissions granted and verified successfully!"
+    print_success "Ownership transferred and permissions granted successfully!"
     print_status "The user $DB_USER now has:"
+    print_status "  ✅ Ownership of all existing tables (required for ALTER TABLE in migrations)"
+    print_status "  ✅ Ownership of all existing sequences"
     print_status "  ✅ Full access to all existing tables (SELECT, INSERT, UPDATE, DELETE)"
     print_status "  ✅ LOCK TABLE permission (required for pg_dump backups)"
     print_status "  ✅ Full access to all sequences"
@@ -186,9 +328,9 @@ if [ $VERIFY_EXIT_CODE -eq 0 ]; then
     echo ""
     print_success "Database permissions fixed! Migrations and backups should now work."
 else
-    print_warning "Permissions were granted but verification encountered issues"
+    print_warning "Ownership and permissions were set but verification encountered issues"
     echo "$VERIFY_RESULT" | grep -i -E "(error|warning)" || echo "$VERIFY_RESULT"
-    print_status "Permissions were still granted - please verify manually if issues persist"
+    print_status "Ownership and permissions were still set - please verify manually if issues persist"
 fi
 
 echo ""
