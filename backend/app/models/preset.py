@@ -2,27 +2,14 @@ import json
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from sqlalchemy import JSON, Column, Integer
+from sqlalchemy import Column, Integer
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.types import TypeDecorator
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.utils.timezone import now_utc
 
 if TYPE_CHECKING:
     from .user import User
-
-
-class JSONBType(TypeDecorator):
-    """JSONB type that uses JSONB for PostgreSQL and JSON for SQLite."""
-
-    impl = JSON
-    cache_ok = True
-
-    def load_dialect_impl(self, dialect):
-        if dialect.name == "postgresql":
-            return dialect.type_descriptor(JSONB())
-        return dialect.type_descriptor(JSON())
 
 
 class PresetBase(SQLModel):
@@ -36,10 +23,10 @@ class PresetBase(SQLModel):
     tendon_count: Optional[int] = Field(
         default=None, sa_column=Column(Integer, nullable=True, index=True)
     )
-    # Configuration stored as JSONB (PostgreSQL) or JSON (SQLite)
+    # Configuration stored as JSONB (PostgreSQL)
     configuration: Dict[str, Any] = Field(
         default_factory=dict,
-        sa_column=Column(JSONBType(), nullable=False),
+        sa_column=Column(JSONB(), nullable=False),
     )
 
 

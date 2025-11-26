@@ -4,8 +4,11 @@ Pytest configuration and shared fixtures for backend tests.
 import os
 
 # CRITICAL: Set DATABASE_URL before any app imports
-# This ensures settings loads with SQLite URL for tests
-os.environ["DATABASE_URL"] = "sqlite:///./test.db"
+# Use PostgreSQL test database (can be overridden via TEST_DATABASE_URL env var)
+test_database_url = os.getenv(
+    "TEST_DATABASE_URL", "postgresql://localhost:5432/bendbionics_test"
+)
+os.environ["DATABASE_URL"] = test_database_url
 
 import pytest
 from sqlmodel import SQLModel, create_engine
@@ -13,12 +16,11 @@ from sqlmodel import SQLModel, create_engine
 # Import after setting environment variable
 from app.database import create_db_and_tables, engine
 
-# Create a test-specific engine with SQLite
-test_database_url = "sqlite:///./test.db"
+# Create a test-specific engine with PostgreSQL
 test_engine = create_engine(
     test_database_url,
     echo=False,
-    connect_args={},  # No PostgreSQL-specific options for SQLite
+    connect_args={"options": "-c timezone=UTC"},
     pool_pre_ping=True,
 )
 
@@ -42,11 +44,4 @@ def setup_database():
 
     # Restore original engine
     app.database.engine = original_engine
-
-    # Cleanup test database file if it exists
-    if os.path.exists("./test.db"):
-        try:
-            os.remove("./test.db")
-        except OSError:
-            pass  # Ignore errors during cleanup
 

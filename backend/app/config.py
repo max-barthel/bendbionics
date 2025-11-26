@@ -41,8 +41,8 @@ class Settings(BaseSettings):
     # Must be set via DATABASE_URL environment variable or in .env file
     # Development: postgresql://maxbarthel@localhost:5432/bendbionics
     # Production: postgresql://username:password@host:5432/database
-    # Default: SQLite for testing (can be overridden via environment variable)
-    database_url: str = "sqlite:///./test.db"
+    # Default: PostgreSQL connection for development (override via environment variable)
+    database_url: str = "postgresql://localhost:5432/bendbionics"
 
     # Authentication settings
     # Use a fixed secret key for development, generate new one for production

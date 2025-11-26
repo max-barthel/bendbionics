@@ -105,7 +105,8 @@ def verify_migrations():
                 f"❌ Missing required migrations: {missing_migrations}"
             )
             logger.error(
-                "These migrations should have been applied but were not found in the database"
+                "These migrations should have been applied but were not found "
+                "in the database"
             )
             return False
 
@@ -177,7 +178,9 @@ if __name__ == "__main__":
     # Run migrations for existing databases
     if not run_migrations():
         logger.error("\n❌ Database migrations failed")
-        logger.error("Migration failures must be resolved before deployment can continue")
+        logger.error(
+            "Migration failures must be resolved before deployment can continue"
+        )
         sys.exit(1)
 
     # Verify migrations were applied correctly
@@ -189,7 +192,10 @@ if __name__ == "__main__":
     # Verify database structure
     if not verify_database():
         logger.error("\n❌ Database verification failed")
-        logger.error("Database structure verification failed - this may indicate migration issues")
+        logger.error(
+            "Database structure verification failed - "
+            "this may indicate migration issues"
+        )
         sys.exit(1)
 
     # All steps completed successfully
