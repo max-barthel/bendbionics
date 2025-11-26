@@ -89,6 +89,13 @@ GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
 \c $DB_NAME
 GRANT ALL ON SCHEMA public TO $DB_USER;
 
+-- Grant privileges on all existing tables (if any exist)
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;
+
+-- Grant privileges on all existing sequences (if any exist)
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
+
 -- Grant default privileges for future tables
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO $DB_USER;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO $DB_USER;
