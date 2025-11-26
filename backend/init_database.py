@@ -80,6 +80,45 @@ def run_migrations():
         return False
 
 
+def verify_migrations():
+    """Verify that migrations have been applied correctly"""
+    logger.info("🔍 Verifying migrations status...")
+
+    try:
+        from migrate import get_applied_migrations
+
+        applied_migrations = get_applied_migrations()
+        logger.info(f"Applied migrations: {applied_migrations}")
+
+        # Check that migrations table exists and has expected migrations
+        expected_migrations = [
+            "add_email_verification_fields",
+            "migrate_preset_to_jsonb_with_metadata",
+        ]
+
+        missing_migrations = [
+            name for name in expected_migrations if name not in applied_migrations
+        ]
+
+        if missing_migrations:
+            logger.error(
+                f"❌ Missing required migrations: {missing_migrations}"
+            )
+            logger.error(
+                "These migrations should have been applied but were not found in the database"
+            )
+            return False
+
+        logger.info("✅ All expected migrations have been applied")
+        return True
+
+    except Exception as e:
+        logger.error(f"❌ Error verifying migrations: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return False
+
+
 def verify_database():
     """Verify database connection and table structure"""
     logger.info("\n🔍 Verifying database structure...")
@@ -131,23 +170,37 @@ if __name__ == "__main__":
     logger.info("=" * 50)
 
     # Create database tables (idempotent)
-    if create_database():
-        # Run migrations for existing databases
-        if run_migrations():
-            # Verify database structure
-            if verify_database():
-                logger.info("\n🎉 Database setup completed successfully!")
-                logger.info("🔧 Next steps:")
-                logger.info("   1. Update your .env file with your Mailgun credentials")
-                logger.info(
-                    "   2. Start your application with: "
-                    "python -m uvicorn app.main:app --reload"
-                )
-                logger.info("   3. Test the email verification flow")
-            else:
-                logger.warning("\n⚠️  Database setup completed but verification failed")
-        else:
-            logger.warning("\n⚠️  Database created but migrations failed")
-    else:
+    if not create_database():
         logger.error("\n❌ Database initialization failed")
         sys.exit(1)
+
+    # Run migrations for existing databases
+    if not run_migrations():
+        logger.error("\n❌ Database migrations failed")
+        logger.error("Migration failures must be resolved before deployment can continue")
+        sys.exit(1)
+
+    # Verify migrations were applied correctly
+    if not verify_migrations():
+        logger.error("\n❌ Migration verification failed")
+        logger.error("Migrations may not have been applied correctly")
+        sys.exit(1)
+
+    # Verify database structure
+    if not verify_database():
+        logger.error("\n❌ Database verification failed")
+        logger.error("Database structure verification failed - this may indicate migration issues")
+        sys.exit(1)
+
+    # All steps completed successfully
+    logger.info("\n🎉 Database setup completed successfully!")
+    logger.info("✅ Tables created/updated safely")
+    logger.info("✅ Migrations applied successfully")
+    logger.info("✅ Database structure verified")
+    logger.info("\n🔧 Next steps:")
+    logger.info("   1. Update your .env file with your Mailgun credentials")
+    logger.info(
+        "   2. Start your application with: "
+        "python -m uvicorn app.main:app --reload"
+    )
+    logger.info("   3. Test the email verification flow")
