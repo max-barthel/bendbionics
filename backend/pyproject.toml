@@ -40,7 +40,7 @@ dependencies = [
     "aiofiles==23.2.1",
     "aiohttp==3.13.2",
     "psutil==5.9.8",
-    "ruff==0.14.6",
+    "ruff==0.14.8",
 ]
 
 [project.optional-dependencies]
