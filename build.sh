@@ -222,6 +222,14 @@ create_deployment_package() {
     chmod +x "$deploy_dir/deploy.sh"
     chmod +x "$deploy_dir/start-backend.sh"
 
+    # Copy database permission fix script
+    if [ -f "scripts/deploy/fix-db-permissions.sh" ]; then
+        mkdir -p "$deploy_dir/scripts/deploy"
+        cp scripts/deploy/fix-db-permissions.sh "$deploy_dir/scripts/deploy/fix-db-permissions.sh"
+        chmod +x "$deploy_dir/scripts/deploy/fix-db-permissions.sh"
+        print_status "Included database permission fix script"
+    fi
+
     # Copy PostgreSQL setup script
     if [ -f "scripts/deploy/setup-postgres.sh" ]; then
         cp scripts/deploy/setup-postgres.sh "$deploy_dir/setup-postgres.sh"
@@ -383,14 +391,14 @@ show_build_results() {
         PACKAGE_NAME=$(basename "$latest_package")
         echo -e "\n${YELLOW}🚀 Deployment Options:${NC}"
         echo -e "${CYAN}Option 1 - Complete Workflow (Recommended):${NC}"
-        echo -e "${GREEN}./deploy-workflow.sh${NC}"
+        echo -e "${GREEN}./deploy.sh${NC}"
         echo -e "\n${CYAN}Option 2 - Manual Steps:${NC}"
         echo -e "${GREEN}scp -r $latest_package serveruser@217.236.9.232:/tmp/${NC}"
         echo -e "${GREEN}ssh serveruser@217.236.9.232${NC}"
         echo -e "${GREEN}cd /tmp/$PACKAGE_NAME${NC}"
         echo -e "${GREEN}sudo ./deploy.sh${NC}"
         echo -e "\n${CYAN}Option 3 - Cleanup Only:${NC}"
-        echo -e "${GREEN}./deploy-workflow.sh --cleanup-only${NC}"
+        echo -e "${GREEN}./deploy.sh --cleanup-only${NC}"
     fi
 }
 
@@ -497,7 +505,7 @@ run_deployment_workflow() {
     fi
 
     print_status "Deployment package created: $latest_package"
-    print_status "To deploy, run: ./deploy-workflow.sh"
+    print_status "To deploy, run: ./deploy.sh"
 }
 
 # Main execution

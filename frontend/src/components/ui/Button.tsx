@@ -126,7 +126,6 @@ function renderIconButton({
   className: string;
   ariaLabel?: string | undefined;
   iconVariant?: IconVariant | undefined;
-  disabled?: boolean | undefined;
   [key: string]: unknown;
 }) {
   const variantClasses = getIconVariantClasses(iconVariant ?? 'glass');
@@ -350,8 +349,7 @@ function Button({
   }
 
   if (variant === 'icon') {
-    const iconVariant =
-      ('iconVariant' in restProps ? restProps.iconVariant : 'glass') ?? 'glass';
+    const { iconVariant = 'glass', ...iconRestProps } = restProps as IconButtonProps;
     return renderIconButton({
       children,
       onClick,
@@ -361,8 +359,7 @@ function Button({
       className,
       ariaLabel,
       iconVariant,
-      disabled,
-      ...restProps,
+      ...iconRestProps,
     });
   }
 

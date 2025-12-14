@@ -75,14 +75,14 @@ BendBionics is deployed at **<https://bendbionics.com>**
 
 ```bash
 # Complete deployment workflow (build, upload, deploy)
-./deploy-workflow.sh
+./deploy.sh
 
 # Or step by step:
 # 1. Build for deployment
 ./build.sh
 
 # 2. Deploy using workflow script
-./deploy-workflow.sh
+./deploy.sh
 ```
 
 The deployment workflow handles:
@@ -98,7 +98,7 @@ For detailed server management and troubleshooting, see [SERVER.md](./SERVER.md)
 
 - Use `./dev.sh` for development
 - Use `./build.sh` for production builds
-- Use `./deploy-workflow.sh` for deployment
+- Use `./deploy.sh` for deployment
 - Use `./toolkit.sh` for development tools
 - All styling with Tailwind CSS only (no direct CSS)
 - Follow Tahoe liquid glass design system consistently
@@ -128,7 +128,7 @@ For detailed script documentation, see [SCRIPTS.md](./SCRIPTS.md).
 │   └── systemd/       # Service configuration
 ├── builds/             # Deployment packages
 ├── scripts/            # Development tools and deployment scripts
-└── deploy-workflow.sh  # Complete deployment workflow
+└── deploy.sh  # Complete deployment workflow
 ```
 
 ## Technology Stack
