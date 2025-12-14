@@ -6,7 +6,7 @@ import type {
   UpdateProfileRequest,
   User,
 } from '@/types';
-import { LogContext, logger } from '@/utils/logger';
+import logger, { LogContext } from '@/utils/logger';
 import {
   createContext,
   useCallback,
