@@ -62,4 +62,3 @@ def extract_preset_metadata(
         tendon_count = tendon_config.get("count")
 
     return segments, tendon_count
-

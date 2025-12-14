@@ -15,14 +15,20 @@ test.describe('BendBionics App', () => {
     await expect(page).toHaveTitle(/BendBionics/);
 
     // Wait for form tabs to be visible (sidebar should be open by default)
-    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({
+      timeout: 10000,
+    });
 
     // Wait for visualizer wrapper to be ready
-    await page.waitForSelector('[data-testid="visualizer-wrapper"]', { state: 'visible' });
+    await page.waitForSelector('[data-testid="visualizer-wrapper"]', {
+      state: 'visible',
+    });
 
     // Wait for lazy-loaded 3D visualizer to finish loading (check that Suspense fallback is gone)
     // The visualizer should be visible once Suspense resolves
-    await expect(page.locator('[data-testid="visualizer-3d"]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="visualizer-3d"]')).toBeVisible({
+      timeout: 15000,
+    });
   });
 
   test('should show sign in button when not authenticated', async ({ page }) => {
@@ -37,15 +43,21 @@ test.describe('BendBionics App', () => {
     await menuButton.click();
 
     // Wait for dropdown menu to be visible first (allows CSS transitions to complete)
-    await expect(page.locator('[data-testid="guest-dropdown-menu"]')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="guest-dropdown-menu"]')).toBeVisible({
+      timeout: 5000,
+    });
 
     // Now wait for sign-in button to be visible
-    await expect(page.locator('[data-testid="sign-in-button"]')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="sign-in-button"]')).toBeVisible({
+      timeout: 5000,
+    });
 
     // Optionally verify aria-expanded attribute (secondary check)
-    await expect(menuButton).toHaveAttribute('aria-expanded', 'true', { timeout: 2000 }).catch(() => {
-      // aria-expanded check is optional, don't fail if it's not set
-    });
+    await expect(menuButton)
+      .toHaveAttribute('aria-expanded', 'true', { timeout: 2000 })
+      .catch(() => {
+        // aria-expanded check is optional, don't fail if it's not set
+      });
   });
 
   test('should navigate to auth page when sign in is clicked', async ({ page }) => {
@@ -60,16 +72,20 @@ test.describe('BendBionics App', () => {
     await menuButton.click();
 
     // Wait for dropdown menu to be visible first (allows CSS transitions to complete)
-    await expect(page.locator('[data-testid="guest-dropdown-menu"]')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="guest-dropdown-menu"]')).toBeVisible({
+      timeout: 5000,
+    });
 
     // Now wait for sign-in button to be visible
     const signInButton = page.locator('[data-testid="sign-in-button"]');
     await expect(signInButton).toBeVisible({ timeout: 5000 });
 
     // Optionally verify aria-expanded attribute (secondary check)
-    await expect(menuButton).toHaveAttribute('aria-expanded', 'true', { timeout: 2000 }).catch(() => {
-      // aria-expanded check is optional, don't fail if it's not set
-    });
+    await expect(menuButton)
+      .toHaveAttribute('aria-expanded', 'true', { timeout: 2000 })
+      .catch(() => {
+        // aria-expanded check is optional, don't fail if it's not set
+      });
 
     // Click sign in button
     await signInButton.click();
@@ -81,7 +97,9 @@ test.describe('BendBionics App', () => {
 
   test('should handle form submission', async ({ page }) => {
     // Wait for form tabs to be visible
-    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({
+      timeout: 10000,
+    });
 
     // Look for submit button in the mocked form
     const submitButton = page.locator('button:has-text("Submit Form")');
@@ -99,13 +117,19 @@ test.describe('BendBionics App', () => {
     await page.waitForTimeout(500);
 
     // Wait for main elements to be visible
-    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('[data-testid="visualizer-3d"]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(page.locator('[data-testid="visualizer-3d"]')).toBeVisible({
+      timeout: 15000,
+    });
   });
 
   test('should handle 3D visualizer interactions', async ({ page }) => {
     // Wait for visualizer wrapper to be ready
-    await page.waitForSelector('[data-testid="visualizer-wrapper"]', { state: 'visible' });
+    await page.waitForSelector('[data-testid="visualizer-wrapper"]', {
+      state: 'visible',
+    });
 
     // Wait for lazy-loaded 3D visualizer to finish loading
     const visualizer = page.locator('[data-testid="visualizer-3d"]');
@@ -134,7 +158,9 @@ test.describe('BendBionics App', () => {
 
   test('should toggle sidebar when toggle button is clicked', async ({ page }) => {
     // Wait for sidebar and toggle button to be visible
-    await expect(page.locator('[data-testid="sidebar"]')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="sidebar"]')).toBeVisible({
+      timeout: 10000,
+    });
     await expect(page.locator('[data-testid="sidebar-toggle"]')).toBeVisible();
 
     // Sidebar should be visible by default
@@ -147,13 +173,19 @@ test.describe('BendBionics App', () => {
 
     // Wait for sidebar to collapse (account for CSS transition duration-300 = 300ms)
     // Use waitForSelector with hidden state instead of waitForTimeout
-    await page.waitForSelector('[data-testid="sidebar"]', { state: 'hidden', timeout: 1000 });
+    await page.waitForSelector('[data-testid="sidebar"]', {
+      state: 'hidden',
+      timeout: 1000,
+    });
     await expect(sidebar).not.toBeVisible();
 
     // Click toggle again to show sidebar
     await toggleButton.click();
     // Wait for sidebar to expand (account for CSS transition)
-    await page.waitForSelector('[data-testid="sidebar"]', { state: 'visible', timeout: 1000 });
+    await page.waitForSelector('[data-testid="sidebar"]', {
+      state: 'visible',
+      timeout: 1000,
+    });
     await expect(sidebar).toBeVisible();
   });
 
@@ -163,17 +195,25 @@ test.describe('BendBionics App', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for email verification page to load
-    await expect(page.locator('[data-testid="email-verification-page"]')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="email-verification-page"]')).toBeVisible({
+      timeout: 10000,
+    });
   });
 
-  test('should show error state when email verification token is missing', async ({ page }) => {
+  test('should show error state when email verification token is missing', async ({
+    page,
+  }) => {
     // Navigate to email verification page without token
     await page.goto('/verify-email');
 
     // Wait for email verification page to load (don't wait for networkidle as it may never happen)
-    await expect(page.locator('[data-testid="email-verification-page"]')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="email-verification-page"]')).toBeVisible({
+      timeout: 10000,
+    });
 
     // Should show error message
-    await expect(page.locator('text=No verification token provided')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=No verification token provided')).toBeVisible({
+      timeout: 5000,
+    });
   });
 });

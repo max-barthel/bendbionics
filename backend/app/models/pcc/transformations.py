@@ -20,7 +20,27 @@ def transformation_matrix_backbone(
     theta: float, phi: float, length: float, discretization_steps: int
 ) -> np.ndarray:
     """
-    Return local transformation steps (not accumulated).
+    Compute transformation matrices for a curved backbone segment.
+
+    This function implements the Piecewise Constant Curvature (PCC) model
+    by discretizing a curved segment into multiple transformation steps.
+    Each step represents a small segment along the curved backbone.
+
+    Args:
+        theta: Bending angle (radians) - how much the segment curves
+        phi: Rotation angle (radians) - direction of the curve in the plane
+        length: Length of the backbone segment
+        discretization_steps: Number of steps to discretize the curve
+
+    Returns:
+        Array of 4x4 homogeneous transformation matrices, one for each step.
+        These are local transformations (not accumulated globally).
+
+    Note:
+        The transformation follows the PCC model where:
+        - The segment curves in a plane defined by phi
+        - The curvature is constant (theta/length)
+        - Each step rotates and translates along the curved path
     """
     delta_theta = theta / discretization_steps
     delta_length = length / discretization_steps

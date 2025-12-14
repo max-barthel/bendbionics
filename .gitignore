@@ -8,6 +8,17 @@ venv/
 .env
 .env.*
 !.env*.example
+
+# Secrets and credentials
+**/secrets.json
+**/credentials.json
+**/*.key
+**/*.pem
+**/id_rsa
+**/id_rsa.pub
+**/.secrets
+**/config.local.*
+
 # Node.js
 node_modules/
 npm-debug.log*

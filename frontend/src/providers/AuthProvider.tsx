@@ -6,6 +6,7 @@ import type {
   UpdateProfileRequest,
   User,
 } from '@/types';
+import { LogContext, logger } from '@/utils/logger';
 import {
   createContext,
   useCallback,
@@ -165,15 +166,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const refreshUser = useCallback(async () => {
     try {
       if (token) {
-        console.log('Refreshing user data...');
+        logger.debug('Refreshing user data...', LogContext.AUTH);
         const userData = await authAPI.getCurrentUser();
-        console.log('User data refreshed successfully:', userData);
+        logger.debug('User data refreshed successfully', LogContext.AUTH, {
+          user: userData,
+        });
         setUser(userData);
       } else {
-        console.log('No token available for refresh');
+        logger.debug('No token available for refresh', LogContext.AUTH);
       }
     } catch (error) {
-      console.error('Refresh user failed:', error);
+      logger.error('Refresh user failed', LogContext.AUTH, { error });
 
       // Don't clear token on any error - let the user stay logged in
       // The token might still be valid, just the refresh failed

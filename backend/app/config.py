@@ -39,13 +39,15 @@ class Settings(BaseSettings):
     # Database settings
     # PostgreSQL for both development and production
     # Must be set via DATABASE_URL environment variable or in .env file
-    # Development: postgresql://maxbarthel@localhost:5432/bendbionics
+    # Development: postgresql://username@localhost:5432/bendbionics
     # Production: postgresql://username:password@host:5432/database
     # Default: PostgreSQL connection for development (override via environment variable)
     database_url: str = "postgresql://localhost:5432/bendbionics"
 
     # Authentication settings
-    # Use a fixed secret key for development, generate new one for production
+    # SECRET_KEY must be set via environment variable in production
+    # For development, a default is provided but should be overridden in .env
+    # Generate a secure key: python -c "import secrets; print(secrets.token_urlsafe(32))"
     secret_key: str = "CHANGE_THIS_IN_PRODUCTION_OR_ENV_FILE"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30

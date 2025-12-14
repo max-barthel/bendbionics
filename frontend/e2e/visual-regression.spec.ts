@@ -11,9 +11,15 @@ test.describe('Visual Regression Tests', () => {
 
   test('main app layout should match snapshot', async ({ page }) => {
     // Wait for all main components to be fully loaded
-    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({ timeout: 10000 });
-    await page.waitForSelector('[data-testid="visualizer-wrapper"]', { state: 'visible' });
-    await expect(page.locator('[data-testid="visualizer-3d"]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({
+      timeout: 10000,
+    });
+    await page.waitForSelector('[data-testid="visualizer-wrapper"]', {
+      state: 'visible',
+    });
+    await expect(page.locator('[data-testid="visualizer-3d"]')).toBeVisible({
+      timeout: 15000,
+    });
 
     // Wait for any animations to complete
     await page.waitForTimeout(500);
@@ -35,7 +41,9 @@ test.describe('Visual Regression Tests', () => {
 
   test('3D visualizer should match snapshot', async ({ page }) => {
     // Wait for visualizer wrapper to be ready
-    await page.waitForSelector('[data-testid="visualizer-wrapper"]', { state: 'visible' });
+    await page.waitForSelector('[data-testid="visualizer-wrapper"]', {
+      state: 'visible',
+    });
 
     // Wait for lazy-loaded 3D visualizer to finish loading
     const visualizer = page.locator('[data-testid="visualizer-3d"]');
@@ -59,16 +67,20 @@ test.describe('Visual Regression Tests', () => {
     await menuButton.click();
 
     // Wait for dropdown menu to be visible first (allows CSS transitions to complete)
-    await expect(page.locator('[data-testid="guest-dropdown-menu"]')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="guest-dropdown-menu"]')).toBeVisible({
+      timeout: 5000,
+    });
 
     // Now wait for sign-in button to be visible
     const signInButton = page.locator('[data-testid="sign-in-button"]');
     await expect(signInButton).toBeVisible({ timeout: 5000 });
 
     // Optionally verify aria-expanded attribute (secondary check)
-    await expect(menuButton).toHaveAttribute('aria-expanded', 'true', { timeout: 2000 }).catch(() => {
-      // aria-expanded check is optional, don't fail if it's not set
-    });
+    await expect(menuButton)
+      .toHaveAttribute('aria-expanded', 'true', { timeout: 2000 })
+      .catch(() => {
+        // aria-expanded check is optional, don't fail if it's not set
+      });
 
     // Click sign in button
     await signInButton.click();
@@ -93,7 +105,9 @@ test.describe('Visual Regression Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Wait for email verification page to be fully loaded
-    const emailVerificationPage = page.locator('[data-testid="email-verification-page"]');
+    const emailVerificationPage = page.locator(
+      '[data-testid="email-verification-page"]'
+    );
     await expect(emailVerificationPage).toBeVisible({ timeout: 10000 });
 
     // Wait for any animations to complete
@@ -110,9 +124,15 @@ test.describe('Visual Regression Tests', () => {
     await page.waitForTimeout(500);
 
     // Wait for all components to be visible
-    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({ timeout: 10000 });
-    await page.waitForSelector('[data-testid="visualizer-wrapper"]', { state: 'visible' });
-    await expect(page.locator('[data-testid="visualizer-3d"]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({
+      timeout: 10000,
+    });
+    await page.waitForSelector('[data-testid="visualizer-wrapper"]', {
+      state: 'visible',
+    });
+    await expect(page.locator('[data-testid="visualizer-3d"]')).toBeVisible({
+      timeout: 15000,
+    });
 
     // Wait for any animations to complete
     await page.waitForTimeout(500);
@@ -128,9 +148,15 @@ test.describe('Visual Regression Tests', () => {
     await page.waitForTimeout(500);
 
     // Wait for all components to be visible
-    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({ timeout: 10000 });
-    await page.waitForSelector('[data-testid="visualizer-wrapper"]', { state: 'visible' });
-    await expect(page.locator('[data-testid="visualizer-3d"]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({
+      timeout: 10000,
+    });
+    await page.waitForSelector('[data-testid="visualizer-wrapper"]', {
+      state: 'visible',
+    });
+    await expect(page.locator('[data-testid="visualizer-3d"]')).toBeVisible({
+      timeout: 15000,
+    });
 
     // Wait for any animations to complete
     await page.waitForTimeout(500);
@@ -146,9 +172,15 @@ test.describe('Visual Regression Tests', () => {
     await page.waitForTimeout(500);
 
     // Wait for all components to be visible
-    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({ timeout: 10000 });
-    await page.waitForSelector('[data-testid="visualizer-wrapper"]', { state: 'visible' });
-    await expect(page.locator('[data-testid="visualizer-3d"]')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="form-tabs"]')).toBeVisible({
+      timeout: 10000,
+    });
+    await page.waitForSelector('[data-testid="visualizer-wrapper"]', {
+      state: 'visible',
+    });
+    await expect(page.locator('[data-testid="visualizer-3d"]')).toBeVisible({
+      timeout: 15000,
+    });
 
     // Wait for any animations to complete
     await page.waitForTimeout(500);
