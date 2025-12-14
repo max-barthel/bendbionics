@@ -182,7 +182,7 @@ graph TB
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/bendbionics.git
+git clone https://github.com/max-barthel/bendbionics.git
 cd bendbionics
 
 # Set up development environment

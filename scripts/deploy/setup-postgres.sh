@@ -158,6 +158,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 # Email Settings (Mailgun)
 # Note: These are set by GitHub Actions during deployment
 # If you need to update them manually, see EMAIL_SETUP.md
+# These placeholder values are safe for public repositories as they are
+# deployment-time configuration values that are replaced during actual deployment.
 MAILGUN_API_KEY=PLACEHOLDER_SET_BY_GITHUB_ACTIONS
 MAILGUN_DOMAIN=PLACEHOLDER_SET_BY_GITHUB_ACTIONS
 MAILGUN_FROM_EMAIL=noreply@bendbionics.com

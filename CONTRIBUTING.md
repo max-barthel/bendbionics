@@ -10,7 +10,7 @@ We welcome contributions from the community and are excited to see what you'll b
 2. **Clone your fork** locally:
 
    ```bash
-   git clone https://github.com/yourusername/bendbionics.git
+   git clone https://github.com/max-barthel/bendbionics.git
    cd bendbionics
    ```
 

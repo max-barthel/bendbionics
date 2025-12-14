@@ -326,7 +326,12 @@ async def reset_password(
 
 @router.post("/debug/test-email")
 async def debug_email_sending(to_email: str, session: Session = Depends(get_session)):
-    """Debug endpoint to test email sending (development only)"""
+    """Debug endpoint to test email sending (development only)
+
+    This endpoint is safe for public repositories as it's protected by the
+    settings.debug check and will only function in development mode.
+    In production (debug=False), it returns an authorization error.
+    """
     # Only allow in development mode
     if settings.debug:
         default_logger.info(

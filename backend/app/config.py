@@ -48,6 +48,8 @@ class Settings(BaseSettings):
     # SECRET_KEY must be set via environment variable in production
     # For development, a default is provided but should be overridden in .env
     # Generate a secure key: python -c "import secrets; print(secrets.token_urlsafe(32))"
+    # Note: This placeholder value is safe for public repositories as it's clearly
+    # documented and must be overridden via environment variable in production.
     secret_key: str = "CHANGE_THIS_IN_PRODUCTION_OR_ENV_FILE"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
