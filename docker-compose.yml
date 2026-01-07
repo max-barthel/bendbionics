@@ -1,0 +1,160 @@
+# BendBionics Docker Compose Configuration
+#
+# Purpose: Unified Docker Compose configuration for both local development and registry-based deployment
+# Usage:
+#   - Local development: docker-compose up (builds images from source)
+#   - Registry deployment: USE_REGISTRY_IMAGES=true docker-compose up (pulls pre-built images)
+#
+# This file supports both modes:
+#   - Build mode (default): Uses build: directives to build from source
+#   - Registry mode: Uses image: directives to pull from registry (set USE_REGISTRY_IMAGES=true)
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: bendbionics-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bendbionics}
+      POSTGRES_USER: ${POSTGRES_USER:-bendbionics_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bendbionics-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-bendbionics_user} -d ${POSTGRES_DB:-bendbionics}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    # Use image from registry if USE_REGISTRY_IMAGES is set, otherwise build from source
+    image: ${BACKEND_IMAGE:-}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bendbionics-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-bendbionics_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-bendbionics}
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      CORS_ALLOW_ALL_ORIGINS: ${CORS_ALLOW_ALL_ORIGINS:-false}
+      MAILGUN_API_KEY: ${MAILGUN_API_KEY}
+      MAILGUN_DOMAIN: ${MAILGUN_DOMAIN}
+      MAILGUN_FROM_EMAIL: ${MAILGUN_FROM_EMAIL:-noreply@bendbionics.com}
+      MAILGUN_FROM_NAME: ${MAILGUN_FROM_NAME:-BendBionics}
+      MAILGUN_REGION: ${MAILGUN_REGION:-us}
+      EMAIL_VERIFICATION_ENABLED: ${EMAIL_VERIFICATION_ENABLED:-true}
+      EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS: ${EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS:-24}
+      EMAIL_VERIFICATION_URL: ${EMAIL_VERIFICATION_URL}
+      PASSWORD_RESET_TOKEN_EXPIRE_HOURS: ${PASSWORD_RESET_TOKEN_EXPIRE_HOURS:-1}
+      PASSWORD_RESET_URL: ${PASSWORD_RESET_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      BACKEND_URL: ${BACKEND_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bendbionics-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+
+  # React Frontend (Static Files)
+  frontend:
+    # Use image from registry if USE_REGISTRY_IMAGES is set, otherwise build from source
+    image: ${FRONTEND_IMAGE:-}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bendbionics-frontend
+    restart: unless-stopped
+    networks:
+      - bendbionics-network
+    healthcheck:
+      test:
+        ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Reverse Proxy
+  nginx:
+    # Use image from registry if USE_REGISTRY_IMAGES is set, otherwise build from source
+    image: ${NGINX_IMAGE:-}
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    container_name: bendbionics-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ssl_certs:/etc/nginx/ssl/certs
+      - ssl_private:/etc/nginx/ssl/private
+      - certbot_www:/var/www/certbot
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - bendbionics-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Certbot for SSL certificates (optional, run manually or via cron)
+  certbot:
+    image: certbot/certbot:latest
+    container_name: bendbionics-certbot
+    volumes:
+      - ssl_certs:/etc/letsencrypt/live
+      - ssl_private:/etc/letsencrypt/archive
+      - certbot_www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - bendbionics-network
+
+volumes:
+  postgres_data:
+    driver: local
+  ssl_certs:
+    driver: local
+  ssl_private:
+    driver: local
+  certbot_www:
+    driver: local
+
+networks:
+  bendbionics-network:
+    driver: bridge

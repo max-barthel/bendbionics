@@ -1,4 +1,4 @@
-name: Automated Deployment (replaces deploy-workflow.sh)
+name: Docker Deployment to Hetzner VPS
 
 on:
     push:
@@ -6,22 +6,17 @@ on:
     workflow_dispatch:
         inputs:
             skip_build:
-                description: "Skip build step (use existing build)"
+                description: "Skip build step (use existing images)"
                 required: false
                 default: false
                 type: boolean
-            skip_upload:
-                description: "Skip upload step (use existing package on server)"
+            skip_tests:
+                description: "Skip running tests"
                 required: false
                 default: false
                 type: boolean
             skip_deploy:
-                description: "Skip deploy step (just cleanup)"
-                required: false
-                default: false
-                type: boolean
-            cleanup_only:
-                description: "Only cleanup old deployment packages"
+                description: "Skip deploy step"
                 required: false
                 default: false
                 type: boolean
@@ -31,17 +26,24 @@ env:
     PYTHON_VERSION: "3.11"
     CI: "true"
     HUSKY: "0" # Suppress git hooks in CI
-    # Server configuration (matches deploy-workflow.sh)
-    SERVER_USER: "serveruser"
+    # Docker registry configuration
+    DOCKER_REGISTRY: ghcr.io
+    DOCKER_IMAGE_PREFIX: ${{ github.repository_owner }}/bendbionics
+    VERSION: ${{ github.sha }}
+    # Server configuration
+    SERVER_USER: "root"
     SERVER_HOST: ${{ secrets.SERVER_HOST }}
-    SERVER_PATH: "/tmp"
+    SERVER_PATH: "/opt/bendbionics"
 
 jobs:
-    # Complete deployment workflow (replaces deploy-workflow.sh)
+    # Docker deployment workflow
     deploy:
-        name: 🚀 Complete Deployment Workflow
+        name: 🐳 Docker Deployment to VPS
         runs-on: ubuntu-latest
         environment: production
+        permissions:
+            contents: read
+            packages: write
         services:
             postgres:
                 image: postgres:15
@@ -59,12 +61,6 @@ jobs:
         steps:
             - name: 🎯 Checkout code
               uses: actions/checkout@v6
-
-            - name: 🔧 Initialize deployment variables
-              run: |
-                  # Initialize deployment variables (will be set by build step if not skipped)
-                  echo "DEPLOY_PACKAGE=" >> $GITHUB_ENV
-                  echo "PACKAGE_NAME=" >> $GITHUB_ENV
 
             - name: 🔧 Setup Bun
               uses: oven-sh/setup-bun@v2
@@ -92,17 +88,18 @@ jobs:
                   version: "latest"
 
             - name: 📦 Install dependencies
+              if: ${{ !inputs.skip_tests }}
               run: |
                   cd frontend && bun install
                   cd ../backend && uv sync
 
             - name: 🧪 Run frontend tests
-              if: ${{ !inputs.skip_build }}
+              if: ${{ !inputs.skip_tests && !inputs.skip_build }}
               run: |
                   cd frontend && bun run test:run
 
             - name: 🗄️ Setup test database
-              if: ${{ !inputs.skip_build }}
+              if: ${{ !inputs.skip_tests && !inputs.skip_build }}
               env:
                   POSTGRES_USER: postgres
                   POSTGRES_PASSWORD: postgres
@@ -124,170 +121,52 @@ jobs:
                   echo "TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bendbionics_test" >> $GITHUB_ENV
 
             - name: 🧪 Run backend tests
-              if: ${{ !inputs.skip_build }}
+              if: ${{ !inputs.skip_tests && !inputs.skip_build }}
               env:
                   TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bendbionics_test
               run: |
                   cd backend && uv run pytest tests/ -v
 
-            - name: 🏗️ Build application
+            - name: 🔐 Login to GitHub Container Registry
+              if: ${{ !inputs.skip_build }}
+              uses: docker/login-action@v3
+              with:
+                  registry: ${{ env.DOCKER_REGISTRY }}
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: 🏗️ Build and push Docker images
               if: ${{ !inputs.skip_build }}
               run: |
-                  cd frontend
-                  bun run build
+                  echo "🏗️ Building Docker images..."
 
-            - name: 📁 Create deployment package
-              if: ${{ !inputs.skip_build }}
-              run: |
-                  # Create deployment directory (matches deploy-workflow.sh)
-                  DEPLOY_DIR="deploy/web-build-$(date +%Y%m%d-%H%M%S)"
-                  mkdir -p "$DEPLOY_DIR"
+                  # Build backend image
+                  docker build --platform linux/amd64 -t "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-backend:${{ env.VERSION }}" \
+                      -t "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-backend:latest" \
+                      ./backend
 
-                  # Copy frontend build
-                  mkdir -p "$DEPLOY_DIR/frontend"
-                  cp -r frontend/dist/* "$DEPLOY_DIR/frontend/"
+                  # Build frontend image
+                  docker build --platform linux/amd64 -t "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-frontend:${{ env.VERSION }}" \
+                      -t "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-frontend:latest" \
+                      ./frontend
 
-                  # Copy backend files (exclude test files and cache)
-                  mkdir -p "$DEPLOY_DIR/backend"
-                  cp -r backend/app "$DEPLOY_DIR/backend/"
+                  # Build nginx image
+                  docker build --platform linux/amd64 -t "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-nginx:${{ env.VERSION }}" \
+                      -t "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-nginx:latest" \
+                      ./docker/nginx
 
-                  # Copy database initialization and migration scripts
-                  cp backend/init_database.py "$DEPLOY_DIR/backend/"
-                  cp backend/migrate.py "$DEPLOY_DIR/backend/"
+                  echo "📤 Pushing images to registry..."
+                  docker push "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-backend:${{ env.VERSION }}"
+                  docker push "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-backend:latest"
+                  docker push "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-frontend:${{ env.VERSION }}"
+                  docker push "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-frontend:latest"
+                  docker push "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-nginx:${{ env.VERSION }}"
+                  docker push "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-nginx:latest"
 
-                  # Copy pyproject.toml (needed for uv)
-                  cp backend/pyproject.toml "$DEPLOY_DIR/backend/"
-
-                  # Clean up any __pycache__ directories that might have been copied
-                  find "$DEPLOY_DIR/backend" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
-                  find "$DEPLOY_DIR/backend" -name "*.pyc" -delete 2>/dev/null || true
-                  # Exclude test files
-                  find "$DEPLOY_DIR/backend" -path "*/tests/*" -type f -delete 2>/dev/null || true
-                  find "$DEPLOY_DIR/backend" -name "*_test.py" -type f -delete 2>/dev/null || true
-                  find "$DEPLOY_DIR/backend" -name "test_*.py" -type f -delete 2>/dev/null || true
-
-                  # Copy deployment configurations
-                  cp -r config/nginx "$DEPLOY_DIR/"
-                  cp -r config/systemd "$DEPLOY_DIR/"
-
-                  # Copy deployment scripts
-                  cp scripts/deploy/server-deploy.sh "$DEPLOY_DIR/deploy.sh"
-                  cp scripts/deploy/start-backend.sh "$DEPLOY_DIR/start-backend.sh"
-                  chmod +x "$DEPLOY_DIR/deploy.sh"
-                  chmod +x "$DEPLOY_DIR/start-backend.sh"
-
-                  # Copy database permission fix script
-                  mkdir -p "$DEPLOY_DIR/scripts/deploy"
-                  cp scripts/deploy/fix-db-permissions.sh "$DEPLOY_DIR/scripts/deploy/fix-db-permissions.sh"
-                  chmod +x "$DEPLOY_DIR/scripts/deploy/fix-db-permissions.sh"
-
-                  # Copy PostgreSQL setup script
-                  if [ -f "scripts/deploy/setup-postgres.sh" ]; then
-                      cp scripts/deploy/setup-postgres.sh "$DEPLOY_DIR/setup-postgres.sh"
-                      chmod +x "$DEPLOY_DIR/setup-postgres.sh"
-                  fi
-
-                  # Copy DDNS scripts (optional, for dynamic DNS setup)
-                  if [ -d "scripts/ddns" ]; then
-                      mkdir -p "$DEPLOY_DIR/scripts/ddns"
-                      cp -r scripts/ddns/* "$DEPLOY_DIR/scripts/ddns/"
-                      # Make all shell scripts executable
-                      find "$DEPLOY_DIR/scripts/ddns" -name "*.sh" -type f -exec chmod +x {} \;
-                  fi
-
-                  # Store package name for later steps (cache for reuse)
-                  echo "DEPLOY_PACKAGE=$DEPLOY_DIR" >> $GITHUB_ENV
-                  echo "PACKAGE_NAME=$(basename $DEPLOY_DIR)" >> $GITHUB_ENV
-
-            - name: 🔍 Validate Mailgun secrets
-              if: ${{ !inputs.skip_build }}
-              run: |
-                  echo "🔍 Validating Mailgun configuration..."
-
-                  # Check if secrets are set
-                  if [ -z "${{ secrets.MAILGUN_API_KEY }}" ]; then
-                      echo "❌ MAILGUN_API_KEY secret is not set"
-                      echo "   Please add MAILGUN_API_KEY to your GitHub repository secrets"
-                      exit 1
-                  fi
-
-                  if [ -z "${{ secrets.MAILGUN_DOMAIN }}" ]; then
-                      echo "❌ MAILGUN_DOMAIN secret is not set"
-                      echo "   Please add MAILGUN_DOMAIN to your GitHub repository secrets"
-                      exit 1
-                  fi
-
-                  # Validate domain format (should not include protocol)
-                  DOMAIN="${{ secrets.MAILGUN_DOMAIN }}"
-                  if [[ "$DOMAIN" == http* ]]; then
-                      echo "❌ MAILGUN_DOMAIN should not include protocol (http/https)"
-                      echo "   Use: mg.yourdomain.com"
-                      echo "   Not: https://mg.yourdomain.com"
-                      exit 1
-                  fi
-
-                  echo "✅ Mailgun secrets validation passed"
-                  echo "   Domain: $DOMAIN"
-                  echo "   API Key: ${MAILGUN_API_KEY:0:8}..."
-
-            - name: 📧 Create production environment file
-              if: ${{ !inputs.skip_build }}
-              env:
-                  MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }} # These env vars are used in the shell script below
-                  MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }} # yamllint disable-line
-              run: |
-                  # Use cached deployment directory
-                  DEPLOY_DIR="${{ env.DEPLOY_PACKAGE }}"
-
-                  # Create .env.production with email configuration
-                  cat > "$DEPLOY_DIR/backend/.env.production" << 'EOF'
-                  # BendBionics Production Environment Configuration
-                  # Generated by GitHub Actions during deployment
-
-                  # Application Settings
-                  APP_NAME=BendBionics API
-                  DEBUG=false
-                  LOG_LEVEL=INFO
-
-                  # CORS Configuration
-                  CORS_ORIGINS=["https://bendbionics.com", "https://www.bendbionics.com"]
-                  CORS_ALLOW_ALL_ORIGINS=false
-
-                  # Database Configuration
-                  # Note: DATABASE_URL and SECRET_KEY are set by setup-postgres.sh on server
-                  # This file will be merged with server settings during deployment
-
-                  # Email Settings (Mailgun)
-                  EOF
-
-                  # Append Mailgun secrets (environment variables from secrets)
-                  echo "MAILGUN_API_KEY=${MAILGUN_API_KEY}" >> "$DEPLOY_DIR/backend/.env.production"
-                  echo "MAILGUN_DOMAIN=${MAILGUN_DOMAIN}" >> "$DEPLOY_DIR/backend/.env.production"
-                  echo "MAILGUN_REGION=eu" >> "$DEPLOY_DIR/backend/.env.production"
-
-                  # Append remaining static config
-                  cat >> "$DEPLOY_DIR/backend/.env.production" << 'EOF'
-                  MAILGUN_FROM_EMAIL=noreply@bendbionics.com
-                  MAILGUN_FROM_NAME=BendBionics
-
-                  # Email Verification
-                  EMAIL_VERIFICATION_ENABLED=true
-                  EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS=24
-                  EMAIL_VERIFICATION_URL=https://bendbionics.com/verify-email
-
-                  # Password Reset
-                  PASSWORD_RESET_TOKEN_EXPIRE_HOURS=1
-                  PASSWORD_RESET_URL=https://bendbionics.com/reset-password
-
-                  # Frontend/Backend URLs
-                  FRONTEND_URL=https://bendbionics.com
-                  BACKEND_URL=https://bendbionics.com
-                  EOF
-
-                  echo "✅ Production environment file created with email configuration"
+                  echo "✅ Images pushed successfully"
 
             - name: 🔍 Validate server configuration
-              if: ${{ !inputs.skip_upload }}
+              if: ${{ !inputs.skip_deploy }}
               run: |
                   echo "🔍 Validating server configuration..."
 
@@ -295,9 +174,6 @@ jobs:
                   if [ -z "${{ secrets.SERVER_HOST }}" ]; then
                       echo "❌ SERVER_HOST secret is not set"
                       echo "   Please add SERVER_HOST to your GitHub repository secrets"
-                      echo "   Use either:"
-                      echo "   - Your server's public IP address (e.g., 123.45.67.89)"
-                      echo "   - Or a fully qualified domain name (e.g., server.bendbionics.com)"
                       exit 1
                   fi
 
@@ -312,55 +188,54 @@ jobs:
                   echo "   Server Host: ${{ secrets.SERVER_HOST }}"
 
             - name: 🔑 Setup SSH
-              if: ${{ !inputs.skip_upload }}
+              if: ${{ !inputs.skip_deploy }}
               uses: webfactory/ssh-agent@v0.9.1
               with:
                   ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
             - name: 🔐 Configure SSH known hosts
-              if: ${{ !inputs.skip_upload }}
+              if: ${{ !inputs.skip_deploy }}
               run: |
                   echo "🔐 Configuring SSH known hosts..."
                   mkdir -p ~/.ssh
                   chmod 700 ~/.ssh
-                  # Add server host key to known_hosts to avoid "Host key verification failed"
                   ssh-keyscan -H "${{ env.SERVER_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
                   chmod 600 ~/.ssh/known_hosts
                   echo "✅ SSH known hosts configured"
 
-            - name: 📤 Upload to server
-              if: ${{ !inputs.skip_upload && !inputs.skip_build }}
+            - name: 📤 Upload Docker Compose files to VPS
+              if: ${{ !inputs.skip_deploy }}
               run: |
-                  # Use cached deployment package
-                  DEPLOY_PACKAGE="${{ env.DEPLOY_PACKAGE }}"
+                  echo "📤 Uploading Docker Compose files to VPS..."
 
-                  if [ -z "$DEPLOY_PACKAGE" ] || [ ! -d "$DEPLOY_PACKAGE" ]; then
-                      echo "❌ No deployment package found. Run build first."
-                      exit 1
-                  fi
+                  # Create directory structure on VPS
+                  ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "mkdir -p ${{ env.SERVER_PATH }}/docker"
 
-                  echo "📦 Compressing deployment package..."
-                  PACKAGE_NAME="${{ env.PACKAGE_NAME }}"
-                  tar -czf "${PACKAGE_NAME}.tar.gz" -C deploy "$PACKAGE_NAME"
+                  # Upload docker-compose files
+                  scp docker-compose.pull.yml "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
+                  scp docker-compose.prod.yml "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
 
-                  echo "📤 Uploading compressed package: ${PACKAGE_NAME}.tar.gz"
-                  scp "${PACKAGE_NAME}.tar.gz" "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
+                  # Upload deploy script
+                  scp scripts/docker/deploy-vps.sh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
+                  ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "chmod +x ${{ env.SERVER_PATH }}/deploy-vps.sh"
 
-                  echo "📦 Extracting package on server..."
-                  ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "cd ${{ env.SERVER_PATH }} && tar -xzf ${PACKAGE_NAME}.tar.gz && rm -f ${PACKAGE_NAME}.tar.gz"
+                  echo "✅ Files uploaded successfully"
 
-                  echo "🧹 Cleaning up local compressed package..."
-                  rm -f "${PACKAGE_NAME}.tar.gz"
-
-            - name: 🚀 Deploy on server
-              if: ${{ !inputs.skip_deploy && !inputs.skip_build }}
+            - name: 🚀 Deploy on VPS
+              if: ${{ !inputs.skip_deploy }}
               run: |
-                  # Use cached package name
-                  PACKAGE_NAME="${{ env.PACKAGE_NAME }}"
+                  echo "🚀 Deploying on VPS..."
 
-                  echo "🚀 Deploying package: $PACKAGE_NAME"
-                  # Deploy with sudo (requires passwordless sudo setup)
-                  ssh -tt "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "cd ${{ env.SERVER_PATH }}/$PACKAGE_NAME && sudo ./deploy.sh"
+                  # Set environment variables for deployment
+                  ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "
+                      cd ${{ env.SERVER_PATH }}
+                      export DOCKER_REGISTRY=${{ env.DOCKER_REGISTRY }}
+                      export DOCKER_IMAGE_PREFIX=${{ env.DOCKER_IMAGE_PREFIX }}
+                      export VERSION=${{ env.VERSION }}
+                      ./deploy-vps.sh
+                  "
+
+                  echo "✅ Deployment completed"
 
             - name: 🏥 Health check
               if: ${{ !inputs.skip_deploy }}
@@ -386,74 +261,32 @@ jobs:
                   echo "❌ Health check failed after $MAX_ATTEMPTS attempts"
                   exit 1
 
-            - name: 🔍 Verify deployment and cleanup
+            - name: 🔍 Verify deployment
               if: ${{ !inputs.skip_deploy }}
               run: |
-                  echo "🔍 Verifying deployment and cleanup results..."
+                  echo "🔍 Verifying deployment..."
                   ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "
-                      # Verify service is running
-                      echo '📊 Service Status:'
-                      sudo systemctl is-active bendbionics-api
+                      echo '📊 Docker Services Status:'
+                      cd ${{ env.SERVER_PATH }}
+                      docker compose -f docker-compose.pull.yml ps
 
-                      # Check disk usage after cleanup
+                      echo ''
                       echo '💾 Disk Usage:'
                       df -h / | tail -1
-
-                      # Verify backup was created
-                      echo '💾 Backup Status:'
-                      ls -lht /mnt/data/backups/database/ | head -3
-
-                      # Check journal size
-                      echo '📝 Journal Size:'
-                      journalctl --disk-usage
-
-                      # Verify no old services running
-                      echo '🔧 Active Services:'
-                      systemctl list-units --type=service | grep -E 'robot|bendbionics' || echo 'Only bendbionics-api.service running ✅'
                   "
 
-            - name: 🧹 Cleanup local package
-              if: ${{ !inputs.cleanup_only }}
-              run: |
-                  # Clean up local deployment package using cached path
-                  DEPLOY_PACKAGE="${{ env.DEPLOY_PACKAGE }}"
-                  if [ -n "$DEPLOY_PACKAGE" ] && [ -d "$DEPLOY_PACKAGE" ]; then
-                      echo "🧹 Removing local package: $DEPLOY_PACKAGE"
-                      rm -rf "$DEPLOY_PACKAGE"
-                  fi
-
-            - name: 🧹 Cleanup old packages
-              if: ${{ inputs.cleanup_only }}
-              run: |
-                  echo "🧹 Cleaning up old deployment packages..."
-                  OLD_PACKAGES=$(find deploy -name "web-build-*" -type d 2>/dev/null | wc -l)
-                  if [ "$OLD_PACKAGES" -gt 0 ]; then
-                      echo "Found $OLD_PACKAGES old deployment packages"
-                      rm -rf deploy/web-build-*
-                      echo "✅ Old packages cleaned up"
-                  else
-                      echo "No old packages found"
-                  fi
-
-            - name: 🧹 Server cleanup
-              if: ${{ !inputs.skip_deploy }}
-              run: |
-                  # Clean up server deployment package using cached name
-                  PACKAGE_NAME="${{ env.PACKAGE_NAME }}"
-                  if [ -n "$PACKAGE_NAME" ]; then
-                      echo "🧹 Cleaning up server package..."
-                      ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "rm -rf ${{ env.SERVER_PATH }}/$PACKAGE_NAME"
-                  fi
+                  echo "✅ Deployment verification completed"
 
             - name: 🎉 Deployment Results
               if: success()
               run: |
-                  echo "🎉 Deployment Workflow Complete!"
+                  echo "🎉 Docker Deployment Complete!"
                   echo ""
+                  echo "🐳 Images pushed to: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}"
                   echo "🌐 Application: https://bendbionics.com"
                   echo "📚 API Documentation: https://bendbionics.com/docs"
                   echo "🏥 Health Check: https://bendbionics.com/health"
                   echo ""
                   echo "🔧 Useful Commands:"
-                  echo "View logs: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'sudo journalctl -u bendbionics-api -f'"
-                  echo "Restart backend: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'sudo systemctl restart bendbionics-api'"
+                  echo "View logs: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'cd ${{ env.SERVER_PATH }} && docker compose -f docker-compose.pull.yml logs -f'"
+                  echo "Restart services: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'cd ${{ env.SERVER_PATH }} && docker compose -f docker-compose.pull.yml restart'"

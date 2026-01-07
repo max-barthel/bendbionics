@@ -5,87 +5,31 @@
 
 set -e  # Exit on any error
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
+# Source shared library
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/scripts/lib.sh"
+
+# Colors for local use
 CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m'
 
-# Function to print colored output
-print_status() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
-print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-print_header() {
-    echo -e "${PURPLE}================================${NC}"
-    echo -e "${PURPLE}🌐 BendBionics Web Build${NC}"
-    echo -e "${PURPLE}================================${NC}"
-}
-
-# Function to ensure bun is available in PATH
-ensure_bun_in_path() {
-    # Check if bun is already in PATH
-    if command -v bun &> /dev/null; then
-        return 0
-    fi
-
-    # Simple fallback: add ~/.bun/bin to PATH if bun binary exists there
-    if [ -f "$HOME/.bun/bin/bun" ]; then
-        export PATH="$HOME/.bun/bin:$PATH"
-        if command -v bun &> /dev/null; then
-            return 0
-        fi
-    fi
-
-    # If we get here, bun is not found
-    print_error "Bun is not installed or not in PATH"
-    print_error "Install from https://bun.sh"
-    print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
-    print_error "If bun is installed, ensure ~/.zshenv includes: export PATH=\"\$HOME/.bun/bin:\$PATH\""
-    exit 1
-}
-
-# Function to check if we're in the right directory
-check_directory() {
-    if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
-        print_error "Please run this script from the project root directory"
-        exit 1
-    fi
-}
+# Test mode flag
+TEST_MODE=false
+BACKEND_PID=""
+FRONTEND_PID=""
 
 # Function to check prerequisites
-check_prerequisites() {
+check_build_prerequisites() {
     print_status "Checking build prerequisites..."
-
-    # Check if Bun is installed
-    if ! command -v bun &> /dev/null; then
-        print_error "Bun is not installed. Install from https://bun.sh"
-        print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
-        exit 1
+    if [ "$TEST_MODE" = "true" ]; then
+        check_prerequisites true true false true
+    else
+        check_prerequisites true false false true
     fi
     print_status "Bun version: $(bun --version) ✓"
-
-    # Check if frontend dependencies are installed
-    if [ ! -d "frontend/node_modules" ]; then
-        print_warning "Frontend dependencies not found. Installing with Bun..."
-        cd frontend && bun install && cd ..
-    fi
-
     print_success "Prerequisites check completed"
 }
 
@@ -103,9 +47,6 @@ clean_build() {
     if [ -d "frontend/src-tauri" ]; then
         print_warning "Legacy Tauri directory found. This is now a web-only application."
     fi
-
-    # Note: Old deployment packages are now cleaned up after successful deployment
-    # to avoid having obsolete build folders in the repo
 
     print_success "Clean completed"
 }
@@ -184,183 +125,6 @@ validate_build() {
     print_success "Build validation completed"
 }
 
-# Function to create deployment package
-create_deployment_package() {
-    print_status "Creating deployment package..."
-
-    # Create deployment directory
-    local deploy_dir="builds/web-build-$(date +%Y%m%d-%H%M%S)"
-    mkdir -p "$deploy_dir"
-
-    # Copy frontend build
-    mkdir -p "$deploy_dir/frontend"
-    cp -r frontend/dist/* "$deploy_dir/frontend/"
-
-    # Create backend directory and copy only necessary files
-    mkdir -p "$deploy_dir/backend"
-
-        # Copy essential backend files only
-        cp -r backend/app "$deploy_dir/backend/"
-        cp backend/pyproject.toml "$deploy_dir/backend/"  # uv uses pyproject.toml
-        cp backend/init_database.py "$deploy_dir/backend/"
-        cp backend/migrate.py "$deploy_dir/backend/"
-
-    # Clean up any __pycache__ directories that might have been copied
-    find "$deploy_dir/backend" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
-    find "$deploy_dir/backend" -name "*.pyc" -delete 2>/dev/null || true
-
-    # Note: Database is now PostgreSQL - no file to copy
-    # Database will be initialized on the server using init_database.py
-
-    # Copy deployment configurations
-    cp -r config/nginx "$deploy_dir/"
-    cp -r config/systemd "$deploy_dir/"
-
-    # Copy deployment scripts
-    cp scripts/deploy/server-deploy.sh "$deploy_dir/deploy.sh"
-    cp scripts/deploy/start-backend.sh "$deploy_dir/start-backend.sh"
-    chmod +x "$deploy_dir/deploy.sh"
-    chmod +x "$deploy_dir/start-backend.sh"
-
-    # Copy database permission fix script
-    if [ -f "scripts/deploy/fix-db-permissions.sh" ]; then
-        mkdir -p "$deploy_dir/scripts/deploy"
-        cp scripts/deploy/fix-db-permissions.sh "$deploy_dir/scripts/deploy/fix-db-permissions.sh"
-        chmod +x "$deploy_dir/scripts/deploy/fix-db-permissions.sh"
-        print_status "Included database permission fix script"
-    fi
-
-    # Copy PostgreSQL setup script
-    if [ -f "scripts/deploy/setup-postgres.sh" ]; then
-        cp scripts/deploy/setup-postgres.sh "$deploy_dir/setup-postgres.sh"
-        chmod +x "$deploy_dir/setup-postgres.sh"
-        print_status "Included PostgreSQL setup script"
-    fi
-
-    # Copy DDNS scripts (optional, for dynamic DNS setup)
-    if [ -d "scripts/ddns" ]; then
-        mkdir -p "$deploy_dir/scripts/ddns"
-        cp -r scripts/ddns/* "$deploy_dir/scripts/ddns/"
-        # Make all shell scripts executable
-        find "$deploy_dir/scripts/ddns" -name "*.sh" -type f -exec chmod +x {} \;
-        print_success "Included DDNS setup scripts"
-    fi
-
-    # Copy environment templates
-    if [ -f "backend/.env.production.example" ]; then
-        cp backend/.env.production.example "$deploy_dir/backend/.env.production.template"
-    fi
-
-    # Copy production environment file if it exists
-    if [ -f "backend/.env.production" ]; then
-        cp backend/.env.production "$deploy_dir/backend/.env.production"
-        print_status "Copied production environment file"
-    else
-        print_warning "No .env.production found, using template"
-    fi
-
-    # Create deployment info file
-    cat > "$deploy_dir/DEPLOYMENT_INFO.txt" << 'INFO_EOF'
-BendBionics - Web Deployment Package
-Generated: $(date)
-Build Version: $(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-
-Contents:
-- frontend/          : Built React application (optimized for production)
-- backend/           : Python FastAPI backend (production files only)
-  - app/             : Application source code
-  - init_database.py : Database initialization script
-- backend/pyproject.toml     : Python dependencies (uv)
-  - migrate.py       : Database migration script
-- nginx/             : Nginx configuration
-- systemd/           : Systemd service configuration
-- deploy.sh          : Main deployment script
-- setup-postgres.sh  : PostgreSQL setup script (first-time only)
-- scripts/ddns/      : Dynamic DNS setup scripts (optional)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FIRST-TIME DEPLOYMENT INSTRUCTIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-If this is your first deployment, run these commands on your server:
-
-1. Upload the package:
-   scp -r web-build-YYYYMMDD-HHMMSS serveruser@your-server:/tmp/
-
-2. SSH into your server:
-   ssh serveruser@your-server
-
-3. Set up PostgreSQL (FIRST-TIME ONLY):
-   cd /tmp/web-build-YYYYMMDD-HHMMSS
-   sudo bash setup-postgres.sh
-
-   This will:
-   • Install PostgreSQL
-   • Create database and user with secure credentials
-   • Generate .env.production file
-   • Save credentials for reference
-
-4. Deploy the application:
-   sudo bash deploy.sh
-
-   This will:
-   • Install dependencies
-   • Initialize database tables
-   • Configure nginx and systemd
-   • Start the application
-
-5. Set up Dynamic DNS (OPTIONAL, for dynamic IP addresses):
-   cd /var/www/bendbionics-app
-   sudo bash scripts/ddns/setup-ddns.sh
-
-   This will:
-   • Install DDNS update script
-   • Configure Porkbun API credentials
-   • Set up automatic DNS updates every 10 minutes
-   • Preserve configuration across deployments
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SUBSEQUENT DEPLOYMENTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-For updates after initial setup, just run:
-
-1. Upload new package:
-   scp -r web-build-YYYYMMDD-HHMMSS serveruser@your-server:/tmp/
-
-2. Deploy:
-   ssh serveruser@your-server
-   cd /tmp/web-build-YYYYMMDD-HHMMSS
-   sudo bash deploy.sh
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Database Configuration:
-- PostgreSQL database: bendbionics
-- User: bendbionics_user
-- Credentials saved in /root/.bendbionics-db-credentials
-
-Post-Deployment:
-1. Update CORS_ORIGINS in .env.production with your domain(s)
-2. Configure Mailgun credentials for email verification
-3. Update FRONTEND_URL and BACKEND_URL with your actual URLs
-4. Set up SSL certificates with certbot (optional)
-5. Set up Dynamic DNS (if needed):
-   cd /var/www/bendbionics-app
-   sudo bash scripts/ddns/setup-ddns.sh
-
-Optimizations Applied:
-- Excluded test files and development dependencies
-- Removed __pycache__ directories and .pyc files
-- Excluded virtual environment and development tools
-- Only essential production files included
-
-For detailed documentation, see README.md and DEVELOPMENT.md
-INFO_EOF
-
-    print_success "Deployment package created: $deploy_dir"
-    print_status "Package size: $(du -sh "$deploy_dir" | cut -f1)"
-}
 
 # Function to show build results
 show_build_results() {
@@ -377,36 +141,18 @@ show_build_results() {
         echo -e "Build Size: ${GREEN}$(du -sh frontend/dist | cut -f1)${NC}"
     fi
 
-    # Show deployment package
-    local latest_package=$(ls -td builds/web-build-* 2>/dev/null | head -1)
-    if [ -n "$latest_package" ]; then
-        echo -e "Deployment Package: ${GREEN}$latest_package${NC}"
-    fi
-
     echo -e "${CYAN}================================${NC}"
     print_success "Web build completed successfully!"
-
-    # Show deployment options
-    if [ -n "$latest_package" ]; then
-        PACKAGE_NAME=$(basename "$latest_package")
-        echo -e "\n${YELLOW}🚀 Deployment Options:${NC}"
-        echo -e "${CYAN}Option 1 - Complete Workflow (Recommended):${NC}"
-        echo -e "${GREEN}./deploy.sh${NC}"
-        echo -e "\n${CYAN}Option 2 - Manual Steps:${NC}"
-        echo -e "${GREEN}scp -r $latest_package serveruser@217.236.9.232:/tmp/${NC}"
-        echo -e "${GREEN}ssh serveruser@217.236.9.232${NC}"
-        echo -e "${GREEN}cd /tmp/$PACKAGE_NAME${NC}"
-        echo -e "${GREEN}sudo ./deploy.sh${NC}"
-        echo -e "\n${CYAN}Option 3 - Cleanup Only:${NC}"
-        echo -e "${GREEN}./deploy.sh --cleanup-only${NC}"
-    fi
+    echo -e "\n${YELLOW}🚀 For Docker deployment, see:${NC}"
+    echo -e "${GREEN}scripts/docker/build-and-push.sh${NC} - Build and push Docker images"
+    echo -e "${GREEN}docs/DOCKER_DEPLOYMENT.md${NC} - Deployment guide"
 }
 
-# Function to test build locally
-test_build_locally() {
-    print_status "Testing build locally..."
+# Test mode functions
+clean_test_environment() {
+    print_status "Cleaning test environment..."
 
-    # Clean test environment
+    # Clean frontend dist directory
     if [ -d "frontend/dist" ]; then
         rm -rf frontend/dist
         print_status "Removed previous frontend build"
@@ -416,126 +162,135 @@ test_build_locally() {
     lsof -ti:3000 | xargs kill -9 2>/dev/null || true
     lsof -ti:8000 | xargs kill -9 2>/dev/null || true
 
-    # Build frontend
-    build_frontend_web
+    print_success "Test environment cleaned"
+}
 
-    # Start backend for testing
+start_backend_test() {
     print_status "Starting backend for testing..."
+
     cd backend
 
-    # Check if uv is installed
     if ! command -v uv &> /dev/null; then
         print_error "uv is not installed. Install from https://github.com/astral-sh/uv"
         exit 1
     fi
 
-    # Ensure dependencies are installed
     if [ ! -d ".venv" ]; then
-        uv venv --clear
+        uv venv
     fi
     uv sync
 
-    # Start backend using uv run
     uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 &
     BACKEND_PID=$!
     cd ..
 
-    # Wait for backend to start
     sleep 3
-
-    # Test backend health
-    if curl -s -f "http://127.0.0.1:8000/api/health" > /dev/null; then
-        print_success "Backend is running and healthy"
-    else
+    curl -s -f "http://127.0.0.1:8000/api/health" > /dev/null || {
         print_error "Backend health check failed"
         kill $BACKEND_PID 2>/dev/null || true
         exit 1
-    fi
+    }
 
-    # Start frontend preview server
-    print_status "Starting frontend preview server..."
+    print_success "Backend is running"
+}
+
+start_frontend_test() {
+    print_status "Starting frontend preview..."
+
     cd frontend
-    bun run preview &
+    bun run preview:web &
     FRONTEND_PID=$!
     cd ..
 
-    # Wait for frontend to start
     sleep 3
-
-    # Test frontend
-    if curl -s -f "http://127.0.0.1:4173" > /dev/null; then
-        print_success "Frontend is running and accessible"
-    else
+    curl -s -f "http://127.0.0.1:3000" > /dev/null || {
         print_error "Frontend health check failed"
         kill $FRONTEND_PID 2>/dev/null || true
         kill $BACKEND_PID 2>/dev/null || true
         exit 1
-    fi
+    }
 
-    echo -e "${CYAN}================================${NC}"
-    echo -e "${CYAN}🧪 Local Build Test Results${NC}"
-    echo -e "${CYAN}================================${NC}"
-    echo -e "Frontend URL: ${GREEN}http://127.0.0.1:4173${NC}"
-    echo -e "Backend URL: ${GREEN}http://127.0.0.1:8000${NC}"
-    echo -e "API Docs: ${GREEN}http://127.0.0.1:8000/docs${NC}"
-    echo -e "${CYAN}================================${NC}"
-    echo -e "Test servers are running. Press Ctrl+C to stop."
-    echo -e "${CYAN}================================${NC}"
-
-    # Keep processes running for manual testing
-    print_status "Test servers are running. Press Ctrl+C to stop."
-    wait
+    print_success "Frontend is running"
 }
 
-# Function to run complete deployment workflow
-run_deployment_workflow() {
-    print_status "Running complete deployment workflow..."
+run_integration_tests() {
+    print_status "Running integration tests..."
 
-    # Build the application
-    build_frontend_web
-    validate_build
-    create_deployment_package
+    curl -s -f "http://127.0.0.1:8000/api/health" | grep -q "healthy" || {
+        print_error "Health endpoint failed"
+        return 1
+    }
 
-    # Find the latest deployment package
-    local latest_package=$(ls -td builds/web-build-* 2>/dev/null | head -1)
+    print_success "Integration tests completed"
+}
 
-    if [ -z "$latest_package" ]; then
-        print_error "No deployment package found"
-        exit 1
+show_test_results() {
+    echo -e "${CYAN}================================${NC}"
+    echo -e "${CYAN}🧪 Test Results${NC}"
+    echo -e "${CYAN}================================${NC}"
+
+    echo -e "Frontend URL: ${GREEN}http://127.0.0.1:3000${NC}"
+    echo -e "Backend URL: ${GREEN}http://127.0.0.1:8000${NC}"
+    echo -e "API Docs: ${GREEN}http://127.0.0.1:8000/docs${NC}"
+    echo -e "Health Check: ${GREEN}http://127.0.0.1:8000/api/health${NC}"
+
+    echo -e "\n${BLUE}Manual Testing:${NC}"
+    echo -e "1. Open ${GREEN}http://127.0.0.1:3000${NC} in your browser"
+    echo -e "2. Test the application functionality"
+    echo -e "3. Check browser console for errors"
+    echo -e "4. Verify API calls are working"
+
+    echo -e "\n${BLUE}To stop test servers:${NC}"
+    echo -e "Press ${YELLOW}Ctrl+C${NC} or run:"
+    echo -e "kill $BACKEND_PID $FRONTEND_PID"
+
+    echo -e "${CYAN}================================${NC}"
+    print_success "Web build testing completed!"
+}
+
+cleanup_test() {
+    print_status "Cleaning up test processes..."
+
+    if [ ! -z "$BACKEND_PID" ]; then
+        kill $BACKEND_PID 2>/dev/null || true
+        print_status "Backend process terminated"
     fi
 
-    print_status "Deployment package created: $latest_package"
-    print_status "To deploy, run: ./deploy.sh"
+    if [ ! -z "$FRONTEND_PID" ]; then
+        kill $FRONTEND_PID 2>/dev/null || true
+        print_status "Frontend process terminated"
+    fi
+
+    # Kill any remaining processes on test ports
+    lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+    lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+
+    print_success "Cleanup completed"
 }
 
 # Main execution
 main() {
-    local test_mode=false
-    local deploy_mode=false
-
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
             --test)
-                test_mode=true
-                shift
-                ;;
-            --deploy)
-                deploy_mode=true
+                TEST_MODE=true
                 shift
                 ;;
             --help)
                 echo "Usage: $0 [options]"
                 echo ""
                 echo "Options:"
-                echo "  --test           Test build locally before creating deployment package"
-                echo "  --deploy         Complete deployment workflow (build + upload + deploy)"
+                echo "  --test           Test build locally (builds and starts test servers)"
                 echo "  --help           Show this help message"
                 echo ""
                 echo "Examples:"
                 echo "  $0                # Build for production"
-                echo "  $0 --test         # Test build locally"
-                echo "  $0 --deploy       # Complete deployment"
+                echo "  $0 --test         # Build and test locally"
+                echo ""
+                echo "For Docker deployment, see:"
+                echo "  scripts/docker/build-and-push.sh  # Build and push Docker images"
+                echo "  docs/DOCKER_DEPLOYMENT.md        # Deployment guide"
                 exit 0
                 ;;
             *)
@@ -545,24 +300,37 @@ main() {
         esac
     done
 
-    print_header
+    if [ "$TEST_MODE" = "true" ]; then
+        print_header "🧪 BendBionics Build Testing"
+        trap cleanup_test EXIT INT TERM
+    else
+        print_header "🌐 BendBionics Web Build"
+    fi
 
     # Ensure bun is available before any operations
     ensure_bun_in_path
 
-    if [ "$test_mode" = true ]; then
-        test_build_locally
-    elif [ "$deploy_mode" = true ]; then
-        run_deployment_workflow
+    # Standard build process
+    check_directory
+    check_build_prerequisites
+
+    if [ "$TEST_MODE" = "true" ]; then
+        clean_test_environment
     else
-        # Standard build process
-        check_directory
-        ensure_bun_in_path
-        check_prerequisites
         clean_build
-        build_frontend_web
-        validate_build
-        create_deployment_package
+    fi
+
+    build_frontend_web
+    validate_build
+
+    if [ "$TEST_MODE" = "true" ]; then
+        start_backend_test
+        start_frontend_test
+        run_integration_tests
+        show_test_results
+        print_status "Test servers are running. Press Ctrl+C to stop."
+        wait
+    else
         show_build_results
     fi
 }

@@ -15,12 +15,18 @@ A FastAPI-based backend for soft robot simulation and control.
 
 - `POST /kinematics` - Compute robot kinematics with tendon analysis
 - `POST /tendons/calculate` - Calculate tendon lengths and actuation
-- `POST /tendons/analyze-configuration` - Analyze tendon configuration
-- `GET /tendons/configurations` - Get predefined tendon configurations
+- `POST /tendons/analyze` - Analyze tendon configuration
 - `POST /auth/register` - User registration
 - `POST /auth/login` - User authentication
+- `GET /auth/me` - Get current user info
+- `PUT /auth/me` - Update current user
+- `DELETE /auth/account` - Delete user account
 - `POST /presets` - Save robot presets
 - `GET /presets` - Load user presets
+- `GET /presets/public` - Get public presets
+- `GET /presets/{preset_id}` - Get specific preset
+- `PUT /presets/{preset_id}` - Update preset
+- `DELETE /presets/{preset_id}` - Delete preset
 
 ## Development
 
@@ -55,10 +61,11 @@ uv run pytest --cov=app --cov-report=term-missing
 
 ```text
 tests/
-├── test_api_routes.py      # API endpoint tests
 ├── test_cache.py          # Caching system tests
 ├── test_config.py         # Configuration tests
+├── test_core_apis.py      # Core API endpoint tests
 ├── test_integration.py    # Full API workflow tests
+├── test_main_routes.py   # Main route tests
 └── test_pcc.py           # PCC model tests
 ```
 

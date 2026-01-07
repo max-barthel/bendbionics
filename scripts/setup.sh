@@ -1,261 +1,54 @@
 #!/bin/bash
 
-# BendBionics - Development Environment Setup Script
-# Consolidated setup with health checks and environment validation
+# BendBionics - First-Time Setup Script
+# Installs dependencies and configures the development environment
 
-set -e  # Exit on any error
+set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+# Source shared library
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib.sh"
 
-# Function to print colored output
-print_status() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
+print_header "🔧 BendBionics Setup"
 
-print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
+check_directory
 
-print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
+# Check prerequisites
+print_status "Checking prerequisites..."
+check_prerequisites true true true false
 
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
+# Install frontend dependencies
+print_status "Installing frontend dependencies..."
+cd frontend
+if [ ! -d "node_modules" ]; then
+    bun install
+    print_success "Frontend dependencies installed"
+else
+    print_status "Frontend dependencies already installed"
+fi
+cd ..
 
-print_header() {
-    echo -e "${PURPLE}================================${NC}"
-    echo -e "${PURPLE}🛠️  BendBionics Environment Setup${NC}"
-    echo -e "${PURPLE}================================${NC}"
-}
-
-# Function to ensure bun is available in PATH
-ensure_bun_in_path() {
-    # Check if bun is already in PATH
-    if command -v bun &> /dev/null; then
-        return 0
-    fi
-
-    # Simple fallback: add ~/.bun/bin to PATH if bun binary exists there
-    if [ -f "$HOME/.bun/bin/bun" ]; then
-        export PATH="$HOME/.bun/bin:$PATH"
-        if command -v bun &> /dev/null; then
-            return 0
-        fi
-    fi
-
-    # If we get here, bun is not found
-    print_error "Bun is not installed or not in PATH"
-    print_error "Install from https://bun.sh"
-    print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
-    print_error "If bun is installed, ensure ~/.zshenv includes: export PATH=\"\$HOME/.bun/bin:\$PATH\""
+# Setup backend environment
+print_status "Setting up backend environment..."
+cd backend
+if ! command -v uv &> /dev/null; then
+    print_error "uv is not installed. Install from https://github.com/astral-sh/uv"
     exit 1
-}
+fi
 
-# Function to check if we're in the right directory
-check_directory() {
-    if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
-        print_error "Please run this script from the project root directory"
-        exit 1
-    fi
-}
-
-# Function to check system requirements
-check_system_requirements() {
-    print_status "Checking system requirements..."
-
-    # Check Python
-    if ! command -v python &> /dev/null && ! command -v python3 &> /dev/null; then
-        print_error "Python is not installed. Please install Python 3.11+ from https://python.org/"
-        exit 1
-    fi
-
-    if command -v python3 &> /dev/null; then
-        print_success "Python: $(python3 --version)"
-    else
-        print_success "Python: $(python --version)"
-    fi
-
-    # Check uv
-    if ! command -v uv &> /dev/null; then
-        print_error "uv is not installed. Install from https://github.com/astral-sh/uv"
-        print_error "Quick install: curl -LsSf https://astral.sh/uv/install.sh | sh"
-        exit 1
-    fi
-    print_success "uv: $(uv --version)"
-
-    # Check Bun
-    if ! command -v bun &> /dev/null; then
-        print_error "Bun is not installed. Install from https://bun.sh"
-        print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
-        exit 1
-    fi
-    print_success "Bun: $(bun --version)"
-
-    # Check Rust (optional but recommended)
-    if ! command -v cargo &> /dev/null; then
-        print_warning "Rust/Cargo not found. Desktop app development will not work."
-        print_warning "Install Rust from https://rustup.rs/ for desktop app development."
-    else
-        print_success "Rust: $(cargo --version)"
-    fi
-
-    print_success "System requirements check completed"
-}
-
-# Function to setup frontend
-setup_frontend() {
-    print_status "Setting up frontend..."
-
-    cd frontend
-
-    # Install dependencies
-    print_status "Installing frontend dependencies with Bun..."
-    bun install
-
-    # Install Playwright browsers
-    print_status "Installing Playwright browsers..."
-    bunx playwright install
-
-    # Setup git hooks
-    print_status "Setting up git hooks..."
-    bun run prepare
-
-    cd ..
-
-    print_success "Frontend setup completed"
-}
-
-# Function to setup backend
-setup_backend() {
-    print_status "Setting up backend..."
-
-    cd backend
-
-    # Create virtual environment with uv
-    print_status "Creating Python virtual environment with uv..."
+if [ ! -d ".venv" ]; then
+    print_status "Creating Python virtual environment..."
     uv venv
+fi
 
-    # Sync dependencies (installs all dependencies from pyproject.toml)
-    print_status "Installing backend dependencies with uv..."
-    uv sync
+print_status "Installing backend dependencies..."
+uv sync
 
-    # Install development dependencies
-    print_status "Installing development dependencies..."
-    uv sync --extra dev
+print_status "Initializing database..."
+uv run python setup_dev.py || print_warning "Database initialization had issues (continuing anyway)"
 
-    cd ..
+cd ..
 
-    print_success "Backend setup completed"
-}
+print_success "Setup completed!"
+print_status "Run './dev.sh' to start the development environment"
 
-# Function to setup git hooks
-setup_git_hooks() {
-    print_status "Setting up git hooks..."
-
-    # Install husky
-    bun install
-
-    # Setup husky
-    bunx husky install
-
-    print_success "Git hooks setup completed"
-}
-
-# Function to run health checks
-run_health_checks() {
-    print_status "Running health checks..."
-
-    # Check frontend dependencies
-    if [ -d "frontend/node_modules" ]; then
-        print_success "Frontend dependencies: Installed"
-    else
-        print_error "Frontend dependencies: Missing"
-        return 1
-    fi
-
-    # Check backend dependencies
-    if [ -d "backend/.venv" ]; then
-        print_success "Backend virtual environment: Found"
-    else
-        print_warning "Backend virtual environment: Not found"
-    fi
-
-    # Check if pyproject.toml exists
-    if [ -f "backend/pyproject.toml" ]; then
-        print_success "Backend dependencies: Found (pyproject.toml)"
-    else
-        print_error "Backend dependencies: Missing (pyproject.toml)"
-        return 1
-    fi
-
-    # Run quick linting check
-    print_status "Running quick code quality check..."
-    if ./toolkit.sh all quick > /dev/null 2>&1; then
-        print_success "Code Quality: Passing"
-    else
-        print_warning "Code Quality: Issues found"
-    fi
-
-    print_success "Health checks completed"
-}
-
-# Function to run initial checks
-run_initial_checks() {
-    print_status "Running initial checks..."
-
-    # Run linting
-    print_status "Running linting checks..."
-    ./toolkit.sh all quick
-
-    # Run tests
-    print_status "Running test suite..."
-    ./toolkit.sh all test
-
-    print_success "Initial checks completed"
-}
-
-# Function to show setup summary
-show_setup_summary() {
-    echo -e "${CYAN}================================${NC}"
-    echo -e "${CYAN}📋 Setup Summary${NC}"
-    echo -e "${CYAN}================================${NC}"
-    echo -e "✅ System requirements verified"
-    echo -e "✅ Frontend dependencies installed"
-    echo -e "✅ Backend dependencies installed"
-    echo -e "✅ Git hooks configured"
-    echo -e "✅ Health checks passed"
-    echo -e "✅ Initial checks passed"
-    echo -e "${CYAN}================================${NC}"
-    echo -e "🚀 Ready to start development!"
-    echo -e "Run ${GREEN}./dev.sh${NC} to start the development server"
-    echo -e "Run ${GREEN}./build.sh${NC} to build the application"
-    echo -e "Run ${GREEN}./toolkit.sh${NC} for development tools"
-    echo -e "${CYAN}================================${NC}"
-}
-
-# Main execution
-main() {
-    print_header
-
-    check_directory
-    ensure_bun_in_path
-    check_system_requirements
-    setup_frontend
-    setup_backend
-    setup_git_hooks
-    run_health_checks
-    run_initial_checks
-    show_setup_summary
-}
-
-# Run main function
-main

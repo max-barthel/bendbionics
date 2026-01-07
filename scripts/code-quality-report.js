@@ -46,7 +46,7 @@ function main() {
   console.log(
     "Frontend:",
     runCommand(
-      'cd frontend && bun run lint:check 2>/dev/null || echo "No linting issues"'
+      'cd frontend && bun run lint 2>/dev/null || echo "No linting issues"'
     )
   );
   console.log(

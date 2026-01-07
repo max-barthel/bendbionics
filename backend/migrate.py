@@ -233,9 +233,11 @@ def create_database_backup() -> Optional[Path]:
                 logger.error(
                     "⚠️  Database permission error detected!\n"
                     "The database user lacks necessary privileges for backups.\n"
-                    "To fix this, run the permission fix script:\n"
-                    "  sudo scripts/deploy/fix-db-permissions.sh\n"
-                    "Or manually grant privileges as the postgres superuser."
+                    "To fix this, manually grant privileges as the postgres superuser:\n"
+                    "  sudo -u postgres psql -d bendbionics -c "
+                    "'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO bendbionics_user;'\n"
+                    "  sudo -u postgres psql -d bendbionics -c "
+                    "'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO bendbionics_user;'"
                 )
             return None
 
@@ -491,11 +493,7 @@ def check_and_handle_permission_error() -> bool:
                 "The database user lacks necessary privileges for "
                 "migrations and backups.\n"
                 "\n"
-                "To fix this issue:\n"
-                "1. Run the permission fix script:\n"
-                "   sudo scripts/deploy/fix-db-permissions.sh\n"
-                "\n"
-                "2. Or manually grant privileges as postgres superuser:\n"
+                "To fix this issue, manually grant privileges as postgres superuser:\n"
                 "   sudo -u postgres psql -d bendbionics -c "
                 "'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public "
                 "TO bendbionics_user;'\n"

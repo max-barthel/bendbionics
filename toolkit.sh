@@ -4,48 +4,9 @@
 
 set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
-
-print_status() { echo -e "${BLUE}[INFO]${NC} $1"; }
-print_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
-print_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
-print_error() { echo -e "${RED}[ERROR]${NC} $1"; }
-
-# Check if we're in the right directory
-check_directory() {
-    if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
-        print_error "Please run this script from the project root directory"
-        exit 1
-    fi
-}
-
-# Function to ensure bun is available in PATH
-ensure_bun_in_path() {
-    # Check if bun is already in PATH
-    if command -v bun &> /dev/null; then
-        return 0
-    fi
-
-    # Simple fallback: add ~/.bun/bin to PATH if bun binary exists there
-    if [ -f "$HOME/.bun/bin/bun" ]; then
-        export PATH="$HOME/.bun/bin:$PATH"
-        if command -v bun &> /dev/null; then
-            return 0
-        fi
-    fi
-
-    # If we get here, bun is not found
-    print_error "Bun is not installed or not in PATH"
-    print_error "Install from https://bun.sh"
-    print_error "Quick install: curl -fsSL https://bun.sh/install | bash"
-    print_error "If bun is installed, ensure ~/.zshenv includes: export PATH=\"\$HOME/.bun/bin:\$PATH\""
-    exit 1
-}
+# Source shared library
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/scripts/lib.sh"
 
 # Core functions - leveraging existing Bun scripts
 run_frontend() {
@@ -92,23 +53,14 @@ fix_all() {
 
 quick_check() {
     print_status "Running quick checks..."
-    bun run lint:check
+    bun run lint
     cd backend && ruff check app/ && cd ..
     print_success "Quick checks completed"
 }
 
-# Quality and CI operations
-quality_report() {
-    print_status "Generating quality report..."
-    bun run quality
-    print_success "Quality report completed"
-}
-
-ci_pipeline() {
-    print_status "Running CI pipeline..."
-    bun run ci:all
-    print_success "CI pipeline completed"
-}
+# Quality and CI operations (removed - scripts don't exist in package.json)
+# These functions were removed as they referenced non-existent scripts
+# Use individual commands instead: lint, test, build
 
 # Documentation
 docs_storybook() {
@@ -158,6 +110,150 @@ productivity_todos() {
     print_success "TODO search complete"
 }
 
+# Health check operations
+health_check_system() {
+    print_status "Checking system health..."
+
+    # Check Bun (required)
+    if command -v bun &> /dev/null; then
+        BUN_VERSION=$(bun --version)
+        print_success "Bun: $BUN_VERSION"
+    else
+        print_error "Bun not found (required)"
+        return 1
+    fi
+
+    # Check Node.js (optional, informational only - Bun includes Node.js compatibility)
+    if command -v node &> /dev/null; then
+        NODE_VERSION=$(node --version)
+        print_status "Node.js: $NODE_VERSION (optional, for compatibility)"
+    fi
+
+    # Check Python
+    if command -v python &> /dev/null; then
+        PYTHON_VERSION=$(python --version)
+        print_success "Python: $PYTHON_VERSION"
+    elif command -v python3 &> /dev/null; then
+        PYTHON_VERSION=$(python3 --version)
+        print_success "Python: $PYTHON_VERSION"
+    else
+        print_error "Python not found"
+        return 1
+    fi
+
+    return 0
+}
+
+health_check_dependencies() {
+    print_status "Checking dependencies..."
+
+    # Check frontend dependencies
+    if [ -d "frontend/node_modules" ]; then
+        print_success "Frontend dependencies: Installed"
+    else
+        print_error "Frontend dependencies: Missing"
+        return 1
+    fi
+
+    # Check backend dependencies
+    if [ -d "backend/.venv" ]; then
+        print_success "Backend virtual environment: Found (.venv)"
+    else
+        print_warning "Backend virtual environment: Not found (will be created on first run)"
+    fi
+
+    # Check if pyproject.toml exists
+    if [ -f "backend/pyproject.toml" ]; then
+        print_success "Backend dependencies: Found (pyproject.toml)"
+    else
+        print_error "Backend dependencies: Missing (pyproject.toml)"
+        return 1
+    fi
+
+    return 0
+}
+
+health_check_services() {
+    print_status "Checking services..."
+
+    # Check backend API
+    if curl -s -f "http://localhost:8000/health" > /dev/null 2>&1; then
+        print_success "Backend API: Running"
+    else
+        print_warning "Backend API: Not running"
+    fi
+
+    # Check frontend dev server
+    if curl -s -f "http://localhost:3000" > /dev/null 2>&1; then
+        print_success "Frontend Dev Server: Running"
+    else
+        print_warning "Frontend Dev Server: Not running"
+    fi
+
+    # Check if ports are in use
+    if lsof -i:8000 > /dev/null 2>&1; then
+        print_success "Port 8000: In use"
+    else
+        print_warning "Port 8000: Available"
+    fi
+
+    if lsof -i:3000 > /dev/null 2>&1; then
+        print_success "Port 3000: In use"
+    else
+        print_warning "Port 3000: Available"
+    fi
+}
+
+health_check_code_quality() {
+    print_status "Checking code quality..."
+
+    cd frontend && bun run lint > /dev/null 2>&1 && cd ../backend && ruff check app/ --quiet > /dev/null 2>&1 && cd .. && {
+        print_success "Code Quality: Passing"
+    } || {
+        print_warning "Code Quality: Issues found"
+    }
+}
+
+health_check_build_status() {
+    print_status "Checking build status..."
+
+    if [ -d "frontend/dist" ] && [ -f "frontend/dist/index.html" ]; then
+        print_success "Build Output: Available"
+    else
+        print_warning "Build Output: Not found (run './build.sh' to build)"
+    fi
+}
+
+health_check_test_status() {
+    print_status "Checking test status..."
+
+    if [ -d "frontend/coverage" ] || [ -d "backend/htmlcov" ]; then
+        print_success "Test Coverage: Available (run tests to update)"
+    else
+        print_warning "Test Coverage: Not found (run './toolkit.sh test all' to generate)"
+    fi
+}
+
+health_check_all() {
+    print_header "🏥 BendBionics Health Check"
+
+    check_directory
+    ensure_bun_in_path
+    health_check_system
+    health_check_dependencies
+    health_check_services
+    health_check_code_quality
+    health_check_build_status
+    health_check_test_status
+
+    echo -e "${CYAN}================================${NC}"
+    echo -e "${CYAN}📊 Health Check Summary${NC}"
+    echo -e "${CYAN}================================${NC}"
+    echo -e "Run './dev.sh' to start development environment"
+    echo -e "Run './toolkit.sh test all' to run all tests"
+    echo -e "${CYAN}================================${NC}"
+}
+
 # Main script logic
 check_directory
 ensure_bun_in_path
@@ -202,21 +298,18 @@ case "${1:-help}" in
         esac
         ;;
     "quality")
-        case "${2:-report}" in
-            "report") quality_report ;;
-            "frontend") bun run quality:frontend ;;
-            "backend") bun run quality:backend ;;
-            *) print_error "Unknown quality command: $2" ;;
-        esac
+        print_warning "Quality command removed - use 'lint', 'test', or 'build' instead"
+        print_status "Available alternatives:"
+        echo "  ./toolkit.sh lint all     - Run linting checks"
+        echo "  ./toolkit.sh test all     - Run all tests"
+        echo "  ./toolkit.sh fix all      - Auto-fix issues"
         ;;
     "ci")
-        case "${2:-all}" in
-            "all") ci_pipeline ;;
-            "test") bun run ci:test ;;
-            "lint") bun run ci:lint ;;
-            "build") bun run ci:build ;;
-            *) print_error "Unknown ci command: $2" ;;
-        esac
+        print_warning "CI command removed - use individual commands instead"
+        print_status "Available alternatives:"
+        echo "  ./toolkit.sh lint all     - Run linting"
+        echo "  ./toolkit.sh test all     - Run tests"
+        echo "  ./build.sh                - Build for production"
         ;;
     "docs")
         case "${2:-storybook}" in
@@ -228,7 +321,7 @@ case "${1:-help}" in
     "git")
         case "${2:-help}" in
             "commit-check") git_commit_check "$3" ;;
-            "changelog") bun run changelog ;;
+            "changelog") print_warning "Changelog command not available" ;;
             *) print_error "Unknown git command: $2" ;;
         esac
         ;;
@@ -248,6 +341,9 @@ case "${1:-help}" in
     "quick")
         quick_check
         ;;
+    "health")
+        health_check_all
+        ;;
     "help"|*)
         echo "BendBionics - Development Toolkit"
         echo ""
@@ -258,13 +354,12 @@ case "${1:-help}" in
         echo "  test [all|frontend|backend|coverage] - Run tests"
         echo "  fix [all|frontend|backend]   - Auto-fix issues"
         echo "  format [all|frontend]        - Format code"
-        echo "  quality [report|frontend|backend] - Code quality analysis"
-        echo "  ci [all|test|lint|build]     - CI/CD operations"
         echo "  docs [storybook|build]       - Documentation"
-        echo "  git [commit-check|changelog] - Git operations"
+        echo "  git [commit-check]           - Git operations"
         echo "  cleanup [all]                - Clean temporary files"
         echo "  productivity [stats|todos]   - Productivity tools"
         echo "  quick                        - Quick error checks"
+        echo "  health                       - Check system health"
         echo ""
         echo "Examples:"
         echo "  $0 lint all                 # Run all linting"
@@ -281,13 +376,14 @@ case "${1:-help}" in
         echo "./toolkit.sh test all         # Run all tests"
         echo "./toolkit.sh fix all          # Auto-fix issues"
         echo ""
-        echo "# CI/CD:"
-        echo "./toolkit.sh ci all           # Full CI pipeline"
-        echo "./toolkit.sh quality report   # Quality analysis"
+        echo "# Testing and quality:"
+        echo "./toolkit.sh lint all         # Full linting"
+        echo "./toolkit.sh test all         # Run all tests"
         echo ""
         echo "# Individual components:"
         echo "./toolkit.sh lint frontend    # Frontend only"
         echo "./toolkit.sh test backend     # Backend only"
         echo "./toolkit.sh docs storybook   # Start Storybook"
+        echo "./toolkit.sh health            # Check system health"
         ;;
 esac
