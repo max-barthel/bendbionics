@@ -13,9 +13,7 @@ request_id_var: contextvars.ContextVar[Optional[str]] = contextvars.ContextVar(
 session_id_var: contextvars.ContextVar[Optional[str]] = contextvars.ContextVar(
     "session_id", default=None
 )
-user_id_var: contextvars.ContextVar[Optional[str]] = contextvars.ContextVar(
-    "user_id", default=None
-)
+user_id_var: contextvars.ContextVar[Optional[str]] = contextvars.ContextVar("user_id", default=None)
 
 
 class LogContext(str, Enum):
@@ -41,9 +39,7 @@ def setup_logging(settings: Optional[Settings] = None) -> None:
     log_level = getattr(logging, settings.log_level.upper())
 
     # Create formatter
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Create console handler
     console_handler = logging.StreamHandler(sys.stdout)

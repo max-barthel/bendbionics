@@ -222,8 +222,8 @@ function Visualizer3D({
       return elements;
     };
 
-    // Helper function to create first pseudo tendon segment (vertical line from first eyelet to origin plane)
-    // This segment is fixed length and never changes, purely for visualization
+    // Helper function to create first pseudo tendon segment (vertical line from first eyelet
+    // to origin plane). This segment is fixed length and never changes, purely for visualization
     const createFirstPseudoSegment = (
       routingPoints: number[][][],
       tendonCount: number,

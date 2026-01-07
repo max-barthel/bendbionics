@@ -1,7 +1,10 @@
 name: Docker Deployment to Hetzner VPS
 
 on:
-    push:
+    workflow_run:
+        workflows: ["Web Application CI/CD"]
+        types:
+            - completed
         branches: [main, web-app-deployment]
     workflow_dispatch:
         inputs:
@@ -29,7 +32,7 @@ env:
     # Docker registry configuration
     DOCKER_REGISTRY: ghcr.io
     DOCKER_IMAGE_PREFIX: ${{ github.repository_owner }}/bendbionics
-    VERSION: ${{ github.sha }}
+    VERSION: ${{ github.event.workflow_run.head_sha || github.sha }}
     # Server configuration
     SERVER_USER: "root"
     SERVER_HOST: ${{ secrets.SERVER_HOST }}
@@ -40,6 +43,7 @@ jobs:
     deploy:
         name: 🐳 Docker Deployment to VPS
         runs-on: ubuntu-latest
+        if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
         environment: production
         permissions:
             contents: read
@@ -61,6 +65,8 @@ jobs:
         steps:
             - name: 🎯 Checkout code
               uses: actions/checkout@v6
+              with:
+                  ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
             - name: 🔧 Setup Bun
               uses: oven-sh/setup-bun@v2

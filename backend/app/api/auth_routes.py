@@ -95,15 +95,9 @@ async def register(user_data: UserCreate, session: Session = Depends(get_session
     user_response = user_to_response(user)
 
     if settings.email_verification_enabled:
-        message = (
-            "User registered successfully. Please check your email to verify your "
-            "account."
-        )
+        message = "User registered successfully. Please check your email to verify your account."
     else:
-        message = (
-            "User registered successfully. Check the server logs for your verification "
-            "link."
-        )
+        message = "User registered successfully. Check the server logs for your verification link."
 
     return created_response(
         data=user_response,
@@ -230,9 +224,7 @@ async def verify_email(
         )
         raise
 
-    return success_response(
-        data={"email_verified": True}, message="Email verified successfully"
-    )
+    return success_response(data={"email_verified": True}, message="Email verified successfully")
 
 
 @router.post("/resend-verification")
@@ -301,9 +293,7 @@ async def request_password_reset(
 
 
 @router.post("/reset-password")
-async def reset_password(
-    request: PasswordResetConfirm, session: Session = Depends(get_session)
-):
+async def reset_password(request: PasswordResetConfirm, session: Session = Depends(get_session)):
     """Reset password with token"""
     user = get_user_by_reset_token(session, request.token)
 
@@ -363,6 +353,4 @@ async def debug_email_sending(to_email: str, session: Session = Depends(get_sess
             data={"email_sent": False, "to": to_email},
             message="Test email failed - check server logs for details",
         )
-    raise AuthorizationError(
-        message="Debug endpoint only available in development mode"
-    )
+    raise AuthorizationError(message="Debug endpoint only available in development mode")

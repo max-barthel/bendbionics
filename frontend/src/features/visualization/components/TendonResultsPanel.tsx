@@ -293,7 +293,8 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
     ? tendonAnalysis.tendon_analysis.segment_length_changes[0].length - 1
     : 0;
 
-  // Auto-adjust panel width only when tendon/segment counts change (not on every optimalWidth change)
+  // Auto-adjust panel width only when tendon/segment counts change (not on every
+  // optimalWidth change)
   useEffect(() => {
     if (!isVisible || isResizing || !panelRef.current || !tendonAnalysis) return;
 
@@ -326,7 +327,8 @@ export const TendonResultsPanel: React.FC<TendonResultsPanelProps> = ({
       // Get the actual rendered width of the table
       const tableWidth = table.getBoundingClientRect().width;
 
-      // Add padding: content div has pl-6 (24px left) + p-4 (16px right) = 40px total horizontal padding
+      // Add padding: content div has pl-6 (24px left) + p-4 (16px right) = 40px total
+      // horizontal padding
       const contentPadding = 40; // 24px left + 16px right
       const calculatedOptimalWidth = Math.max(tableWidth + contentPadding, 360);
 

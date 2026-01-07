@@ -22,7 +22,8 @@ interface ModalProps {
  * Modal - Reusable modal component with Tahoe glass styling
  *
  * Eliminates duplicate modal overlay patterns found across the app.
- * Standard pattern: fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4
+ * Standard pattern: fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center
+ * justify-center z-50 p-4
  */
 export function Modal({
   isOpen,

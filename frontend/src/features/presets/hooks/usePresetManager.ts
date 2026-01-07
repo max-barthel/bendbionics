@@ -82,7 +82,8 @@ export function usePresetManager(currentConfiguration: Record<string, unknown>) 
       setLoadError(''); // Clear any previous errors
     } catch (err: unknown) {
       handleApiError(err, 'loading presets');
-      // Extract message directly as fallback (unified handler's onError sets loadError asynchronously)
+      // Extract message directly as fallback (unified handler's onError sets loadError
+      // asynchronously)
       const errorMessage = extractErrorMessage(err);
       setLoadError(errorMessage || ERROR_MESSAGES.LOAD_FAILED);
     } finally {

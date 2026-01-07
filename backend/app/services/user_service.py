@@ -69,9 +69,7 @@ def check_email_available(
 
 def get_user_by_verification_token(session: Session, token: str) -> Optional[User]:
     """Get user by email verification token."""
-    return session.exec(
-        select(User).where(User.email_verification_token == token)
-    ).first()
+    return session.exec(select(User).where(User.email_verification_token == token)).first()
 
 
 def get_user_by_reset_token(session: Session, token: str) -> Optional[User]:

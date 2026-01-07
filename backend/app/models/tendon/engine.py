@@ -21,9 +21,7 @@ class RobotModelInterface(Protocol):
         """Compute robot position and return list of segment points."""
         ...
 
-    def get_coupling_elements(
-        self, robot_positions: List[List[np.ndarray]]
-    ) -> Dict[str, List]:
+    def get_coupling_elements(self, robot_positions: List[List[np.ndarray]]) -> Dict[str, List]:
         """Extract coupling element data from robot positions."""
         ...
 
@@ -81,9 +79,7 @@ class TendonAnalysisEngine:
                 coupling_transforms.append(transform)
 
         # Step 3: Calculate tendon lengths using transformation matrices
-        tendon_analysis = self.tendon_calculator.calculate_tendon_lengths(
-            coupling_transforms
-        )
+        tendon_analysis = self.tendon_calculator.calculate_tendon_lengths(coupling_transforms)
 
         # Step 4: Get practical actuation commands
         actuation_commands = self.tendon_calculator.get_actuation_commands(

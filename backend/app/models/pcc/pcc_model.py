@@ -46,9 +46,7 @@ class PCCRobotModel(RobotModelInterface):
 
         return compute_pcc(params)
 
-    def get_coupling_elements(
-        self, robot_positions: List[List[np.ndarray]]
-    ) -> Dict[str, List]:
+    def get_coupling_elements(self, robot_positions: List[List[np.ndarray]]) -> Dict[str, List]:
         """
         Extract coupling element transformation matrices from PCC robot positions.
 
@@ -148,9 +146,7 @@ class PCCRobotModel(RobotModelInterface):
         t_coupling = transformation_matrix_coupling(coupling_length)
         transform_matrix = transform_matrix @ t_coupling
 
-        coupling_transform = homogeneous_matrix(
-            transform_matrix[:3, :3].copy(), coupling_middle
-        )
+        coupling_transform = homogeneous_matrix(transform_matrix[:3, :3].copy(), coupling_middle)
         coupling_transforms.append(coupling_transform)
         coupling_positions.append(coupling_middle.copy())
         coupling_orientations.append(transform_matrix[:3, :3].copy())
@@ -171,17 +167,13 @@ class PCCRobotModel(RobotModelInterface):
         from .transformations import transformation_matrix_coupling
 
         coupling_middle = (segment[0] + segment[1]) / 2
-        coupling_transform = homogeneous_matrix(
-            transform_matrix[:3, :3].copy(), coupling_middle
-        )
+        coupling_transform = homogeneous_matrix(transform_matrix[:3, :3].copy(), coupling_middle)
         coupling_transforms.append(coupling_transform)
         coupling_positions.append(coupling_middle.copy())
         coupling_orientations.append(transform_matrix[:3, :3].copy())
 
         if coupling_index < len(coupling_lengths):
-            t_coupling = transformation_matrix_coupling(
-                coupling_lengths[coupling_index]
-            )
+            t_coupling = transformation_matrix_coupling(coupling_lengths[coupling_index])
             transform_matrix = transform_matrix @ t_coupling
 
         return transform_matrix
@@ -222,9 +214,7 @@ class PCCRobotModel(RobotModelInterface):
         current_orientation = np.eye(3)
 
         # Add base coupling element
-        base_transform = homogeneous_matrix(
-            current_orientation.copy(), current_position.copy()
-        )
+        base_transform = homogeneous_matrix(current_orientation.copy(), current_position.copy())
         coupling_transforms.append(base_transform)
         coupling_positions.append(current_position.copy())
         coupling_orientations.append(current_orientation.copy())
@@ -318,9 +308,7 @@ class PCCRobotModel(RobotModelInterface):
 
             # Create rotation matrix for 180-degree case
             # Rz(phi) * Ry(π) * Rz(-phi)
-            rz_phi = np.array(
-                [[cos_phi, -sin_phi, 0], [sin_phi, cos_phi, 0], [0, 0, 1]]
-            )
+            rz_phi = np.array([[cos_phi, -sin_phi, 0], [sin_phi, cos_phi, 0], [0, 0, 1]])
             # 180-degree rotation around y
             ry_pi = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, -1]])
             rz_neg_phi = rz_phi.T
@@ -338,9 +326,7 @@ class PCCRobotModel(RobotModelInterface):
         # Rotation around y-axis by theta
         cos_theta = np.cos(theta)
         sin_theta = np.sin(theta)
-        ry_theta = np.array(
-            [[cos_theta, 0, sin_theta], [0, 1, 0], [-sin_theta, 0, cos_theta]]
-        )
+        ry_theta = np.array([[cos_theta, 0, sin_theta], [0, 1, 0], [-sin_theta, 0, cos_theta]])
 
         # Rotation around z-axis by -phi (transpose of rz_phi)
         rz_neg_phi = rz_phi.T

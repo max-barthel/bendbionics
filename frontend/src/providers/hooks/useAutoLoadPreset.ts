@@ -30,7 +30,8 @@ export function useAutoLoadPreset(
               try {
                 let configuration: RobotConfiguration = {};
 
-                // Handle case where configuration might be a string (shouldn't happen, but safety check)
+                // Handle case where configuration might be a string (shouldn't happen, but
+                // safety check)
                 if (typeof firstPreset.configuration === 'string') {
                   try {
                     configuration = JSON.parse(firstPreset.configuration) as RobotConfiguration;

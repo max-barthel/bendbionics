@@ -75,9 +75,7 @@ class EmailService:
             logger.error(f"Unexpected error sending email to {to_email}: {e}")
             return False
 
-    async def send_verification_email(
-        self, to_email: str, username: str, token: str
-    ) -> bool:
+    async def send_verification_email(self, to_email: str, username: str, token: str) -> bool:
         """Send email verification email"""
         verification_url = f"{settings.email_verification_url}?token={token}"
 
@@ -140,9 +138,7 @@ class EmailService:
             html_content=html_content,
         )
 
-    async def send_password_reset_email(
-        self, to_email: str, username: str, token: str
-    ) -> bool:
+    async def send_password_reset_email(self, to_email: str, username: str, token: str) -> bool:
         """Send password reset email"""
         reset_url = f"{settings.password_reset_url}?token={token}"
 

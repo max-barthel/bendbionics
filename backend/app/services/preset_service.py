@@ -89,18 +89,14 @@ def get_preset_for_user(
     return session.exec(query).first()
 
 
-def get_user_preset_by_id(
-    session: Session, preset_id: int, user_id: int
-) -> Optional[Preset]:
+def get_user_preset_by_id(session: Session, preset_id: int, user_id: int) -> Optional[Preset]:
     """Get preset by ID that belongs to a specific user."""
     return session.exec(
         select(Preset).where((Preset.id == preset_id) & (Preset.user_id == user_id))
     ).first()
 
 
-def update_preset(
-    session: Session, preset: Preset, preset_data: PresetUpdate
-) -> Preset:
+def update_preset(session: Session, preset: Preset, preset_data: PresetUpdate) -> Preset:
     """Update a preset with new data.
 
     Args:

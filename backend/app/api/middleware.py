@@ -216,12 +216,8 @@ class CORSMiddleware(BaseHTTPMiddleware):
         if request.method == "OPTIONS":
             response = Response()
             response.headers["Access-Control-Allow-Origin"] = allow_origin
-            response.headers["Access-Control-Allow-Methods"] = ", ".join(
-                self.allow_methods
-            )
-            response.headers["Access-Control-Allow-Headers"] = ", ".join(
-                self.allow_headers
-            )
+            response.headers["Access-Control-Allow-Methods"] = ", ".join(self.allow_methods)
+            response.headers["Access-Control-Allow-Headers"] = ", ".join(self.allow_headers)
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Max-Age"] = "86400"  # 24 hours
             return response

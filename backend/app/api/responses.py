@@ -40,9 +40,7 @@ class ErrorResponse(BaseModel):
     success: bool = Field(default=False, description="Always false for errors")
     error: str = Field(description="Error type/code")
     message: str = Field(description="Human-readable error message")
-    details: Optional[Dict[str, Any]] = Field(
-        default=None, description="Additional error details"
-    )
+    details: Optional[Dict[str, Any]] = Field(default=None, description="Additional error details")
     timestamp: datetime = Field(
         default_factory=lambda: datetime.now(UTC), description="Error timestamp"
     )
@@ -52,9 +50,7 @@ class ErrorResponse(BaseModel):
 class PaginatedResponse(BaseModel, Generic[T]):
     """Paginated response format for list endpoints."""
 
-    success: bool = Field(
-        default=True, description="Whether the request was successful"
-    )
+    success: bool = Field(default=True, description="Whether the request was successful")
     data: List[T] = Field(description="List of items")
     pagination: Dict[str, Any] = Field(description="Pagination information")
     message: Optional[str] = Field(default=None, description="Human-readable message")
@@ -171,9 +167,7 @@ def error_response(
 
     # Convert to dict with proper datetime serialization
     content = response.model_dump(by_alias=True, exclude_none=True, mode="json")
-    return JSONResponse(
-        status_code=status_code, content=content, media_type="application/json"
-    )
+    return JSONResponse(status_code=status_code, content=content, media_type="application/json")
 
 
 def paginated_response(
@@ -251,18 +245,14 @@ class AuthenticationError(APIException):
     """Authentication error exception."""
 
     def __init__(self, message: str = "Authentication failed"):
-        super().__init__(
-            error_type="authentication_error", message=message, status_code=401
-        )
+        super().__init__(error_type="authentication_error", message=message, status_code=401)
 
 
 class AuthorizationError(APIException):
     """Authorization error exception."""
 
     def __init__(self, message: str = "Access denied"):
-        super().__init__(
-            error_type="authorization_error", message=message, status_code=403
-        )
+        super().__init__(error_type="authorization_error", message=message, status_code=403)
 
 
 class NotFoundError(APIException):

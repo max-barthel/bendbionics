@@ -56,6 +56,7 @@ export default [
       'prefer-const': 'error',
       'no-unused-vars': 'off', // Use TypeScript version instead
       'no-undef': 'off', // TypeScript handles this
+      'max-len': ['error', { code: 100, ignoreUrls: true, ignoreStrings: true, ignoreTemplateLiterals: true }],
       // React Hooks rules
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
@@ -105,6 +106,7 @@ export default [
       'no-console': 'off',
       'no-unused-vars': 'off',
       'no-undef': 'off',
+      'max-len': ['error', { code: 100, ignoreUrls: true, ignoreStrings: true, ignoreTemplateLiterals: true }],
       // React Hooks rules
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
@@ -143,6 +145,7 @@ export default [
       'no-console': 'off',
       'no-unused-vars': 'off',
       'no-undef': 'off',
+      'max-len': ['error', { code: 100, ignoreUrls: true, ignoreStrings: true, ignoreTemplateLiterals: true }],
       // React Hooks rules
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',

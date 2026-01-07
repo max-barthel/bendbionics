@@ -135,6 +135,4 @@ async def delete_preset(
 
     delete_preset_service(session, preset)
 
-    return success_response(
-        data={"deleted_id": preset_id}, message="Preset deleted successfully"
-    )
+    return success_response(data={"deleted_id": preset_id}, message="Preset deleted successfully")

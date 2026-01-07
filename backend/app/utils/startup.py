@@ -48,10 +48,7 @@ def validate_email_config() -> None:
     else:
         default_logger.info(
             LogContext.GENERAL,
-            (
-                "Email verification disabled - verification links will be "
-                "logged to console"
-            ),
+            ("Email verification disabled - verification links will be logged to console"),
             {},
             "Startup",
             "config_info",

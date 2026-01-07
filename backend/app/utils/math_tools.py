@@ -1,9 +1,7 @@
 import numpy as np
 
 
-def homogeneous_matrix(
-    rotation_matrix: np.ndarray, translation_vector: np.ndarray
-) -> np.ndarray:
+def homogeneous_matrix(rotation_matrix: np.ndarray, translation_vector: np.ndarray) -> np.ndarray:
     """
     Create a 4x4 homogeneous transformation matrix.
 

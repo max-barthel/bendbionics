@@ -44,9 +44,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     # Fallback to direct bcrypt for legacy bcrypt hashes
     if hashed_password.startswith("$2b$"):
         try:
-            return bcrypt.checkpw(
-                plain_password.encode("utf-8"), hashed_password.encode("utf-8")
-            )
+            return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
         except Exception:
             pass
 
@@ -80,9 +78,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def verify_token(token: str) -> Optional[TokenData]:
     """Verify JWT token and return token data"""
     try:
-        payload = jwt.decode(
-            token, settings.secret_key, algorithms=[settings.algorithm]
-        )
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         username: str = payload.get("sub")
         if username is None:
             return None

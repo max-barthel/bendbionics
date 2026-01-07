@@ -69,9 +69,7 @@ class TendonCalculator:
 
         # Calculate length changes (how much each tendon needs to be pulled)
         # Reference is the straight configuration - calculate segment-by-segment deltas
-        reference_segment_lengths = self._calculate_reference_segment_lengths(
-            coupling_transforms
-        )
+        reference_segment_lengths = self._calculate_reference_segment_lengths(coupling_transforms)
 
         # Calculate segment length changes: bent - reference
         # Positive = tendon shortened = needs pulling
@@ -192,9 +190,7 @@ class TendonCalculator:
             # Create identity rotation (no rotation for straight configuration)
             identity_rotation = np.eye(3)
             straight_position = np.array([0.0, 0.0, cumulative_z])
-            straight_transform = homogeneous_matrix(
-                identity_rotation, straight_position
-            )
+            straight_transform = homogeneous_matrix(identity_rotation, straight_position)
             straight_transforms.append(straight_transform)
 
         # Calculate routing points for straight configuration
@@ -207,15 +203,11 @@ class TendonCalculator:
             for j in range(num_tendons):
                 start_point = straight_routing_points[i][j]
                 end_point = straight_routing_points[i + 1][j]
-                reference_segment_lengths[j, i] = np.linalg.norm(
-                    end_point - start_point
-                )
+                reference_segment_lengths[j, i] = np.linalg.norm(end_point - start_point)
 
         return reference_segment_lengths
 
-    def get_actuation_commands(
-        self, length_changes: np.ndarray
-    ) -> Dict[str, Dict[str, Any]]:
+    def get_actuation_commands(self, length_changes: np.ndarray) -> Dict[str, Dict[str, Any]]:
         """
         Generate practical actuation commands for tendon control.
 

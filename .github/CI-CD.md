@@ -22,13 +22,14 @@ This project uses GitHub Actions for automated CI/CD, optimized for web applicat
 
 ### 2. **Deploy** (`deploy.yml`)
 
-**Triggers:** Push to main/web-app-deployment, Manual dispatch
+**Triggers:**
+- Automatic: Runs after CI workflow completes successfully (on main/web-app-deployment branches)
+- Manual: Workflow dispatch (bypasses CI for emergency deployments)
 
 **Jobs:**
 
-- **Build & Test**: Pre-deployment validation
+- **Build & Test**: Pre-deployment validation (optional, can be skipped via inputs)
 - **Deploy to Production**: Automated deployment to bendbionics.com
-- **Deploy to Staging**: Staging environment deployment (if configured)
 
 ## Environment Variables
 
@@ -46,10 +47,12 @@ This project uses GitHub Actions for automated CI/CD, optimized for web applicat
 
 ### Automatic Deployment
 
-1. **Push to main/web-app-deployment** → Triggers full CI/CD
-2. **Tests pass** → Build artifacts created
-3. **Deploy job** → Uploads to server and runs deployment
-4. **Health check** → Verifies deployment success
+1. **Push to main/web-app-deployment** → Triggers CI workflow
+2. **CI workflow completes** → All tests, linting, and quality checks pass
+3. **Deploy workflow triggers** → Automatically runs after CI succeeds
+4. **Build Docker images** → Push to GitHub Container Registry
+5. **Deploy to VPS** → Upload files and run deployment script
+6. **Health check** → Verifies deployment success
 
 ### Manual Deployment
 
@@ -105,6 +108,8 @@ bun run ci:all
 ```
 
 #### Deployment Failures
+
+**Note:** The deploy workflow only runs after CI workflow succeeds. If deployment doesn't trigger, check that CI workflow completed successfully.
 
 ```bash
 # Check server connectivity

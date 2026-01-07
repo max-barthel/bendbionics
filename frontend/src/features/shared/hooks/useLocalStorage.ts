@@ -12,14 +12,16 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     }
   });
 
-  // Return a wrapped version of useState's setter function that persists the new value to localStorage
+  // Return a wrapped version of useState's setter function that persists the new value
+  // to localStorage
   const setValue = (value: T | ((val: T) => T)) => {
     try {
       // CRITICAL FIX: For function updates, we must pass the function directly to React's setState
       // so React can call it with the pending state. If we call it here with storedValue,
       // we're using stale state when multiple updates are batched.
       if (typeof value === 'function') {
-        // Pass function directly to React's setState - React will call it with the correct pending state
+        // Pass function directly to React's setState - React will call it with the correct
+        // pending state
         setStoredValue(prevState => {
           const valueToStore = (value as (val: T) => T)(prevState);
           // Persist to localStorage after computing the new value

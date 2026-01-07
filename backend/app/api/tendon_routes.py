@@ -34,9 +34,7 @@ async def calculate_tendon_lengths(
     - Tendon lengths and required actuation
     """
     result = compute_pcc_with_tendons(params)
-    return success_response(
-        data=result, message="Tendon calculation completed successfully"
-    )
+    return success_response(data=result, message="Tendon calculation completed successfully")
 
 
 @router.post("/analyze")
@@ -61,6 +59,4 @@ async def analyze_tendon_configuration(
         "tendon_config": result.get("tendon_config", {}),
     }
 
-    return success_response(
-        data=analysis, message="Tendon analysis completed successfully"
-    )
+    return success_response(data=analysis, message="Tendon analysis completed successfully")

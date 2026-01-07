@@ -18,9 +18,7 @@ class RobotModelInterface(Protocol):
         """Compute robot position and return list of segment points."""
         ...
 
-    def get_coupling_elements(
-        self, robot_positions: List[List[np.ndarray]]
-    ) -> Dict[str, List]:
+    def get_coupling_elements(self, robot_positions: List[List[np.ndarray]]) -> Dict[str, List]:
         """Extract coupling element data from robot positions."""
         ...
 
