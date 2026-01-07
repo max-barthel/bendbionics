@@ -13,16 +13,16 @@ Use the provided scripts for consistent development:
 ```bash
 # Development
 ./dev.sh                  # Start development servers
-./setup.sh                # First-time setup
+./scripts/setup.sh         # First-time setup
 ./toolkit.sh              # Development tools
 
 # Production
 ./build.sh                # Create production build
-./deploy-workflow.sh      # Deploy to bendbionics.com server
+./build.sh --test         # Build and test locally
 
-# Testing
-./scripts/health-check.sh # System health check
-bun run test:all          # Run all tests
+# Testing and Health
+./toolkit.sh health       # System health check
+./toolkit.sh test all     # Run all tests
 ```
 
 ## Code Quality Standards
@@ -38,7 +38,7 @@ bun run test:all          # Run all tests
 # Feature development
 git checkout -b feature/description
 # Make changes
-bun run commit  # Use commitizen for conventional commits
+git commit -m "feat: description"  # Use conventional commit format
 git push origin feature/description
 ```
 
