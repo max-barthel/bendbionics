@@ -206,15 +206,6 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 /**
- * @deprecated Use `cn` instead. This function is kept for backward compatibility.
- * Combines multiple style classes with proper spacing (legacy implementation).
- */
-// NOSONAR - Intentionally deprecated signature for backward compatibility during migration to cn()
-export function combineStyles(...styles: (string | undefined | null)[]): string {
-  return cn(...styles);
-}
-
-/**
  * Get responsive styles based on screen size
  */
 export function getResponsiveStyles(
@@ -241,5 +232,5 @@ export function getResponsiveStyles(
     .filter(Boolean)
     .join(' ');
 
-  return combineStyles(baseStyles, responsiveClasses);
+  return cn(baseStyles, responsiveClasses);
 }
