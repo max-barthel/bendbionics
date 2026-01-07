@@ -10,6 +10,7 @@ import { analyzer } from 'vite-bundle-analyzer';
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
   const isAnalyze = process.env.ANALYZE === 'true';
+  const isPlaywrightTest = process.env.PLAYWRIGHT_TEST === 'true';
 
   const plugins = [react(), tailwindcss()];
 
@@ -32,6 +33,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins,
+    // Skip .env file loading when running under Playwright to avoid permission errors
+    // The app uses import.meta.env with fallbacks, so this is safe
+    envDir: isPlaywrightTest ? path.resolve(__dirname, './node_modules') : undefined,
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

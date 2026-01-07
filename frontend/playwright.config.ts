@@ -90,20 +90,23 @@ export default defineConfig({
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
     },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    // WebKit disabled: crashes on macOS 26.1 (beta) due to missing _OBJC_CLASS_$__WKBrowserContext symbol
+    // Re-enable when Playwright releases a version compatible with macOS 26.1+
+    // {
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
+    // },
 
     /* Test against mobile viewports */
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
     },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
+    // Mobile Safari also uses WebKit, so disabled for the same reason
+    // {
+    //   name: 'Mobile Safari',
+    //   use: { ...devices['iPhone 12'] },
+    // },
 
     /* Test against branded browsers (commented out - uncomment if needed) */
     // {
@@ -121,13 +124,14 @@ export default defineConfig({
     /** Command to start the development server
      * Uses zsh locally (which sources ~/.zshenv where bun PATH is configured)
      * In CI, bun should already be in PATH, so we use it directly
+     * Sets PLAYWRIGHT_TEST=true to skip .env file loading (avoids permission errors)
      */
     command:
       process.platform === 'win32'
-        ? 'bun run dev'
+        ? 'set PLAYWRIGHT_TEST=true && bun run dev'
         : IS_CI
-          ? 'bun run dev'
-          : `zsh -c 'bun run dev'`,
+          ? 'PLAYWRIGHT_TEST=true bun run dev'
+          : `zsh -c 'export PLAYWRIGHT_TEST=true && bun run dev'`,
     /** URL to check if server is ready */
     url: BASE_URL,
     /** Reuse existing server if available (not on CI) */
