@@ -2,6 +2,36 @@ import { expect, test } from '@playwright/test';
 
 test.describe('BendBionics App', () => {
   test.beforeEach(async ({ page }) => {
+    // Mock API routes to prevent hanging when backend isn't running
+    await page.route('**/auth/me', route => {
+      route.fulfill({
+        status: 401,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Unauthorized' }),
+      });
+    });
+    await page.route('**/api/auth/me', route => {
+      route.fulfill({
+        status: 401,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Unauthorized' }),
+      });
+    });
+    await page.route('**/presets/public', route => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: [] }),
+      });
+    });
+    await page.route('**/api/presets/public', route => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data: [] }),
+      });
+    });
+
     // Navigate to the app
     await page.goto('/');
     // Wait for React to hydrate and initial load
@@ -190,6 +220,30 @@ test.describe('BendBionics App', () => {
   });
 
   test('should navigate to email verification page', async ({ page }) => {
+    // Mock email verification API route
+    await page.route('**/auth/verify-email*', route => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: { email_verified: true },
+          message: 'Email verified',
+        }),
+      });
+    });
+    await page.route('**/api/auth/verify-email*', route => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: { email_verified: true },
+          message: 'Email verified',
+        }),
+      });
+    });
+
     // Navigate directly to email verification page with a token
     await page.goto('/verify-email?token=test-token-123');
     await page.waitForLoadState('networkidle');
