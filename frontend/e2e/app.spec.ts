@@ -2,42 +2,99 @@ import { expect, test } from '@playwright/test';
 
 test.describe('BendBionics App', () => {
   test.beforeEach(async ({ page }) => {
-    // Mock API routes to prevent hanging when backend isn't running
-    await page.route('**/auth/me', route => {
+    // Mock API routes BEFORE navigation to prevent hanging when backend isn't running
+    // Use proper backend API response format: { success, data, message, timestamp, request_id }
+
+    // Helper function to create API error response
+    const createErrorResponse = (message: string) => ({
+      success: false,
+      error: 'authentication_error',
+      message,
+      timestamp: new Date().toISOString(),
+      request_id: null,
+    });
+
+    // Helper function to create API success response
+    const createSuccessResponse = (data: unknown, message: string) => ({
+      success: true,
+      data,
+      message,
+      timestamp: new Date().toISOString(),
+      request_id: null,
+    });
+
+    // Mock /auth/me endpoint (401 Unauthorized - matches backend error format)
+    // Match both /auth/me and any path ending with /auth/me
+    await page.route(/.*\/auth\/me(\?.*)?$/, route => {
       route.fulfill({
         status: 401,
         contentType: 'application/json',
-        body: JSON.stringify({ message: 'Unauthorized' }),
+        body: JSON.stringify(createErrorResponse('Unauthorized')),
       });
     });
-    await page.route('**/api/auth/me', route => {
+
+    // Mock /api/auth/me endpoint (with /api prefix)
+    await page.route(/.*\/api\/auth\/me(\?.*)?$/, route => {
       route.fulfill({
         status: 401,
         contentType: 'application/json',
-        body: JSON.stringify({ message: 'Unauthorized' }),
+        body: JSON.stringify(createErrorResponse('Unauthorized')),
       });
     });
-    await page.route('**/presets/public', route => {
+
+    // Mock /presets/public endpoint (success response format)
+    await page.route(/.*\/presets\/public(\?.*)?$/, route => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ data: [] }),
+        body: JSON.stringify(
+          createSuccessResponse([], 'Public presets retrieved successfully')
+        ),
       });
     });
-    await page.route('**/api/presets/public', route => {
+
+    // Mock /api/presets/public endpoint (with /api prefix)
+    await page.route(/.*\/api\/presets\/public(\?.*)?$/, route => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ data: [] }),
+        body: JSON.stringify(
+          createSuccessResponse([], 'Public presets retrieved successfully')
+        ),
       });
     });
 
     // Navigate to the app
     await page.goto('/');
+
     // Wait for React to hydrate and initial load
-    await page.waitForLoadState('networkidle');
-    // Wait for main layout to be visible
-    await page.waitForSelector('[data-testid="main-app-layout"]', { state: 'visible' });
+    // Use domcontentloaded first, then wait for network to settle
+    await page.waitForLoadState('domcontentloaded');
+
+    // Wait for loading screen to disappear (indicates app initialization complete)
+    // The loading screen should disappear once isLoading and isInitializing are false
+    await page.waitForSelector('[data-testid="main-app-layout"]', {
+      state: 'visible',
+      timeout: 15000,
+    }).catch(async () => {
+      // If main layout doesn't appear, check if loading screen is still visible
+      // and wait a bit more for initialization to complete
+      const loadingScreen = page.locator('text=Loading BendBionics App');
+      if (await loadingScreen.isVisible({ timeout: 1000 }).catch(() => false)) {
+        // Wait for loading screen to disappear
+        await loadingScreen.waitFor({ state: 'hidden', timeout: 10000 });
+      }
+      // Try again to find main layout
+      await page.waitForSelector('[data-testid="main-app-layout"]', {
+        state: 'visible',
+        timeout: 10000,
+      });
+    });
+
+    // Additional wait for network to settle after initial load
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {
+      // Ignore timeout - networkidle is not critical if main layout is visible
+    });
   });
 
   test('should load the main application', async ({ page }) => {
