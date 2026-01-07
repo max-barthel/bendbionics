@@ -212,7 +212,7 @@ jobs:
                   ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "mkdir -p ${{ env.SERVER_PATH }}/docker"
 
                   # Upload docker-compose files
-                  scp docker-compose.pull.yml "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
+                  scp docker-compose.yml "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
                   scp docker-compose.prod.yml "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
 
                   # Upload deploy script
@@ -268,7 +268,7 @@ jobs:
                   ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "
                       echo '📊 Docker Services Status:'
                       cd ${{ env.SERVER_PATH }}
-                      docker compose -f docker-compose.pull.yml ps
+                      docker compose -f docker-compose.yml ps
 
                       echo ''
                       echo '💾 Disk Usage:'
@@ -288,5 +288,5 @@ jobs:
                   echo "🏥 Health Check: https://bendbionics.com/health"
                   echo ""
                   echo "🔧 Useful Commands:"
-                  echo "View logs: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'cd ${{ env.SERVER_PATH }} && docker compose -f docker-compose.pull.yml logs -f'"
-                  echo "Restart services: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'cd ${{ env.SERVER_PATH }} && docker compose -f docker-compose.pull.yml restart'"
+                  echo "View logs: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'cd ${{ env.SERVER_PATH }} && docker compose -f docker-compose.yml logs -f'"
+                  echo "Restart services: ssh ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} 'cd ${{ env.SERVER_PATH }} && docker compose -f docker-compose.yml restart'"
