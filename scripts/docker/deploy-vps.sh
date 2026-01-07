@@ -72,6 +72,62 @@ validate_env_vars() {
         invalid_vars+=("SECRET_KEY (still set to default value)")
     fi
 
+    # Validate CORS_ORIGINS
+    if [ -z "${CORS_ORIGINS}" ]; then
+        missing_vars+=("CORS_ORIGINS")
+    else
+        # Validate CORS_ORIGINS is valid JSON and is an array
+        # Use environment variable to safely pass the value to python
+        local cors_validation_error
+        cors_validation_error=$(CORS_VALIDATE_VALUE="${CORS_ORIGINS}" python3 <<'PYTHON_EOF' 2>&1
+import json
+import os
+import sys
+
+try:
+    cors_value = os.environ.get('CORS_VALIDATE_VALUE', '')
+    if not cors_value:
+        print("CORS_ORIGINS is empty", file=sys.stderr)
+        sys.exit(1)
+
+    data = json.loads(cors_value)
+    if not isinstance(data, list):
+        print("CORS_ORIGINS must be a JSON array", file=sys.stderr)
+        sys.exit(1)
+    if len(data) == 0:
+        print("CORS_ORIGINS cannot be empty", file=sys.stderr)
+        sys.exit(1)
+    for origin in data:
+        if not isinstance(origin, str):
+            print(f"Invalid origin type: {type(origin).__name__}", file=sys.stderr)
+            sys.exit(1)
+        if not origin.startswith('http://') and not origin.startswith('https://'):
+            print(f"Invalid origin format: {origin}. Must start with http:// or https://", file=sys.stderr)
+            sys.exit(1)
+except json.JSONDecodeError as e:
+    print(f"Invalid JSON: {e}", file=sys.stderr)
+    sys.exit(1)
+except Exception as e:
+    print(f"{e}", file=sys.stderr)
+    sys.exit(1)
+PYTHON_EOF
+)
+        if [ $? -ne 0 ]; then
+            print_error "CORS_ORIGINS validation failed"
+            if [ -n "$cors_validation_error" ]; then
+                print_error "$cors_validation_error"
+            fi
+            print_error ""
+            print_error "CORS_ORIGINS must be a valid JSON array of URLs starting with http:// or https://"
+            print_error "Example format: CORS_ORIGINS='[\"https://bendbionics.com\",\"https://www.bendbionics.com\"]'"
+            print_error "Current value: ${CORS_ORIGINS}"
+            print_error ""
+            print_error "IMPORTANT: The value must be quoted with single quotes in your .env file"
+            print_error "to preserve the JSON format when sourced by bash."
+            exit 1
+        fi
+    fi
+
     # Report missing variables
     if [ ${#missing_vars[@]} -gt 0 ]; then
         print_error "Missing required environment variables:"

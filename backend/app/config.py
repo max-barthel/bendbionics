@@ -1,7 +1,7 @@
 import json
 from enum import Enum
 from pathlib import Path
-from typing import List, Union
+from typing import List
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -80,7 +80,7 @@ class Settings(BaseSettings):
 
     @field_validator("cors_origins", mode="before")
     @classmethod
-    def parse_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+    def parse_cors_origins(cls, v: str | List[str]) -> List[str]:
         """
         Parse CORS origins from JSON string or return list as-is.
         This handles environment variables that come as JSON strings.
@@ -89,11 +89,27 @@ class Settings(BaseSettings):
             try:
                 parsed = json.loads(v)
                 if not isinstance(parsed, list):
-                    msg = f"CORS_ORIGINS must be a JSON array, got {type(parsed).__name__}"
+                    # Show current value (truncated if too long)
+                    value_preview = v[:100] + "..." if len(v) > 100 else v
+                    msg = (
+                        f"CORS_ORIGINS must be a JSON array, got {type(parsed).__name__}. "
+                        f"Expected format: '[\"https://example.com\"]'. "
+                        f"Current value: {value_preview}. "
+                        f"Note: In .env files, the value must be quoted with single quotes: "
+                        f"CORS_ORIGINS='[\"https://example.com\"]'"
+                    )
                     raise ValueError(msg)
                 return parsed
             except json.JSONDecodeError as e:
-                msg = f"Invalid JSON in CORS_ORIGINS: {e}"
+                # Show current value (truncated if too long)
+                value_preview = v[:100] + "..." if len(v) > 100 else v
+                msg = (
+                    f"Invalid JSON in CORS_ORIGINS: {e}. "
+                    f"Expected format: '[\"https://example.com\"]'. "
+                    f"Current value: {value_preview}. "
+                    f"Note: In .env files, the value must be quoted with single quotes: "
+                    f"CORS_ORIGINS='[\"https://example.com\"]'"
+                )
                 raise ValueError(msg) from e
         # If it's already a list, pass it through
         return v
