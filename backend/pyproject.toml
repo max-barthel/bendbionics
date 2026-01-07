@@ -37,7 +37,7 @@ dependencies = [
     "numpy==1.26.4",
     "gunicorn==21.2.0",
     "aiofiles==23.2.1",
-    "aiohttp==3.13.2",
+    "aiohttp==3.13.3",
     "ruff==0.14.6",
 ]
 
