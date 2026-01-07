@@ -1,53 +1,18 @@
 # BendBionics - Soft Robot Simulation Platform
 
-<div align="center">
+A modern, full-stack web application for simulating soft robot kinematics using the Piecewise Constant Curvature (PCC) model.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
-![TypeScript](https://img.shields.io/badge/typescript-5.9-blue.svg)
-![React](https://img.shields.io/badge/react-19-blue.svg)
-![FastAPI](https://img.shields.io/badge/fastapi-latest-green.svg)
-![Bun](https://img.shields.io/badge/bun-latest-black.svg)
-![PostgreSQL](https://img.shields.io/badge/postgresql-latest-blue.svg)
-![Three.js](https://img.shields.io/badge/three.js-latest-black.svg)
-
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://bendbionics.com)
-[![Documentation](https://img.shields.io/badge/docs-available-orange)](./README.md)
-
-A modern, full-stack web application for simulating soft robot kinematics using the Piecewise Constant Curvature (PCC) model. Built with cutting-edge technologies and deployed at **[bendbionics.com](https://bendbionics.com)**.
-
-[🚀 Live Demo](https://bendbionics.com) • [📖 Documentation](./README.md) • [🤝 Contributing](./CONTRIBUTING.md) • [📄 License](./LICENSE)
-
-</div>
-
----
-
-## 🚀 Live Demo
-
-**Experience the application live:** [https://bendbionics.com](https://bendbionics.com)
+**Live Demo**: [bendbionics.com](https://bendbionics.com)
 
 ## Overview
 
-BendBionics is a production-ready, full-stack web application for simulating soft robot kinematics using the Piecewise Constant Curvature (PCC) model. This project demonstrates expertise in modern web development, 3D graphics programming, mathematical modeling, and production deployment.
+BendBionics is a production-ready web application for simulating soft robot kinematics using the Piecewise Constant Curvature (PCC) model. Features include:
 
-### Key Highlights
-
-- **Live Production Deployment**: Fully deployed at [bendbionics.com](https://bendbionics.com) with SSL, CI/CD, and automated testing
-- **Advanced Mathematics**: Implementation of complex robotics kinematics (PCC model) with real-time parameter adjustment
-- **Modern Full-Stack**: React 19 + TypeScript frontend, FastAPI + PostgreSQL backend
-- **3D Visualization**: Interactive Three.js-based 3D rendering with live updates
-- **Production Engineering**: Complete DevOps pipeline with GitHub Actions, automated testing, and secure deployment
-
-### Technical Achievements
-
-This project showcases:
-
-- **Full-Stack Development**: End-to-end implementation from frontend UI to backend API and database
-- **Advanced 3D Graphics**: Real-time Three.js visualization with interactive controls and parameter updates
-- **Mathematical Modeling**: Implementation of Piecewise Constant Curvature kinematics for accurate soft robot simulation
-- **Modern Tooling**: Cutting-edge package managers (Bun, uv) for 10-30x faster build times
-- **Production DevOps**: Complete CI/CD pipeline, automated testing, secure deployment with nginx and SSL
-- **Performance Optimization**: Web-optimized builds, efficient rendering, and minimal re-renders
+- **3D Visualization**: Interactive Three.js-based rendering with real-time parameter adjustment
+- **PCC Model**: Accurate kinematics implementation for soft robot simulation
+- **User Management**: JWT authentication, preset management, and sharing
+- **Modern Stack**: React 19 + TypeScript, FastAPI + PostgreSQL
+- **Production Ready**: Deployed at [bendbionics.com](https://bendbionics.com) with CI/CD and automated testing
 
 ## Architecture
 
@@ -89,75 +54,24 @@ graph TB
 - **Backend**: FastAPI with async/await, SQLModel for database ORM
 - **Database**: PostgreSQL for production, SQLite for development
 - **Deployment**: Ubuntu server with nginx, systemd, Let's Encrypt SSL
-- **CI/CD**: GitHub Actions for automated testing and deployment
+- **CI/CD**: GitHub Actions with consolidated workflows for automated testing and deployment
 - **Package Managers**: Bun (frontend) and uv (backend) for fast dependency management
 
 ## Features
 
-### 🎨 User Interface
-
-- **Modern Design**: macOS Tahoe 26 aesthetic with liquid glass styling
-- **Responsive Layout**: Optimized for desktop and tablet devices
-- **Real-time Updates**: Instant visual feedback as parameters change
-- **Intuitive Controls**: Clean, accessible form controls with validation
-
-### 🤖 Robot Simulation
-
-- **3D Visualization**: Interactive Three.js-based 3D rendering of robot segments
-- **PCC Model**: Accurate Piecewise Constant Curvature kinematics implementation
+- **3D Robot Visualization**: Interactive Three.js rendering with real-time parameter updates
+- **PCC Kinematics**: Accurate Piecewise Constant Curvature model implementation
 - **Flexible Configuration**: Support for 3-12 tendon configurations
-- **Parameter Adjustment**: Real-time modification of segment length, curvature, rotation
+- **User Authentication**: JWT-based auth with preset management and sharing
 - **Unit Conversion**: Automatic conversion between degrees/radians, mm/cm/m
-
-### 👤 User Management
-
-- **Authentication**: Secure JWT-based authentication system
-- **User Profiles**: Profile management with email verification
-- **Preset Management**: Save, load, and share robot configurations
-- **Public Presets**: Discover and use community-shared configurations
-
-### ⚡ Performance
-
-- **Optimized Rendering**: Efficient 3D scene updates with minimal re-renders
-- **Fast Build Times**: Bun package manager (10-30x faster than npm)
-- **Modern Tooling**: uv for Python dependencies (faster than pip)
-- **Web Optimized**: Production builds optimized for modern browsers
+- **Modern UI**: macOS Tahoe aesthetic with responsive design
 
 ## Technology Stack
 
-### Frontend
-
-- **React 19**: Latest React with concurrent features
-- **TypeScript**: Type-safe development
-- **Tailwind CSS 4**: Utility-first styling with custom design system
-- **Three.js**: 3D graphics and visualization
-- **React Router**: Client-side routing
-- **Vite**: Fast build tool and dev server
-- **Bun**: Ultra-fast JavaScript runtime and package manager
-
-### Backend
-
-- **FastAPI**: Modern, fast Python web framework
-- **SQLModel**: SQL database in Python, designed for simplicity
-- **PostgreSQL**: Production database
-- **Pydantic**: Data validation using Python type annotations
-- **JWT**: Secure token-based authentication
-- **uv**: Fast Python package manager
-
-### DevOps & Deployment
-
-- **GitHub Actions**: CI/CD automation
-- **nginx**: Reverse proxy and static file serving
-- **systemd**: Service management
-- **Let's Encrypt**: Free SSL certificates
-- **Docker-ready**: Containerization support
-
-### Testing
-
-- **Vitest**: Fast unit testing for frontend
-- **Playwright**: End-to-end browser testing
-- **pytest**: Backend testing framework
-- **Storybook**: Component documentation and visual testing
+**Frontend**: React 19, TypeScript, Tailwind CSS 4, Three.js, Vite, Bun
+**Backend**: FastAPI, SQLModel, PostgreSQL, Pydantic, JWT, uv
+**DevOps**: GitHub Actions, nginx, Docker, Let's Encrypt
+**Testing**: Vitest, Playwright, pytest, Storybook
 
 ## Quick Start
 
@@ -186,32 +100,15 @@ git clone https://github.com/max-barthel/bendbionics.git
 cd bendbionics
 
 # Set up development environment
-# Note: If setup.sh doesn't exist, follow manual setup below
-./setup.sh
+./scripts/setup.sh
 ```
 
-**Manual Setup** (if setup script is unavailable):
-
-```bash
-# Backend setup
-cd backend
-uv sync
-cp .env.example .env  # Edit .env with your configuration
-
-# Frontend setup
-cd ../frontend
-bun install
-```
 
 ### Development
 
 ```bash
 # Start development environment (runs both frontend and backend)
 ./dev.sh
-
-# Or start services manually:
-# Backend: cd backend && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-# Frontend: cd frontend && bun run dev
 ```
 
 The application will be available at:
@@ -224,13 +121,13 @@ The application will be available at:
 
 ```bash
 # Run all tests
-./toolkit.sh all test
+./toolkit.sh test all
 
 # Frontend tests only
-cd frontend && bun run test
+./toolkit.sh test frontend
 
 # Backend tests only
-cd backend && uv run pytest
+./toolkit.sh test backend
 
 # Integration tests
 cd frontend && bun run test:integration
@@ -241,29 +138,33 @@ cd frontend && bun run test:integration
 ```bash
 # Build for production
 ./build.sh
+
+# Build and test locally
+./build.sh --test
 ```
 
 ## Deployment
 
-BendBionics is designed for deployment on Ubuntu servers with nginx and SSL.
+BendBionics uses Docker for deployment to Hetzner VPS or any Ubuntu server.
 
-### Production Deployment
+### Docker Deployment (Recommended)
+
+The application is containerized and deployed using Docker Compose:
 
 ```bash
-# Complete deployment workflow (build, upload, deploy)
-./deploy.sh
+# Build and push Docker images to registry
+./scripts/docker/build-and-push.sh
+
+# On VPS: Pull and deploy (no source code needed!)
+./scripts/docker/deploy-vps.sh
 ```
 
-The deployment workflow handles:
+**Deployment Workflow:**
 
-- Building optimized production bundles
-- Uploading to server via SSH
-- Database migrations
-- Service restart
-- Health checks
-- Cleanup of deployment packages
+1. Build and push images: `./scripts/docker/build-and-push.sh`
+2. Deploy on VPS: `./scripts/docker/deploy-vps.sh`
 
-For detailed deployment documentation, see the deployment scripts in the `scripts/deploy/` directory.
+Images are pulled from GitHub Container Registry (GHCR) - no source code needed on VPS.
 
 ## Project Structure
 
@@ -285,10 +186,11 @@ bendbionics/
 │   │   └── utils/         # Utilities
 │   ├── tests/             # Backend tests
 │   └── pyproject.toml     # Python dependencies
-├── config/                 # Deployment configurations
-│   ├── nginx/             # Nginx configuration
-│   └── systemd/           # Service configuration
+├── docker/                 # Docker configuration
+│   ├── nginx/             # Nginx Docker configuration
+│   └── env.example        # Environment template
 ├── scripts/                # Development and deployment scripts
+│   └── docker/            # Docker deployment scripts
 ├── .github/                # GitHub Actions workflows
 ├── README.md              # This file
 ├── LICENSE                # MIT License
@@ -297,13 +199,26 @@ bendbionics/
 
 ## Development Workflow
 
-- **Development**: `./dev.sh` - Start both frontend and backend in development mode
-- **Building**: `./build.sh` - Create production builds
-- **Deployment**: `./deploy.sh` - Deploy to production server
-- **Testing**: `./toolkit.sh all test` - Run all test suites
-- **Code Quality**: Pre-commit hooks enforce formatting and linting
+### Essential Scripts
 
-For detailed script documentation, see [SCRIPTS.md](./SCRIPTS.md).
+- **`./scripts/setup.sh`** - First-time setup (installs dependencies, configures environment)
+- **`./dev.sh`** - Start development environment (frontend + backend)
+- **`./build.sh`** - Build for production (use `--test` flag to test build locally)
+- **`./toolkit.sh`** - Development tools (testing, linting, quality checks, health checks)
+- **`./scripts/cleanup.sh`** - Clean build artifacts and temporary files
+
+### Common Toolkit Commands
+
+```bash
+./toolkit.sh test all      # Run all tests
+./toolkit.sh lint all      # Run linting
+./toolkit.sh fix all       # Auto-fix issues
+./toolkit.sh health        # Check system health
+./toolkit.sh docs storybook # Start Storybook
+./toolkit.sh quick         # Quick error checks
+```
+
+For more toolkit commands, run `./toolkit.sh` to see all options.
 
 ## Code Quality Standards
 
@@ -324,30 +239,8 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for gu
 
 ## Documentation
 
-- **[SCRIPTS.md](./SCRIPTS.md)**: Complete documentation of all development scripts
-- **[RULES.md](./RULES.md)**: Project rules and conventions
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)**: Contribution guidelines and development setup
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
-
-## Screenshots
-
-Visit the [live demo](https://bendbionics.com) to see the application in action with real-time 3D visualization and interactive controls.
-
-## Acknowledgments
-
-- Built with modern web technologies and best practices
-- Inspired by soft robotics research and applications
-- Designed for both research and educational use
-- Special thanks to the open-source community for excellent tools and libraries
-
----
-
-<div align="center">
-
-**Live Application**: [https://bendbionics.com](https://bendbionics.com)
-
-Made with ❤️ for the robotics and engineering community
-
-</div>

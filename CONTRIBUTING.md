@@ -17,7 +17,7 @@ We welcome contributions from the community and are excited to see what you'll b
 3. **Set up the development environment**:
 
    ```bash
-   ./setup.sh
+   ./scripts/setup.sh
    ```
 
 ## Development Workflow
@@ -45,11 +45,14 @@ We welcome contributions from the community and are excited to see what you'll b
 
    ```bash
    # Run all tests
-   ./toolkit.sh all test
+   ./toolkit.sh test all
 
    # Or run specific test suites
+   ./toolkit.sh test frontend
+   ./toolkit.sh test backend
 
-   cd frontend && bun run test
+   # Or run directly
+   cd frontend && bun run test:run
    cd backend && uv run pytest
    ```
 
@@ -98,7 +101,8 @@ We welcome contributions from the community and are excited to see what you'll b
 
 ```bash
 cd frontend
-bun run test          # Run unit tests
+bun run test:run      # Run unit tests
+bun run test:coverage # Run tests with coverage
 bun run test:integration  # Run E2E tests with Playwright
 ```
 
