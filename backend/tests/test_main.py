@@ -59,12 +59,6 @@ class TestMainApp:
         assert data["status"] == "healthy"
         assert "BendBionics App is running" in data["message"]
 
-    def test_static_files_mounting_placeholder(self):
-        """Test static files mounting placeholder."""
-        # This test is a placeholder since static files mounting
-        # is complex to test without affecting the actual app
-        # No assertion needed - this is a placeholder test
-
     def test_static_files_path_exists(self):
         """Test that static files path is defined."""
         # Test that the static_dir variable is defined
@@ -88,12 +82,6 @@ class TestMainApp:
 
             # Check that StaticFiles was not called
             mock_static_files.assert_not_called()
-
-    def test_static_files_mounting_exists_simple(self):
-        """Test static files mounting when directory exists - simple version."""
-        # This test covers the static files mounting logic
-        # without actually mounting files
-        # No assertion needed - this is a placeholder test
 
     def test_cors_middleware_configured(self):
         """Test that CORS middleware is configured."""
