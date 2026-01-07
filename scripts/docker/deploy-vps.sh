@@ -36,6 +36,87 @@ export BACKEND_IMAGE="${DOCKER_REGISTRY:-ghcr.io}/${DOCKER_IMAGE_PREFIX:-max-bar
 export FRONTEND_IMAGE="${DOCKER_REGISTRY:-ghcr.io}/${DOCKER_IMAGE_PREFIX:-max-barthel/bendbionics}-frontend:${VERSION:-latest}"
 export NGINX_IMAGE="${DOCKER_REGISTRY:-ghcr.io}/${DOCKER_IMAGE_PREFIX:-max-barthel/bendbionics}-nginx:${VERSION:-latest}"
 
+# Validate environment variables
+validate_env_vars() {
+    print_status "Validating environment variables..."
+
+    # Source .env file if it exists
+    if [ -f "$ENV_FILE" ]; then
+        set -a
+        source "$ENV_FILE"
+        set +a
+    fi
+
+    local missing_vars=()
+    local invalid_vars=()
+
+    # Check required database variables
+    if [ -z "${POSTGRES_USER}" ]; then
+        missing_vars+=("POSTGRES_USER")
+    fi
+
+    if [ -z "${POSTGRES_PASSWORD}" ]; then
+        missing_vars+=("POSTGRES_PASSWORD")
+    elif [ "${POSTGRES_PASSWORD}" = "CHANGE_THIS_SECURE_PASSWORD" ]; then
+        invalid_vars+=("POSTGRES_PASSWORD (still set to default value)")
+    fi
+
+    if [ -z "${POSTGRES_DB}" ]; then
+        missing_vars+=("POSTGRES_DB")
+    fi
+
+    # Check other critical variables
+    if [ -z "${SECRET_KEY}" ]; then
+        missing_vars+=("SECRET_KEY")
+    elif [ "${SECRET_KEY}" = "CHANGE_THIS_GENERATE_WITH_python_-c_\"import_secrets;_print(secrets.token_urlsafe(32))\"" ] || [ "${SECRET_KEY}" = "CHANGE_THIS_IN_PRODUCTION_OR_ENV_FILE" ]; then
+        invalid_vars+=("SECRET_KEY (still set to default value)")
+    fi
+
+    # Report missing variables
+    if [ ${#missing_vars[@]} -gt 0 ]; then
+        print_error "Missing required environment variables:"
+        for var in "${missing_vars[@]}"; do
+            echo "  - $var"
+        done
+        echo ""
+        print_error "Please set these variables in your .env file"
+        print_status "Copy docker/env.example to .env and fill in the values"
+        exit 1
+    fi
+
+    # Report invalid variables
+    if [ ${#invalid_vars[@]} -gt 0 ]; then
+        print_error "Environment variables still set to default values:"
+        for var in "${invalid_vars[@]}"; do
+            echo "  - $var"
+        done
+        echo ""
+        print_error "Please update these variables in your .env file with actual values"
+        exit 1
+    fi
+
+    # Validate DATABASE_URL construction
+    local db_user="${POSTGRES_USER:-bendbionics_user}"
+    local db_password="${POSTGRES_PASSWORD}"
+    local db_name="${POSTGRES_DB:-bendbionics}"
+    local expected_url="postgresql://${db_user}:${db_password}@postgres:5432/${db_name}"
+
+    # Check if DATABASE_URL would be properly constructed
+    if [ -z "$db_password" ]; then
+        print_error "DATABASE_URL cannot be constructed: POSTGRES_PASSWORD is empty"
+        exit 1
+    fi
+
+    # Check for special characters in password that might break URL
+    if [[ "$db_password" =~ [:@/] ]]; then
+        print_warning "POSTGRES_PASSWORD contains special characters (@, :, /) that may need URL encoding"
+        print_status "The password will be used in DATABASE_URL, ensure it's properly handled"
+    fi
+
+    print_success "Environment variables validated"
+    print_status "DATABASE_URL will be: postgresql://${db_user}:***@postgres:5432/${db_name}"
+}
+
 # Check prerequisites
 check_prerequisites() {
     print_status "Checking prerequisites..."
@@ -118,26 +199,67 @@ health_check() {
     MAX_ATTEMPTS=30
     ATTEMPT=0
     SLEEP_INTERVAL=2
+    BACKEND_HEALTHY=false
+    NGINX_HEALTHY=false
 
     while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-        if docker compose -f "$COMPOSE_FILE" exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" &> /dev/null; then
-            print_success "Backend is healthy"
+        # Check backend health
+        if [ "$BACKEND_HEALTHY" = false ]; then
+            if docker compose -f "$COMPOSE_FILE" exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" &> /dev/null; then
+                print_success "Backend is healthy"
+                BACKEND_HEALTHY=true
+            else
+                if [ $ATTEMPT -lt $((MAX_ATTEMPTS - 1)) ]; then
+                    print_status "Backend health check failed (attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS), retrying in ${SLEEP_INTERVAL}s..."
+                fi
+            fi
+        fi
 
+        # Only check nginx if backend is healthy
+        if [ "$BACKEND_HEALTHY" = true ] && [ "$NGINX_HEALTHY" = false ]; then
             if docker compose -f "$COMPOSE_FILE" exec -T nginx wget --quiet --spider http://localhost/health &> /dev/null; then
                 print_success "Nginx is healthy"
+                NGINX_HEALTHY=true
                 return 0
+            else
+                if [ $ATTEMPT -lt $((MAX_ATTEMPTS - 1)) ]; then
+                    print_status "Nginx health check failed (attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS), retrying in ${SLEEP_INTERVAL}s..."
+                fi
             fi
+        fi
+
+        # If both are healthy, we're done
+        if [ "$BACKEND_HEALTHY" = true ] && [ "$NGINX_HEALTHY" = true ]; then
+            return 0
         fi
 
         ATTEMPT=$((ATTEMPT + 1))
         if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
-            print_status "Attempt $ATTEMPT/$MAX_ATTEMPTS failed, retrying in ${SLEEP_INTERVAL}s..."
             sleep $SLEEP_INTERVAL
         fi
     done
 
-    print_error "Health check failed"
-    print_status "Check logs: docker compose logs"
+    # Report which service(s) failed
+    print_error "Health check failed after $MAX_ATTEMPTS attempts"
+    echo ""
+
+    if [ "$BACKEND_HEALTHY" = false ]; then
+        print_error "Backend health check failed"
+        print_status "Backend container may not be responding or database connection is failing"
+        print_status "Check backend logs: docker compose -f $COMPOSE_FILE logs backend"
+        echo ""
+    fi
+
+    if [ "$BACKEND_HEALTHY" = true ] && [ "$NGINX_HEALTHY" = false ]; then
+        print_error "Nginx health check failed (backend is healthy)"
+        print_status "Nginx may not be able to reach the backend or proxy configuration is incorrect"
+        print_status "Check nginx logs: docker compose -f $COMPOSE_FILE logs nginx"
+        print_status "Check backend connectivity from nginx: docker compose -f $COMPOSE_FILE exec nginx wget -O- http://backend:8000/api/health"
+        echo ""
+    fi
+
+    print_status "Check all service logs: docker compose -f $COMPOSE_FILE logs"
+    print_status "Check service status: docker compose -f $COMPOSE_FILE ps"
     exit 1
 }
 
@@ -186,6 +308,7 @@ main() {
     print_header "🚀 BendBionics VPS Deployment"
 
     check_prerequisites
+    validate_env_vars
     pull_images
     start_services
 
