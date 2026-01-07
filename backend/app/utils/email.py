@@ -235,10 +235,7 @@ def is_token_expired(expires_at: Optional[datetime]) -> bool:
         current_utc = current_utc.replace(tzinfo=None)
 
     # Ensure expires_at is timezone-naive
-    if expires_at.tzinfo is not None:
-        expires_utc = expires_at.replace(tzinfo=None)
-    else:
-        expires_utc = expires_at
+    expires_utc = expires_at.replace(tzinfo=None) if expires_at.tzinfo is not None else expires_at
 
     # Both should now be timezone-naive UTC datetimes
     return current_utc > expires_utc
