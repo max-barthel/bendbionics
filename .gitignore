@@ -29,6 +29,7 @@ yarn-error.log*
 dist/
 dist-ssr/
 *.local
+bundle-size-report.json
 
 # Database files
 *.db
@@ -38,6 +39,7 @@ soft_robot.db
 
 # Test artifacts
 coverage/
+htmlcov/
 .coverage
 .pytest_cache/
 test-results/
@@ -65,6 +67,12 @@ Thumbs.db
 # Deployment artifacts
 builds/
 .last_deployment_package
+deploy/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+*.tar.gz
 
 # TypeScript
 *.tsbuildinfo

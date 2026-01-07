@@ -8,48 +8,12 @@
     "setup": "./scripts/setup.sh",
     "dev": "./dev.sh",
     "build": "./build.sh",
-    "health": "./scripts/health-check.sh",
-    "lint": "cd frontend && bun run lint",
-    "lint:fix": "cd frontend && bun run lint:fix",
-    "lint:check": "cd frontend && bun run lint -- --quiet",
-    "test": "cd frontend && bun run test:run",
-    "test:core": "cd frontend && bun run test -- --run && cd ../backend && uv run pytest tests/test_core_apis.py -v",
-    "test:watch": "cd frontend && bun run test:watch",
-    "test:coverage": "cd frontend && bun run test:coverage",
-    "commit": "echo 'Use Cursor\\'s Git tab for AI-generated commits or run: bunx cz'",
-    "changelog": "echo 'Changelog generation available via commitlint ecosystem'",
-    "version": "echo 'Version management available via commitlint ecosystem'",
-    "quality": "bun scripts/code-quality-report.js",
-    "quality:frontend": "cd frontend && bun run lint && bunx tsc --noEmit",
-    "quality:backend": "cd backend && uv run ruff check app/ && uv run mypy app/",
-    "ci:test": "bun run test && cd backend && uv run pytest tests/ -v",
-    "ci:lint": "bun run lint && cd backend && uv run ruff check app/ && uv run ruff format --check app/",
-    "ci:build": "cd frontend && bun run build && cd ../backend && uv run python -c 'import app.main'",
-    "ci:all": "bun run ci:lint && bun run ci:test && bun run ci:build",
     "toolkit": "./toolkit.sh",
-    "toolkit:test": "./toolkit.sh all test",
-    "toolkit:lint": "./toolkit.sh all lint",
-    "toolkit:fix": "./toolkit.sh all fix",
-    "toolkit:quality": "./toolkit.sh quality report",
-    "toolkit:docs": "./toolkit.sh docs storybook",
-    "cleanup": "./scripts/cleanup.sh",
-    "cleanup:smart": "./scripts/cleanup.sh --smart",
-    "cleanup:force": "./scripts/cleanup.sh --force",
-    "cleanup:status": "./scripts/cleanup.sh status",
-    "cleanup:check": "./scripts/cleanup.sh check",
-    "cleanup:schedule": "./scripts/cleanup.sh schedule"
+    "cleanup": "./scripts/cleanup.sh"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
-    "baseline-browser-mapping": "^2.8.30",
-    "commitizen": "^4.3.1",
-    "cz-conventional-changelog": "^3.0.1",
     "husky": "^9.1.7"
-  },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
   }
 }

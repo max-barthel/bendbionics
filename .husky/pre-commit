@@ -6,9 +6,9 @@ if [ ! -f "package.json" ] || [ ! -d "frontend" ] || [ ! -d "backend" ]; then
   exit 1
 fi
 
-# Run smart cleanup before commit
-echo "🧹 Running smart cleanup..."
-./cleanup.sh --auto > /dev/null 2>&1 || true
+# Run light cleanup before commit (preserves node_modules)
+echo "🧹 Running light cleanup..."
+./scripts/cleanup.sh --light --force > /dev/null 2>&1 || true
 echo "✅ Cleanup completed"
 
 # Only check for critical issues
