@@ -6,8 +6,92 @@ set -e
 
 SSL_CERT_PATH="/etc/nginx/ssl/certs/fullchain.pem"
 SSL_KEY_PATH="/etc/nginx/ssl/private/privkey.pem"
+NGINX_CERTS="/etc/nginx/ssl/certs"
+NGINX_PRIVATE="/etc/nginx/ssl/private"
 NGINX_CONF="/etc/nginx/nginx.conf"
 NGINX_CONF_TEMPLATE="/etc/nginx/nginx.conf.template"
+
+# Create directories if they don't exist
+mkdir -p "$NGINX_CERTS"
+mkdir -p "$NGINX_PRIVATE"
+
+# Check if certificates exist in certbot's directory structure and link them
+# Certbot stores certificates at /etc/letsencrypt/live/<domain>/
+# In nginx container, the same volume is mounted at /etc/nginx/ssl/certs/
+# Certbot creates symlinks that point to /etc/letsencrypt/archive/<domain>/
+# In nginx container, archive is mounted at /etc/nginx/ssl/private/
+if [ ! -f "$SSL_CERT_PATH" ] || [ ! -f "$SSL_KEY_PATH" ]; then
+    # Find domain directories in the certbot structure
+    DOMAIN_DIR=$(find "$NGINX_CERTS" -mindepth 1 -maxdepth 1 -type d | head -n 1)
+
+    if [ -n "$DOMAIN_DIR" ] && [ -d "$DOMAIN_DIR" ]; then
+        DOMAIN=$(basename "$DOMAIN_DIR")
+        echo "Found certbot certificates for domain: $DOMAIN"
+
+        # Resolve symlinks and create new symlinks pointing to archive location in nginx container
+        # Certbot symlinks point to /etc/letsencrypt/archive/<domain>/<file>
+        # We need to point to /etc/nginx/ssl/private/<domain>/<file>
+
+        # Link fullchain.pem (resolve symlink to get actual filename)
+        if [ -e "$DOMAIN_DIR/fullchain.pem" ]; then
+            # Read the symlink target to get the actual filename (e.g., fullchain1.pem)
+            TARGET=$(readlink "$DOMAIN_DIR/fullchain.pem" 2>/dev/null || echo "")
+            if [ -n "$TARGET" ]; then
+                # Extract filename from path (e.g., fullchain1.pem from /etc/letsencrypt/archive/domain/fullchain1.pem)
+                FILENAME=$(basename "$TARGET")
+                # Create symlink to archive location in nginx container
+                if [ -f "$NGINX_PRIVATE/$DOMAIN/$FILENAME" ]; then
+                    ln -sf "$NGINX_PRIVATE/$DOMAIN/$FILENAME" "$SSL_CERT_PATH"
+                    echo "Linked fullchain.pem to archive file"
+                else
+                    # Fallback: link directly (may not work if symlink target path doesn't exist)
+                    ln -sf "$DOMAIN_DIR/fullchain.pem" "$SSL_CERT_PATH"
+                    echo "Linked fullchain.pem (direct)"
+                fi
+            else
+                # Not a symlink, link directly
+                ln -sf "$DOMAIN_DIR/fullchain.pem" "$SSL_CERT_PATH"
+                echo "Linked fullchain.pem"
+            fi
+        fi
+
+        # Link privkey.pem
+        if [ -e "$DOMAIN_DIR/privkey.pem" ]; then
+            TARGET=$(readlink "$DOMAIN_DIR/privkey.pem" 2>/dev/null || echo "")
+            if [ -n "$TARGET" ]; then
+                FILENAME=$(basename "$TARGET")
+                if [ -f "$NGINX_PRIVATE/$DOMAIN/$FILENAME" ]; then
+                    ln -sf "$NGINX_PRIVATE/$DOMAIN/$FILENAME" "$SSL_KEY_PATH"
+                    echo "Linked privkey.pem to archive file"
+                else
+                    ln -sf "$DOMAIN_DIR/privkey.pem" "$SSL_KEY_PATH"
+                    echo "Linked privkey.pem (direct)"
+                fi
+            else
+                ln -sf "$DOMAIN_DIR/privkey.pem" "$SSL_KEY_PATH"
+                echo "Linked privkey.pem"
+            fi
+        fi
+
+        # Link chain.pem (needed for OCSP stapling)
+        if [ -e "$DOMAIN_DIR/chain.pem" ]; then
+            TARGET=$(readlink "$DOMAIN_DIR/chain.pem" 2>/dev/null || echo "")
+            if [ -n "$TARGET" ]; then
+                FILENAME=$(basename "$TARGET")
+                if [ -f "$NGINX_PRIVATE/$DOMAIN/$FILENAME" ]; then
+                    ln -sf "$NGINX_PRIVATE/$DOMAIN/$FILENAME" "$NGINX_CERTS/chain.pem"
+                    echo "Linked chain.pem to archive file"
+                else
+                    ln -sf "$DOMAIN_DIR/chain.pem" "$NGINX_CERTS/chain.pem"
+                    echo "Linked chain.pem (direct)"
+                fi
+            else
+                ln -sf "$DOMAIN_DIR/chain.pem" "$NGINX_CERTS/chain.pem"
+                echo "Linked chain.pem"
+            fi
+        fi
+    fi
+fi
 
 # Check if SSL certificates exist
 if [ -f "$SSL_CERT_PATH" ] && [ -f "$SSL_KEY_PATH" ]; then
