@@ -94,6 +94,7 @@ async def api_root():
 
 
 @app.get("/api/health")
+@app.head("/api/health")
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "message": "BendBionics App is running"}
