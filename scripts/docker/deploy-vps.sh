@@ -24,7 +24,7 @@ set -e
 
 # Source shared library
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/../lib.sh"
+source "$SCRIPT_DIR/lib.sh"
 
 COMPOSE_FILE="docker-compose.yml"
 COMPOSE_PROD_FILE="docker-compose.prod.yml"

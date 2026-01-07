@@ -227,8 +227,9 @@ jobs:
                   scp docker-compose.yml "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
                   scp docker-compose.prod.yml "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
 
-                  # Upload deploy script
+                  # Upload deploy script and shared library
                   scp scripts/docker/deploy-vps.sh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
+                  scp scripts/lib.sh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:${{ env.SERVER_PATH }}/"
                   ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "chmod +x ${{ env.SERVER_PATH }}/deploy-vps.sh"
 
                   echo "✅ Files uploaded successfully"

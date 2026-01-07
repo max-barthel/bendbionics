@@ -2,9 +2,14 @@ module.exports = {
   ci: {
     collect: {
       url: ['http://localhost:3000'],
-      startServerCommand: 'bun run preview:web',
-      startServerReadyPattern: '(Local:|localhost:3000)',
-      startServerReadyTimeout: 60000,
+      // Only start server automatically if not already started manually (i.e., not in CI with LIGHTHOUSE_SERVER_STARTED=true)
+      ...(!(process.env.CI && process.env.LIGHTHOUSE_SERVER_STARTED === 'true')
+        ? {
+            startServerCommand: 'bun run preview:web',
+            startServerReadyPattern: '(Local:|localhost:3000)',
+            startServerReadyTimeout: 60000,
+          }
+        : {}),
       numberOfRuns: 3,
     },
     assert: {

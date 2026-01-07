@@ -203,10 +203,45 @@ jobs:
                   cd frontend
                   bun run build:size-check
 
-            - name: Lighthouse performance audit
+            - name: Start preview server for Lighthouse
               run: |
                   cd frontend
-                  bun run lighthouse:ci
+                  bun run preview:web > /tmp/preview-server.log 2>&1 &
+                  echo $! > /tmp/preview-server.pid
+                  # Wait for server to be ready
+                  timeout=60
+                  elapsed=0
+                  while [ $elapsed -lt $timeout ]; do
+                    if curl -s http://localhost:3000 > /dev/null 2>&1; then
+                      echo "Preview server is ready"
+                      break
+                    fi
+                    sleep 1
+                    elapsed=$((elapsed + 1))
+                  done
+                  if [ $elapsed -eq $timeout ]; then
+                    echo "Preview server failed to start"
+                    cat /tmp/preview-server.log
+                    exit 1
+                  fi
+
+            - name: Lighthouse performance audit
+              env:
+                LIGHTHOUSE_SERVER_STARTED: 'true'
+              run: |
+                  cd frontend
+                  bun run lighthouse:ci || {
+                    echo "Lighthouse audit failed"
+                    exit 1
+                  }
+
+            - name: Stop preview server
+              if: always()
+              run: |
+                  if [ -f /tmp/preview-server.pid ]; then
+                    kill $(cat /tmp/preview-server.pid) 2>/dev/null || true
+                    rm -f /tmp/preview-server.pid
+                  fi
 
             - name: Cleanup old Lighthouse reports
               run: |
