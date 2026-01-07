@@ -8,27 +8,19 @@ This project uses GitHub Actions for automated CI/CD, optimized for web applicat
 
 ### 1. **CI Pipeline** (`ci.yml`)
 
-**Triggers:** Push to main/develop/web-app-deployment, Pull Requests
+**Triggers:** Push to main/develop/web-app-deployment, Pull Requests, Manual dispatch
 
 **Jobs:**
 
-- **Quality & Tests**: Linting, testing, integration tests
+- **Quick Check** (optional): Fast health check - linting, build, imports (triggered via workflow_dispatch with quick_test input)
+- **Quality & Tests**: Comprehensive testing including:
+  - Frontend: Linting, type checking, unit tests, coverage, integration tests, visual regression
+  - Backend: Linting, type checking, unit tests, coverage, security audits
 - **Web Build & Performance**: Build optimization, bundle analysis, Lighthouse audits
 - **Backend Build Check**: Backend import verification and configuration checks
-
-### 2. **Test Suite** (`test.yml`)
-
-**Triggers:** Push to main/develop/web-app-deployment, Pull Requests
-
-**Jobs:**
-
-- **Frontend Tests**: Unit tests, coverage, integration tests, visual regression
-- **Backend Tests**: Unit tests, API tests, coverage reports
-- **Quality Checks**: Linting, type checking, security audits
-- **Performance Tests**: Bundle size analysis, Lighthouse audits
 - **Test Summary**: Comprehensive test results summary
 
-### 3. **Deploy** (`deploy.yml`)
+### 2. **Deploy** (`deploy.yml`)
 
 **Triggers:** Push to main/web-app-deployment, Manual dispatch
 
@@ -37,12 +29,6 @@ This project uses GitHub Actions for automated CI/CD, optimized for web applicat
 - **Build & Test**: Pre-deployment validation
 - **Deploy to Production**: Automated deployment to bendbionics.com
 - **Deploy to Staging**: Staging environment deployment (if configured)
-
-### 4. **Quick Test** (`quick-test.yml`)
-
-**Triggers:** Manual dispatch, Push to main branches
-
-**Purpose:** Fast health check for development workflow
 
 ## Environment Variables
 
@@ -160,8 +146,8 @@ python -c "import app.main"  # Test imports
 
 ```bash
 ./dev.sh              # Start development environment
-./toolkit.sh quick    # Quick health check
-./toolkit.sh ci all   # Full CI pipeline locally
+./toolkit.sh quick    # Quick error checks
+./toolkit.sh test all # Run all tests locally
 ```
 
 ### Pre-commit Checks
