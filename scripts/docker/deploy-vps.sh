@@ -202,15 +202,56 @@ health_check() {
     BACKEND_HEALTHY=false
     NGINX_HEALTHY=false
 
+    # Helper function to check backend container status
+    check_backend_container_status() {
+        local status=$(docker compose -f "$COMPOSE_FILE" ps --format json backend 2>/dev/null | grep -o '"State":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
+        echo "$status"
+    }
+
+    # Helper function to get backend container exit code
+    get_backend_exit_code() {
+        docker compose -f "$COMPOSE_FILE" ps --format json backend 2>/dev/null | grep -o '"ExitCode":[0-9]*' | cut -d':' -f2 || echo ""
+    }
+
+    # Helper function to show backend logs
+    show_backend_logs() {
+        print_status "Backend container logs (last 50 lines):"
+        echo "----------------------------------------"
+        docker compose -f "$COMPOSE_FILE" logs --tail=50 backend 2>&1 || true
+        echo "----------------------------------------"
+    }
+
     while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
         # Check backend health
         if [ "$BACKEND_HEALTHY" = false ]; then
-            if docker compose -f "$COMPOSE_FILE" exec -T backend uv run python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" &> /dev/null; then
-                print_success "Backend is healthy"
-                BACKEND_HEALTHY=true
+            # First, check if container is running
+            local container_status=$(check_backend_container_status)
+
+            if [ "$container_status" != "running" ]; then
+                if [ "$container_status" = "exited" ] || [ "$container_status" = "dead" ]; then
+                    local exit_code=$(get_backend_exit_code)
+                    print_error "Backend container is not running (status: $container_status, exit code: ${exit_code:-unknown})"
+                    show_backend_logs
+                    print_error "Backend container exited. Check logs above for startup errors."
+                    print_status "Common issues:"
+                    print_status "  - Database connection failure (check DATABASE_URL)"
+                    print_status "  - Missing required environment variables"
+                    print_status "  - Application startup errors"
+                    exit 1
+                else
+                    if [ $ATTEMPT -lt $((MAX_ATTEMPTS - 1)) ]; then
+                        print_status "Backend container status: $container_status (attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS), waiting..."
+                    fi
+                fi
             else
-                if [ $ATTEMPT -lt $((MAX_ATTEMPTS - 1)) ]; then
-                    print_status "Backend health check failed (attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS), retrying in ${SLEEP_INTERVAL}s..."
+                # Container is running, check health endpoint
+                if docker compose -f "$COMPOSE_FILE" exec -T backend curl -f -s http://localhost:8000/api/health &> /dev/null; then
+                    print_success "Backend is healthy"
+                    BACKEND_HEALTHY=true
+                else
+                    if [ $ATTEMPT -lt $((MAX_ATTEMPTS - 1)) ]; then
+                        print_status "Backend health check failed (attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS), retrying in ${SLEEP_INTERVAL}s..."
+                    fi
                 fi
             fi
         fi
@@ -245,8 +286,28 @@ health_check() {
 
     if [ "$BACKEND_HEALTHY" = false ]; then
         print_error "Backend health check failed"
+
+        # Check final container status
+        local final_status=$(check_backend_container_status)
+        print_status "Backend container status: $final_status"
+
+        if [ "$final_status" != "running" ]; then
+            local exit_code=$(get_backend_exit_code)
+            print_error "Backend container is not running (exit code: ${exit_code:-unknown})"
+        fi
+
+        show_backend_logs
+
         print_status "Backend container may not be responding or database connection is failing"
-        print_status "Check backend logs: docker compose -f $COMPOSE_FILE logs backend"
+        print_status "Common issues:"
+        print_status "  - Database connection failure (check DATABASE_URL and postgres container)"
+        print_status "  - Missing required environment variables (SECRET_KEY, etc.)"
+        print_status "  - Application startup errors (check logs above)"
+        print_status ""
+        print_status "Debug commands:"
+        print_status "  Check backend logs: docker compose -f $COMPOSE_FILE logs backend"
+        print_status "  Check backend status: docker compose -f $COMPOSE_FILE ps backend"
+        print_status "  Check database connectivity: docker compose -f $COMPOSE_FILE exec backend uv run python -c \"from app.database import engine; print(engine)\""
         echo ""
     fi
 
