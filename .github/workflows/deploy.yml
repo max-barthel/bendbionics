@@ -256,6 +256,71 @@ jobs:
 
                   echo "✅ Deployment completed"
 
+            - name: 🔒 Setup SSL certificates
+              if: ${{ !inputs.skip_deploy }}
+              env:
+                  DOMAIN: ${{ secrets.DOMAIN }}
+                  DOMAIN_EMAIL: ${{ secrets.DOMAIN_EMAIL }}
+              run: |
+                  # Use defaults if secrets are not set
+                  DOMAIN="${DOMAIN:-bendbionics.com}"
+                  DOMAIN_EMAIL="${DOMAIN_EMAIL:-noreply@bendbionics.com}"
+                  echo "🔒 Checking SSL certificate status..."
+
+                  # Check if certificates already exist
+                  CERT_EXISTS=$(ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "
+                      cd ${{ env.SERVER_PATH }}
+                      docker compose -f docker-compose.yml exec -T nginx test -f /etc/nginx/ssl/certs/fullchain.pem 2>/dev/null && echo 'yes' || echo 'no'
+                  " || echo "no")
+
+                  if [ "$CERT_EXISTS" = "yes" ]; then
+                      echo "✅ SSL certificates already exist, skipping acquisition"
+                      exit 0
+                  fi
+
+                  echo "📜 SSL certificates not found, attempting to obtain..."
+                  echo "📧 Using domain: $DOMAIN"
+                  echo "📧 Using email: $DOMAIN_EMAIL"
+
+                  # Attempt to obtain certificates
+                  # This will fail gracefully if domain is not ready or rate limited
+                  ssh "${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}" "
+                      cd ${{ env.SERVER_PATH }}
+
+                      # Wait a moment for nginx to be fully ready
+                      sleep 5
+
+                      # Attempt to obtain certificate using webroot method
+                      if docker compose -f docker-compose.yml run --rm certbot certonly \\
+                          --webroot \\
+                          -w /var/www/certbot \\
+                          -d $DOMAIN \\
+                          --email $DOMAIN_EMAIL \\
+                          --agree-tos \\
+                          --non-interactive \\
+                          --keep-until-expiring 2>&1; then
+
+                          echo '✅ SSL certificates obtained successfully'
+
+                          # Restart nginx to pick up SSL configuration
+                          echo '🔄 Restarting nginx to enable HTTPS...'
+                          docker compose -f docker-compose.yml restart nginx
+
+                          # Wait for nginx to restart
+                          sleep 5
+
+                          echo '✅ HTTPS should now be enabled'
+                      else
+                          echo '⚠️  Failed to obtain SSL certificates (domain may not be ready or rate limited)'
+                          echo '⚠️  Application will continue running in HTTP-only mode'
+                          echo '⚠️  You can manually obtain certificates later with:'
+                          echo \"⚠️  docker compose -f docker-compose.yml run --rm certbot certonly --webroot -w /var/www/certbot -d $DOMAIN --email $DOMAIN_EMAIL --agree-tos --non-interactive\"
+                      fi
+                  " || {
+                      echo "⚠️  SSL certificate acquisition failed or skipped"
+                      echo "⚠️  Application will continue in HTTP-only mode"
+                  }
+
             - name: 🏥 Health check
               if: ${{ !inputs.skip_deploy }}
               run: |
@@ -265,8 +330,15 @@ jobs:
                   SLEEP_INTERVAL=5
 
                   while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+                      # Try HTTP first (works even without SSL certificates)
+                      if curl -f -s http://bendbionics.com/health > /dev/null 2>&1; then
+                          echo "✅ Health check passed (HTTP)!"
+                          exit 0
+                      fi
+
+                      # Try HTTPS as fallback (if SSL certificates are available)
                       if curl -f -s https://bendbionics.com/health > /dev/null 2>&1; then
-                          echo "✅ Health check passed!"
+                          echo "✅ Health check passed (HTTPS)!"
                           exit 0
                       fi
 
