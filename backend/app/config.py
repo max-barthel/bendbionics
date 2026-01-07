@@ -1,6 +1,7 @@
+import json
 from enum import Enum
 from pathlib import Path
-from typing import List
+from typing import List, Union
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -76,6 +77,26 @@ class Settings(BaseSettings):
     # Frontend URLs (for email links)
     frontend_url: str = "http://localhost:5173"
     backend_url: str = "http://localhost:8000"
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        """
+        Parse CORS origins from JSON string or return list as-is.
+        This handles environment variables that come as JSON strings.
+        """
+        if isinstance(v, str):
+            try:
+                parsed = json.loads(v)
+                if not isinstance(parsed, list):
+                    msg = f"CORS_ORIGINS must be a JSON array, got {type(parsed).__name__}"
+                    raise ValueError(msg)
+                return parsed
+            except json.JSONDecodeError as e:
+                msg = f"Invalid JSON in CORS_ORIGINS: {e}"
+                raise ValueError(msg) from e
+        # If it's already a list, pass it through
+        return v
 
     @field_validator("cors_origins")
     @classmethod
