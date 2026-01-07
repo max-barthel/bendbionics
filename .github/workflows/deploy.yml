@@ -135,35 +135,47 @@ jobs:
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
+            - name: 🏗️ Set up Docker Buildx
+              if: ${{ !inputs.skip_build }}
+              uses: docker/setup-buildx-action@v3
+
             - name: 🏗️ Build and push Docker images
               if: ${{ !inputs.skip_build }}
               run: |
+                  set -e
                   echo "🏗️ Building Docker images..."
 
                   # Build backend image
-                  docker build --platform linux/amd64 -t "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-backend:${{ env.VERSION }}" \
-                      -t "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-backend:latest" \
-                      ./backend
+                  docker buildx build --platform linux/amd64 \
+                      --tag "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-backend:${{ env.VERSION }}" \
+                      --tag "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-backend:latest" \
+                      --push \
+                      ./backend || {
+                      echo "❌ Backend image build failed"
+                      exit 1
+                  }
 
                   # Build frontend image
-                  docker build --platform linux/amd64 -t "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-frontend:${{ env.VERSION }}" \
-                      -t "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-frontend:latest" \
-                      ./frontend
+                  docker buildx build --platform linux/amd64 \
+                      --tag "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-frontend:${{ env.VERSION }}" \
+                      --tag "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-frontend:latest" \
+                      --push \
+                      ./frontend || {
+                      echo "❌ Frontend image build failed"
+                      exit 1
+                  }
 
                   # Build nginx image
-                  docker build --platform linux/amd64 -t "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-nginx:${{ env.VERSION }}" \
-                      -t "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-nginx:latest" \
-                      ./docker/nginx
+                  docker buildx build --platform linux/amd64 \
+                      --tag "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-nginx:${{ env.VERSION }}" \
+                      --tag "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-nginx:latest" \
+                      --push \
+                      ./docker/nginx || {
+                      echo "❌ Nginx image build failed"
+                      exit 1
+                  }
 
-                  echo "📤 Pushing images to registry..."
-                  docker push "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-backend:${{ env.VERSION }}"
-                  docker push "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-backend:latest"
-                  docker push "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-frontend:${{ env.VERSION }}"
-                  docker push "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-frontend:latest"
-                  docker push "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-nginx:${{ env.VERSION }}"
-                  docker push "${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}-nginx:latest"
-
-                  echo "✅ Images pushed successfully"
+                  echo "✅ All images built and pushed successfully"
 
             - name: 🔍 Validate server configuration
               if: ${{ !inputs.skip_deploy }}

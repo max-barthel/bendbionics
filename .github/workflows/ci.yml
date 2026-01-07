@@ -23,7 +23,7 @@ jobs:
     quick-check:
         name: Quick Health Check
         runs-on: ubuntu-latest
-        if: ${{ github.event.inputs.quick_test == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event.inputs.quick_test == 'true' || github.event_name != 'workflow_dispatch' }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v6
@@ -271,7 +271,8 @@ jobs:
         if: ${{ always() && github.event.inputs.quick_test != 'true' }}
         steps:
             - name: Download all artifacts
-              uses: actions/download-artifact@v6
+              uses: actions/download-artifact@v5
+              continue-on-error: true
               with:
                   path: ./test-results
 
