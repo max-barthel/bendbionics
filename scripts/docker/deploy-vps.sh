@@ -185,7 +185,7 @@ run_migrations() {
     done
 
     # Run migrations (if migrate.py is available in the image, otherwise skip)
-    docker compose -f "$COMPOSE_FILE" run --rm backend python migrate.py 2>/dev/null || {
+    docker compose -f "$COMPOSE_FILE" run --rm backend uv run python migrate.py 2>/dev/null || {
         print_warning "Migrations may not be available in image, or already applied"
     }
 
@@ -205,7 +205,7 @@ health_check() {
     while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
         # Check backend health
         if [ "$BACKEND_HEALTHY" = false ]; then
-            if docker compose -f "$COMPOSE_FILE" exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" &> /dev/null; then
+            if docker compose -f "$COMPOSE_FILE" exec -T backend uv run python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" &> /dev/null; then
                 print_success "Backend is healthy"
                 BACKEND_HEALTHY=true
             else
