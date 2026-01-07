@@ -117,8 +117,10 @@ services:
       - ssl_private:/etc/nginx/ssl/private
       - certbot_www:/var/www/certbot
     depends_on:
-      - backend
-      - frontend
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
     networks:
       - bendbionics-network
     healthcheck:
