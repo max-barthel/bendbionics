@@ -102,53 +102,52 @@ health_check() {
     MAX_ATTEMPTS=30
     ATTEMPT=0
     SLEEP_INTERVAL=2
-    INITIAL_NGINX_WAIT=5
+    INITIAL_FRONTEND_WAIT=3
 
-    # Give nginx a moment to start up before checking
-    print_status "Waiting ${INITIAL_NGINX_WAIT}s for nginx to initialize..."
-    sleep $INITIAL_NGINX_WAIT
+    # Give frontend a moment to start up before checking
+    print_status "Waiting ${INITIAL_FRONTEND_WAIT}s for frontend to initialize..."
+    sleep $INITIAL_FRONTEND_WAIT
 
     while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
         BACKEND_HEALTHY=false
-        NGINX_HEALTHY=false
+        FRONTEND_HEALTHY=false
 
         # Check backend
         if docker compose -f "$COMPOSE_FILE" exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" &> /dev/null; then
             BACKEND_HEALTHY=true
         fi
 
-        # Check nginx (only if backend is healthy)
+        # Check frontend (only if backend is healthy)
         if [ "$BACKEND_HEALTHY" = true ]; then
             # First, try to use Docker's built-in healthcheck status (most reliable)
-            NGINX_HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' bendbionics-nginx 2>/dev/null || echo "none")
+            FRONTEND_HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' bendbionics-frontend 2>/dev/null || echo "none")
 
-            if [ "$NGINX_HEALTH_STATUS" = "healthy" ]; then
-                NGINX_HEALTHY=true
-            elif [ "$NGINX_HEALTH_STATUS" = "none" ] || [ "$NGINX_HEALTH_STATUS" = "starting" ]; then
+            if [ "$FRONTEND_HEALTH_STATUS" = "healthy" ]; then
+                FRONTEND_HEALTHY=true
+            elif [ "$FRONTEND_HEALTH_STATUS" = "none" ] || [ "$FRONTEND_HEALTH_STATUS" = "starting" ]; then
                 # Healthcheck not ready yet or not configured, fall back to direct HTTP check from host
-                # Check if nginx is responding on port 80 from the host
                 if command -v curl &> /dev/null; then
-                    if curl -sf http://localhost/health &> /dev/null; then
-                        NGINX_HEALTHY=true
+                    if curl -sf http://127.0.0.1:8081/ &> /dev/null; then
+                        FRONTEND_HEALTHY=true
                     fi
                 elif command -v wget &> /dev/null; then
-                    if wget --quiet --spider --timeout=2 http://localhost/health &> /dev/null; then
-                        NGINX_HEALTHY=true
+                    if wget --quiet --spider --timeout=2 http://127.0.0.1:8081/ &> /dev/null; then
+                        FRONTEND_HEALTHY=true
                     fi
                 else
-                    # Last resort: check from inside container (original method)
-                    if docker compose -f "$COMPOSE_FILE" exec -T nginx wget --quiet --spider --timeout=2 http://localhost/health &> /dev/null; then
-                        NGINX_HEALTHY=true
+                    # Last resort: check from inside container
+                    if docker compose -f "$COMPOSE_FILE" exec -T frontend wget --quiet --spider --timeout=2 http://localhost/ &> /dev/null; then
+                        FRONTEND_HEALTHY=true
                     fi
                 fi
             fi
-            # If health_status is "unhealthy", NGINX_HEALTHY stays false
+            # If health_status is "unhealthy", FRONTEND_HEALTHY stays false
         fi
 
         # Both services healthy - success
-        if [ "$BACKEND_HEALTHY" = true ] && [ "$NGINX_HEALTHY" = true ]; then
+        if [ "$BACKEND_HEALTHY" = true ] && [ "$FRONTEND_HEALTHY" = true ]; then
             print_success "Backend is healthy"
-            print_success "Nginx is healthy"
+            print_success "Frontend is healthy"
             return 0
         fi
 
@@ -158,11 +157,11 @@ health_check() {
             if [ "$BACKEND_HEALTHY" = false ]; then
                 print_status "Attempt $ATTEMPT/$MAX_ATTEMPTS: Backend not ready, retrying in ${SLEEP_INTERVAL}s..."
             else
-                NGINX_STATUS_MSG=""
-                if [ "$NGINX_HEALTH_STATUS" != "none" ] && [ "$NGINX_HEALTH_STATUS" != "" ]; then
-                    NGINX_STATUS_MSG=" (Docker healthcheck: $NGINX_HEALTH_STATUS)"
+                FRONTEND_STATUS_MSG=""
+                if [ "$FRONTEND_HEALTH_STATUS" != "none" ] && [ "$FRONTEND_HEALTH_STATUS" != "" ]; then
+                    FRONTEND_STATUS_MSG=" (Docker healthcheck: $FRONTEND_HEALTH_STATUS)"
                 fi
-                print_status "Attempt $ATTEMPT/$MAX_ATTEMPTS: Nginx not ready${NGINX_STATUS_MSG}, retrying in ${SLEEP_INTERVAL}s..."
+                print_status "Attempt $ATTEMPT/$MAX_ATTEMPTS: Frontend not ready${FRONTEND_STATUS_MSG}, retrying in ${SLEEP_INTERVAL}s..."
             fi
             sleep $SLEEP_INTERVAL
         fi
@@ -172,17 +171,17 @@ health_check() {
     if [ "$BACKEND_HEALTHY" = false ]; then
         print_error "Backend health check failed - backend container may not be responding"
     fi
-    if [ "$NGINX_HEALTHY" = false ] && [ "$BACKEND_HEALTHY" = true ]; then
-        NGINX_STATUS_MSG=""
-        NGINX_HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' bendbionics-nginx 2>/dev/null || echo "unknown")
-        if [ "$NGINX_HEALTH_STATUS" != "none" ] && [ "$NGINX_HEALTH_STATUS" != "" ]; then
-            NGINX_STATUS_MSG=" (Docker healthcheck status: $NGINX_HEALTH_STATUS)"
+    if [ "$FRONTEND_HEALTHY" = false ] && [ "$BACKEND_HEALTHY" = true ]; then
+        FRONTEND_STATUS_MSG=""
+        FRONTEND_HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' bendbionics-frontend 2>/dev/null || echo "unknown")
+        if [ "$FRONTEND_HEALTH_STATUS" != "none" ] && [ "$FRONTEND_HEALTH_STATUS" != "" ]; then
+            FRONTEND_STATUS_MSG=" (Docker healthcheck status: $FRONTEND_HEALTH_STATUS)"
         fi
-        print_error "Nginx health check failed (backend is healthy)${NGINX_STATUS_MSG}"
-        print_status "Nginx container status:"
-        docker compose -f "$COMPOSE_FILE" ps nginx
+        print_error "Frontend health check failed (backend is healthy)${FRONTEND_STATUS_MSG}"
+        print_status "Frontend container status:"
+        docker compose -f "$COMPOSE_FILE" ps frontend
     fi
-    print_status "Check logs with: docker compose logs nginx backend"
+    print_status "Check logs with: docker compose logs frontend backend"
     exit 1
 }
 
@@ -192,10 +191,10 @@ show_status() {
     docker compose -f "$COMPOSE_FILE" ps
 
     echo ""
-    print_status "Service URLs:"
-    echo "  Frontend: http://$(hostname -I | awk '{print $1}')"
-    echo "  Backend API: http://$(hostname -I | awk '{print $1}')/api"
-    echo "  API Docs: http://$(hostname -I | awk '{print $1}')/docs"
+    print_status "Service URLs (internal):"
+    echo "  Frontend: http://127.0.0.1:8081"
+    echo "  Backend API: http://127.0.0.1:8001/api"
+    echo "  API Docs: http://127.0.0.1:8001/docs"
     echo ""
     print_status "Useful commands:"
     echo "  View logs: docker compose logs -f"
@@ -260,4 +259,3 @@ main() {
 }
 
 main "$@"
-

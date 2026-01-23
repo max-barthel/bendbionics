@@ -174,9 +174,7 @@ class TestDatabaseOperations:
             # Query presets for the user
             from sqlmodel import select
 
-            user_presets = session.exec(
-                select(Preset).where(Preset.user_id == user.id)
-            ).all()
+            user_presets = session.exec(select(Preset).where(Preset.user_id == user.id)).all()
             assert len(user_presets) == 2
 
             # Verify user's presets have correct public/private status
@@ -188,13 +186,9 @@ class TestDatabaseOperations:
             assert user_private_presets[0].name == "Preset 1 DB"
 
             # Query public presets (may include presets from other users)
-            public_presets = session.exec(
-                select(Preset).where(Preset.is_public.is_(True))
-            ).all()
+            public_presets = session.exec(select(Preset).where(Preset.is_public.is_(True))).all()
             # Verify that the user's public preset is in the results
-            assert any(
-                p.name == "Preset 2 DB" and p.user_id == user.id for p in public_presets
-            )
+            assert any(p.name == "Preset 2 DB" and p.user_id == user.id for p in public_presets)
 
             # Clean up
             session.delete(preset1)
@@ -206,22 +200,18 @@ class TestDatabaseOperations:
             session.close()
 
     def test_preset_config_dict_property(self):
-        """Test preset config_dict property."""
-        # Test valid dict
+        """Test preset config_dict property.
+
+        Since configuration is stored as JSONB, SQLModel automatically
+        deserializes it to a Python dictionary when retrieved from the database.
+        """
+        # Test valid dict (normal case from JSONB)
         preset = Preset(
             name="Test Preset",
             user_id=1,
             configuration={"key": "value", "number": 42},
         )
         assert preset.config_dict == {"key": "value", "number": 42}
-
-        # Test string JSON (backward compatibility)
-        preset.configuration = '{"key": "value", "number": 42}'
-        assert preset.config_dict == {"key": "value", "number": 42}
-
-        # Test invalid JSON string
-        preset.configuration = "invalid json"
-        assert preset.config_dict == {}
 
         # Test setting config_dict
         preset.config_dict = {"new_key": "new_value"}

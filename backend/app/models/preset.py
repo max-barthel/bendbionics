@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
@@ -41,15 +40,12 @@ class Preset(PresetBase, table=True):
 
     @property
     def config_dict(self) -> Dict[str, Any]:
-        """Get configuration as dictionary"""
-        if isinstance(self.configuration, dict):
-            return self.configuration
-        if isinstance(self.configuration, str):
-            try:
-                return json.loads(self.configuration)
-            except (json.JSONDecodeError, TypeError):
-                return {}
-        return {}
+        """Get configuration as dictionary.
+
+        Since configuration is stored as JSONB, SQLModel automatically
+        deserializes it to a Python dictionary when retrieved from the database.
+        """
+        return self.configuration if isinstance(self.configuration, dict) else {}
 
     @config_dict.setter
     def config_dict(self, value: Dict[str, Any]):

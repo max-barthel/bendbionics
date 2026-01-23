@@ -34,7 +34,6 @@ ENV_FILE=".env"
 export USE_REGISTRY_IMAGES=true
 export BACKEND_IMAGE="${DOCKER_REGISTRY:-ghcr.io}/${DOCKER_IMAGE_PREFIX:-max-barthel/bendbionics}-backend:${VERSION:-latest}"
 export FRONTEND_IMAGE="${DOCKER_REGISTRY:-ghcr.io}/${DOCKER_IMAGE_PREFIX:-max-barthel/bendbionics}-frontend:${VERSION:-latest}"
-export NGINX_IMAGE="${DOCKER_REGISTRY:-ghcr.io}/${DOCKER_IMAGE_PREFIX:-max-barthel/bendbionics}-nginx:${VERSION:-latest}"
 
 # Validate environment variables
 validate_env_vars() {
@@ -256,7 +255,7 @@ health_check() {
     ATTEMPT=0
     SLEEP_INTERVAL=2
     BACKEND_HEALTHY=false
-    NGINX_HEALTHY=false
+    FRONTEND_HEALTHY=false
 
     # Helper function to check backend container status
     check_backend_container_status() {
@@ -312,21 +311,21 @@ health_check() {
             fi
         fi
 
-        # Only check nginx if backend is healthy
-        if [ "$BACKEND_HEALTHY" = true ] && [ "$NGINX_HEALTHY" = false ]; then
-            if docker compose -f "$COMPOSE_FILE" exec -T nginx wget --quiet --spider http://localhost/health &> /dev/null; then
-                print_success "Nginx is healthy"
-                NGINX_HEALTHY=true
+        # Only check frontend if backend is healthy
+        if [ "$BACKEND_HEALTHY" = true ] && [ "$FRONTEND_HEALTHY" = false ]; then
+            if docker compose -f "$COMPOSE_FILE" exec -T frontend wget --quiet --spider http://localhost/ &> /dev/null; then
+                print_success "Frontend is healthy"
+                FRONTEND_HEALTHY=true
                 return 0
             else
                 if [ $ATTEMPT -lt $((MAX_ATTEMPTS - 1)) ]; then
-                    print_status "Nginx health check failed (attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS), retrying in ${SLEEP_INTERVAL}s..."
+                    print_status "Frontend health check failed (attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS), retrying in ${SLEEP_INTERVAL}s..."
                 fi
             fi
         fi
 
         # If both are healthy, we're done
-        if [ "$BACKEND_HEALTHY" = true ] && [ "$NGINX_HEALTHY" = true ]; then
+        if [ "$BACKEND_HEALTHY" = true ] && [ "$FRONTEND_HEALTHY" = true ]; then
             return 0
         fi
 
@@ -367,11 +366,9 @@ health_check() {
         echo ""
     fi
 
-    if [ "$BACKEND_HEALTHY" = true ] && [ "$NGINX_HEALTHY" = false ]; then
-        print_error "Nginx health check failed (backend is healthy)"
-        print_status "Nginx may not be able to reach the backend or proxy configuration is incorrect"
-        print_status "Check nginx logs: docker compose -f $COMPOSE_FILE logs nginx"
-        print_status "Check backend connectivity from nginx: docker compose -f $COMPOSE_FILE exec nginx wget -O- http://backend:8000/api/health"
+    if [ "$BACKEND_HEALTHY" = true ] && [ "$FRONTEND_HEALTHY" = false ]; then
+        print_error "Frontend health check failed (backend is healthy)"
+        print_status "Check frontend logs: docker compose -f $COMPOSE_FILE logs frontend"
         echo ""
     fi
 
@@ -386,10 +383,10 @@ show_status() {
     docker compose -f "$COMPOSE_FILE" ps
 
     echo ""
-    print_status "Service URLs:"
-    echo "  Frontend: http://$(hostname -I | awk '{print $1}')"
-    echo "  Backend API: http://$(hostname -I | awk '{print $1}')/api"
-    echo "  API Docs: http://$(hostname -I | awk '{print $1}')/docs"
+    print_status "Service URLs (internal):"
+    echo "  Frontend: http://127.0.0.1:8081"
+    echo "  Backend API: http://127.0.0.1:8001/api"
+    echo "  API Docs: http://127.0.0.1:8001/docs"
     echo ""
     print_status "Useful commands:"
     echo "  View logs: docker compose -f $COMPOSE_FILE logs -f"
@@ -438,8 +435,7 @@ main() {
 
     print_success "Deployment completed!"
     echo ""
-    print_status "Next: Set up SSL certificates with certbot"
+    print_status "Next: Configure host nginx + SSL for your domain(s)"
 }
 
 main "$@"
-

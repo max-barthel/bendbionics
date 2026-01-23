@@ -52,13 +52,6 @@ build_images() {
         -t "${REGISTRY}/${IMAGE_PREFIX}-frontend:latest" \
         ./frontend
 
-    # Build nginx
-    print_status "Building nginx image..."
-    docker build --platform linux/amd64 $no_cache_flag \
-        -t "${REGISTRY}/${IMAGE_PREFIX}-nginx:${VERSION}" \
-        -t "${REGISTRY}/${IMAGE_PREFIX}-nginx:latest" \
-        ./docker/nginx
-
     print_success "All images built successfully"
 }
 
@@ -80,9 +73,6 @@ push_images() {
 
     docker push "${REGISTRY}/${IMAGE_PREFIX}-frontend:${VERSION}"
     docker push "${REGISTRY}/${IMAGE_PREFIX}-frontend:latest"
-
-    docker push "${REGISTRY}/${IMAGE_PREFIX}-nginx:${VERSION}"
-    docker push "${REGISTRY}/${IMAGE_PREFIX}-nginx:latest"
 
     print_success "All images pushed successfully"
 }
@@ -167,10 +157,8 @@ main() {
     print_status "Images available at:"
     echo "  ${REGISTRY}/${IMAGE_PREFIX}-backend:${VERSION}"
     echo "  ${REGISTRY}/${IMAGE_PREFIX}-frontend:${VERSION}"
-    echo "  ${REGISTRY}/${IMAGE_PREFIX}-nginx:${VERSION}"
     echo ""
     print_status "On your VPS, use docker-compose.pull.yml to pull and run these images"
 }
 
 main "$@"
-

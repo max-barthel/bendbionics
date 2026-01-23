@@ -60,8 +60,6 @@ backup_volumes() {
     print_warning "Volume backup requires manual implementation based on your needs"
     print_status "Volumes to backup:"
     print_status "  - postgres_data"
-    print_status "  - ssl_certs"
-    print_status "  - ssl_private"
 
     # Example: Backup postgres volume
     # docker run --rm -v bendbionics_postgres_data:/data -v "$temp_dir":/backup \
@@ -82,7 +80,6 @@ backup_config() {
         .env \
         docker-compose.yml \
         docker-compose.prod.yml \
-        docker/nginx/ \
         2>/dev/null || true
 
     if [ -f "$backup_file" ]; then
@@ -180,4 +177,3 @@ main() {
 }
 
 main "$@"
-

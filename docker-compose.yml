@@ -65,6 +65,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    ports:
+      - "127.0.0.1:8001:8000"
     networks:
       - bendbionics-network
     healthcheck:
@@ -91,6 +93,8 @@ services:
       dockerfile: Dockerfile
     container_name: bendbionics-frontend
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:8081:80"
     networks:
       - bendbionics-network
     healthcheck:
@@ -100,74 +104,8 @@ services:
       timeout: 10s
       retries: 3
 
-  # Nginx Reverse Proxy
-  nginx:
-    # Use image from registry if USE_REGISTRY_IMAGES is set, otherwise build from source
-    image: ${NGINX_IMAGE:-}
-    build:
-      context: ./docker/nginx
-      dockerfile: Dockerfile
-    container_name: bendbionics-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ssl_certs:/etc/nginx/ssl/certs
-      - ssl_private:/etc/nginx/ssl/private
-      - certbot_www:/var/www/certbot
-    depends_on:
-      backend:
-        condition: service_healthy
-      frontend:
-        condition: service_started
-    networks:
-      - bendbionics-network
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--quiet",
-          "--tries=1",
-          "--spider",
-          "http://localhost/health",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Certbot for SSL certificates (optional, run manually or via cron)
-  certbot:
-    build:
-      context: ./docker/certbot
-      dockerfile: Dockerfile
-    container_name: bendbionics-certbot
-    volumes:
-      - ssl_certs:/etc/letsencrypt/live
-      - ssl_private:/etc/letsencrypt/archive
-      - certbot_www:/var/www/certbot
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    command:
-      - /bin/sh
-      - -c
-      - |
-        trap exit TERM
-        while :; do
-          certbot renew --deploy-hook /usr/local/bin/reload-nginx.sh
-          sleep 12h & wait $${!}
-        done
-    networks:
-      - bendbionics-network
-
 volumes:
   postgres_data:
-    driver: local
-  ssl_certs:
-    driver: local
-  ssl_private:
-    driver: local
-  certbot_www:
     driver: local
 
 networks:

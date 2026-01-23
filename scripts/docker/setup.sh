@@ -66,9 +66,8 @@ install_docker_compose() {
 create_directories() {
     print_status "Creating necessary directories..."
 
-    mkdir -p /opt/bendbionics/{data,backups,ssl}
+    mkdir -p /opt/bendbionics/{data,backups}
     mkdir -p /opt/bendbionics/data/postgres
-    mkdir -p /opt/bendbionics/ssl/{certs,private}
     mkdir -p /opt/bendbionics/backups/{database,volumes}
 
     # Set permissions
@@ -100,14 +99,6 @@ configure_firewall() {
     fi
 }
 
-# Generate initial SSL certificates (optional, can be done later with certbot)
-setup_ssl() {
-    print_status "SSL certificate setup..."
-    print_warning "SSL certificates will be generated using certbot after deployment"
-    print_status "Make sure your domain DNS is pointing to this server"
-    print_status "Run certbot initialization after deployment:"
-    print_status "  docker compose run --rm certbot certonly --webroot -w /var/www/certbot -d yourdomain.com"
-}
 
 # Main execution
 main() {
@@ -121,7 +112,6 @@ main() {
     install_docker_compose
     create_directories
     configure_firewall
-    setup_ssl
 
     print_success "Setup completed!"
     echo ""
@@ -129,10 +119,9 @@ main() {
     echo "1. Copy your project files to the server"
     echo "2. Copy docker/env.example to .env and configure it"
     echo "3. Run: docker compose up -d"
-    echo "4. Initialize SSL certificates with certbot"
+    echo "4. Configure host nginx + SSL (outside this repo)"
     echo ""
     print_status "For detailed instructions, see docs/DOCKER_DEPLOYMENT.md"
 }
 
 main "$@"
-
