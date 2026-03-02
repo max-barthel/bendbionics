@@ -173,7 +173,7 @@ jobs:
                   bun run test:visual
 
             - name: Upload test results
-              uses: actions/upload-artifact@v5
+              uses: actions/upload-artifact@v7
               if: always()
               with:
                   name: test-results
@@ -273,7 +273,7 @@ jobs:
                   rm -rf .lighthouseci 2>/dev/null || true
 
             - name: Upload build artifacts
-              uses: actions/upload-artifact@v5
+              uses: actions/upload-artifact@v7
               with:
                   name: web-build
                   path: frontend/dist/
