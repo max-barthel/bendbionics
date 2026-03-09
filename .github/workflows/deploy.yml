@@ -135,7 +135,7 @@ jobs:
 
             - name: 🔐 Login to GitHub Container Registry
               if: ${{ !inputs.skip_build }}
-              uses: docker/login-action@v3
+              uses: docker/login-action@v4
               with:
                   registry: ${{ env.DOCKER_REGISTRY }}
                   username: ${{ github.actor }}
